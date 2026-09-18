@@ -77,7 +77,7 @@ final router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
     GoRoute(path: '/lock', builder: (_, __) => const LockScreen()),
-    GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+    GoRoute(path: '/home', redirect: (_, __) => '/journal'),
     GoRoute(
       path: '/sessions/run',
       builder: (_, GoRouterState state) => SessionRunnerScreen(
