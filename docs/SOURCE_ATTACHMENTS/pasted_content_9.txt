@@ -1,0 +1,1375 @@
+🎨 المرحلة الثامنة — الأصول التسويقية الكاملة
+
+🎯 ما سيتم تسليمه
+
+# الملف النوع
+91-96 Store Screenshots 6 صور متجر
+97-101 TikTok Scripts 5 فيديوهات كاملة
+102-105 Email Templates 4 رسائل بريد
+106 Social Media Kit صور السوشيال
+107 Press Kit ملف صحفي
+108 YouTube Trailer Script إعلان كامل
+
+---
+
+📱 أولاً: Store Screenshots (6 صور)
+
+📄 الملف 91: assets/store/screenshots/01_home.svg
+
+العملية: 🟢 CREATE
+
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="homeBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#141821"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#8B7BFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- الخلفية -->
+  <rect width="1080" height="1920" fill="url(#homeBg)"/>
+
+  <!-- نص علوي -->
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">مذكرتك الخاصة</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">100% محلية · بدون إنترنت</text>
+
+  <!-- محاكاة الشاشة -->
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <!-- Header -->
+    <rect x="0" y="0" width="900" height="140" rx="40" fill="#141821"/>
+    <text x="450" y="70" font-family="system-ui" font-size="32" font-weight="700"
+          fill="white" text-anchor="middle">My Journal</text>
+
+    <!-- Stats -->
+    <g transform="translate(40, 180)">
+      <rect width="240" height="120" rx="20" fill="#6C5CE7" opacity="0.15"/>
+      <text x="120" y="55" font-size="36" fill="#6C5CE7" text-anchor="middle" font-weight="700">47</text>
+      <text x="120" y="90" font-size="18" fill="#8B95A8" text-anchor="middle">Entries</text>
+
+      <rect x="270" width="240" height="120" rx="20" fill="#00D2A8" opacity="0.15"/>
+      <text x="390" y="55" font-size="36" fill="#00D2A8" text-anchor="middle" font-weight="700">12.4K</text>
+      <text x="390" y="90" font-size="18" fill="#8B95A8" text-anchor="middle">Words</text>
+
+      <rect x="540" width="240" height="120" rx="20" fill="#F5A623" opacity="0.15"/>
+      <text x="660" y="55" font-size="36" fill="#F5A623" text-anchor="middle" font-weight="700">🔥 14</text>
+      <text x="660" y="90" font-size="18" fill="#8B95A8" text-anchor="middle">Streak</text>
+    </g>
+
+    <!-- Quote Card -->
+    <g transform="translate(40, 340)">
+      <rect width="820" height="200" rx="24" fill="#6C5CE7" opacity="0.1"
+            stroke="#6C5CE7" stroke-width="2" stroke-opacity="0.3"/>
+      <text x="30" y="50" font-size="24" fill="#6C5CE7">💭 Quote of the Day</text>
+      <text x="30" y="100" font-size="20" fill="white" font-style="italic"
+            font-family="Georgia">"The unexamined life is not worth living."</text>
+      <text x="30" y="150" font-size="18" fill="#8B95A8">— Socrates</text>
+    </g>
+
+    <!-- Entry Cards -->
+    <g transform="translate(40, 580)">
+      <rect width="820" height="180" rx="24" fill="#161B22"/>
+      <text x="30" y="50" font-size="32">😊</text>
+      <text x="90" y="45" font-size="24" fill="white" font-weight="600">صباح الخير</text>
+      <text x="90" y="80" font-size="16" fill="#8B95A8">12/03/2026 · 2h ago</text>
+      <text x="90" y="130" font-size="16" fill="#8B95A8">يوم جميل مع العائلة. الشمس مشرقة...</text>
+    </g>
+
+    <g transform="translate(40, 790)">
+      <rect width="820" height="180" rx="24" fill="#161B22"/>
+      <text x="30" y="50" font-size="32">😌</text>
+      <text x="90" y="45" font-size="24" fill="white" font-weight="600">هدوء المساء</text>
+      <text x="90" y="80" font-size="16" fill="#8B95A8">11/03/2026</text>
+      <text x="90" y="130" font-size="16" fill="#8B95A8">قرأت كتاباً جميلاً، شعرت بالسلام...</text>
+    </g>
+
+    <g transform="translate(40, 1000)">
+      <rect width="820" height="180" rx="24" fill="#161B22"/>
+      <text x="30" y="50" font-size="32">🌟</text>
+      <text x="90" y="45" font-size="24" fill="white" font-weight="600">إنجاز جديد</text>
+      <text x="90" y="80" font-size="16" fill="#8B95A8">10/03/2026</text>
+      <text x="90" y="130" font-size="16" fill="#8B95A8">أكملت مشروعاً كنت أعمل عليه منذ شهور...</text>
+    </g>
+  </g>
+</svg>
+```
+
+---
+
+📄 الملف 92: assets/store/screenshots/02_garden.svg
+
+العملية: 🟢 CREATE
+
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gardenBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#1A2A1E"/>
+    </linearGradient>
+    <radialGradient id="treeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00D2A8" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00D2A8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#gardenBg)"/>
+
+  <!-- العنوان -->
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">حديقتك النفسية 🌱</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">شجرة تنمو مع كل مذكرة</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <!-- Header -->
+    <text x="450" y="70" font-family="system-ui" font-size="32" font-weight="700"
+          fill="white" text-anchor="middle">My Garden</text>
+
+    <!-- Stats Row -->
+    <g transform="translate(40, 130)">
+      <rect width="240" height="110" rx="20" fill="#00D2A8" opacity="0.15"/>
+      <text x="120" y="55" font-size="36" fill="#00D2A8" text-anchor="middle" font-weight="700">3</text>
+      <text x="120" y="85" font-size="16" fill="#8B95A8" text-anchor="middle">Seeds</text>
+
+      <rect x="270" width="240" height="110" rx="20" fill="#F5A623" opacity="0.15"/>
+      <text x="390" y="55" font-size="36" fill="#F5A623" text-anchor="middle" font-weight="700">1</text>
+      <text x="390" y="85" font-size="16" fill="#8B95A8" text-anchor="middle">Completed</text>
+
+      <rect x="540" width="240" height="110" rx="20" fill="#6C5CE7" opacity="0.15"/>
+      <text x="660" y="55" font-size="36" fill="#6C5CE7" text-anchor="middle" font-weight="700">64%</text>
+      <text x="660" y="85" font-size="16" fill="#8B95A8" text-anchor="middle">Avg Growth</text>
+    </g>
+
+    <!-- Main Tree Card -->
+    <g transform="translate(40, 280)">
+      <rect width="820" height="700" rx="32" fill="#1A2A1E" stroke="#00D2A8" stroke-width="2"/>
+
+      <circle cx="410" cy="280" r="250" fill="url(#treeGlow)"/>
+
+      <text x="410" y="450" font-size="280" text-anchor="middle" font-family="system-ui">🌳</text>
+
+      <text x="410" y="540" font-size="36" fill="white" text-anchor="middle" font-weight="700">الحب</text>
+      <text x="410" y="580" font-size="20" fill="#00D2A8" text-anchor="middle">Strong Tree</text>
+
+      <!-- Progress bar -->
+      <rect x="80" y="620" width="660" height="20" rx="10" fill="#0A0D14"/>
+      <rect x="80" y="620" width="422" height="20" rx="10" fill="#00D2A8"/>
+      <text x="410" y="680" font-size="20" fill="white" text-anchor="middle" font-weight="700">64% Growth</text>
+    </g>
+
+    <!-- Other Seeds -->
+    <text x="40" y="1020" font-size="16" fill="#8B95A8" font-weight="700">ALL SEEDS</text>
+
+    <g transform="translate(40, 1050)">
+      <rect width="820" height="120" rx="20" fill="#161B22"/>
+      <text x="30" y="75" font-size="50">🌻</text>
+      <text x="110" y="55" font-size="22" fill="white" font-weight="700">الامتنان</text>
+      <rect x="110" y="75" width="600" height="12" rx="6" fill="#0A0D14"/>
+      <rect x="110" y="75" width="420" height="12" rx="6" fill="#F5A623"/>
+      <text x="750" y="85" font-size="18" fill="#F5A623" font-weight="700">70%</text>
+    </g>
+
+    <g transform="translate(40, 1190)">
+      <rect width="820" height="120" rx="20" fill="#161B22"/>
+      <text x="30" y="75" font-size="50">🌲</text>
+      <text x="110" y="55" font-size="22" fill="white" font-weight="700">السلام</text>
+      <rect x="110" y="75" width="600" height="12" rx="6" fill="#0A0D14"/>
+      <rect x="110" y="75" width="180" height="12" rx="6" fill="#4DD0E1"/>
+      <text x="750" y="85" font-size="18" fill="#4DD0E1" font-weight="700">30%</text>
+    </g>
+
+    <g transform="translate(40, 1330)">
+      <rect width="820" height="120" rx="20" fill="#161B22"/>
+      <text x="30" y="75" font-size="50">🌸</text>
+      <text x="110" y="55" font-size="22" fill="white" font-weight="700">الأمل</text>
+      <rect x="110" y="75" width="600" height="12" rx="6" fill="#0A0D14"/>
+      <rect x="110" y="75" width="540" height="12" rx="6" fill="#F48FB1"/>
+      <text x="750" y="85" font-size="18" fill="#F48FB1" font-weight="700">90%</text>
+    </g>
+  </g>
+</svg>
+```
+
+---
+
+📄 الملف 93: assets/store/screenshots/03_editor.svg
+
+العملية: 🟢 CREATE
+
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="edBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#141821"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#edBg)"/>
+
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">اكتب كما تشاء ✍️</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">نص + صور + صوت + تحويل صوتي</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <!-- Header -->
+    <rect x="0" y="0" width="900" height="100" rx="40" fill="#141821"/>
+    <text x="450" y="62" font-family="system-ui" font-size="28" fill="white"
+          text-anchor="middle" font-weight="600">Edit Entry</text>
+
+    <!-- Mood Bar -->
+    <g transform="translate(40, 140)">
+      <rect width="260" height="70" rx="35" fill="#00C853" opacity="0.15" stroke="#00C853"/>
+      <text x="35" y="48" font-size="36">😊</text>
+      <text x="90" y="45" font-size="20" fill="#00C853" font-weight="600">Happy</text>
+
+      <rect x="280" width="140" height="70" rx="35" fill="#F48FB1" opacity="0.15"/>
+      <text x="70" y="45" font-size="18" fill="#F48FB1" font-weight="600" text-anchor="middle">#grateful</text>
+
+      <rect x="440" width="140" height="70" rx="35" fill="#6C5CE7" opacity="0.15"/>
+      <text x="70" y="45" font-size="18" fill="#8B7BFF" font-weight="600" text-anchor="middle">#family</text>
+    </g>
+
+    <!-- Title -->
+    <text x="40" y="280" font-size="44" font-weight="700" fill="white">يوم جميل مع العائلة</text>
+
+    <!-- Divider -->
+    <line x1="40" y1="310" x2="860" y2="310" stroke="#252B3A" stroke-width="2"/>
+
+    <!-- Content -->
+    <text x="40" y="370" font-size="24" fill="white" line-height="1.6">
+      <tspan x="40" dy="0">اليوم ذهبنا إلى الحديقة مع الأطفال.</tspan>
+      <tspan x="40" dy="45">كان الجو جميلاً، والشمس دافئة.</tspan>
+      <tspan x="40" dy="45">شعرت بالسعادة الحقيقية 🥰</tspan>
+    </text>
+
+    <!-- Image Thumbnail -->
+    <g transform="translate(40, 580)">
+      <rect width="200" height="200" rx="16" fill="#252B3A"/>
+      <text x="100" y="115" font-size="60" text-anchor="middle">📷</text>
+    </g>
+    <g transform="translate(260, 580)">
+      <rect width="200" height="200" rx="16" fill="#252B3A"/>
+      <text x="100" y="115" font-size="60" text-anchor="middle">🌸</text>
+    </g>
+
+    <!-- Audio Recorded -->
+    <g transform="translate(40, 820)">
+      <rect width="820" height="80" rx="20" fill="#6C5CE7" opacity="0.15"/>
+      <text x="30" y="50" font-size="32">🎙️</text>
+      <text x="90" y="50" font-size="20" fill="#8B7BFF" font-weight="600">Voice note · 0:32</text>
+      <text x="700" y="50" font-size="24" fill="#8B7BFF">▶️</text>
+    </g>
+
+    <!-- Voice to Text Mode -->
+    <g transform="translate(40, 950)">
+      <rect width="820" height="200" rx="20" fill="#00D2A8" opacity="0.1" stroke="#00D2A8" stroke-width="2"/>
+      <text x="40" y="60" font-size="24" fill="#00D2A8" font-weight="700">🎤 Voice to Text</text>
+      <text x="40" y="110" font-size="20" fill="white" font-style="italic">"أنا اليوم سعيد..."</text>
+
+      <!-- Waveform -->
+      <g transform="translate(40, 140)">
+        <rect x="0" y="20" width="8" height="20" rx="4" fill="#00D2A8"/>
+        <rect x="16" y="10" width="8" height="40" rx="4" fill="#00D2A8"/>
+        <rect x="32" y="0" width="8" height="60" rx="4" fill="#00D2A8"/>
+        <rect x="48" y="15" width="8" height="30" rx="4" fill="#00D2A8"/>
+        <rect x="64" y="5" width="8" height="50" rx="4" fill="#00D2A8"/>
+        <rect x="80" y="20" width="8" height="20" rx="4" fill="#00D2A8"/>
+      </g>
+    </g>
+
+    <!-- Save button -->
+    <g transform="translate(40, 1200)">
+      <rect width="820" height="90" rx="24" fill="#6C5CE7"/>
+      <text x="410" y="55" font-size="28" fill="white" font-weight="700" text-anchor="middle">✓ Save Entry</text>
+    </g>
+  </g>
+</svg>
+```
+
+---
+
+📄 الملف 94: assets/store/screenshots/04_stats.svg
+
+العملية: 🟢 CREATE
+
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="statsBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#1A1F3A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#statsBg)"/>
+
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">إحصائيات متقدمة 📊</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">سحابة الكلمات · رادار المشاعر · Year Review</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <text x="450" y="70" font-size="32" font-weight="700" fill="white" text-anchor="middle">Statistics</text>
+
+    <!-- Word Cloud -->
+    <text x="40" y="130" font-size="16" fill="#8B95A8" font-weight="700">WORD CLOUD</text>
+
+    <g transform="translate(40, 160)">
+      <rect width="820" height="400" rx="24" fill="#161B22"/>
+
+      <text x="410" y="100" font-size="60" fill="#6C5CE7" text-anchor="middle" font-weight="700">سعادة</text>
+      <text x="200" y="180" font-size="44" fill="#00D2A8" text-anchor="middle" font-weight="700">عائلة</text>
+      <text x="600" y="180" font-size="40" fill="#F5A623" text-anchor="middle" font-weight="700">عمل</text>
+      <text x="100" y="270" font-size="32" fill="#E91E63" text-anchor="middle" font-weight="600">حب</text>
+      <text x="300" y="290" font-size="36" fill="#8B7BFF" text-anchor="middle" font-weight="700">يوم</text>
+      <text x="520" y="280" font-size="28" fill="#4DD0E1" text-anchor="middle" font-weight="600">صديق</text>
+      <text x="700" y="290" font-size="32" fill="#FF6B9D" text-anchor="middle" font-weight="600">سفر</text>
+      <text x="150" y="360" font-size="24" fill="#10B981" text-anchor="middle">طعام</text>
+      <text x="380" y="370" font-size="28" fill="#F48FB1" text-anchor="middle" font-weight="600">كتاب</text>
+      <text x="620" y="360" font-size="26" fill="#8B7BFF" text-anchor="middle">موسيقى</text>
+    </g>
+
+    <!-- Emotion Radar -->
+    <text x="40" y="610" font-size="16" fill="#8B95A8" font-weight="700">EMOTION RADAR</text>
+
+    <g transform="translate(40, 640)">
+      <rect width="820" height="450" rx="24" fill="#161B22"/>
+
+      <!-- Radar -->
+      <g transform="translate(410, 220)">
+        <!-- Grid -->
+        <polygon points="0,-140 121,-70 121,70 0,140 -121,70 -121,-70"
+                 stroke="#252B3A" stroke-width="1" fill="none"/>
+        <polygon points="0,-105 91,-52 91,52 0,105 -91,52 -91,-52"
+                 stroke="#252B3A" stroke-width="1" fill="none"/>
+        <polygon points="0,-70 61,-35 61,35 0,70 -61,35 -61,-35"
+                 stroke="#252B3A" stroke-width="1" fill="none"/>
+        <polygon points="0,-35 30,-17 30,17 0,35 -30,17 -30,-17"
+                 stroke="#252B3A" stroke-width="1" fill="none"/>
+
+        <!-- Axis -->
+        <line x1="0" y1="0" x2="0" y2="-140" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="121" y2="-70" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="121" y2="70" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="0" y2="140" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="-121" y2="70" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="-121" y2="-70" stroke="#252B3A" stroke-width="1"/>
+
+        <!-- Data polygon -->
+        <polygon points="0,-120 90,-52 95,55 0,120 -110,63 -100,-57"
+                 fill="#6C5CE7" fill-opacity="0.3" stroke="#6C5CE7" stroke-width="3"/>
+
+        <!-- Labels -->
+        <text x="0" y="-160" font-size="18" fill="white" text-anchor="middle" font-weight="600">Joy</text>
+        <text x="150" y="-80" font-size="18" fill="white" text-anchor="middle" font-weight="600">Love</text>
+        <text x="150" y="90" font-size="18" fill="white" text-anchor="middle" font-weight="600">Peace</text>
+        <text x="0" y="170" font-size="18" fill="white" text-anchor="middle" font-weight="600">Sadness</text>
+        <text x="-150" y="90" font-size="18" fill="white" text-anchor="middle" font-weight="600">Anger</text>
+        <text x="-150" y="-80" font-size="18" fill="white" text-anchor="middle" font-weight="600">Anxiety</text>
+      </g>
+    </g>
+
+    <!-- Year Review preview -->
+    <text x="40" y="1130" font-size="16" fill="#8B95A8" font-weight="700">YEAR IN REVIEW</text>
+
+    <g transform="translate(40, 1160)">
+      <rect width="820" height="300" rx="24" fill="#6C5CE7"/>
+      <text x="410" y="80" font-size="60" fill="white" text-anchor="middle">✨</text>
+      <text x="410" y="150" font-size="36" fill="white" text-anchor="middle" font-weight="700">2026</text>
+      <text x="410" y="200" font-size="24" fill="white" opacity="0.8" text-anchor="middle">47 entries · 12.4K words</text>
+      <text x="410" y="250" font-size="20" fill="white" opacity="0.7" text-anchor="middle">"Year of Growth"</text>
+    </g>
+  </g>
+</svg>
+```
+
+---
+
+📄 الملف 95: assets/store/screenshots/05_weather.svg
+
+العملية: 🟢 CREATE
+
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="weatherBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#2A1F3A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#weatherBg)"/>
+
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">طقس مزاجك 🌤️</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">مشاعرك كطقس مرئي</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <text x="450" y="70" font-size="32" font-weight="700" fill="white" text-anchor="middle">Mood Weather</text>
+
+    <!-- Today -->
+    <g transform="translate(40, 130)">
+      <text x="410" y="30" font-size="16" fill="#8B95A8" text-anchor="middle" font-weight="700" letter-spacing="2">TODAY</text>
+
+      <rect y="60" width="820" height="450" rx="32" fill="url(#sunGrad)"/>
+
+      <radialGradient id="sunGrad" cx="50%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#FFD54F"/>
+        <stop offset="100%" stop-color="#FB8C00"/>
+      </radialGradient>
+
+      <circle cx="410" cy="200" r="100" fill="white" opacity="0.3"/>
+
+      <text x="410" y="280" font-size="180" text-anchor="middle">☀️</text>
+
+      <text x="410" y="400" font-size="44" fill="white" text-anchor="middle" font-weight="700">Sunny</text>
+    </g>
+
+    <!-- 7 Day Forecast -->
+    <text x="40" y="660" font-size="16" fill="#8B95A8" font-weight="700">7-DAY FORECAST</text>
+
+    <g transform="translate(40, 690)">
+      <rect width="820" height="280" rx="24" fill="#161B22"/>
+
+      <g transform="translate(60, 60)">
+        <text x="0" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Sun</text>
+        <text x="0" y="50" font-size="48" text-anchor="middle">☀️</text>
+
+        <text x="110" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Mon</text>
+        <text x="110" y="50" font-size="48" text-anchor="middle">⛅</text>
+
+        <text x="220" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Tue</text>
+        <text x="220" y="50" font-size="48" text-anchor="middle">☁️</text>
+
+        <text x="330" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Wed</text>
+        <text x="330" y="50" font-size="48" text-anchor="middle">🌧️</text>
+
+        <text x="440" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Thu</text>
+        <text x="440" y="50" font-size="48" text-anchor="middle">⛈️</text>
+
+        <text x="550" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Fri</text>
+        <text x="550" y="50" font-size="48" text-anchor="middle">🌫️</text>
+
+        <text x="660" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Sat</text>
+        <text x="660" y="50" font-size="48" text-anchor="middle">☀️</text>
+      </g>
+    </g>
+
+    <!-- Monthly Average -->
+    <g transform="translate(40, 1000)">
+      <rect width="820" height="350" rx="24" fill="#161B22"/>
+      <text x="410" y="45" font-size="16" fill="#8B95A8" text-anchor="middle" font-weight="700" letter-spacing="2">THIS MONTH</text>
+
+      <circle cx="410" cy="170" r="80" fill="#F5A623" opacity="0.2"/>
+      <text x="410" y="210" font-size="100" text-anchor="middle">⛅</text>
+
+      <text x="410" y="300" font-size="28" fill="white" text-anchor="middle" font-weight="700">Partly Cloudy</text>
+      <text x="410" y="335" font-size="16" fill="#8B95A8" text-anchor="middle">7.2 / 10 average mood</text>
+    </g>
+
+    <!-- Insight -->
+    <g transform="translate(40, 1380)">
+      <rect width="820" height="160" rx="24" fill="#6C5CE7" opacity="0.15" stroke="#6C5CE7" stroke-width="2"/>
+      <text x="30" y="55" font-size="28">💡</text>
+      <text x="80" y="55" font-size="20" fill="#8B7BFF" font-weight="700">Insight</text>
+      <text x="80" y="95" font-size="18" fill="white" opacity="0.8">Your mood improved 23% this week!</text>
+      <text x="80" y="125" font-size="16" fill="#8B95A8">Keep up the great work</text>
+    </g>
+  </g>
+</svg>
+```
+
+---
+
+📄 الملف 96: assets/store/screenshots/06_privacy.svg
+
+العملية: 🟢 CREATE
+
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="privBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#1A2A1E"/>
+    </linearGradient>
+    <linearGradient id="lockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2A8"/>
+      <stop offset="100%" stop-color="#00897B"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#privBg)"/>
+
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">خصوصية مطلقة 🔒</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">مذكراتك لا تغادر هاتفك</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <text x="450" y="70" font-size="32" font-weight="700" fill="white" text-anchor="middle">Privacy First</text>
+
+    <!-- Big Lock Icon -->
+    <g transform="translate(450, 350)">
+      <circle r="180" fill="url(#lockGrad)" opacity="0.15"/>
+      <circle r="130" fill="url(#lockGrad)" opacity="0.2"/>
+      <text y="60" font-size="200" text-anchor="middle">🔒</text>
+    </g>
+
+    <!-- Features list -->
+    <g transform="translate(80, 580)">
+      <g transform="translate(0, 0)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">100% Local Processing</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">لا خوادم، لا رفع للصور</text>
+      </g>
+
+      <g transform="translate(0, 120)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">AES-256 Encryption</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">تشفير عسكري لكل مذكرة</text>
+      </g>
+
+      <g transform="translate(0, 240)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">Biometric Lock</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">قفل بصمة/وجه</text>
+      </g>
+
+      <g transform="translate(0, 360)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">No Tracking</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">لا Firebase، لا تحليلات، لا إعلانات</text>
+      </g>
+
+      <g transform="translate(0, 480)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">No Account Required</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">لا تسجيل، لا بريد، لا كلمة سر</text>
+      </g>
+
+      <g transform="translate(0, 600)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">Delete Anytime</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">احذف كل شيء بضغطة واحدة</text>
+      </g>
+    </g>
+
+    <!-- Bottom badge -->
+    <g transform="translate(80, 1380)">
+      <rect width="740" height="120" rx="24" fill="url(#lockGrad)"/>
+      <text x="370" y="60" font-size="28" fill="white" text-anchor="middle" font-weight="700">
+        🔒 خصوصيتك أولويتنا
+      </text>
+      <text x="370" y="95" font-size="18" fill="white" text-anchor="middle" opacity="0.9">
+        Your thoughts. Your device. Always.
+      </text>
+    </g>
+  </g>
+</svg>
+```
+
+---
+
+📄 الملف 97: scripts/generate_screenshots.sh
+
+```bash
+#!/bin/bash
+# generate_screenshots.sh — يحول SVGs إلى PNGs للمتجر.
+
+set -e
+
+SCREENSHOTS_DIR="assets/store/screenshots"
+OUTPUT_DIR="assets/store/output"
+
+mkdir -p "$OUTPUT_DIR"
+
+echo "📱 Generating store screenshots..."
+
+for svg in "$SCREENSHOTS_DIR"/*.svg; do
+  filename=$(basename "$svg" .svg)
+  echo "→ $filename.png (1080×1920)"
+  svgexport "$svg" "$OUTPUT_DIR/$filename.png" 1080:1920
+done
+
+echo ""
+echo "✅ Screenshots created!"
+ls -lh "$OUTPUT_DIR"/*.png
+```
+
+---
+
+🎬 ثانياً: TikTok Scripts (5 فيديوهات)
+
+📄 الملف 98: docs/tiktok/01_privacy.md
+
+```markdown
+# TikTok #1: "مذكراتك سرية؟"
+
+**المدة**: 30 ثانية
+**الهدف**: جذب شريحة Privacy
+**الهاشتاقات**: #privacy #journal #offline #نبد
+
+## السكربت
+
+### [0:00-0:03] HOOK
+**فيديو**: هاتف يفتح. الشاشة سوداء. نص يظهر تدريجياً.
+**نص**: "هل تعلم أن كل مذكراتك على Day One يمكن قراءتها؟"
+**صوت**: صوت رياح خفيف.
+
+### [0:03-0:08] PROBLEM
+**فيديو**: لقطات سريعة لشاشات خدمات سحابية.
+**نص**: "Day One، Google Keep، Evernote..."
+**Voiceover**: "كلها ترفع مذكراتك لخوادمها."
+
+### [0:08-0:15] SOLUTION
+**فيديو**: أيقونة نبض تظهر + انتقال لداخل التطبيق.
+**نص**: "نبض — مذكرتك المحلية"
+**Voiceover**: "كل شيء يبقى في هاتفك."
+
+### [0:15-0:22] FEATURES
+**فيديو**: عرض سريع (3 ثوان لكل ميزة)
+- كتابة مذكرة
+- شجرة تنمو
+- طقس مزاجي
+**نص متغير**: "AES-256 · لا تتبع · بدون حساب"
+
+### [0:22-0:30] CTA
+**فيديو**: أيقونة + QR
+**نص**: "حمّل مجاناً — نبض"
+**Voiceover**: "الرابط في البايو."
+
+## التعليمات
+
+- **الموسيقى**: "Experience" - Ludovico Einaudi (TikTok audio)
+- **النبرة**: جدّي، تقني
+- **الترجمة**: عربي + إنجليزي
+- **CTA في التعليق الأول**: "Download: nabd.app"
+```
+
+---
+
+📄 الملف 99: docs/tiktok/02_garden.md
+
+```markdown
+# TikTok #2: "بذرة → شجرة"
+
+**المدة**: 20 ثانية
+**الهدف**: جذب عشاق الألعاب/التأمل
+**الهاشتاقات**: #satisfying #plants #journal #نبد
+
+## السكربت
+
+### [0:00-0:03] HOOK
+**فيديو**: بذرة تسقط على تراب.
+**نص**: "زرعت بذرة في تطبيق..."
+**صوت**: صوت زراعة.
+
+### [0:03-0:10] TIMELAPSE
+**فيديو**: تسريع زمني:
+- يوم 1: 🌰
+- يوم 3: 🌱
+- يوم 7: 🌿
+- يوم 14: 🌳
+- يوم 30: 🌳🌸
+**نص متغير**: "30 يوم"
+**صوت**: موسيقى تصاعدية.
+
+### [0:10-0:15] REVEAL
+**فيديو**: شجرة كاملة جميلة.
+**نص**: "كل مذكرة إيجابية = نمو"
+**صوت**: صوت أزهار.
+
+### [0:15-0:20] CTA
+**فيديو**: أيقونة + نص
+**نص**: "نبض — اكتب. ازرع. انمُ."
+
+## التعليمات
+
+- **الموسيقى**: "Ocean Waves" - ambient
+- **النبرة**: هادئة، ساحرة
+- **لقطات إضافية**: صور شجر حقيقية موازية
+- **CTA في التعليق**: "Your garden awaits: nabd.app"
+```
+
+---
+
+📄 الملف 100: docs/tiktok/03_mood_weather.md
+
+```markdown
+# TikTok #3: "طقس مزاجك"
+
+**المدة**: 25 ثانية
+**الهدف**: جذب عشاق الصحة النفسية
+**الهاشتاقات**: #mentalhealth #mood #selfcare #نبد
+
+## السكربت
+
+### [0:00-0:03] HOOK
+**فيديو**: شخص ينظر من النافذة، الجو ممطر.
+**نص**: "شعرت بالحزن اليوم..."
+**صوت**: صوت مطر.
+
+### [0:03-0:08] TRANSITION
+**فيديو**: يفتح التطبيق. يظهر طقس مطير.
+**نص**: "وتطبيقي فهم ذلك"
+**صوت**: انتقال ناعم.
+
+### [0:08-0:15] FEATURE
+**فيديو**: لقطات:
+- طقس اليوم = 🌧️
+- 7 أيام = 🌧️🌧️⛅☀️☀️⛅☁️
+- رادار المشاعر
+**نص**: "طقس مزاجك 7 أيام"
+
+### [0:15-0:20] INSIGHT
+**فيديو**: نص Insight
+**نص**: "تحسّن مزاجك 23% هذا الأسبوع"
+**Voiceover**: "ملاحظات ذكية بدون خادم."
+
+### [0:20-0:25] CTA
+**فيديو**: أيقونة + نص
+**نص**: "نبض — صحتك النفسية تبدأ هنا"
+
+## التعليمات
+
+- **الموسيقى**: "Sad Girl" - Lana Del Rey (instrumental)
+- **اللون**: انتقال من بارد إلى دافئ
+- **المدة**: مقصود قصير للـ Watch Time
+```
+
+---
+
+📄 الملف 101: docs/tiktok/04_voice.md
+
+```markdown
+# TikTok #4: "صوتك يصبح نصاً"
+
+**المدة**: 15 ثانية
+**الهدف**: جذب الكتّاب الكسولين
+**الهاشتاقات**: #voice #writing #tech #نبد
+
+## السكربت
+
+### [0:00-0:03] HOOK
+**فيديو**: شخص يتحدث في هاتفه بسرعة.
+**نص**: "لا أحب الكتابة، أحب التحدث"
+**صوت**: صوته الحقيقي.
+
+### [0:03-0:08] MAGIC
+**فيديو**: يفتح نبض، يضغط الميكروفون، يتحدث، النص يظهر فوراً.
+**نص**: "Voice → Text فوري"
+**صوت**: نغمة نجاح.
+
+### [0:08-0:12] FEATURES
+**فيديو**: عرض:
+- الملاحظة الصوتية
+- النسخة النصية
+- إمكانية التعديل
+**نص**: "نص + صوت معاً"
+
+### [0:12-0:15] CTA
+**فيديو**: أيقونة
+**نص**: "نبض — تكلم، اكتب، انمُ."
+
+## التعليمات
+
+- **الموسيقى**: "iPhone alarm remix"
+- **التركيز**: السرعة
+- **Format**: Split screen (شخص + شاشة)
+```
+
+---
+
+📄 الملف 102: docs/tiktok/05_year_review.md
+
+```markdown
+# TikTok #5: "Year in Review — Spotify لكن لمذكراتك"
+
+**المدة**: 30 ثانية
+**الهدف**: فيروسي للمشاركة
+**الهاشتاقات**: #yearinreview #journal #spotifywrapped #نبد
+
+## السكربت
+
+### [0:00-0:05] HOOK
+**فيديو**: Spotify Wrapped clip
+**نص**: "شاهدت Spotify Wrapped..."
+**Voiceover**: "لكن ماذا عن مذكراتك؟"
+
+### [0:05-0:25] YEAR REVIEW SLIDES
+**فيديو**: 6 slides متتالية (3 ثوان لكل):
+1. "Your Year in Writing" ✨
+2. "47 entries" 📝
+3. "12,400 words" ✍️
+4. "Dominant mood: Happy 😊" 
+5. "Positive sentimen 📈"
+6. "Here's to next year 🌱"
+**صوت**: موسيقى تصاعدية + انتقالات.
+
+### [0:25-0:30] CTA
+**فيديو**: أيقونة + QR
+**نص**: "احصل على Year Review خاصتك"
+**Voiceover**: "نبض — مذكرتك الخاصة."
+
+## التعليمات
+
+- **النبرة**: احتفالية
+- **الخطوط**: نفس خط Spotify Wrapped
+- **Format**: Portrait, TikTok-optimized
+- **CTA قوي**: "شارك Year Review خاصتك"
+```
+
+---
+
+📧 ثالثاً: Email Templates
+
+📄 الملف 103: docs/emails/welcome.html
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>مرحباً بك في نبض</title>
+</head>
+<body style="font-family: system-ui, sans-serif; background: #0A0D14; color: #F5F7FA; padding: 40px 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: #141821; border-radius: 24px; padding: 40px; border: 1px solid #252B3A;">
+
+    <div style="text-align: center; margin-bottom: 32px;">
+      <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #6C5CE7, #00D2A8); border-radius: 24px; line-height: 80px; font-size: 40px;">🌱</div>
+    </div>
+
+    <h1 style="font-size: 28px; text-align: center; margin: 0 0 16px;">
+      أهلاً بك في نبض!
+    </h1>
+
+    <p style="color: #8B95A8; font-size: 16px; line-height: 1.6; text-align: center;">
+      مرحباً بك في مذكرتك الخاصة — المكان الذي تنمو فيه أفكارك.
+    </p>
+
+    <div style="background: #1A1F3A; border-radius: 16px; padding: 24px; margin: 32px 0;">
+      <h2 style="font-size: 18px; margin: 0 0 16px;">ابدأ رحلتك:</h2>
+
+      <div style="margin-bottom: 16px;">
+        <span style="color: #6C5CE7; font-weight: 700;">1.</span>
+        <span style="color: #F5F7FA;">ازرع بذرتك الأولى</span>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <span style="color: #6C5CE7; font-weight: 700;">2.</span>
+        <span style="color: #F5F7FA;">اكتب مذكرة اليوم</span>
+      </div>
+
+      <div>
+        <span style="color: #6C5CE7; font-weight: 700;">3.</span>
+        <span style="color: #F5F7FA;">شاهد شجرتك تنمو</span>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="https://nabd.app/start" style="background: linear-gradient(90deg, #6C5CE7, #00D2A8); color: white; text-decoration: none; padding: 16px 40px; border-radius: 30px; font-weight: 700; display: inline-block;">
+        ابدأ الكتابة الآن
+      </a>
+    </div>
+
+    <p style="color: #5A6478; font-size: 12px; text-align: center; margin-top: 40px; border-top: 1px solid #252B3A; padding-top: 20px;">
+      نبض — مذكرتك الخاصة المحلية<br>
+      لا خوادم. لا تتبع. أنت فقط.
+    </p>
+
+  </div>
+</body>
+</html>
+```
+
+---
+
+📄 الملف 104: docs/emails/day_3_nudge.html
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>شجرتك تنتظرك</title></head>
+<body style="font-family: system-ui; background: #0A0D14; color: #F5F7FA; padding: 40px 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #141821; border-radius: 24px; padding: 40px; border: 1px solid #252B3A;">
+
+    <div style="text-align: center; font-size: 60px; margin-bottom: 16px;">🌱</div>
+
+    <h1 style="font-size: 26px; text-align: center; margin: 0 0 16px;">
+      شجرتك تفتقدك 🌿
+    </h1>
+
+    <p style="color: #8B95A8; font-size: 16px; line-height: 1.6; text-align: center;">
+      مرت 3 أيام منذ آخر مرة سقيت فيها شجرتك. حتى 5 دقائق من الكتابة تجعلها تنمو.
+    </p>
+
+    <div style="background: linear-gradient(135deg, #6C5CE7, #8B7BFF); border-radius: 16px; padding: 24px; margin: 32px 0; text-align: center;">
+      <div style="font-size: 14px; opacity: 0.8;">Your tree today</div>
+      <div style="font-size: 60px; margin: 16px 0;">🌿</div>
+      <div style="font-size: 18px; font-weight: 700;">40% Growth</div>
+      <div style="background: rgba(255,255,255,0.2); border-radius: 8px; height: 8px; margin-top: 16px; overflow: hidden;">
+        <div style="background: white; width: 40%; height: 100%;"></div>
+      </div>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="https://nabd.app/write" style="background: white; color: #6C5CE7; text-decoration: none; padding: 16px 40px; border-radius: 30px; font-weight: 700; display: inline-block;">
+        اكتب مذكرة سريعة
+      </a>
+    </div>
+
+  </div>
+</body>
+</html>
+```
+
+---
+
+📄 الملف 105: docs/emails/streak_milestone.html
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>7 أيام متتالية!</title></head>
+<body style="font-family: system-ui; background: #0A0D14; color: #F5F7FA; padding: 40px 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #141821; border-radius: 24px; padding: 40px; border: 1px solid #252B3A;">
+
+    <div style="text-align: center; font-size: 80px; margin-bottom: 16px;">🔥</div>
+
+    <h1 style="font-size: 28px; text-align: center; margin: 0 0 16px;">
+      أسبوع كامل!
+    </h1>
+
+    <p style="color: #8B95A8; font-size: 16px; line-height: 1.6; text-align: center;">
+      كتبت لمدة 7 أيام متتالية. هذا إنجاز رائع يستحق الاحتفال!
+    </p>
+
+    <div style="background: #F5A623; background: linear-gradient(135deg, #F5A623, #FF8F00); border-radius: 16px; padding: 24px; margin: 32px 0; text-align: center; color: white;">
+      <div style="font-size: 14px; opacity: 0.9;">🏆 Achievement Unlocked</div>
+      <div style="font-size: 24px; font-weight: 700; margin: 12px 0;">Week Warrior</div>
+      <div style="font-size: 14px; opacity: 0.9;">7-day streak</div>
+    </div>
+
+    <div style="background: #1A1F3A; border-radius: 16px; padding: 20px;">
+      <p style="color: #8B95A8; margin: 0; font-size: 14px; text-align: center;">
+        💡 نصيحة: حافظ على السلسلة لـ 30 يوم لفتح "Month Master"
+      </p>
+    </div>
+
+    <div style="text-align: center; margin-top: 32px;">
+      <a href="https://nabd.app/write" style="background: linear-gradient(90deg, #6C5CE7, #00D2A8); color: white; text-decoration: none; padding: 16px 40px; border-radius: 30px; font-weight: 700; display: inline-block;">
+        اكتب مذكرة #8
+      </a>
+    </div>
+
+  </div>
+</body>
+</html>
+```
+
+---
+
+📄 الملف 106: docs/emails/upgrade_offer.html
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>عرض خاص لك</title></head>
+<body style="font-family: system-ui; background: #0A0D14; color: #F5F7FA; padding: 40px 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #141821; border-radius: 24px; padding: 40px; border: 1px solid #252B3A;">
+
+    <div style="text-align: center; font-size: 60px; margin-bottom: 16px;">🎁</div>
+
+    <h1 style="font-size: 26px; text-align: center; margin: 0 0 8px;">
+      عرض حصري لك
+    </h1>
+
+    <p style="color: #8B95A8; font-size: 16px; text-align: center; margin: 0 0 24px;">
+      لأنك كنت معنا منذ البداية، نقدم لك:
+    </p>
+
+    <div style="background: linear-gradient(135deg, #6C5CE7, #00D2A8); border-radius: 20px; padding: 32px; margin: 24px 0; text-align: center; color: white;">
+      <div style="font-size: 14px; opacity: 0.9;">خصم خاص</div>
+      <div style="font-size: 72px; font-weight: 800; line-height: 1; margin: 16px 0;">50%</div>
+      <div style="font-size: 18px;">على Lifetime</div>
+      <div style="font-size: 14px; opacity: 0.8; margin-top: 8px;">79$ فقط بدلاً من 158$</div>
+    </div>
+
+    <ul style="color: #8B95A8; font-size: 15px; line-height: 2;">
+      <li>✅ مذكرات غير محدودة</li>
+      <li>✅ قفل بيومتري</li>
+      <li>✅ تصدير PDF مشفر</li>
+      <li>✅ حديقة كاملة (10 بذور)</li>
+      <li>✅ لا اشتراك شهري</li>
+    </ul>
+
+    <div style="text-align: center; margin-top: 32px;">
+      <a href="https://nabd.app/upgrade" style="background: white; color: #6C5CE7; text-decoration: none; padding: 18px 48px; border-radius: 30px; font-weight: 700; display: inline-block; font-size: 16px;">
+        احصل على العرض
+      </a>
+      <p style="color: #5A6478; font-size: 12px; margin-top: 12px;">العرض صالح 48 ساعة</p>
+    </div>
+
+  </div>
+</body>
+</html>
+```
+
+---
+
+📸 رابعاً: Social Media Kit
+
+📄 الملف 107: assets/social/quote_cards.svg
+
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="qCardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#00D2A8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1080" fill="url(#qCardBg)"/>
+
+  <text x="540" y="200" font-family="Georgia" font-size="120" fill="white" opacity="0.4" text-anchor="middle">"</text>
+
+  <text x="540" y="500" font-family="Georgia" font-size="56" fill="white" text-anchor="middle" font-weight="600">
+    <tspan x="540" dy="0">The unexamined life</tspan>
+    <tspan x="540" dy="70">is not worth living.</tspan>
+  </text>
+
+  <text x="540" y="720" font-family="system-ui" font-size="28" fill="white" opacity="0.7" text-anchor="middle">
+    — Socrates
+  </text>
+
+  <g transform="translate(440, 900)">
+    <rect width="200" height="60" rx="30" fill="white" opacity="0.2"/>
+    <text x="100" y="38" font-family="system-ui" font-size="20" fill="white" text-anchor="middle" font-weight="700">
+      نبض · Nabd
+    </text>
+  </g>
+</svg>
+```
+
+📄 الملف 108: assets/social/announcement.svg
+
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#0A0D14"/>
+
+  <text x="540" y="200" font-family="system-ui" font-size="32" fill="#8B95A8" text-anchor="middle" font-weight="700" letter-spacing="4">
+    NEW APP
+  </text>
+
+  <g transform="translate(540, 500)">
+    <rect x="-260" y="-260" width="520" height="520" rx="120" fill="url(#qCardBg)"/>
+    <text y="80" font-size="280" text-anchor="middle">🌱</text>
+  </g>
+
+  <text x="540" y="880" font-family="system-ui" font-size="72" fill="white" text-anchor="middle" font-weight="800">
+    نبض
+  </text>
+
+  <text x="540" y="940" font-family="system-ui" font-size="28" fill="#8B95A8" text-anchor="middle">
+    مذكرتك الخاصة
+  </text>
+
+  <text x="540" y="1010" font-family="system-ui" font-size="20" fill="#6C5CE7" text-anchor="middle" font-weight="700">
+    100% محلية · مجانية
+  </text>
+</svg>
+```
+
+---
+
+📰 خامساً: Press Kit
+
+📄 الملف 109: docs/PRESS_KIT.md
+
+```markdown
+# Press Kit — نبض (Nabd)
+
+## Quick Facts
+
+| | |
+| :--- | :--- |
+| **App Name** | نبض / Nabd |
+| **Category** | Lifestyle, Journaling |
+| **Platforms** | Android, iOS, Web |
+| **Languages** | 16 |
+| **Price** | Free (with optional Pro) |
+| **Size** | ~45 MB (with all features) |
+| **Privacy** | 100% local, no cloud |
+| **Launch Date** | Q4 2026 |
+
+## One-Liner
+> "مذكرتك الخاصة التي تنمو معك — 100% محلية، بدون إنترنت، مع حديقة نفسية."
+
+## Short Description (50 words)
+نبض تطبيق مذكرات فريد يحوّل الكتابة اليومية إلى رحلة نمو. اختر بذرة، اكتب، وشاهد شجرتك تنمو. مع طقس المزاج، رادار المشاعر، ورسائل لمستقبلك. كل شيء محلي 100% — لا خوادم، لا تتبع، لا إعلانات.
+
+## Long Description (200 words)
+نبض ليس مجرد تطبيق مذكرات. إنه رفيق نفسي كامل.
+
+🌱 **حديقة البذور**: اختر بذرة (حب، فرح، سلام...) وكل مذكرة إيجابية تُنمّي شجرتك عبر 5 مراحل: بذرة → برعم → شتلة → شجرة → ازدهار.
+
+🌤️ **طقس المزاج**: مشاعرك كطقس مرئي — مشمس، غائم، ممطر، عاصف. توقعات 7 أيام ورادار 6 أبعاد.
+
+🧠 **صحة نفسية**: أطلق همّك بكتابته، عزله في صندوق القلق، تنفس قبل الكتابة، وسجّل أحلامك.
+
+💌 **للمستقبل**: رسائل مقفلة بزمن (شهر، سنة، 5 سنوات)، كبسولات زمنية، ورسائل لن تُرسل أبداً.
+
+📊 **إحصائيات**: سحابة الكلمات، Year in Review (بأسلوب Spotify Wrapped)، خريطة حرارية، وملخصات ذكية.
+
+🏆 **تحفيز**: 10 إنجازات، 5 تحديات، اقتباس يومي، وسلاسل كتابة.
+
+🔒 **خصوصية مطلقة**: تشفير AES-256، قفل بيومتري، لا رفع للصور، لا تتبع، لا إعلانات.
+
+## Founder Quote
+> "بنيت نبض لأنني تعبت من تطبيقات المذكرات التي تطلب حساباً وترفع بياناتي للخوادم. أردت شيئاً يبقى ملكي — وحدي." — مطور نبض
+
+## Assets Available
+
+- **App Icon**: 1024×1024 PNG
+- **Screenshots**: 6 × 1080×1920 PNG
+- **Feature Graphic**: 1024×500 PNG
+- **Demo Video**: 60s MP4
+- **Logo SVG**: vector
+
+Download: `https://nabd.app/press`
+
+## Contact
+
+- **Email**: press@nabd.app
+- **Twitter**: @nabd_journal
+- **Website**: https://nabd.app
+
+## Permissions for Use
+
+- ✅ Use screenshots freely
+- ✅ Quote founder with attribution
+- ✅ Embed demo video
+- ❌ Do not modify logo
+```
+
+---
+
+🎥 سادساً: YouTube Trailer (60 ثانية)
+
+📄 الملف 110: docs/YOUTUBE_TRAILER.md
+
+```markdown
+# YouTube Trailer — 60 seconds
+
+## Structure
+
+### [0:00-0:05] Hook
+**Visual**: شخص يكتب في مذكرة ورقية، ثم يقطع الصفحة.
+**Text**: "تعبت من المذكرات؟"
+**Audio**: صوت قطع ورق.
+
+### [0:05-0:12] Problem
+**Visual**: لقطات سريعة لتطبيقات سحابية.
+**Voiceover**: "كل التطبيقات تطلب حساباً، ترفع صورك، وتبيع بياناتك."
+**Audio**: موسيقى توتر.
+
+### [0:12-0:20] Solution Reveal
+**Visual**: أيقونة نبض تكبر من المركز.
+**Voiceover**: "نبض. مذكرتك الخاصة."
+**Audio**: موسيقى تصاعدية.
+
+### [0:20-0:35] Features Montage
+**Visual**: 5 ثوان لكل ميزة:
+- كتابة مذكرة
+- شجرة تنمو (timelapse)
+- طقس مزاجي
+- Voice to text
+- Year Review
+
+**Voiceover**: "اكتب، ازرع، انمُ. كل شيء محلي."
+**Audio**: موسيقى ملهمة.
+
+### [0:35-0:45] Privacy Emphasis
+**Visual**: قفل كبير + نصوص تظهر
+**Voiceover**: "AES-256. قفل بيومتري. بدون خوادم. بدون حساب."
+**Audio**: صوت قفل.
+
+### [0:45-0:55] Lifestyle
+**Visual**: لقطات لأشخاص مختلفين يستخدمون نبض
+**Voiceover**: "16 لغة. 10 إنجازات. 5 تحديات. ورحلة تنمو كل يوم."
+**Audio**: تصاعد.
+
+### [0:55-1:00] CTA
+**Visual**: أيقونة + QR + URL
+**Text**: "حمّل مجاناً · nabd.app"
+**Voiceover**: "نبض — حمّل الآن."
+**Audio**: نهاية موسيقية.
+
+## Production Notes
+
+- **Resolution**: 4K (3840×2160)
+- **Frame Rate**: 60fps
+- **Style**: Clean, minimal, cinematic
+- **Color Grading**: Dark + purple/green accents
+- **Music**: Custom (license free) or "Experience" - Ludovico Einaudi
+- **Subtitles**: Embedded AR + EN
+
+## Distribution
+
+1. **YouTube**: Main channel + trailer
+2. **TikTok**: Cut to 30s version
+3. **Instagram Reels**: Cut to 30s version
+4. **Website Hero**: 15s autoplay silent
+5. **Product Hunt**: 60s full version
+```
+
+---
+
+🎯 البرومبت للذكاء الاصطناعي الآخر
+
+```
+أنشئ كل الأصول التسويقية:
+
+**Screenshots (6 SVGs):**
+1. assets/store/screenshots/01_home.svg
+2. assets/store/screenshots/02_garden.svg
+3. assets/store/screenshots/03_editor.svg
+4. assets/store/screenshots/04_stats.svg
+5. assets/store/screenshots/05_weather.svg
+6. assets/store/screenshots/06_privacy.svg
+
+**Scripts:**
+7. scripts/generate_screenshots.sh
+
+**Social Media:**
+8. assets/social/quote_cards.svg
+9. assets/social/announcement.svg
+
+**TikTok Scripts (5):**
+10. docs/tiktok/01_privacy.md
+11. docs/tiktok/02_garden.md
+12. docs/tiktok/03_mood_weather.md
+13. docs/tiktok/04_voice.md
+14. docs/tiktok/05_year_review.md
+
+**Email Templates (4):**
+15. docs/emails/welcome.html
+16. docs/emails/day_3_nudge.html
+17. docs/emails/streak_milestone.html
+18. docs/emails/upgrade_offer.html
+
+**Documentation:**
+19. docs/PRESS_KIT.md
+20. docs/YOUTUBE_TRAILER.md
+
+بعد الإنشاء:
+  chmod +x scripts/generate_screenshots.sh
+  bash scripts/generate_screenshots.sh
+
+سيتم إنشاء 6 صور PNG بحجم 1080×1920 للمتجر.
+
+أبلغ بجدول مختصر.
+```
+
+---
+
+📊 الملخص النهائي الكامل
+
+الفئة العدد الحالة
+اللغات 16 ✅
+الأيقونات (SVG) 5 ✅
+Screenshots (SVG) 6 ✅
+Social Assets 2 ✅
+TikTok Scripts 5 ✅
+Email Templates 4 ✅
+Press Kit 1 ✅
+YouTube Trailer 1 ✅
+Marketing Strategy 1 ✅
+الإجمالي 41 ملف تسويقي ✅
+
+---
+
+🎊 خارطة الطريق الكاملة — "نبض" (Nabd)
+
+```
+المرحلة 1: الأساس                 ✅
+المرحلة 2: المحرر + التقويم       ✅
+المرحلة 3: AI + Biometric + Backup ✅
+المرحلة 4: الميزات النفسية        ✅
+المرحلة 5: حديقة البذور + Splash   ✅
+المرحلة 6: Advanced Stats + Social ✅
+المرحلة 7: الاسم + النشر          ✅
+المرحلة 8: الأصول التسويقية       ✅ ← نحن هنا
+المرحلة 9: الإطلاق الفعلي         ⏳
+المرحلة 10: النمو والتوسع          ⏳
+```
+
+---
+
+🚀 الخطوات التالية الفورية
+
+هذا الأسبوع:
+
+1. أنشئ الـ SVGs — استخدم البرومبت أعلاه
+2. حوّلها إلى PNG — bash scripts/convert_svg_to_png.sh
+3. سجّل Domain — nabd.app (~12$)
+4. أنشئ TikTok — @nabd.journal
+
+الأسبوع القادم:
+
+5. أنشئ الأصول الصوتية — 10 sounds للـ splash
+6. سجّل الفيديوهات — 5 TikTok scripts جاهزة
+7. أطلق Landing Page — استخدم قالب HTML
+
+خلال شهر:
+
+8. سجّل Google Play Console — 25$
+9. سجّل Apple Developer — 99$
+10. أطلق على Product Hunt — Coming Soon page
+
+---
+
+قل "واصل" إذا تريد:
+
+· الأصول الصوتية (10 sounds للـ splash)
+· تصميم Home Widget (Android/iOS)
+· اختبارات Widget كاملة
+· خطة إطلاق 90 يوم مفصلة
+· أي شيء آخر تريده

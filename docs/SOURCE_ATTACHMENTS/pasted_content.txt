@@ -1,0 +1,1245 @@
+سأبدأ فورًا في بناء تطبيق المذكرة المحلية الشامل. لقد جمعت أفضل الميزات من التطبيقات الرائدة (Day One, DiaryX, StoryPad, Moodiary) ودمجتها مع فكرتك الفريدة عن الثيمات الخاصة بكل جنس.
+
+هذه هي خارطة الطريق الكاملة والكود الأولي (MVP) الذي يمكنك نسخه مباشرة وإعطاؤه للذكاء الاصطناعي الآخر ليفك ضغطه ويبنيه. سأقسم العمل إلى مراحل، وفي كل مرحلة سأعطيك ملفًا طويلًا يحتوي على الكود الكامل.
+
+---
+
+📦 المرحلة الأولى: الأساس (الهيكل + قاعدة البيانات + الثيمات)
+
+الملف الأول: 00_MASTER_INSTRUCTIONS.md (انسخ هذا أولاً وضعه للذكاء الاصطناعي الآخر)
+
+```markdown
+# 🎯 تعليمات رئيسية للمساعد الذكي
+
+أنت مساعد تنفيذي. مهمتك بناء تطبيق Flutter كامل اسمه "ذاكرتي" (My Journal).
+
+## 🏗️ البنية العامة
+- **الإطار**: Flutter (Material 3)
+- **قاعدة البيانات**: Hive (محلي بالكامل، مشفر)
+- **إدارة الحالة**: Riverpod
+- **اللغات**: 16 لغة (عربي، إنجليزي، فرنسي، إسباني، ألماني، إيطالي، برتغالي، روسي، تركي، صيني، ياباني، كوري، هندي، إندونيسي، فارسي، أردي)
+- **الثيمات**: 4 ثيمات أساسية (عام، نسائي، رجالي، داكن/فاتح)
+- **Splash Screen**: متحرك
+
+## 📂 هيكل المجلدات المطلوب
+```
+
+lib/
+├── core/
+│   ├── theme/
+│   │   ├── app_theme.dart
+│   │   ├── gender_themes.dart
+│   │   └── app_colors.dart
+│   ├── l10n/
+│   │   ├── app_localizations.dart
+│   │   └── app_en.arb, app_ar.arb, ...
+│   ├── router.dart
+│   └── constants.dart
+├── models/
+│   ├── journal_entry.dart
+│   ├── mood.dart
+│   └── tag.dart
+├── services/
+│   ├── database_service.dart
+│   ├── encryption_service.dart
+│   ├── voice_to_text_service.dart
+│   └── notification_service.dart
+├── features/
+│   ├── splash/
+│   ├── home/
+│   ├── editor/
+│   ├── calendar/
+│   ├── settings/
+│   └── stats/
+└── widgets/
+├── entry_card.dart
+├── mood_picker.dart
+└── tag_chip.dart
+
+```
+
+## ⚙️ التبعيات (pubspec.yaml)
+أضف هذه الحزم:
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  hive_flutter: ^1.1.0
+  hive: ^2.2.3
+  path_provider: ^2.1.5
+  intl: ^0.19.0
+  flutter_localizations:
+    sdk: flutter
+  flutter_svg: ^2.0.14
+  lottie: ^3.1.3
+  google_fonts: ^6.2.1
+  image_picker: ^1.1.2
+  record: ^5.0.4
+  permission_handler: ^11.3.1
+  speech_to_text: ^7.0.0
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+  crypto: ^3.0.5
+  flutter_secure_storage: ^9.2.2
+  local_auth: ^2.3.0
+  share_plus: ^10.1.2
+  path: ^1.9.0
+  flutter_animate: ^4.5.0
+  fl_chart: ^0.69.0
+  table_calendar: ^3.1.2
+  uuid: ^4.5.1
+  file_picker: ^8.1.6
+  archive: ^3.6.1
+  flutter_quill: ^11.5.0
+  dio: ^5.7.0
+  flutter_native_splash: ^2.4.3
+  flutter_launcher_icons: ^0.14.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  hive_generator: ^2.0.1
+```
+
+📋 ترتيب التنفيذ
+
+1. المرحلة 1: الهيكل + الثيمات + قاعدة البيانات + Splash Screen.
+2. المرحلة 2: الشاشة الرئيسية (عرض المذكرات، Mood Picker، Tags).
+3. المرحلة 3: شاشة المحرر (نص، صور، صوت، Markdown).
+4. المرحلة 4: شاشة التقويم + الإحصائيات.
+5. المرحلة 5: الإعدادات (اللغة، الثيم، الإشعارات، القفل).
+6. المرحلة 6: الميزات المتقدمة (الذكاء الاصطناعي المحلي، النسخ الاحتياطي).
+
+🎨 قواعد التصميم
+
+· استخدم Material 3 مع ألوان ديناميكية.
+· الخطوط: Cairo للعربية، Inter للإنجليزية.
+· الرسوم المتحركة: flutter_animate للانتقالات الناعمة.
+· الحواف: دائرية (20-28px).
+· الظلال: ناعمة (blurRadius 15-20).
+
+🚫 قواعد صارمة
+
+· لا خوادم خارجية.
+· لا Firebase.
+· لا APIs مدفوعة.
+· كل المعالجة محلية.
+· التشفير إلزامي (AES-256).
+
+📝 ملاحظة
+
+الكود التالي سيُقسم إلى ملفات. كل ملف سيُسمى بوضوح (مثلاً 01_main.dart، 02_database.dart). قم بنسخ كل ملف إلى المسار المحدد له.
+
+```
+
+---
+
+**الملف الثاني:** `01_main_and_config.dart` (ملف رئيسي + إعدادات)
+
+```dart
+// lib/main.dart
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'app.dart';
+import 'services/notification_service.dart';
+import 'core/constants.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // تهيئة Hive
+  await Hive.initFlutter();
+  await Hive.openBox('journal_entries');
+  await Hive.openBox('settings');
+  await Hive.openBox('moods');
+  await Hive.openBox('tags');
+  
+  // تهيئة الإشعارات
+  await NotificationService.init();
+  
+  // ضبط شريط الحالة
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+  ));
+  
+  runApp(const ProviderScope(child: MyJournalApp()));
+}
+```
+
+```dart
+// lib/app.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/theme/app_theme.dart';
+import 'core/router.dart';
+import 'core/l10n/app_localizations.dart';
+import 'services/settings_service.dart';
+
+class MyJournalApp extends ConsumerWidget {
+  const MyJournalApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
+
+    return MaterialApp.router(
+      title: 'My Journal',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      routerConfig: router,
+    );
+  }
+}
+```
+
+```dart
+// lib/core/constants.dart
+class AppConstants {
+  static const String appName = 'My Journal';
+  static const String appVersion = '1.0.0';
+  static const int maxEntryLength = 50000;
+  static const int maxImagesPerEntry = 10;
+  static const int maxAudioSeconds = 300;
+  static const List<String> supportedLanguages = [
+    'ar', 'en', 'fr', 'es', 'de', 'it', 'pt', 'ru', 
+    'tr', 'zh', 'ja', 'ko', 'hi', 'id', 'fa', 'ur'
+  ];
+}
+```
+
+```dart
+// lib/core/router.dart
+import 'package:go_router/go_router.dart';
+import '../features/splash/splash_screen.dart';
+import '../features/home/home_screen.dart';
+import '../features/editor/editor_screen.dart';
+import '../features/calendar/calendar_screen.dart';
+import '../features/settings/settings_screen.dart';
+import '../features/stats/stats_screen.dart';
+
+final router = GoRouter(
+  initialLocation: '/',
+  routes: [
+    GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
+    GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+    GoRoute(path: '/editor', builder: (_, state) => EditorScreen(entryId: state.extra as String?)),
+    GoRoute(path: '/calendar', builder: (_, __) => const CalendarScreen()),
+    GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+    GoRoute(path: '/stats', builder: (_, __) => const StatsScreen()),
+  ],
+);
+```
+
+---
+
+الملف الثالث: 02_theme_and_gender_themes.dart (الثيمات + ثيمات الجنس)
+
+```dart
+// lib/core/theme/app_colors.dart
+import 'package:flutter/material.dart';
+
+class AppColors {
+  // ألوان أساسية
+  static const Color primary = Color(0xFF6C5CE7);
+  static const Color primaryLight = Color(0xFF8B7BFF);
+  static const Color background = Color(0xFFF7F8FB);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color textPrimary = Color(0xFF0F1520);
+  static const Color textSecondary = Color(0xFF5A6478);
+  static const Color success = Color(0xFF00B88A);
+  static const Color warning = Color(0xFFF5A623);
+  static const Color danger = Color(0xFFE84848);
+  
+  // ألوان نسائية
+  static const Color femininePrimary = Color(0xFFE91E63);
+  static const Color feminineSecondary = Color(0xFFF48FB1);
+  static const Color feminineBackground = Color(0xFFFCE4EC);
+  
+  // ألوان رجالية
+  static const Color masculinePrimary = Color(0xFF1A237E);
+  static const Color masculineSecondary = Color(0xFF3F51B5);
+  static const Color masculineBackground = Color(0xFFE8EAF6);
+}
+```
+
+```dart
+// lib/core/theme/gender_themes.dart
+import 'package:flutter/material.dart';
+import 'app_colors.dart';
+
+enum GenderTheme { neutral, feminine, masculine }
+
+class GenderThemes {
+  static ThemeData feminineTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.feminineBackground,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.femininePrimary,
+        brightness: Brightness.light,
+        primary: AppColors.femininePrimary,
+        secondary: AppColors.feminineSecondary,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.femininePrimary),
+        titleTextStyle: TextStyle(
+          color: AppColors.femininePrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      cardTheme: CardTheme(
+        color: Colors.white,
+        elevation: 4,
+        shadowColor: AppColors.femininePrimary.withOpacity(0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.femininePrimary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.all(18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: AppColors.femininePrimary.withOpacity(0.2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: AppColors.femininePrimary, width: 2),
+        ),
+      ),
+    );
+  }
+
+  static ThemeData masculineTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.masculineBackground,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.masculinePrimary,
+        brightness: Brightness.light,
+        primary: AppColors.masculinePrimary,
+        secondary: AppColors.masculineSecondary,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.masculinePrimary),
+        titleTextStyle: TextStyle(
+          color: AppColors.masculinePrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      cardTheme: CardTheme(
+        color: Colors.white,
+        elevation: 4,
+        shadowColor: AppColors.masculinePrimary.withOpacity(0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.masculinePrimary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static ThemeData neutralTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.background,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: Brightness.light,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+      ),
+    );
+  }
+}
+```
+
+```dart
+// lib/core/theme/app_theme.dart
+import 'package:flutter/material.dart';
+import 'app_colors.dart';
+import 'gender_themes.dart';
+
+class AppTheme {
+  static ThemeData light = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: AppColors.background,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.light,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+    ),
+    cardTheme: CardTheme(
+      color: AppColors.surface,
+      elevation: 4,
+      shadowColor: AppColors.primary.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+      ),
+    ),
+  );
+
+  static ThemeData dark = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: const Color(0xFF0A0D14),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.dark,
+    ),
+    cardTheme: CardTheme(
+      color: const Color(0xFF161B22),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+      ),
+    ),
+  );
+
+  static ThemeData getTheme(String themeName, GenderTheme genderTheme) {
+    if (genderTheme == GenderTheme.feminine) return GenderThemes.feminineTheme();
+    if (genderTheme == GenderTheme.masculine) return GenderThemes.masculineTheme();
+    return themeName == 'dark' ? dark : light;
+  }
+}
+```
+
+---
+
+الملف الرابع: 03_models.dart (النماذج)
+
+```dart
+// lib/models/journal_entry.dart
+import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
+
+part 'journal_entry.g.dart';
+
+@HiveType(typeId: 0)
+class JournalEntry extends HiveObject {
+  @HiveField(0)
+  final String id;
+
+  @HiveField(1)
+  final String title;
+
+  @HiveField(2)
+  final String content;
+
+  @HiveField(3)
+  final DateTime createdAt;
+
+  @HiveField(4)
+  final DateTime updatedAt;
+
+  @HiveField(5)
+  final String mood;
+
+  @HiveField(6)
+  final List<String> tags;
+
+  @HiveField(7)
+  final List<String> imagePaths;
+
+  @HiveField(8)
+  final String? audioPath;
+
+  @HiveField(9)
+  final bool isFavorite;
+
+  @HiveField(10)
+  final bool isPinned;
+
+  @HiveField(11)
+  final String? location;
+
+  JournalEntry({
+    String? id,
+    required this.title,
+    required this.content,
+    required this.createdAt,
+    required this.updatedAt,
+    this.mood = '',
+    this.tags = const [],
+    this.imagePaths = const [],
+    this.audioPath,
+    this.isFavorite = false,
+    this.isPinned = false,
+    this.location,
+  }) : id = id ?? const Uuid().v4();
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'title': title,
+    'content': content,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+    'mood': mood,
+    'tags': tags,
+    'imagePaths': imagePaths,
+    'audioPath': audioPath,
+    'isFavorite': isFavorite,
+    'isPinned': isPinned,
+    'location': location,
+  };
+
+  factory JournalEntry.fromMap(Map<dynamic, dynamic> map) => JournalEntry(
+    id: map['id']?.toString() ?? '',
+    title: map['title']?.toString() ?? '',
+    content: map['content']?.toString() ?? '',
+    createdAt: DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? DateTime.now(),
+    updatedAt: DateTime.tryParse(map['updatedAt']?.toString() ?? '') ?? DateTime.now(),
+    mood: map['mood']?.toString() ?? '',
+    tags: List<String>.from(map['tags'] ?? []),
+    imagePaths: List<String>.from(map['imagePaths'] ?? []),
+    audioPath: map['audioPath']?.toString(),
+    isFavorite: map['isFavorite'] == true,
+    isPinned: map['isPinned'] == true,
+    location: map['location']?.toString(),
+  );
+
+  JournalEntry copyWith({
+    String? title,
+    String? content,
+    DateTime? updatedAt,
+    String? mood,
+    List<String>? tags,
+    List<String>? imagePaths,
+    String? audioPath,
+    bool? isFavorite,
+    bool? isPinned,
+    String? location,
+  }) => JournalEntry(
+    id: id,
+    title: title ?? this.title,
+    content: content ?? this.content,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? DateTime.now(),
+    mood: mood ?? this.mood,
+    tags: tags ?? this.tags,
+    imagePaths: imagePaths ?? this.imagePaths,
+    audioPath: audioPath ?? this.audioPath,
+    isFavorite: isFavorite ?? this.isFavorite,
+    isPinned: isPinned ?? this.isPinned,
+    location: location ?? this.location,
+  );
+}
+```
+
+```dart
+// lib/models/mood.dart
+import 'package:flutter/material.dart';
+
+class Mood {
+  final String id;
+  final String emoji;
+  final String label;
+  final Color color;
+  final int value; // 1-10
+
+  const Mood({
+    required this.id,
+    required this.emoji,
+    required this.label,
+    required this.color,
+    required this.value,
+  });
+
+  static const List<Mood> all = [
+    Mood(id: 'amazing', emoji: '😁', label: 'Amazing', color: Color(0xFF00C853), value: 10),
+    Mood(id: 'happy', emoji: '😊', label: 'Happy', color: Color(0xFF64DD17), value: 9),
+    Mood(id: 'good', emoji: '🙂', label: 'Good', color: Color(0xFFAEEA00), value: 8),
+    Mood(id: 'okay', emoji: '😐', label: 'Okay', color: Color(0xFFFFD600), value: 7),
+    Mood(id: 'meh', emoji: '😕', label: 'Meh', color: Color(0xFFFFAB00), value: 6),
+    Mood(id: 'sad', emoji: '😢', label: 'Sad', color: Color(0xFFFF6D00), value: 5),
+    Mood(id: 'awful', emoji: '😭', label: 'Awful', color: Color(0xFFDD2C00), value: 4),
+    Mood(id: 'angry', emoji: '😠', label: 'Angry', color: Color(0xFFD50000), value: 3),
+    Mood(id: 'anxious', emoji: '😰', label: 'Anxious', color: Color(0xFFAA00FF), value: 2),
+    Mood(id: 'exhausted', emoji: '😴', label: 'Exhausted', color: Color(0xFF6200EA), value: 1),
+  ];
+
+  static Mood? getById(String id) {
+    try {
+      return all.firstWhere((m) => m.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+}
+```
+
+```dart
+// lib/models/tag.dart
+class Tag {
+  final String id;
+  final String name;
+  final int color;
+  final int usageCount;
+
+  const Tag({
+    required this.id,
+    required this.name,
+    required this.color,
+    this.usageCount = 0,
+  });
+
+  static const List<Tag> defaultTags = [
+    Tag(id: 'personal', name: 'Personal', color: 0xFF6C5CE7),
+    Tag(id: 'work', name: 'Work', color: 0xFF00B88A),
+    Tag(id: 'gratitude', name: 'Gratitude', color: 0xFFF5A623),
+    Tag(id: 'goals', name: 'Goals', color: 0xFFE84848),
+    Tag(id: 'travel', name: 'Travel', color: 0xFF3B82F6),
+    Tag(id: 'family', name: 'Family', color: 0xFFEC4899),
+    Tag(id: 'health', name: 'Health', color: 0xFF10B981),
+    Tag(id: 'ideas', name: 'Ideas', color: 0xFF8B5CF6),
+  ];
+}
+```
+
+---
+
+الملف الخامس: 04_services.dart (الخدمات الأساسية)
+
+```dart
+// lib/services/database_service.dart
+import 'package:hive_flutter/hive_flutter.dart';
+import '../models/journal_entry.dart';
+import '../models/tag.dart';
+
+class DatabaseService {
+  static const String _entriesBox = 'journal_entries';
+  static const String _tagsBox = 'tags';
+
+  // ─── Journal Entries ───
+  
+  Box get entriesBox => Hive.box(_entriesBox);
+
+  Future<void> addEntry(JournalEntry entry) async {
+    await entriesBox.put(entry.id, entry.toMap());
+  }
+
+  Future<void> updateEntry(JournalEntry entry) async {
+    await entriesBox.put(entry.id, entry.toMap());
+  }
+
+  Future<void> deleteEntry(String id) async {
+    await entriesBox.delete(id);
+  }
+
+  List<JournalEntry> getAllEntries() {
+    return entriesBox.values
+        .map((e) => JournalEntry.fromMap(Map<dynamic, dynamic>.from(e as Map)))
+        .toList()
+      ..sort((a, b) {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+  }
+
+  List<JournalEntry> getEntriesForDate(DateTime date) {
+    return getAllEntries().where((e) =>
+      e.createdAt.year == date.year &&
+      e.createdAt.month == date.month &&
+      e.createdAt.day == date.day
+    ).toList();
+  }
+
+  List<JournalEntry> searchEntries(String query) {
+    final q = query.toLowerCase();
+    return getAllEntries().where((e) =>
+      e.title.toLowerCase().contains(q) ||
+      e.content.toLowerCase().contains(q) ||
+      e.tags.any((t) => t.toLowerCase().contains(q))
+    ).toList();
+  }
+
+  List<JournalEntry> getFavoriteEntries() {
+    return getAllEntries().where((e) => e.isFavorite).toList();
+  }
+
+  int getEntryCount() => entriesBox.length;
+
+  int getWordCount() {
+    return getAllEntries().fold(0, (sum, e) {
+      return sum + e.content.split(RegExp(r'\s+')).length;
+    });
+  }
+
+  // ─── Tags ───
+  
+  Box get tagsBox => Hive.box(_tagsBox);
+
+  Future<void> saveTag(Tag tag) async {
+    await tagsBox.put(tag.id, {
+      'id': tag.id,
+      'name': tag.name,
+      'color': tag.color,
+      'usageCount': tag.usageCount,
+    });
+  }
+
+  List<Tag> getAllTags() {
+    if (tagsBox.isEmpty) {
+      // Initialize with defaults
+      for (final tag in Tag.defaultTags) {
+        saveTag(tag);
+      }
+      return Tag.defaultTags;
+    }
+    return tagsBox.values.map((e) {
+      final map = Map<String, dynamic>.from(e as Map);
+      return Tag(
+        id: map['id']?.toString() ?? '',
+        name: map['name']?.toString() ?? '',
+        color: map['color'] as int? ?? 0xFF6C5CE7,
+        usageCount: map['usageCount'] as int? ?? 0,
+      );
+    }).toList();
+  }
+
+  // ─── Stats ───
+  
+  Map<String, int> getMoodDistribution() {
+    final distribution = <String, int>{};
+    for (final entry in getAllEntries()) {
+      if (entry.mood.isNotEmpty) {
+        distribution[entry.mood] = (distribution[entry.mood] ?? 0) + 1;
+      }
+    }
+    return distribution;
+  }
+
+  Map<DateTime, int> getStreakData() {
+    final data = <DateTime, int>{};
+    for (final entry in getAllEntries()) {
+      final date = DateTime(entry.createdAt.year, entry.createdAt.month, entry.createdAt.day);
+      data[date] = (data[date] ?? 0) + 1;
+    }
+    return data;
+  }
+}
+```
+
+```dart
+// lib/services/settings_service.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+  return ThemeModeNotifier();
+});
+
+class ThemeModeNotifier extends StateNotifier<ThemeMode> {
+  ThemeModeNotifier() : super(ThemeMode.system) {
+    _load();
+  }
+
+  void _load() {
+    final box = Hive.box('settings');
+    final theme = box.get('themeMode', defaultValue: 'system') as String;
+    state = _fromString(theme);
+  }
+
+  Future<void> setTheme(String theme) async {
+    await Hive.box('settings').put('themeMode', theme);
+    state = _fromString(theme);
+  }
+
+  ThemeMode _fromString(String value) {
+    switch (value) {
+      case 'light': return ThemeMode.light;
+      case 'dark': return ThemeMode.dark;
+      default: return ThemeMode.system;
+    }
+  }
+}
+
+final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
+  return LocaleNotifier();
+});
+
+class LocaleNotifier extends StateNotifier<Locale> {
+  LocaleNotifier() : super(const Locale('en')) {
+    _load();
+  }
+
+  void _load() {
+    final box = Hive.box('settings');
+    final lang = box.get('language', defaultValue: 'en') as String;
+    state = Locale(lang);
+  }
+
+  Future<void> setLanguage(String langCode) async {
+    await Hive.box('settings').put('language', langCode);
+    state = Locale(langCode);
+  }
+}
+
+final genderThemeProvider = StateNotifierProvider<GenderThemeNotifier, GenderTheme>((ref) {
+  return GenderThemeNotifier();
+});
+
+class GenderThemeNotifier extends StateNotifier<GenderTheme> {
+  GenderThemeNotifier() : super(GenderTheme.neutral) {
+    _load();
+  }
+
+  void _load() {
+    final box = Hive.box('settings');
+    final gender = box.get('genderTheme', defaultValue: 'neutral') as String;
+    state = _fromString(gender);
+  }
+
+  Future<void> setGenderTheme(String gender) async {
+    await Hive.box('settings').put('genderTheme', gender);
+    state = _fromString(gender);
+  }
+
+  GenderTheme _fromString(String value) {
+    switch (value) {
+      case 'feminine': return GenderTheme.feminine;
+      case 'masculine': return GenderTheme.masculine;
+      default: return GenderTheme.neutral;
+    }
+  }
+}
+```
+
+```dart
+// lib/services/voice_to_text_service.dart
+import 'package:speech_to_text/speech_to_text.dart';
+
+class VoiceToTextService {
+  final SpeechToText _speech = SpeechToText();
+  bool _isInitialized = false;
+
+  Future<bool> initialize() async {
+    if (_isInitialized) return true;
+    _isInitialized = await _speech.initialize();
+    return _isInitialized;
+  }
+
+  Future<void> startListening({
+    required Function(String) onResult,
+    String localeId = 'en-US',
+  }) async {
+    if (!_isInitialized) await initialize();
+    await _speech.listen(
+      onResult: (result) => onResult(result.recognizedWords),
+      localeId: localeId,
+    );
+  }
+
+  Future<void> stopListening() async {
+    await _speech.stop();
+  }
+
+  bool get isListening => _speech.isListening;
+}
+```
+
+```dart
+// lib/services/notification_service.dart
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+class NotificationService {
+  static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+
+  static Future<void> init() async {
+    tz.initializeTimeZones();
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const ios = DarwinInitializationSettings();
+    await _plugin.initialize(const InitializationSettings(android: android, iOS: ios));
+  }
+
+  static Future<void> scheduleDailyReminder({required int hour, required int minute}) async {
+    await _plugin.zonedSchedule(
+      0,
+      'Time to write',
+      'Capture your thoughts for today',
+      _nextInstanceOf(hour, minute),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'journal_reminder',
+          'Journal Reminder',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  static tz.TZDateTime _nextInstanceOf(int hour, int minute) {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    return scheduled;
+  }
+
+  static Future<void> cancelAll() => _plugin.cancelAll();
+}
+```
+
+---
+
+الملف السادس: 05_splash_and_home.dart (Splash + الشاشة الرئيسية)
+
+```dart
+// lib/features/splash/splash_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/theme/app_colors.dart';
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 2500), () {
+      if (mounted) context.go('/home');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: const Icon(Icons.book_outlined, size: 60, color: Colors.white),
+              )
+                  .animate()
+                  .scale(duration: 800.ms, curve: Curves.easeOutBack)
+                  .fadeIn(),
+              const SizedBox(height: 30),
+              Text(
+                'My Journal',
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              )
+                  .animate()
+                  .fadeIn(delay: 400.ms)
+                  .slideY(begin: 0.3),
+              const SizedBox(height: 10),
+              Text(
+                'Your private space for reflection',
+                style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16),
+              ).animate().fadeIn(delay: 600.ms),
+              const SizedBox(height: 50),
+              const SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                ),
+              ).animate().fadeIn(delay: 800.ms),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+```dart
+// lib/features/home/home_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/theme/app_colors.dart';
+import '../../models/journal_entry.dart';
+import '../../services/database_service.dart';
+import '../../widgets/entry_card.dart';
+import '../../widgets/mood_picker.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final DatabaseService _db = DatabaseService();
+  String _searchQuery = '';
+  String? _selectedMood;
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = _db.getAllEntries();
+    final filtered = _filterEntries(entries);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Journal'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_today_outlined),
+            onPressed: () => context.push('/calendar'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search entries...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => setState(() => _searchQuery = ''),
+                      )
+                    : null,
+              ),
+              onChanged: (v) => setState(() => _searchQuery = v),
+            ),
+          ),
+          
+          // Mood Filter
+          SizedBox(
+            height: 50,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 11, // All + 10 moods
+              itemBuilder: (_, i) {
+                if (i == 0) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: const Text('All'),
+                      selected: _selectedMood == null,
+                      onSelected: (_) => setState(() => _selectedMood = null),
+                    ),
+                  );
+                }
+                final mood = Mood.all[i - 1];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(mood.emoji),
+                    selected: _selectedMood == mood.id,
+                    onSelected: (_) => setState(() => _selectedMood = mood.id),
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          // Stats Row
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                _statCard(Icons.book, '${_db.getEntryCount()}', 'Entries'),
+                const SizedBox(width: 12),
+                _statCard(Icons.text_fields, '${_db.getWordCount()}', 'Words'),
+                const SizedBox(width: 12),
+                _statCard(Icons.local_fire_department, '${_calculateStreak()}', 'Streak'),
+              ],
+            ),
+          ),
+          
+          // Entries List
+          Expanded(
+            child: filtered.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.book_outlined, size: 80, color: AppColors.textSecondary.withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text('No entries yet', style: Theme.of(context).textTheme.titleLarge),
+                        const SizedBox(height: 8),
+                        Text('Tap + to write your first entry', style: TextStyle(color: AppColors.textSecondary)),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) => EntryCard(
+                      entry: filtered[i],
+                      onTap: () => context.push('/editor', extra: filtered[i].id),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/editor'),
+        icon: const Icon(Icons.add),
+        label: const Text('New Entry'),
+      ),
+    );
+  }
+
+  List<JournalEntry> _filterEntries(List<JournalEntry> entries) {
+    var result = entries;
+    if (_searchQuery.isNotEmpty) {
+      result = result.where((e) =>
+        e.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+        e.content.toLowerCase().contains(_searchQuery.toLowerCase())
+      ).toList();
+    }
+    if (_selectedMood != null) {
+      result = result.where((e) => e.mood == _selectedMood).toList();
+    }
+    return result;
+  }
+
+  int _calculateStreak() {
+    final entries = _db.getAllEntries();
+    if (entries.isEmpty) return 0;
+    
+    final dates = entries.map((e) => DateTime(e.createdAt.year, e.createdAt.month, e.createdAt.day)).toSet();
+    var streak = 0;
+    var date = DateTime.now();
+    while (dates.contains(DateTime(date.year, date.month, date.day))) {
+      streak++;
+      date = date.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+
+  Widget _statCard(IconData icon, String value, String label) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 20, color: AppColors.primary),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(label, style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+🎯 الخطوات التالية
+
+لقد أنجزت المرحلة الأولى (الأساس) وقدمت لك الكود الكامل لـ:
+
+1. إعداد المشروع والتبعيات.
+2. نظام الثيمات (العام + النسائي + الرجالي).
+3. النماذج (المذكرة، المزاج، الوسوم).
+4. الخدمات (قاعدة البيانات، الإعدادات، تحويل الصوت إلى نص، الإشعارات).
+5. شاشة البداية (Splash Screen).
+6. الشاشة الرئيسية (عرض المذكرات، البحث، فلترة المزاج، الإحصائيات).
+
+هل تريد أن أكمل معك المرحلة الثانية (شاشة المحرر الكاملة + شاشة التقويم + الإحصائيات + الإعدادات)؟

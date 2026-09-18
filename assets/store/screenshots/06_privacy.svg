@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="privBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#1A2A1E"/>
+    </linearGradient>
+    <linearGradient id="lockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2A8"/>
+      <stop offset="100%" stop-color="#00897B"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#privBg)"/>
+
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">خصوصية مطلقة 🔒</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">مذكراتك لا تغادر هاتفك</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <text x="450" y="70" font-size="32" font-weight="700" fill="white" text-anchor="middle">Privacy First</text>
+
+    <!-- Big Lock Icon -->
+    <g transform="translate(450, 350)">
+      <circle r="180" fill="url(#lockGrad)" opacity="0.15"/>
+      <circle r="130" fill="url(#lockGrad)" opacity="0.2"/>
+      <text y="60" font-size="200" text-anchor="middle">🔒</text>
+    </g>
+
+    <!-- Features list -->
+    <g transform="translate(80, 580)">
+      <g transform="translate(0, 0)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">100% Local Processing</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">لا خوادم، لا رفع للصور</text>
+      </g>
+
+      <g transform="translate(0, 120)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">AES-256 Encryption</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">تشفير عسكري لكل مذكرة</text>
+      </g>
+
+      <g transform="translate(0, 240)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">Biometric Lock</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">قفل بصمة/وجه</text>
+      </g>
+
+      <g transform="translate(0, 360)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">No Tracking</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">لا Firebase، لا تحليلات، لا إعلانات</text>
+      </g>
+
+      <g transform="translate(0, 480)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">No Account Required</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">لا تسجيل، لا بريد، لا كلمة سر</text>
+      </g>
+
+      <g transform="translate(0, 600)">
+        <rect width="740" height="100" rx="20" fill="#00D2A8" opacity="0.1"/>
+        <text x="30" y="62" font-size="36">✅</text>
+        <text x="90" y="55" font-size="22" fill="white" font-weight="700">Delete Anytime</text>
+        <text x="90" y="82" font-size="16" fill="#8B95A8">احذف كل شيء بضغطة واحدة</text>
+      </g>
+    </g>
+
+    <!-- Bottom badge -->
+    <g transform="translate(80, 1380)">
+      <rect width="740" height="120" rx="24" fill="url(#lockGrad)"/>
+      <text x="370" y="60" font-size="28" fill="white" text-anchor="middle" font-weight="700">
+        🔒 خصوصيتك أولويتنا
+      </text>
+      <text x="370" y="95" font-size="18" fill="white" text-anchor="middle" opacity="0.9">
+        Your thoughts. Your device. Always.
+      </text>
+    </g>
+  </g>
+</svg>

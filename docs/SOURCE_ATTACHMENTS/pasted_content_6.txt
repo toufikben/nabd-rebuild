@@ -1,0 +1,3002 @@
+🎨 المرحلة السادسة — الاسم + Splash دوّار + إحصاءات + Social + Motivation
+
+🏷️ أولاً: اسم التطبيق
+
+الاقتراحات الخمسة
+
+# الاسم المعنى لماذا؟
+1 نبض / Nabd Pulse (النبض) ⭐ الأفضل — قصير، شعري، يرتبط بميزة "Mood Pulse"
+2 صدى / Sada Echo يعكس أثر المذكرات
+3 رحلة / Rihla Journey يعكس رحلة النمو
+4 مداد / Madad Ink كلاسيكي، أنيق
+5 صفحة / Safha Page واضح، مباشر
+
+🏆 توصيتي: "نبض" (Nabd)
+
+الأسباب:
+
+· قصير وبليغ — كلمة واحدة تحمل كل المعنى.
+· يعكس النفس البشري — القلب ينبض، المشاعر تنبض.
+· يرتبط بميزة Pulse الموجودة لديك.
+· يعمل عالميًا — نطق سهل بالإنجليزية Nabd.
+· شعار مثالي: خط انعكاس ECG يتحول إلى قلم أو شجرة.
+
+العنوان الكامل: نبض — مذكرتك الخاصة / Nabd — Private Journal
+
+الشعار: دائرة نابضة + قلب صغير داخلها.
+
+قل لي: هل تختار "نبض" أم تريد اقتراحًا آخر؟
+
+---
+
+🌈 ثانياً: Splash دوّار (5 في 1)
+
+نعم، يمكن! كل مرة يفتح التطبيق، يختار splash عشوائيًا مختلفًا عن السابق.
+
+📄 الملف 54: lib/services/splash_service.dart — تحديث
+
+العملية: 🔴 REPLACE
+
+```dart
+import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+/// SplashService — يدير السبلاش الدوّار + الأصوات.
+class SplashService {
+  static const _channel = MethodChannel('com.productchat/splash');
+  static const _splashCount = 5;
+
+  /// يشغّل صوتًا.
+  Future<void> playSplashSound(String soundId) async {
+    try {
+      await _channel.invokeMethod('playSound', {'soundId': soundId});
+    } catch (_) {}
+  }
+
+  Future<void> stopSplashSound() async {
+    try {
+      await _channel.invokeMethod('stopSound');
+    } catch (_) {}
+  }
+
+  /// يعيد splash التالي (لا يكرر السابق مباشرة).
+  ///
+  /// المنطق: random exclude previous.
+  static int getNextSplash() {
+    final box = Hive.box('settings');
+    final last = box.get('last_splash_id', defaultValue: 0) as int;
+
+    int next;
+    do {
+      next = DateTime.now().microsecondsSinceEpoch % _splashCount + 1;
+    } while (next == last && _splashCount > 1);
+
+    box.put('last_splash_id', next);
+    return next;
+  }
+
+  /// Sound المرتبط بكل splash.
+  static String defaultSoundFor(int splashId) {
+    switch (splashId) {
+      case 1:
+        return 'rain_soft';
+      case 2:
+        return 'flute_dawn';
+      case 3:
+        return 'harp_soft';
+      case 4:
+        return 'oud_soft';
+      case 5:
+        return 'tibetan_bowl';
+      default:
+        return 'piano_gentle';
+    }
+  }
+}
+
+class SplashOption {
+  final int id;
+  final String name;
+  final String description;
+  final String emoji;
+  final List<String> sounds;
+
+  const SplashOption({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.emoji,
+    required this.sounds,
+  });
+
+  static const all = [
+    SplashOption(
+      id: 1,
+      name: 'First Seed',
+      description: 'بذرة تسقط وتنبت',
+      emoji: '🌱',
+      sounds: ['rain_soft', 'piano_gentle'],
+    ),
+    SplashOption(
+      id: 2,
+      name: 'New Dawn',
+      description: 'شروق الشمس خلف الجبال',
+      emoji: '🌅',
+      sounds: ['flute_dawn', 'birds_distant'],
+    ),
+    SplashOption(
+      id: 3,
+      name: 'Book to Butterfly',
+      description: 'كتاب يتحول إلى فراشات',
+      emoji: '🦋',
+      sounds: ['paper_turn', 'harp_soft'],
+    ),
+    SplashOption(
+      id: 4,
+      name: 'Candle Light',
+      description: 'شمعة تضيء غرفة دافئة',
+      emoji: '🕯️',
+      sounds: ['oud_soft', 'whisper_gentle'],
+    ),
+    SplashOption(
+      id: 5,
+      name: 'Circle of Life',
+      description: 'دائرة ضوء تكشف شجرة',
+      emoji: '💫',
+      sounds: ['tibetan_bowl', 'drums_soft'],
+    ),
+  ];
+}
+```
+
+📄 الملف 55: lib/features/splash/splash_screen.dart — تحديث كامل
+
+العملية: 🔴 REPLACE
+
+```dart
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../../services/splash_service.dart';
+
+/// SplashScreen — يعرض splash عشوائي من 5 (لا يكرر السابق).
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  late final int _splashId;
+  final SplashService _splash = SplashService();
+
+  @override
+  void initState() {
+    super.initState();
+    _splashId = SplashService.getNextSplash();
+    _boot();
+  }
+
+  Future<void> _boot() async {
+    final box = Hive.box('settings');
+    final soundEnabled =
+        box.get('splash_sound_enabled', defaultValue: true) as bool;
+    final customSound = box.get('splash_sound') as String?;
+    final sound = customSound ?? SplashService.defaultSoundFor(_splashId);
+
+    if (soundEnabled) {
+      await _splash.playSplashSound(sound);
+    }
+
+    await Future.delayed(const Duration(milliseconds: 3200));
+    await _splash.stopSplashSound();
+
+    if (!mounted) return;
+
+    // إذا لا بذرة → شاشة اختيار البذرة
+    final gardenBox = Hive.box('garden');
+    if (gardenBox.isEmpty) {
+      context.go('/seed-selection');
+    } else {
+      context.go('/home');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 800),
+        child: _buildSplash(),
+      ),
+    );
+  }
+
+  Widget _buildSplash() {
+    switch (_splashId) {
+      case 2:
+        return _newDawnSplash();
+      case 3:
+        return _bookToButterflySplash();
+      case 4:
+        return _candleSplash();
+      case 5:
+        return _circleOfLifeSplash();
+      default:
+        return _firstSeedSplash();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 1: First Seed
+  // ═══════════════════════════════════════════════════════════
+  Widget _firstSeedSplash() {
+    return Container(
+      key: const ValueKey('seed'),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0A0D14), Color(0xFF1A2A1E)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🌰', style: TextStyle(fontSize: 60))
+                .animate()
+                .moveY(begin: -100, end: 0, duration: 1000.ms)
+                .fadeIn(),
+            const SizedBox(height: 20),
+            const Text('🌱', style: TextStyle(fontSize: 100))
+                .animate()
+                .fadeIn(delay: 1200.ms)
+                .scale(delay: 1200.ms, duration: 600.ms, curve: Curves.easeOutBack),
+            const SizedBox(height: 24),
+            _buildBrand(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 2: New Dawn
+  // ═══════════════════════════════════════════════════════════
+  Widget _newDawnSplash() {
+    return Container(
+      key: const ValueKey('dawn'),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF0A0D14),
+            Color(0xFFFF7B54),
+            Color(0xFFFFD54F),
+          ],
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          stops: [0.2, 0.75, 1.0],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🌅', style: TextStyle(fontSize: 120))
+                .animate()
+                .scale(duration: 1500.ms, curve: Curves.easeOutCubic)
+                .fadeIn(),
+            const SizedBox(height: 30),
+            _buildBrand(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 3: Book to Butterfly ⭐ (المفضل لديك)
+  // ═══════════════════════════════════════════════════════════
+  Widget _bookToButterflySplash() {
+    return Container(
+      key: const ValueKey('book_butterfly'),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2C1810), Color(0xFF1A1F3A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Book opens
+                const Text('📖', style: TextStyle(fontSize: 100))
+                    .animate()
+                    .scale(duration: 800.ms, curve: Curves.easeOutBack)
+                    .then()
+                    .shake(delay: 800.ms, duration: 200.ms),
+
+                // Butterflies fly out (5 butterflies with different paths)
+                ...List.generate(5, (i) {
+                  final angle = (i / 5) * math.pi * 2;
+                  final targetX = math.cos(angle) * 120;
+                  final targetY = -150 - i * 20.0;
+
+                  return Transform.translate(
+                    offset: Offset(targetX, targetY),
+                    child: const Text('🦋', style: TextStyle(fontSize: 28)),
+                  )
+                      .animate()
+                      .fadeIn(delay: Duration(milliseconds: 1000 + i * 150))
+                      .moveY(
+                        begin: 0,
+                        end: -60,
+                        duration: 1500.ms,
+                        curve: Curves.easeOutCubic,
+                      )
+                      .then()
+                      .moveX(
+                        begin: 0,
+                        end: i % 2 == 0 ? 20 : -20,
+                        duration: 800.ms,
+                        curve: Curves.easeInOut,
+                      );
+                }),
+              ],
+            ),
+            const SizedBox(height: 40),
+            _buildBrand(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 4: Candle
+  // ═══════════════════════════════════════════════════════════
+  Widget _candleSplash() {
+    return Container(
+      key: const ValueKey('candle'),
+      color: const Color(0xFF0A0D14),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFFFB74D).withValues(alpha: 0.5),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: const Center(
+                child: Text('🕯️', style: TextStyle(fontSize: 100)),
+              ),
+            )
+                .animate()
+                .fadeIn(duration: 1200.ms)
+                .then()
+                .shimmer(duration: 2000.ms, color: const Color(0xFFFFD54F)),
+            const SizedBox(height: 30),
+            _buildBrand(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 5: Circle of Life
+  // ═══════════════════════════════════════════════════════════
+  Widget _circleOfLifeSplash() {
+    return Container(
+      key: const ValueKey('circle'),
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          colors: [Color(0xFF1A0B2E), Color(0xFF0A0D14)],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                ...List.generate(3, (i) {
+                  return Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.5),
+                        width: 2,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                  )
+                      .animate(delay: Duration(milliseconds: i * 300))
+                      .scale(
+                        begin: const Offset(0.5, 0.5),
+                        end: const Offset(3, 3),
+                        duration: 2500.ms,
+                      )
+                      .fadeOut(),
+                }),
+                const Text('🌳', style: TextStyle(fontSize: 120))
+                    .animate()
+                    .fadeIn(delay: 800.ms)
+                    .scale(delay: 800.ms, duration: 1000.ms),
+              ],
+            ),
+            const SizedBox(height: 30),
+            _buildBrand(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Brand (مشترك)
+  // ═══════════════════════════════════════════════════════════
+  Widget _buildBrand() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF6C5CE7), Color(0xFF00D2A8)],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(Icons.favorite, color: Colors.white, size: 16),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Nabd',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
+        ).animate().fadeIn(delay: 1800.ms),
+        const SizedBox(height: 8),
+        const Text(
+          'نبض — Private Journal',
+          style: TextStyle(
+            color: Colors.white60,
+            fontSize: 13,
+            letterSpacing: 1,
+          ),
+        ).animate().fadeIn(delay: 2100.ms),
+      ],
+    );
+  }
+}
+```
+
+---
+
+📊 ثالثاً: الإحصاءات المتقدمة
+
+📄 الملف 56: lib/features/stats/advanced/word_cloud_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/theme/app_colors.dart';
+import '../../../services/database_service.dart';
+
+/// WordCloudScreen — سحابة كلمات من مذكراتك.
+class WordCloudScreen extends ConsumerStatefulWidget {
+  const WordCloudScreen({super.key});
+
+  @override
+  ConsumerState<WordCloudScreen> createState() => _WordCloudScreenState();
+}
+
+class _WordCloudScreenState extends ConsumerState<WordCloudScreen> {
+  final DatabaseService _db = DatabaseService();
+  int _period = 30; // days
+
+  // Stop words to exclude
+  static const _stopWords = {
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+    'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
+    'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+    'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that',
+    'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they',
+    'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her',
+    'our', 'their', 'mine', 'yours', 'hers', 'ours', 'theirs',
+    'في', 'من', 'إلى', 'على', 'عن', 'مع', 'أن', 'إن', 'كان', 'كانت',
+    'هو', 'هي', 'هم', 'نحن', 'أنا', 'أنت', 'هذا', 'هذه', 'ذلك', 'تلك',
+    'لم', 'لن', 'لا', 'ما', 'كل', 'بعض', 'كان', 'قد', 'ثم', 'أو', 'و',
+  };
+
+  Map<String, int> get _wordFrequencies {
+    final entries = _db.getAllEntries();
+    final cutoff = DateTime.now().subtract(Duration(days: _period));
+    final recent = entries.where((e) => e.createdAt.isAfter(cutoff));
+
+    final freq = <String, int>{};
+
+    for (final entry in recent) {
+      final text = '${entry.title} ${entry.content}'.toLowerCase();
+      final words = text.split(RegExp(r'[\s\u0600-\u06FF]+|\s+'));
+
+      for (final w in words) {
+        final word = w.trim();
+        if (word.length < 3) continue;
+        if (_stopWords.contains(word)) continue;
+        if (RegExp(r'^\d+$').hasMatch(word)) continue;
+
+        freq[word] = (freq[word] ?? 0) + 1;
+      }
+    }
+
+    return freq;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final freq = _wordFrequencies;
+    final sorted = freq.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final top = sorted.take(50).toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Word Cloud'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [7, 30, 90, 365].map((d) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(d == 365 ? '1 Year' : '$d Days'),
+                    selected: _period == d,
+                    onSelected: (_) => setState(() => _period = d),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ),
+      body: top.isEmpty
+          ? const Center(
+              child: Text(
+                'Write more entries to see your cloud',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
+                children: top.asMap().entries.map((e) {
+                  final word = e.value.key;
+                  final count = e.value.value;
+                  final maxCount = top.first.value;
+                  final ratio = count / maxCount;
+
+                  final fontSize = 12 + ratio * 40;
+                  final color = _colorFor(word, e.key);
+
+                  return Text(
+                    word,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      fontWeight:
+                          ratio > 0.5 ? FontWeight.w700 : FontWeight.w500,
+                      color: color,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+    );
+  }
+
+  Color _colorFor(String word, int index) {
+    const palette = [
+      Color(0xFF6C5CE7),
+      Color(0xFF00D2A8),
+      Color(0xFFF5A623),
+      Color(0xFFE84848),
+      Color(0xFF3B82F6),
+      Color(0xFFEC4899),
+      Color(0xFF8B5CF6),
+      Color(0xFF10B981),
+    ];
+
+    // Deterministic color from word hash
+    final hash = word.codeUnits.fold<int>(0, (sum, c) => sum + c);
+    return palette[hash % palette.length];
+  }
+}
+```
+
+---
+
+📄 الملف 57: lib/features/stats/advanced/emotion_radar_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/theme/app_colors.dart';
+import '../../../models/journal_entry.dart';
+import '../../../models/mood.dart';
+import '../../../services/database_service.dart';
+
+/// EmotionRadarScreen — رادار المشاعر (6 أبعاد).
+class EmotionRadarScreen extends ConsumerStatefulWidget {
+  const EmotionRadarScreen({super.key});
+
+  @override
+  ConsumerState<EmotionRadarScreen> createState() =>
+      _EmotionRadarScreenState();
+}
+
+class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
+  final DatabaseService _db = DatabaseService();
+  int _period = 30;
+
+  /// 6 أبعاد المشاعر.
+  static const _dimensions = [
+    ('Joy', 'joyful', 'happy', 'excited'),
+    ('Love', 'loved', 'in_love', 'grateful'),
+    ('Peace', 'peaceful', 'calm', 'hopeful'),
+    ('Sadness', 'sad', 'lonely', 'depressed'),
+    ('Anger', 'angry', 'frustrated'),
+    ('Anxiety', 'anxious', 'confused', 'tired'),
+  ];
+
+  Map<String, double> get _scores {
+    final entries = _db.getAllEntries();
+    final cutoff = DateTime.now().subtract(Duration(days: _period));
+    final recent = entries.where((e) => e.createdAt.isAfter(cutoff)).toList();
+
+    final result = <String, double>{};
+
+    for (final dim in _dimensions) {
+      final label = dim.$1;
+      final moods = [dim.$2, dim.$3, dim.$4];
+
+      final count = recent
+          .where((e) => moods.contains(e.mood))
+          .length;
+
+      final percent = recent.isEmpty ? 0.0 : count / recent.length;
+      result[label] = percent;
+    }
+
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scores = _scores;
+    final hasData = scores.values.any((v) => v > 0);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Emotion Radar'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [7, 30, 90, 365].map((d) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(d == 365 ? 'Year' : '$d Days'),
+                    selected: _period == d,
+                    onSelected: (_) => setState(() => _period = d),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ),
+      body: !hasData
+          ? const Center(
+              child: Text(
+                'Not enough mood data yet',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 1,
+                    child: CustomPaint(
+                      painter: _RadarPainter(scores),
+                      size: Size.infinite,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildLegend(scores),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildLegend(Map<String, double> scores) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 10,
+      children: scores.entries.map((e) {
+        final percent = (e.value * 100).round();
+        final color = _colorFor(e.key);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '${e.key}: $percent%',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Color _colorFor(String label) {
+    switch (label) {
+      case 'Joy':
+        return const Color(0xFFFFD54F);
+      case 'Love':
+        return const Color(0xFFE91E63);
+      case 'Peace':
+        return const Color(0xFF00D2A8);
+      case 'Sadness':
+        return const Color(0xFF5C6BC0);
+      case 'Anger':
+        return const Color(0xFFD50000);
+      case 'Anxiety':
+        return const Color(0xFF7E57C2);
+      default:
+        return AppColors.primary;
+    }
+  }
+}
+
+class _RadarPainter extends CustomPainter {
+  final Map<String, double> scores;
+  _RadarPainter(this.scores);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxRadius = math.min(size.width, size.height) / 2 - 40;
+    final sides = scores.length;
+    final labels = scores.keys.toList();
+
+    // Grid circles
+    final gridPaint = Paint()
+      ..color = AppColors.textTertiary.withValues(alpha: 0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    for (var r = 1; r <= 4; r++) {
+      final radius = maxRadius * r / 4;
+      final path = Path();
+      for (var i = 0; i < sides; i++) {
+        final angle = (i / sides) * 2 * math.pi - math.pi / 2;
+        final x = center.dx + radius * math.cos(angle);
+        final y = center.dy + radius * math.sin(angle);
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+      path.close();
+      canvas.drawPath(path, gridPaint);
+    }
+
+    // Axis lines
+    for (var i = 0; i < sides; i++) {
+      final angle = (i / sides) * 2 * math.pi - math.pi / 2;
+      final x = center.dx + maxRadius * math.cos(angle);
+      final y = center.dy + maxRadius * math.sin(angle);
+      canvas.drawLine(center, Offset(x, y), gridPaint);
+    }
+
+    // Data polygon
+    final dataPath = Path();
+    final fillPaint = Paint()
+      ..color = AppColors.primary.withValues(alpha: 0.3)
+      ..style = PaintingStyle.fill;
+    final strokePaint = Paint()
+      ..color = AppColors.primary
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    for (var i = 0; i < sides; i++) {
+      final value = scores[labels[i]] ?? 0;
+      final normalizedValue = math.min(value * 3, 1.0); // Scale up
+      final angle = (i / sides) * 2 * math.pi - math.pi / 2;
+      final radius = maxRadius * normalizedValue;
+      final x = center.dx + radius * math.cos(angle);
+      final y = center.dy + radius * math.sin(angle);
+
+      if (i == 0) {
+        dataPath.moveTo(x, y);
+      } else {
+        dataPath.lineTo(x, y);
+      }
+    }
+    dataPath.close();
+    canvas.drawPath(dataPath, fillPaint);
+    canvas.drawPath(dataPath, strokePaint);
+
+    // Labels
+    for (var i = 0; i < sides; i++) {
+      final angle = (i / sides) * 2 * math.pi - math.pi / 2;
+      final labelRadius = maxRadius + 20;
+      final x = center.dx + labelRadius * math.cos(angle);
+      final y = center.dy + labelRadius * math.sin(angle);
+
+      final tp = TextPainter(
+        text: TextSpan(
+          text: labels[i],
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      tp.paint(canvas, Offset(x - tp.width / 2, y - tp.height / 2));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RadarPainter old) => true;
+}
+```
+
+---
+
+📄 الملف 58: lib/features/stats/advanced/year_review_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/theme/app_colors.dart';
+import '../../../models/journal_entry.dart';
+import '../../../models/mood.dart';
+import '../../../services/database_service.dart';
+import '../../../services/local_ai_service.dart';
+
+/// YearReviewScreen — ملخص سنوي بأسلوب Spotify Wrapped.
+class YearReviewScreen extends ConsumerStatefulWidget {
+  const YearReviewScreen({super.key});
+
+  @override
+  ConsumerState<YearReviewScreen> createState() => _YearReviewScreenState();
+}
+
+class _YearReviewScreenState extends ConsumerState<YearReviewScreen> {
+  final DatabaseService _db = DatabaseService();
+  final LocalAIService _ai = LocalAIService();
+
+  int _currentSlide = 0;
+  final PageController _controller = PageController();
+
+  late List<_YearSlide> _slides;
+
+  @override
+  void initState() {
+    super.initState();
+    _slides = _buildSlides();
+  }
+
+  List<_YearSlide> _buildSlides() {
+    final year = DateTime.now().year;
+    final entries = _db.getAllEntries()
+        .where((e) => e.createdAt.year == year)
+        .toList();
+
+    if (entries.isEmpty) {
+      return [
+        _YearSlide(
+          title: 'Your Year',
+          subtitle: 'No entries in $year yet',
+          background: [AppColors.textTertiary, AppColors.textSecondary],
+          emoji: '📅',
+        ),
+      ];
+    }
+
+    final totalWords = entries.fold<int>(
+      0,
+      (sum, e) => sum + e.content.split(RegExp(r'\s+')).length,
+    );
+
+    final moodCounts = <String, int>{};
+    for (final e in entries) {
+      if (e.mood.isNotEmpty) {
+        moodCounts[e.mood] = (moodCounts[e.mood] ?? 0) + 1;
+      }
+    }
+
+    Mood? topMood;
+    if (moodCounts.isNotEmpty) {
+      final top = moodCounts.entries.reduce((a, b) =>
+          a.value > b.value ? a : b);
+      topMood = Mood.getById(top.key);
+    }
+
+    final writingDays = entries
+        .map((e) =>
+            '${e.createdAt.year}-${e.createdAt.month}-${e.createdAt.day}')
+        .toSet()
+        .length;
+
+    // Average sentiment
+    final avgSentiment = entries
+            .map((e) => _ai.analyzeSentiment(e.content))
+            .reduce((a, b) => a + b) /
+        entries.length;
+
+    return [
+      _YearSlide(
+        title: 'Your Year in Writing',
+        subtitle: '$year',
+        background: [const Color(0xFF6C5CE7), const Color(0xFF8B7BFF)],
+        emoji: '✨',
+      ),
+      _YearSlide(
+        title: 'You wrote',
+        subtitle: '${entries.length} entries',
+        detail: 'across $writingDays days',
+        background: [const Color(0xFF00D2A8), const Color(0xFF00897B)],
+        emoji: '📝',
+      ),
+      _YearSlide(
+        title: 'Words written',
+        subtitle: '$totalWords words',
+        detail: 'That\'s about ${(totalWords / 250).round()} pages',
+        background: [const Color(0xFFFFB74D), const Color(0xFFFB8C00)],
+        emoji: '✍️',
+      ),
+      if (topMood != null)
+        _YearSlide(
+          title: 'Your dominant mood',
+          subtitle: topMood.labelEn,
+          detail: '${moodCounts[topMood.id]} times',
+          background: [topMood.color, topMood.color.withValues(alpha: 0.6)],
+          emoji: topMood.emoji,
+        ),
+      _YearSlide(
+        title: 'Overall sentiment',
+        subtitle: avgSentiment > 0.2
+            ? 'Positive 📈'
+            : avgSentiment < -0.2
+                ? 'Challenging 📉'
+                : 'Balanced ⚖️',
+        detail: 'Keep growing!',
+        background: avgSentiment > 0
+            ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]
+            : [const Color(0xFF5C6BC0), const Color(0xFF303F9F)],
+        emoji: '💫',
+      ),
+      _YearSlide(
+        title: 'Here\'s to next year',
+        subtitle: 'Keep writing, keep growing',
+        background: [AppColors.primary, AppColors.primaryGlow],
+        emoji: '🌱',
+        isLast: true,
+      ),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Slides
+          PageView.builder(
+            controller: _controller,
+            onPageChanged: (i) => setState(() => _currentSlide = i),
+            itemCount: _slides.length,
+            itemBuilder: (_, i) => _buildSlide(_slides[i]),
+          ),
+
+          // Progress indicator
+          Positioned(
+            top: 60,
+            left: 20,
+            right: 20,
+            child: Row(
+              children: _slides.asMap().entries.map((e) {
+                final active = e.key <= _currentSlide;
+                return Expanded(
+                  child: Container(
+                    height: 3,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: active
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          // Close button
+          Positioned(
+            top: 80,
+            right: 20,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSlide(_YearSlide slide) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: slide.background,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                slide.emoji,
+                style: const TextStyle(fontSize: 120),
+              ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+              const SizedBox(height: 40),
+              Text(
+                slide.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ).animate().fadeIn(delay: 300.ms),
+              const SizedBox(height: 16),
+              Text(
+                slide.subtitle,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                ),
+                textAlign: TextAlign.center,
+              ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.3),
+              if (slide.detail != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  slide.detail!,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(delay: 700.ms),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _YearSlide {
+  final String title;
+  final String subtitle;
+  final String? detail;
+  final List<Color> background;
+  final String emoji;
+  final bool isLast;
+
+  const _YearSlide({
+    required this.title,
+    required this.subtitle,
+    this.detail,
+    required this.background,
+    required this.emoji,
+    this.isLast = false,
+  });
+}
+```
+
+---
+
+👥 رابعاً: Social محلي (بدون خوادم)
+
+📄 الملف 59: lib/features/social/unsent_letters_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// UnsentLettersScreen — رسائل لن تُرسل أبدًا.
+///
+/// الفكرة النفسية:
+///   كتابة رسالة لشخص لن تستطيع/تريد إرسالها لها
+///   تُعطي تفريغًا عاطفيًا هائلًا.
+class UnsentLettersScreen extends StatefulWidget {
+  const UnsentLettersScreen({super.key});
+
+  @override
+  State<UnsentLettersScreen> createState() => _UnsentLettersScreenState();
+}
+
+class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
+  final Box _box = Hive.box('settings');
+
+  List<UnsentLetter> get _letters {
+    final raw = _box.get('unsent_letters', defaultValue: <dynamic>[]) as List;
+    return raw
+        .map((e) => UnsentLetter.fromMap(Map<dynamic, dynamic>.from(e as Map)))
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final letters = _letters;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Unsent Letters'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _composeLetter(),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Info
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline,
+                    color: Color(0xFF9C27B0), size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Letters you write but never send. '
+                    'A powerful way to process emotions.',
+                    style: TextStyle(
+                      color: Color(0xFF9C27B0),
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: letters.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('💌', style: TextStyle(fontSize: 80)),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No unsent letters',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Write to someone you can\'t reach',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
+                          onPressed: () => _composeLetter(),
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Write first letter'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF9C27B0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: letters.length,
+                    itemBuilder: (_, i) => _LetterCard(
+                      letter: letters[i],
+                      onDelete: () => _deleteLetter(letters[i]),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: letters.isEmpty
+          ? null
+          : FloatingActionButton(
+              onPressed: () => _composeLetter(),
+              backgroundColor: const Color(0xFF9C27B0),
+              child: const Icon(Icons.edit, color: Colors.white),
+            ),
+    );
+  }
+
+  Future<void> _composeLetter() async {
+    final toController = TextEditingController();
+    final contentController = TextEditingController();
+
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Write an unsent letter',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'To whom?',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: toController,
+                decoration: InputDecoration(
+                  hintText: 'To: someone I miss...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: contentController,
+                maxLines: 10,
+                decoration: InputDecoration(
+                  hintText: 'Dear..., I wanted to tell you...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () async {
+                    if (contentController.text.trim().isEmpty) return;
+                    await _saveLetter(
+                      toController.text.trim().isEmpty
+                          ? 'Someone'
+                          : toController.text.trim(),
+                      contentController.text.trim(),
+                    );
+                    if (ctx.mounted) Navigator.pop(ctx, true);
+                  },
+                  icon: const Icon(Icons.lock_outline),
+                  label: const Text('Keep it unsent'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF9C27B0),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (saved == true && mounted) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('💌 Letter kept in your heart'),
+          backgroundColor: Color(0xFF9C27B0),
+        ),
+      );
+    }
+  }
+
+  Future<void> _saveLetter(String to, String content) async {
+    final letter = UnsentLetter(
+      id: const Uuid().v4(),
+      to: to,
+      content: content,
+      createdAt: DateTime.now(),
+    );
+    final list = [..._letters.map((e) => e.toMap()), letter.toMap()];
+    await _box.put('unsent_letters', list);
+  }
+
+  Future<void> _deleteLetter(UnsentLetter letter) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Let it go?'),
+        content: const Text(
+          'This letter will be released. You cannot get it back.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Keep'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: const Text('Release'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true) {
+      final list = _letters
+          .where((l) => l.id != letter.id)
+          .map((l) => l.toMap())
+          .toList();
+      await _box.put('unsent_letters', list);
+      setState(() {});
+    }
+  }
+}
+
+class _LetterCard extends StatelessWidget {
+  final UnsentLetter letter;
+  final VoidCallback onDelete;
+
+  const _LetterCard({required this.letter, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF9C27B0).withValues(alpha: 0.1),
+            const Color(0xFF6A1B9A).withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF9C27B0).withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('💌', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'To: ${letter.to}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(
+                  Icons.close,
+                  size: 18,
+                  color: AppColors.textTertiary,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            letter.content,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 1.6,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.textTertiary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class UnsentLetter {
+  final String id;
+  final String to;
+  final String content;
+  final DateTime createdAt;
+
+  const UnsentLetter({
+    required this.id,
+    required this.to,
+    required this.content,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'to': to,
+        'content': content,
+        'createdAt': createdAt.toIso8601String(),
+      };
+
+  factory UnsentLetter.fromMap(Map<dynamic, dynamic> m) => UnsentLetter(
+        id: m['id']?.toString() ?? '',
+        to: m['to']?.toString() ?? '',
+        content: m['content']?.toString() ?? '',
+        createdAt: DateTime.tryParse(m['createdAt']?.toString() ?? '') ??
+            DateTime.now(),
+      );
+}
+```
+
+---
+
+📄 الملف 60: lib/features/social/legacy_journal_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../services/database_service.dart';
+
+/// LegacyJournalScreen — إرث رقمي للأحفاد.
+///
+/// الفكرة: اختر مذكرات معينة لتشكيل "الإرث" الذي سيُحفظ للأبد.
+class LegacyJournalScreen extends StatefulWidget {
+  const LegacyJournalScreen({super.key});
+
+  @override
+  State<LegacyJournalScreen> createState() => _LegacyJournalScreenState();
+}
+
+class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
+  final DatabaseService _db = DatabaseService();
+  final Box _settings = Hive.box('settings');
+
+  Set<String> get _legacyIds {
+    final raw = _settings.get('legacy_entries', defaultValue: <dynamic>[]) as List;
+    return raw.map((e) => e.toString()).toSet();
+  }
+
+  Future<void> _toggleEntry(String id) async {
+    final ids = _legacyIds;
+    if (ids.contains(id)) {
+      ids.remove(id);
+    } else {
+      ids.add(id);
+    }
+    await _settings.put('legacy_entries', ids.toList());
+    setState(() {});
+  }
+
+  Future<void> _exportLegacy() async {
+    final ids = _legacyIds;
+    if (ids.isEmpty) return;
+
+    final entries = _db.getAllEntries().where((e) => ids.contains(e.id));
+    final buffer = StringBuffer();
+    buffer.writeln('LEGACY JOURNAL');
+    buffer.writeln('==============');
+    buffer.writeln();
+
+    for (final entry in entries) {
+      buffer.writeln('---');
+      buffer.writeln('Date: ${entry.createdAt.toIso8601String()}');
+      if (entry.title.isNotEmpty) buffer.writeln('Title: ${entry.title}');
+      buffer.writeln();
+      buffer.writeln(entry.content);
+      buffer.writeln();
+    }
+
+    await Share.share(
+      buffer.toString(),
+      subject: 'My Legacy Journal',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = _db.getAllEntries();
+    final legacyCount = _legacyIds.length;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Legacy Journal'),
+        actions: [
+          if (legacyCount > 0)
+            IconButton(
+              icon: const Icon(Icons.ios_share),
+              onPressed: _exportLegacy,
+              tooltip: 'Export legacy',
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Info
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFD4AF37), Color(0xFF8B6914)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.auto_stories,
+                  color: Colors.white,
+                  size: 36,
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Legacy Journal',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '$legacyCount entries selected',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Select entries that matter most.\n'
+                  'These will be your legacy.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+
+          // Entries list
+          Expanded(
+            child: entries.isEmpty
+                ? const Center(
+                    child: Text('No entries yet'),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: entries.length,
+                    itemBuilder: (_, i) {
+                      final entry = entries[i];
+                      final isLegacy = _legacyIds.contains(entry.id);
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isLegacy
+                                ? const Color(0xFFD4AF37)
+                                : Colors.transparent,
+                            width: isLegacy ? 2 : 0,
+                          ),
+                        ),
+                        child: ListTile(
+                          onTap: () => _toggleEntry(entry.id),
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: isLegacy
+                                  ? const Color(0xFFD4AF37)
+                                      .withValues(alpha: 0.2)
+                                  : AppColors.textTertiary
+                                      .withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isLegacy
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              color: isLegacy
+                                  ? const Color(0xFFD4AF37)
+                                  : AppColors.textTertiary,
+                              size: 20,
+                            ),
+                          ),
+                          title: Text(
+                            entry.title.isEmpty
+                                ? 'Untitled'
+                                : entry.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            entry.content,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+---
+
+📄 الملف 61: lib/features/social/time_capsule_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// TimeCapsuleScreen — كبسولة زمنية تُفتح بعد سنوات.
+class TimeCapsuleScreen extends StatefulWidget {
+  const TimeCapsuleScreen({super.key});
+
+  @override
+  State<TimeCapsuleScreen> createState() => _TimeCapsuleScreenState();
+}
+
+class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
+  final Box _box = Hive.box('settings');
+
+  List<TimeCapsule> get _capsules {
+    final raw = _box.get('time_capsules', defaultValue: <dynamic>[]) as List;
+    return raw
+        .map((e) => TimeCapsule.fromMap(Map<dynamic, dynamic>.from(e as Map)))
+        .toList()
+      ..sort((a, b) => a.unlockAt.compareTo(b.unlockAt));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final capsules = _capsules;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Time Capsules'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _composeCapsule,
+          ),
+        ],
+      ),
+      body: capsules.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('⏳', style: TextStyle(fontSize: 80)),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No time capsules',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Bury a message for your future self',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: _composeCapsule,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create capsule'),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: capsules.length,
+              itemBuilder: (_, i) => _CapsuleCard(
+                capsule: capsules[i],
+                onOpen: () => _openCapsule(capsules[i]),
+              ),
+            ),
+    );
+  }
+
+  Future<void> _composeCapsule() async {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+    Duration selectedDuration = const Duration(days: 365);
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(28),
+            ),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Create Time Capsule',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    hintText: 'Capsule title',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: contentController,
+                  maxLines: 6,
+                  decoration: InputDecoration(
+                    hintText: 'Message to future you...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Unlock after:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    _chip('1 Month', 30, selectedDuration,
+                        (d) => setModalState(() => selectedDuration = d)),
+                    _chip('6 Months', 180, selectedDuration,
+                        (d) => setModalState(() => selectedDuration = d)),
+                    _chip('1 Year', 365, selectedDuration,
+                        (d) => setModalState(() => selectedDuration = d)),
+                    _chip('5 Years', 1825, selectedDuration,
+                        (d) => setModalState(() => selectedDuration = d)),
+                    _chip('10 Years', 3650, selectedDuration,
+                        (d) => setModalState(() => selectedDuration = d)),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      if (contentController.text.trim().isEmpty) return;
+                      await _saveCapsule(
+                        titleController.text.trim(),
+                        contentController.text.trim(),
+                        DateTime.now().add(selectedDuration),
+                      );
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    },
+                    icon: const Icon(Icons.lock),
+                    label: const Text('Bury Capsule'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    setState(() {});
+  }
+
+  Widget _chip(
+    String label,
+    int days,
+    Duration selected,
+    ValueChanged<Duration> onSelected,
+  ) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected.inDays == days,
+      onSelected: (_) => onSelected(Duration(days: days)),
+    );
+  }
+
+  Future<void> _saveCapsule(
+    String title,
+    String content,
+    DateTime unlockAt,
+  ) async {
+    final capsule = TimeCapsule(
+      id: const Uuid().v4(),
+      title: title,
+      content: content,
+      createdAt: DateTime.now(),
+      unlockAt: unlockAt,
+    );
+    final list = [..._capsules.map((e) => e.toMap()), capsule.toMap()];
+    await _box.put('time_capsules', list);
+  }
+
+  void _openCapsule(TimeCapsule capsule) {
+    final unlocked = capsule.unlockAt.isBefore(DateTime.now());
+
+    if (!unlocked) {
+      final days = capsule.unlockAt.difference(DateTime.now()).inDays;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('🔒 Capsule Locked'),
+          content: Text(
+            'Unlocks on ${capsule.unlockAt.day}/${capsule.unlockAt.month}/${capsule.unlockAt.year}\n\n$days days remaining',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(capsule.title.isEmpty ? 'Time Capsule' : capsule.title),
+        content: SingleChildScrollView(
+          child: Text(capsule.content),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CapsuleCard extends StatelessWidget {
+  final TimeCapsule capsule;
+  final VoidCallback onOpen;
+
+  const _CapsuleCard({required this.capsule, required this.onOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    final unlocked = capsule.unlockAt.isBefore(DateTime.now());
+
+    return GestureDetector(
+      onTap: onOpen,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: unlocked
+                ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]
+                : [const Color(0xFF546E7A), const Color(0xFF37474F)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                unlocked ? '💌' : '⏳',
+                style: const TextStyle(fontSize: 22),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    capsule.title.isEmpty ? 'Untitled Capsule' : capsule.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    unlocked
+                        ? 'Tap to open!'
+                        : 'Unlocks ${capsule.unlockAt.day}/${capsule.unlockAt.month}/${capsule.unlockAt.year}',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              unlocked ? Icons.lock_open : Icons.lock,
+              color: Colors.white70,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class TimeCapsule {
+  final String id;
+  final String title;
+  final String content;
+  final DateTime createdAt;
+  final DateTime unlockAt;
+
+  const TimeCapsule({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.createdAt,
+    required this.unlockAt,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'title': title,
+        'content': content,
+        'createdAt': createdAt.toIso8601String(),
+        'unlockAt': unlockAt.toIso8601String(),
+      };
+
+  factory TimeCapsule.fromMap(Map<dynamic, dynamic> m) => TimeCapsule(
+        id: m['id']?.toString() ?? '',
+        title: m['title']?.toString() ?? '',
+        content: m['content']?.toString() ?? '',
+        createdAt:
+            DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
+        unlockAt:
+            DateTime.tryParse(m['unlockAt']?.toString() ?? '') ?? DateTime.now(),
+      );
+}
+```
+
+---
+
+🎯 خامساً: Motivation
+
+📄 الملف 62: lib/services/motivation_service.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:hive_flutter/hive_flutter.dart';
+
+/// MotivationService — الاقتباسات + الإنجازات + التحديات.
+class MotivationService {
+  /// اقتباسات محلية.
+  static const _quotes = [
+    ('The unexamined life is not worth living.', 'Socrates'),
+    ('We are what we repeatedly do. Excellence, then, is not an act, but a habit.', 'Aristotle'),
+    ('The best time to plant a tree was 20 years ago. The second best time is now.', 'Chinese Proverb'),
+    ('Write hard and clear about what hurts.', 'Ernest Hemingway'),
+    ('You don\'t have to be great to start, but you have to start to be great.', 'Zig Ziglar'),
+    ('Almost everything will work again if you unplug it for a few minutes, including you.', 'Anne Lamott'),
+    ('Feelings are much like waves. We can\'t stop them from coming, but we can choose which one to surf.', 'Jonatan Mårtensson'),
+    ('The wound is the place where the light enters you.', 'Rumi'),
+    ('Nothing is impossible. The word itself says "I\'m possible!"', 'Audrey Hepburn'),
+    ('You are allowed to be both a masterpiece and a work in progress.', 'Sophia Bush'),
+    ('The only way out is through.', 'Robert Frost'),
+    ('Wherever you are, be there totally.', 'Eckhart Tolle'),
+    ('The journey of a thousand miles begins with a single step.', 'Lao Tzu'),
+    ('What you seek is seeking you.', 'Rumi'),
+    ('Be gentle with yourself. You are a child of the universe.', 'Desiderata'),
+  ];
+
+  /// اقتباس اليوم (ثابت خلال اليوم).
+  static (String, String) getTodayQuote() {
+    final day = DateTime.now().difference(DateTime(2025)).inDays;
+    return _quotes[day % _quotes.length];
+  }
+
+  /// اقتباس عشوائي.
+  static (String, String) getRandomQuote() {
+    final idx = DateTime.now().microsecondsSinceEpoch % _quotes.length;
+    return _quotes[idx];
+  }
+}
+
+/// Achievement — إنجاز يفتحه المستخدم.
+class Achievement {
+  final String id;
+  final String emoji;
+  final String titleEn;
+  final String titleAr;
+  final String description;
+  final int requirement;
+  final String requirementType;
+
+  const Achievement({
+    required this.id,
+    required this.emoji,
+    required this.titleEn,
+    required this.titleAr,
+    required this.description,
+    required this.requirement,
+    required this.requirementType,
+  });
+
+  static const all = [
+    Achievement(
+      id: 'first_entry',
+      emoji: '🌱',
+      titleEn: 'First Seed',
+      titleAr: 'أول بذرة',
+      description: 'Write your first entry',
+      requirement: 1,
+      requirementType: 'entries',
+    ),
+    Achievement(
+      id: 'seven_entries',
+      emoji: '🌿',
+      titleEn: 'Growing',
+      titleAr: 'تنمو',
+      description: 'Write 7 entries',
+      requirement: 7,
+      requirementType: 'entries',
+    ),
+    Achievement(
+      id: 'thirty_entries',
+      emoji: '🌳',
+      titleEn: 'Strong Writer',
+      titleAr: 'كاتب قوي',
+      description: 'Write 30 entries',
+      requirement: 30,
+      requirementType: 'entries',
+    ),
+    Achievement(
+      id: 'streak_3',
+      emoji: '🔥',
+      titleEn: 'On Fire',
+      titleAr: 'ملتهب',
+      description: '3-day streak',
+      requirement: 3,
+      requirementType: 'streak',
+    ),
+    Achievement(
+      id: 'streak_7',
+      emoji: '⭐',
+      titleEn: 'Week Warrior',
+      titleAr: 'محارب الأسبوع',
+      description: '7-day streak',
+      requirement: 7,
+      requirementType: 'streak',
+    ),
+    Achievement(
+      id: 'streak_30',
+      emoji: '🏆',
+      titleEn: 'Month Master',
+      titleAr: 'سيد الشهر',
+      description: '30-day streak',
+      requirement: 30,
+      requirementType: 'streak',
+    ),
+    Achievement(
+      id: 'words_1000',
+      emoji: '✍️',
+      titleEn: 'Storyteller',
+      titleAr: 'راوي',
+      description: 'Write 1,000 words',
+      requirement: 1000,
+      requirementType: 'words',
+    ),
+    Achievement(
+      id: 'words_10000',
+      emoji: '📚',
+      titleEn: 'Author',
+      titleAr: 'مؤلف',
+      description: 'Write 10,000 words',
+      requirement: 10000,
+      requirementType: 'words',
+    ),
+    Achievement(
+      id: 'moods_variety',
+      emoji: '🎨',
+      titleEn: 'Emotional Rainbow',
+      titleAr: 'قوس قزح عاطفي',
+      description: 'Use 10 different moods',
+      requirement: 10,
+      requirementType: 'moods',
+    ),
+    Achievement(
+      id: 'gratitude_7',
+      emoji: '🙏',
+      titleEn: 'Grateful Heart',
+      titleAr: 'قلب ممتن',
+      description: '7 days of gratitude',
+      requirement: 7,
+      requirementType: 'gratitude',
+    ),
+  ];
+}
+
+/// AchievementService — فحص الإنجازات المفتوحة.
+class AchievementService {
+  Box get _box => Hive.box('settings');
+
+  Set<String> get unlockedIds {
+    final raw = _box.get('unlocked_achievements', defaultValue: <dynamic>[]) as List;
+    return raw.map((e) => e.toString()).toSet();
+  }
+
+  /// فحص الإنجازات الجديدة.
+  List<Achievement> checkNew({
+    required int entries,
+    required int streak,
+    required int words,
+    required int moods,
+    required int gratitudeDays,
+  }) {
+    final unlocked = unlockedIds;
+    final newOnes = <Achievement>[];
+
+    for (final a in Achievement.all) {
+      if (unlocked.contains(a.id)) continue;
+
+      bool ok = false;
+      switch (a.requirementType) {
+        case 'entries':
+          ok = entries >= a.requirement;
+          break;
+        case 'streak':
+          ok = streak >= a.requirement;
+          break;
+        case 'words':
+          ok = words >= a.requirement;
+          break;
+        case 'moods':
+          ok = moods >= a.requirement;
+          break;
+        case 'gratitude':
+          ok = gratitudeDays >= a.requirement;
+          break;
+      }
+
+      if (ok) newOnes.add(a);
+    }
+
+    return newOnes;
+  }
+
+  Future<void> unlock(Achievement a) async {
+    final ids = unlockedIds..add(a.id);
+    await _box.put('unlocked_achievements', ids.toList());
+  }
+}
+```
+
+---
+
+📄 الملف 63: lib/features/motivation/achievements_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../services/database_service.dart';
+import '../../services/motivation_service.dart';
+
+/// AchievementsScreen — عرض الإنجازات.
+class AchievementsScreen extends ConsumerWidget {
+  const AchievementsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final db = DatabaseService();
+    final service = AchievementService();
+
+    final entries = db.getAllEntries();
+    final unlocked = service.unlockedIds;
+
+    final userStats = {
+      'entries': entries.length,
+      'streak': _calculateStreak(),
+      'words': entries.fold<int>(
+          0, (sum, e) => sum + e.content.split(RegExp(r'\s+')).length),
+      'moods': entries.map((e) => e.mood).where((m) => m.isNotEmpty).toSet().length,
+      'gratitude': 0, // TODO: hook gratitude
+    };
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Achievements')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFD4AF37), Color(0xFF8B6914)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                const Text('🏆', style: TextStyle(fontSize: 60)),
+                const SizedBox(height: 12),
+                Text(
+                  '${unlocked.length} / ${Achievement.all.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Achievements Unlocked',
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Grid of achievements
+          ...Achievement.all.map((a) {
+            final isUnlocked = unlocked.contains(a.id);
+            final progress = _progressFor(a, userStats);
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isUnlocked
+                      ? const Color(0xFFD4AF37)
+                      : Colors.transparent,
+                  width: isUnlocked ? 2 : 0,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: isUnlocked
+                          ? const LinearGradient(
+                              colors: [Color(0xFFD4AF37), Color(0xFF8B6914)],
+                            )
+                          : null,
+                      color: isUnlocked
+                          ? null
+                          : AppColors.textTertiary.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      a.emoji,
+                      style: TextStyle(
+                        fontSize: 26,
+                        color: isUnlocked ? null : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          a.titleEn,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: isUnlocked
+                                ? AppColors.textPrimary
+                                : AppColors.textTertiary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          a.description,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        if (!isUnlocked && progress > 0) ...[
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              minHeight: 4,
+                              backgroundColor: AppColors.textTertiary
+                                  .withValues(alpha: 0.2),
+                              valueColor: const AlwaysStoppedAnimation(
+                                  AppColors.primary),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (isUnlocked)
+                    const Icon(
+                      Icons.check_circle,
+                      color: Color(0xFFD4AF37),
+                    )
+                      .animate(onPlay: (c) => c.repeat())
+                      .shimmer(duration: 2000.ms),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  double _progressFor(Achievement a, Map<String, int> stats) {
+    final current = stats[a.requirementType] ?? 0;
+    return (current / a.requirement).clamp(0.0, 1.0);
+  }
+
+  int _calculateStreak() {
+    final db = DatabaseService();
+    final entries = db.getAllEntries();
+    if (entries.isEmpty) return 0;
+
+    final dates = entries
+        .map((e) => DateTime(e.createdAt.year, e.createdAt.month, e.createdAt.day))
+        .toSet();
+
+    var streak = 0;
+    var date = DateTime.now();
+    while (dates.contains(DateTime(date.year, date.month, date.day))) {
+      streak++;
+      date = date.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+}
+```
+
+---
+
+📄 الملف 64: lib/features/motivation/daily_quote_widget.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../services/motivation_service.dart';
+
+/// DailyQuoteWidget — اقتباس اليوم.
+class DailyQuoteWidget extends StatelessWidget {
+  const DailyQuoteWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final (quote, author) = MotivationService.getTodayQuote();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.15),
+            AppColors.primaryGlow.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.format_quote,
+                  color: AppColors.primary, size: 24),
+              SizedBox(width: 8),
+              Text(
+                'Quote of the Day',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '"$quote"',
+            style: const TextStyle(
+              fontSize: 15,
+              fontStyle: FontStyle.italic,
+              height: 1.6,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '— $author',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+---
+
+📄 الملف 65: lib/features/motivation/challenges_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// ChallengesScreen — تحديات أسبوعية/شهرية.
+class ChallengesScreen extends StatefulWidget {
+  const ChallengesScreen({super.key});
+
+  @override
+  State<ChallengesScreen> createState() => _ChallengesScreenState();
+}
+
+class _ChallengesScreenState extends State<ChallengesScreen> {
+  final Box _box = Hive.box('settings');
+
+  static const _challenges = [
+    _Challenge(
+      id: 'gratitude_7',
+      title: '7 Days of Gratitude',
+      titleAr: '7 أيام من الامتنان',
+      description: 'Write 3 gratitude items daily for a week',
+      emoji: '🙏',
+      days: 7,
+    ),
+    _Challenge(
+      id: 'mood_check',
+      title: 'Mood Tracker',
+      titleAr: 'متتبع المزاج',
+      description: 'Log your mood every day',
+      emoji: '😊',
+      days: 14,
+    ),
+    _Challenge(
+      id: 'long_writing',
+      title: 'Deep Dive',
+      titleAr: 'غوص عميق',
+      description: 'Write 500+ words daily',
+      emoji: '✍️',
+      days: 7,
+    ),
+    _Challenge(
+      id: 'dream_journal',
+      title: 'Dream Catcher',
+      titleAr: 'صائد الأحلام',
+      description: 'Record your dreams every morning',
+      emoji: '🌙',
+      days: 14,
+    ),
+    _Challenge(
+      id: 'breathing',
+      title: 'Mindful Start',
+      titleAr: 'بداية واعية',
+      description: 'Start each entry with breathing',
+      emoji: '🧘',
+      days: 30,
+    ),
+  ];
+
+  Set<String> get _joined => Set.from(
+        (_box.get('joined_challenges', defaultValue: <dynamic>[]) as List)
+            .map((e) => e.toString()),
+      );
+
+  Future<void> _toggleJoin(String id) async {
+    final joined = _joined;
+    if (joined.contains(id)) {
+      joined.remove(id);
+    } else {
+      joined.add(id);
+    }
+    await _box.put('joined_challenges', joined.toList());
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Challenges')),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _challenges.length,
+        itemBuilder: (_, i) {
+          final c = _challenges[i];
+          final joined = _joined.contains(c.id);
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: joined
+                  ? const LinearGradient(
+                      colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
+                    )
+                  : null,
+              color: joined ? null : Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: joined
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        c.emoji,
+                        style: const TextStyle(fontSize: 26),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            c.title,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: joined
+                                  ? Colors.white
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            c.description,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: joined
+                                  ? Colors.white70
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: joined
+                                  ? Colors.white.withValues(alpha: 0.2)
+                                  : AppColors.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${c.days} days',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: joined
+                                    ? Colors.white
+                                    : AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: joined
+                      ? OutlinedButton.icon(
+                          onPressed: () => _toggleJoin(c.id),
+                          icon: const Icon(Icons.check),
+                          label: const Text('Joined'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white),
+                          ),
+                        )
+                      : FilledButton(
+                          onPressed: () => _toggleJoin(c.id),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                          ),
+                          child: const Text('Join Challenge'),
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _Challenge {
+  final String id;
+  final String title;
+  final String titleAr;
+  final String description;
+  final String emoji;
+  final int days;
+
+  const _Challenge({
+    required this.id,
+    required this.title,
+    required this.titleAr,
+    required this.description,
+    required this.emoji,
+    required this.days,
+  });
+}
+```
+
+---
+
+📄 الملف 66: lib/core/router.dart — تحديث نهائي
+
+العملية: 🟡 MODIFY
+
+أضف المسارات التالية:
+
+```dart
+    // ─── Advanced Stats ───
+    GoRoute(
+      path: '/word-cloud',
+      builder: (_, __) => const WordCloudScreen(),
+    ),
+    GoRoute(
+      path: '/emotion-radar',
+      builder: (_, __) => const EmotionRadarScreen(),
+    ),
+    GoRoute(
+      path: '/year-review',
+      builder: (_, __) => const YearReviewScreen(),
+    ),
+
+    // ─── Social (Local) ───
+    GoRoute(
+      path: '/unsent-letters',
+      builder: (_, __) => const UnsentLettersScreen(),
+    ),
+    GoRoute(
+      path: '/legacy-journal',
+      builder: (_, __) => const LegacyJournalScreen(),
+    ),
+    GoRoute(
+      path: '/time-capsule',
+      builder: (_, __) => const TimeCapsuleScreen(),
+    ),
+
+    // ─── Motivation ───
+    GoRoute(
+      path: '/achievements',
+      builder: (_, __) => const AchievementsScreen(),
+    ),
+    GoRoute(
+      path: '/challenges',
+      builder: (_, __) => const ChallengesScreen(),
+    ),
+```
+
+وأضف في الأعلى:
+
+```dart
+import '../features/stats/advanced/word_cloud_screen.dart';
+import '../features/stats/advanced/emotion_radar_screen.dart';
+import '../features/stats/advanced/year_review_screen.dart';
+import '../features/social/unsent_letters_screen.dart';
+import '../features/social/legacy_journal_screen.dart';
+import '../features/social/time_capsule_screen.dart';
+import '../features/motivation/achievements_screen.dart';
+import '../features/motivation/challenges_screen.dart';
+```
+
+---
+
+🎯 البرومبت للذكاء الاصطناعي الآخر
+
+```
+طبّق المرحلة السادسة — Advanced Stats + Social + Motivation:
+
+1. lib/services/splash_service.dart — استبدال (splash دوّار)
+2. lib/features/splash/splash_screen.dart — استبدال (5 splash مع Book-to-Butterfly)
+3. lib/features/stats/advanced/word_cloud_screen.dart — جديد
+4. lib/features/stats/advanced/emotion_radar_screen.dart — جديد
+5. lib/features/stats/advanced/year_review_screen.dart — جديد
+6. lib/features/social/unsent_letters_screen.dart — جديد
+7. lib/features/social/legacy_journal_screen.dart — جديد
+8. lib/features/social/time_capsule_screen.dart — جديد
+9. lib/services/motivation_service.dart — جديد
+10. lib/features/motivation/achievements_screen.dart — جديد
+11. lib/features/motivation/daily_quote_widget.dart — جديد
+12. lib/features/motivation/challenges_screen.dart — جديد
+13. lib/core/router.dart — تحديث (10 مسارات جديدة)
+
+الميزات المُضافة:
+- Splash دوّار (5 أنواع، لا يكرر)
+- Book-to-Butterfly splash المفضل
+- Word Cloud (50 كلمة)
+- Emotion Radar (6 أبعاد)
+- Year in Review (Spotify Wrapped style)
+- Unsent Letters (تفريغ نفسي)
+- Legacy Journal (إرث رقمي)
+- Time Capsule (تُفتح بعد سنوات)
+- 10 Achievements
+- 5 Challenges
+- Daily Quote widget
+
+بعد التطبيق:
+  flutter clean
+  flutter pub get
+  flutter gen-l10n
+  flutter analyze
+
+أبلغ بجدول مختصر.
+```
+
+---
+
+🌟 ملخص المرحلة السادسة
+
+الفئة الميزات الابتكار
+Splash 5 أنواع دوّارة لا يكرر السابق
+إحصاءات Word Cloud, Emotion Radar, Year Review Spotify-style
+Social محلي Unsent Letters, Legacy, Time Capsule بدون خوادم
+Motivation 10 إنجازات, 5 تحديات, Daily Quote Gamification
+
+---
+
+🎨 اسم التطبيق — قراري النهائي
+
+"نبض" (Nabd)
+
+· ✅ قصير، شعري
+· ✅ يعكس النفس البشري
+· ✅ يرتبط بميزة Pulse
+· ✅ يعمل عالميًا
+· ✅ شعار مثالي
+
+العنوان: نبض — مذكرتك الخاصة
+English: Nabd — Your Private Journal
+
+---
+
+هل توافق على الاسم "نبض"؟ أم تريد اقتراحًا آخر؟
+
+قل "واصل" للمرحلة السابعة والأخيرة (النشر + تحسينات + اختبارات).

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="statsBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#1A1F3A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#statsBg)"/>
+
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">إحصائيات متقدمة 📊</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">سحابة الكلمات · رادار المشاعر · Year Review</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <text x="450" y="70" font-size="32" font-weight="700" fill="white" text-anchor="middle">Statistics</text>
+
+    <!-- Word Cloud -->
+    <text x="40" y="130" font-size="16" fill="#8B95A8" font-weight="700">WORD CLOUD</text>
+
+    <g transform="translate(40, 160)">
+      <rect width="820" height="400" rx="24" fill="#161B22"/>
+
+      <text x="410" y="100" font-size="60" fill="#6C5CE7" text-anchor="middle" font-weight="700">سعادة</text>
+      <text x="200" y="180" font-size="44" fill="#00D2A8" text-anchor="middle" font-weight="700">عائلة</text>
+      <text x="600" y="180" font-size="40" fill="#F5A623" text-anchor="middle" font-weight="700">عمل</text>
+      <text x="100" y="270" font-size="32" fill="#E91E63" text-anchor="middle" font-weight="600">حب</text>
+      <text x="300" y="290" font-size="36" fill="#8B7BFF" text-anchor="middle" font-weight="700">يوم</text>
+      <text x="520" y="280" font-size="28" fill="#4DD0E1" text-anchor="middle" font-weight="600">صديق</text>
+      <text x="700" y="290" font-size="32" fill="#FF6B9D" text-anchor="middle" font-weight="600">سفر</text>
+      <text x="150" y="360" font-size="24" fill="#10B981" text-anchor="middle">طعام</text>
+      <text x="380" y="370" font-size="28" fill="#F48FB1" text-anchor="middle" font-weight="600">كتاب</text>
+      <text x="620" y="360" font-size="26" fill="#8B7BFF" text-anchor="middle">موسيقى</text>
+    </g>
+
+    <!-- Emotion Radar -->
+    <text x="40" y="610" font-size="16" fill="#8B95A8" font-weight="700">EMOTION RADAR</text>
+
+    <g transform="translate(40, 640)">
+      <rect width="820" height="450" rx="24" fill="#161B22"/>
+
+      <!-- Radar -->
+      <g transform="translate(410, 220)">
+        <!-- Grid -->
+        <polygon points="0,-140 121,-70 121,70 0,140 -121,70 -121,-70"
+                 stroke="#252B3A" stroke-width="1" fill="none"/>
+        <polygon points="0,-105 91,-52 91,52 0,105 -91,52 -91,-52"
+                 stroke="#252B3A" stroke-width="1" fill="none"/>
+        <polygon points="0,-70 61,-35 61,35 0,70 -61,35 -61,-35"
+                 stroke="#252B3A" stroke-width="1" fill="none"/>
+        <polygon points="0,-35 30,-17 30,17 0,35 -30,17 -30,-17"
+                 stroke="#252B3A" stroke-width="1" fill="none"/>
+
+        <!-- Axis -->
+        <line x1="0" y1="0" x2="0" y2="-140" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="121" y2="-70" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="121" y2="70" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="0" y2="140" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="-121" y2="70" stroke="#252B3A" stroke-width="1"/>
+        <line x1="0" y1="0" x2="-121" y2="-70" stroke="#252B3A" stroke-width="1"/>
+
+        <!-- Data polygon -->
+        <polygon points="0,-120 90,-52 95,55 0,120 -110,63 -100,-57"
+                 fill="#6C5CE7" fill-opacity="0.3" stroke="#6C5CE7" stroke-width="3"/>
+
+        <!-- Labels -->
+        <text x="0" y="-160" font-size="18" fill="white" text-anchor="middle" font-weight="600">Joy</text>
+        <text x="150" y="-80" font-size="18" fill="white" text-anchor="middle" font-weight="600">Love</text>
+        <text x="150" y="90" font-size="18" fill="white" text-anchor="middle" font-weight="600">Peace</text>
+        <text x="0" y="170" font-size="18" fill="white" text-anchor="middle" font-weight="600">Sadness</text>
+        <text x="-150" y="90" font-size="18" fill="white" text-anchor="middle" font-weight="600">Anger</text>
+        <text x="-150" y="-80" font-size="18" fill="white" text-anchor="middle" font-weight="600">Anxiety</text>
+      </g>
+    </g>
+
+    <!-- Year Review preview -->
+    <text x="40" y="1130" font-size="16" fill="#8B95A8" font-weight="700">YEAR IN REVIEW</text>
+
+    <g transform="translate(40, 1160)">
+      <rect width="820" height="300" rx="24" fill="#6C5CE7"/>
+      <text x="410" y="80" font-size="60" fill="white" text-anchor="middle">✨</text>
+      <text x="410" y="150" font-size="36" fill="white" text-anchor="middle" font-weight="700">2026</text>
+      <text x="410" y="200" font-size="24" fill="white" opacity="0.8" text-anchor="middle">47 entries · 12.4K words</text>
+      <text x="410" y="250" font-size="20" fill="white" opacity="0.7" text-anchor="middle">"Year of Growth"</text>
+    </g>
+  </g>
+</svg>

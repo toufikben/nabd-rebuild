@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="weatherBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#2A1F3A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#weatherBg)"/>
+
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">طقس مزاجك 🌤️</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">مشاعرك كطقس مرئي</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <text x="450" y="70" font-size="32" font-weight="700" fill="white" text-anchor="middle">Mood Weather</text>
+
+    <!-- Today -->
+    <g transform="translate(40, 130)">
+      <text x="410" y="30" font-size="16" fill="#8B95A8" text-anchor="middle" font-weight="700" letter-spacing="2">TODAY</text>
+
+      <rect y="60" width="820" height="450" rx="32" fill="url(#sunGrad)"/>
+
+      <radialGradient id="sunGrad" cx="50%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#FFD54F"/>
+        <stop offset="100%" stop-color="#FB8C00"/>
+      </radialGradient>
+
+      <circle cx="410" cy="200" r="100" fill="white" opacity="0.3"/>
+
+      <text x="410" y="280" font-size="180" text-anchor="middle">☀️</text>
+
+      <text x="410" y="400" font-size="44" fill="white" text-anchor="middle" font-weight="700">Sunny</text>
+    </g>
+
+    <!-- 7 Day Forecast -->
+    <text x="40" y="660" font-size="16" fill="#8B95A8" font-weight="700">7-DAY FORECAST</text>
+
+    <g transform="translate(40, 690)">
+      <rect width="820" height="280" rx="24" fill="#161B22"/>
+
+      <g transform="translate(60, 60)">
+        <text x="0" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Sun</text>
+        <text x="0" y="50" font-size="48" text-anchor="middle">☀️</text>
+
+        <text x="110" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Mon</text>
+        <text x="110" y="50" font-size="48" text-anchor="middle">⛅</text>
+
+        <text x="220" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Tue</text>
+        <text x="220" y="50" font-size="48" text-anchor="middle">☁️</text>
+
+        <text x="330" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Wed</text>
+        <text x="330" y="50" font-size="48" text-anchor="middle">🌧️</text>
+
+        <text x="440" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Thu</text>
+        <text x="440" y="50" font-size="48" text-anchor="middle">⛈️</text>
+
+        <text x="550" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Fri</text>
+        <text x="550" y="50" font-size="48" text-anchor="middle">🌫️</text>
+
+        <text x="660" y="0" font-size="14" fill="#8B95A8" text-anchor="middle">Sat</text>
+        <text x="660" y="50" font-size="48" text-anchor="middle">☀️</text>
+      </g>
+    </g>
+
+    <!-- Monthly Average -->
+    <g transform="translate(40, 1000)">
+      <rect width="820" height="350" rx="24" fill="#161B22"/>
+      <text x="410" y="45" font-size="16" fill="#8B95A8" text-anchor="middle" font-weight="700" letter-spacing="2">THIS MONTH</text>
+
+      <circle cx="410" cy="170" r="80" fill="#F5A623" opacity="0.2"/>
+      <text x="410" y="210" font-size="100" text-anchor="middle">⛅</text>
+
+      <text x="410" y="300" font-size="28" fill="white" text-anchor="middle" font-weight="700">Partly Cloudy</text>
+      <text x="410" y="335" font-size="16" fill="#8B95A8" text-anchor="middle">7.2 / 10 average mood</text>
+    </g>
+
+    <!-- Insight -->
+    <g transform="translate(40, 1380)">
+      <rect width="820" height="160" rx="24" fill="#6C5CE7" opacity="0.15" stroke="#6C5CE7" stroke-width="2"/>
+      <text x="30" y="55" font-size="28">💡</text>
+      <text x="80" y="55" font-size="20" fill="#8B7BFF" font-weight="700">Insight</text>
+      <text x="80" y="95" font-size="18" fill="white" opacity="0.8">Your mood improved 23% this week!</text>
+      <text x="80" y="125" font-size="16" fill="#8B95A8">Keep up the great work</text>
+    </g>
+  </g>
+</svg>

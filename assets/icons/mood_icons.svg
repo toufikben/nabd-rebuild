@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- شبكة 5×4 من المشاعر -->
+  <!-- Positive (10) -->
+  <g font-size="60" text-anchor="middle">
+    <text x="120" y="100">😊</text>
+    <text x="300" y="100">😁</text>
+    <text x="480" y="100">🙏</text>
+    <text x="660" y="100">🤩</text>
+    <text x="840" y="100">😌</text>
+    <text x="1020" y="100">🥰</text>
+
+    <text x="120" y="260">❤️</text>
+    <text x="300" y="260">😇</text>
+    <text x="480" y="260">🌟</text>
+    <text x="660" y="260">🧘</text>
+
+    <!-- Neutral (4) -->
+    <text x="840" y="260">😐</text>
+    <text x="1020" y="260">😴</text>
+    <text x="120" y="420">😕</text>
+    <text x="300" y="420">😑</text>
+
+    <!-- Negative (6) -->
+    <text x="480" y="420">😢</text>
+    <text x="660" y="420">😔</text>
+    <text x="840" y="420">😰</text>
+    <text x="1020" y="420">😠</text>
+    <text x="120" y="580">😤</text>
+    <text x="300" y="580">😭</text>
+  </g>
+
+  <!-- Legend -->
+  <g font-size="16" fill="#8B95A8" font-family="system-ui">
+    <text x="480" y="620">← Positive</text>
+    <text x="840" y="620">Neutral →</text>
+    <text x="120" y="660">← Negative</text>
+  </g>
+</svg>

@@ -1,0 +1,2190 @@
+🎨 بيكاسو التطبيقات — المرحلة الخامسة
+
+🌟 أولاً: اقتراحات Splash Screen + الصوت
+
+اختر واحدًا من 5 اقتراحات، وسأبنيه:
+
+الاقتراح 1: 🌱 "البذرة الأولى"
+
+· الرؤية: بذرة تسقط في التراب، ثم ينبت برعم صغير.
+· الصوت: نغمة بيانو ناعمة + صوت مطر خفيف.
+· المدة: 3 ثوانٍ.
+· الإحساس: بداية، أمل، نمو.
+
+الاقتراح 2: 🌅 "الفجر الجديد"
+
+· الرؤية: شمس تشرق خلف جبل، ألوان برتقالية وبنفسجية.
+· الصوت: ناي هادئ + تغريد طيور بعيد.
+· المدة: 2.5 ثانية.
+· الإحساس: يوم جديد، فرصة جديدة.
+
+الاقتراح 3: 📖 "الكتاب المفتوح"
+
+· الرؤية: صفحات كتاب تنقلب، تتحول إلى فراشات.
+· الصوت: ورق يُقلب + نغمة هارب.
+· المدة: 3 ثوانٍ.
+· الإحساس: ذكريات، حكايات، دفء.
+
+الاقتراح 4: 🕯️ "الشمعة"
+
+· الرؤية: شمعة تُشعل، ضوءها يكشف غرفة دافئة.
+· الصوت: عود + همس خفيف.
+· المدة: 3 ثوانٍ.
+· الإحساس: تأمل، هدوء، خصوصية.
+
+الاقتراح 5: 💫 "دائرة الحياة"
+
+· الرؤية: دائرة ضوء تنبض، تكبر، تكشف شجرة كبيرة.
+· الصوت: تبت + طبول ناعمة.
+· المدة: 4 ثوانٍ.
+· الإحساس: روحانية، توازن، حكمة.
+
+اختر رقمًا، وسأبني السبلاش + الصوت.
+
+---
+
+🌳 ثانيًا: فكرة "حديقة البذور" — الابتكار الأكبر
+
+🎯 الفكرة باختصار
+
+"كل يوم تكتب، شجرتك تكبر. كل مشاعر جميلة، بذرة جديدة."
+
+🎨 كيف تعمل؟
+
+```
+1. أول مرة يفتح التطبيق → يختار بذرة
+2. البذرة ترتبط بمشاعر إيجابية
+3. كل يوم يكتب → الشجرة تنمو
+4. التحليل النفسي يحدد حاجة الشجرة
+5. شجرة كاملة = إنجاز = شهادة
+```
+
+🌸 البذور المتاحة (10 مشاعر إيجابية)
+
+البذرة المشاعر المرتبطة الشجرة النهائية
+🌹 بذرة الحب الحب، الامتنان، العطاء شجرة ورد
+☀️ بذرة الفرح الفرح، المرح، البهجة شجرة صفراء
+🌲 بذرة السلام الهدوء، الأمان، الطمأنينة شجرة صنوبر
+🌸 بذرة الأمل الأمل، التفاؤل، الإيجابية شجرة كرز
+🌻 بذرة الامتنان الشكر، التقدير، الرضا شجرة عباد الشمس
+💪 بذرة الشجاعة الجرأة، القوة، التحدي شجرة بلوط
+🌿 بذرة الصبر الصبر، الثبات، الاستمرار شجرة زيتون
+🌙 بذرة الحكمة التأمل، الفهم، البصيرة شجرة بونساي
+🌺 بذرة الإبداع الإبداع، الفن، الخيال شجرة مزهرة
+🌳 بذرة النمو التطور، التغيير، النضج شجرة الحياة
+
+🧠 الذكاء النفسي
+
+عندما يكتب المستخدم مذكرة، التطبيق:
+
+1. يحلل المشاعر (LocalAI).
+2. إذا كانت إيجابية → الشجرة تكبر + شجر جديد.
+3. إذا كانت سلبية → الشجرة "تعطش" + اقتراح: "اسقِ شجرتك بمشاعر جميلة".
+
+مثال:
+
+```
+المستخدم كتب: "أنا حزين جدًا اليوم..."
+↓
+التطبيق: "شجرتك عطشى. اكتب 3 أشياء جميلة لسقيها 💧"
+↓
+المستخدم يكتب: "أحب عائلتي، أنا ممتن للشمس..."
+↓
+الشجرة تكبر + تزهر 🌸
+```
+
+🎮 نظام النمو (5 مراحل)
+
+المرحلة الأيام الصورة الإنجاز
+1. البذرة 1-3 🌰 "بدأت"
+2. البرعم 4-10 🌱 "أول ورقة"
+3. الشتلة 11-25 🌿 "تنمو"
+4. الشجرة الصغيرة 26-60 🌳 "قوية"
+5. الشجرة الكاملة 61+ 🌳🌸 "مزدهرة" + شهادة
+
+🏆 المكافآت
+
+· عند 30 يوم: شهادة "شهر من العناية".
+· عند 90 يوم: شجرة تحمل اسم المستخدم.
+· عند 365 يوم: "غابة كاملة" (10 أشجار).
+· شجرة مكتملة: يمكن مشاركتها كصورة.
+
+🎨 العرض البصري
+
+شاشة "الحديقة" تحوي:
+
+```
+┌────────────────────────────────┐
+│  🌳  حديقتك                    │
+├────────────────────────────────┤
+│                                │
+│      🌳 (شجرة كبيرة)          │
+│         🌸🌸                    │
+│       ╱  ╲                     │
+│                                │
+│   💧 3 أسقيها اليوم            │
+│   ▓▓▓▓▓▓░░░░ 60% نمو           │
+│                                │
+│   [ اسقِ بالمشاعر ]            │
+│                                │
+├────────────────────────────────┤
+│  🌱 شجراتك الأخرى             │
+│  🌹  🌻  🌲  🌸               │
+│  (يمكن زراعة حتى 10)          │
+└────────────────────────────────┘
+```
+
+---
+
+📦 الحزمة الكاملة — 8 ملفات
+
+📄 الملف 44: lib/models/seed.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+
+/// Seed — بذرة نفسية يمكن زراعتها.
+class Seed {
+  final String id;
+  final String nameEn;
+  final String nameAr;
+  final String emoji;
+  final String sproutEmoji;
+  final String saplingEmoji;
+  final String treeEmoji;
+  final String flowerEmoji;
+  final List<Color> colors;
+  final List<String> relatedMoods;
+  final String description;
+
+  const Seed({
+    required this.id,
+    required this.nameEn,
+    required this.nameAr,
+    required this.emoji,
+    required this.sproutEmoji,
+    required this.saplingEmoji,
+    required this.treeEmoji,
+    required this.flowerEmoji,
+    required this.colors,
+    required this.relatedMoods,
+    required this.description,
+  });
+
+  static const all = <Seed>[
+    Seed(
+      id: 'love',
+      nameEn: 'Love',
+      nameAr: 'الحب',
+      emoji: '🌹',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌹',
+      colors: [Color(0xFFE91E63), Color(0xFFEC407A)],
+      relatedMoods: ['loved', 'in_love', 'grateful', 'happy'],
+      description: 'Nurture love in your life',
+    ),
+    Seed(
+      id: 'joy',
+      nameEn: 'Joy',
+      nameAr: 'الفرح',
+      emoji: '☀️',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌻',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌻',
+      colors: [Color(0xFFFFD54F), Color(0xFFFFB300)],
+      relatedMoods: ['joyful', 'happy', 'excited'],
+      description: 'Cultivate everyday joy',
+    ),
+    Seed(
+      id: 'peace',
+      nameEn: 'Peace',
+      nameAr: 'السلام',
+      emoji: '🌲',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌲',
+      flowerEmoji: '🍃',
+      colors: [Color(0xFF4DD0E1), Color(0xFF26A69A)],
+      relatedMoods: ['peaceful', 'calm', 'grateful'],
+      description: 'Find inner peace',
+    ),
+    Seed(
+      id: 'hope',
+      nameEn: 'Hope',
+      nameAr: 'الأمل',
+      emoji: '🌸',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌸',
+      colors: [Color(0xFFF48FB1), Color(0xFFF06292)],
+      relatedMoods: ['hopeful', 'proud', 'excited'],
+      description: 'Nurture hope and optimism',
+    ),
+    Seed(
+      id: 'gratitude',
+      nameEn: 'Gratitude',
+      nameAr: 'الامتنان',
+      emoji: '🌻',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌻',
+      colors: [Color(0xFFFFB74D), Color(0xFFFB8C00)],
+      relatedMoods: ['grateful', 'happy', 'peaceful'],
+      description: 'Practice gratitude daily',
+    ),
+    Seed(
+      id: 'courage',
+      nameEn: 'Courage',
+      nameAr: 'الشجاعة',
+      emoji: '💪',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🍁',
+      colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
+      relatedMoods: ['proud', 'excited', 'hopeful'],
+      description: 'Build courage and strength',
+    ),
+    Seed(
+      id: 'patience',
+      nameEn: 'Patience',
+      nameAr: 'الصبر',
+      emoji: '🌿',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🫒',
+      flowerEmoji: '🌰',
+      colors: [Color(0xFF7CB342), Color(0xFF558B2F)],
+      relatedMoods: ['calm', 'peaceful', 'tired'],
+      description: 'Develop patience',
+    ),
+    Seed(
+      id: 'wisdom',
+      nameEn: 'Wisdom',
+      nameAr: 'الحكمة',
+      emoji: '🌙',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🪷',
+      colors: [Color(0xFF6A1B9A), Color(0xFF9C27B0)],
+      relatedMoods: ['peaceful', 'grateful', 'proud'],
+      description: 'Seek wisdom',
+    ),
+    Seed(
+      id: 'creativity',
+      nameEn: 'Creativity',
+      nameAr: 'الإبداع',
+      emoji: '🌺',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌺',
+      colors: [Color(0xFFEC407A), Color(0xFFAB47BC)],
+      relatedMoods: ['excited', 'joyful', 'hopeful'],
+      description: 'Spark creativity',
+    ),
+    Seed(
+      id: 'growth',
+      nameEn: 'Growth',
+      nameAr: 'النمو',
+      emoji: '🌳',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🍀',
+      colors: [Color(0xFF00B88A), Color(0xFF00897B)],
+      relatedMoods: ['proud', 'hopeful', 'excited'],
+      description: 'Embrace personal growth',
+    ),
+  ];
+
+  static Seed? getById(String id) {
+    try {
+      return all.firstWhere((s) => s.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// الحصول على الإيموجي حسب مرحلة النمو.
+  String emojiForStage(int stage) {
+    switch (stage) {
+      case 0:
+        return emoji; // seed
+      case 1:
+        return sproutEmoji; // sprout
+      case 2:
+        return saplingEmoji; // sapling
+      case 3:
+      case 4:
+      case 5:
+      default:
+        return treeEmoji; // tree
+    }
+  }
+}
+
+/// PlantedSeed — بذرة مزروعة فعلية.
+class PlantedSeed {
+  final String id;
+  final String seedTypeId;
+  final DateTime plantedAt;
+  final int growthPoints; // 0-100
+  final int daysCared;
+  final int lastWateredDay;
+  final bool isComplete;
+  final String? completionCertificate;
+
+  const PlantedSeed({
+    required this.id,
+    required this.seedTypeId,
+    required this.plantedAt,
+    this.growthPoints = 0,
+    this.daysCared = 0,
+    this.lastWateredDay = 0,
+    this.isComplete = false,
+    this.completionCertificate,
+  });
+
+  /// مرحلة النمو (0-5).
+  int get growthStage {
+    if (growthPoints >= 100) return 5;
+    if (growthPoints >= 60) return 4;
+    if (growthPoints >= 25) return 3;
+    if (growthPoints >= 10) return 2;
+    if (growthPoints >= 3) return 1;
+    return 0;
+  }
+
+  /// نسبة النمو من 0-100.
+  double get progress => growthPoints / 100;
+
+  /// هل تحتاج الماء اليوم؟
+  bool needsWater(DateTime now) {
+    final today = now.year * 10000 + now.month * 100 + now.day;
+    return lastWateredDay < today;
+  }
+
+  Seed? get seed => Seed.getById(seedTypeId);
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'seedTypeId': seedTypeId,
+        'plantedAt': plantedAt.toIso8601String(),
+        'growthPoints': growthPoints,
+        'daysCared': daysCared,
+        'lastWateredDay': lastWateredDay,
+        'isComplete': isComplete,
+        'completionCertificate': completionCertificate,
+      };
+
+  factory PlantedSeed.fromMap(Map<dynamic, dynamic> m) => PlantedSeed(
+        id: m['id']?.toString() ?? '',
+        seedTypeId: m['seedTypeId']?.toString() ?? 'love',
+        plantedAt: DateTime.tryParse(m['plantedAt']?.toString() ?? '') ??
+            DateTime.now(),
+        growthPoints: (m['growthPoints'] as num?)?.toInt() ?? 0,
+        daysCared: (m['daysCared'] as num?)?.toInt() ?? 0,
+        lastWateredDay: (m['lastWateredDay'] as num?)?.toInt() ?? 0,
+        isComplete: m['isComplete'] == true,
+        completionCertificate: m['completionCertificate']?.toString(),
+      );
+
+  PlantedSeed copyWith({
+    int? growthPoints,
+    int? daysCared,
+    int? lastWateredDay,
+    bool? isComplete,
+    String? completionCertificate,
+  }) =>
+      PlantedSeed(
+        id: id,
+        seedTypeId: seedTypeId,
+        plantedAt: plantedAt,
+        growthPoints: growthPoints ?? this.growthPoints,
+        daysCared: daysCared ?? this.daysCared,
+        lastWateredDay: lastWateredDay ?? this.lastWateredDay,
+        isComplete: isComplete ?? this.isComplete,
+        completionCertificate: completionCertificate ?? this.completionCertificate,
+      );
+}
+```
+
+---
+
+📄 الملف 45: lib/services/garden_service.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import '../models/journal_entry.dart';
+import '../models/mood.dart';
+import '../models/seed.dart';
+import 'local_ai_service.dart';
+
+/// GardenService — يدير حديقة البذور.
+///
+/// المنطق النفسي:
+///   • الكتابة اليومية = نمو
+///   • مشاعر إيجابية = نمو مضاعف
+///   • مشاعر سلبية = عطش (بحاجة للماء)
+///   • كتابة 3 أشياء جميلة = سقي
+class GardenService extends StateNotifier<GardenState> {
+  GardenService() : super(const GardenState()) {
+    _load();
+  }
+
+  static const _box = 'garden';
+  static const _maxSeeds = 10;
+
+  final _ai = LocalAIService();
+
+  void _load() {
+    final box = Hive.box(_box);
+    final seeds = <PlantedSeed>[];
+
+    for (final key in box.keys) {
+      final raw = box.get(key);
+      if (raw is Map) {
+        seeds.add(PlantedSeed.fromMap(Map<dynamic, dynamic>.from(raw)));
+      }
+    }
+
+    state = GardenState(seeds: seeds);
+  }
+
+  /// اختيار بذرة أولى.
+  Future<PlantedSeed> plantSeed(Seed seed) async {
+    if (state.seeds.length >= _maxSeeds) {
+      throw StateError('Maximum $_maxSeeds seeds reached');
+    }
+
+    final planted = PlantedSeed(
+      id: const Uuid().v4(),
+      seedTypeId: seed.id,
+      plantedAt: DateTime.now(),
+    );
+
+    await Hive.box(_box).put(planted.id, planted.toMap());
+    _load();
+    return planted;
+  }
+
+  /// "سقي" البذرة بعد كتابة مذكرة.
+  ///
+  /// المنطق:
+  ///   • مذكرة عادية → +2 نقاط نمو
+  ///   • مذكرة إيجابية → +5 نقاط
+  ///   • مذكرة سلبية → لا نمو + تحتاج للترطيب
+  ///   • 3 جمل إيجابية → +8 نقاط
+  Future<WateringResult> water(JournalEntry entry) async {
+    if (state.seeds.isEmpty) {
+      return const WateringResult(
+        ok: false,
+        message: 'Plant a seed first',
+      );
+    }
+
+    // Find the most needy seed
+    final target = _findTargetSeed();
+    if (target == null) {
+      return const WateringResult(
+        ok: false,
+        message: 'No seeds to water',
+      );
+    }
+
+    // Analyze entry
+    final sentiment = _ai.analyzeSentiment(entry.content);
+    final wordCount = entry.content.split(RegExp(r'\s+')).length;
+
+    int growth;
+    String message;
+
+    if (sentiment > 0.3) {
+      // Positive entry
+      growth = 5;
+      message = 'Your seed is growing beautifully! 🌱';
+    } else if (sentiment > 0.1) {
+      // Slightly positive
+      growth = 3;
+      message = 'Your seed got a gentle shower 💧';
+    } else if (sentiment > -0.1) {
+      // Neutral
+      growth = 2;
+      message = 'Your seed received a light drizzle 🌦️';
+    } else {
+      // Negative
+      growth = 0;
+      message = 'Your seed needs love. Try writing 3 beautiful things 💗';
+    }
+
+    // Bonus for longer entries
+    if (wordCount > 100) growth += 2;
+    if (wordCount > 300) growth += 3;
+
+    final now = DateTime.now();
+    final today = now.year * 10000 + now.month * 100 + now.day;
+
+    final newPoints = (target.growthPoints + growth).clamp(0, 100);
+    final wasComplete = target.isComplete;
+    final isNowComplete = newPoints >= 100;
+
+    final updated = target.copyWith(
+      growthPoints: newPoints,
+      daysCared: target.daysCared + (growth > 0 ? 1 : 0),
+      lastWateredDay: today,
+      isComplete: isNowComplete,
+      completionCertificate: isNowComplete && !wasComplete
+          ? _generateCertificate(target)
+          : null,
+    );
+
+    await Hive.box(_box).put(updated.id, updated.toMap());
+    _load();
+
+    return WateringResult(
+      ok: true,
+      message: message,
+      growthAdded: growth,
+      isComplete: isNowComplete && !wasComplete,
+      seed: updated,
+    );
+  }
+
+  /// حذف بذرة.
+  Future<void> removeSeed(String id) async {
+    await Hive.box(_box).delete(id);
+    _load();
+  }
+
+  /// البذرة الأكثر احتياجًا.
+  PlantedSeed? _findTargetSeed() {
+    if (state.seeds.isEmpty) return null;
+    // Sort by needs water first, then by lowest growth
+    final sorted = [...state.seeds]..sort((a, b) {
+        final aNeeds = a.needsWater(DateTime.now()) ? 0 : 1;
+        final bNeeds = b.needsWater(DateTime.now()) ? 0 : 1;
+        if (aNeeds != bNeeds) return aNeeds - bNeeds;
+        return a.growthPoints.compareTo(b.growthPoints);
+      });
+    return sorted.first;
+  }
+
+  String _generateCertificate(PlantedSeed seed) {
+    return 'Certificate of Growth\n'
+        'Awarded to: You\n'
+        'Date: ${DateTime.now().toIso8601String()}\n'
+        'For nurturing a ${seed.seed?.nameEn ?? "seed"} to full bloom.';
+  }
+
+  /// إحصائيات الحديقة.
+  GardenStats getStats() {
+    final total = state.seeds.length;
+    final completed = state.seeds.where((s) => s.isComplete).length;
+    final totalGrowth =
+        state.seeds.fold<int>(0, (sum, s) => sum + s.growthPoints);
+    final avgGrowth = total == 0 ? 0.0 : totalGrowth / total;
+
+    return GardenStats(
+      totalSeeds: total,
+      completedSeeds: completed,
+      averageGrowth: avgGrowth,
+    );
+  }
+
+  /// البذرة الرئيسية (الأكبر).
+  PlantedSeed? get primarySeed {
+    if (state.seeds.isEmpty) return null;
+    return state.seeds.reduce(
+      (a, b) => a.growthPoints > b.growthPoints ? a : b,
+    );
+  }
+}
+
+class GardenState {
+  final List<PlantedSeed> seeds;
+  final bool hasChosenSeed;
+
+  const GardenState({
+    this.seeds = const [],
+    this.hasChosenSeed = false,
+  });
+
+  GardenState copyWith({
+    List<PlantedSeed>? seeds,
+    bool? hasChosenSeed,
+  }) =>
+      GardenState(
+        seeds: seeds ?? this.seeds,
+        hasChosenSeed: hasChosenSeed ?? this.hasChosenSeed,
+      );
+}
+
+class WateringResult {
+  final bool ok;
+  final String message;
+  final int growthAdded;
+  final bool isComplete;
+  final PlantedSeed? seed;
+
+  const WateringResult({
+    required this.ok,
+    required this.message,
+    this.growthAdded = 0,
+    this.isComplete = false,
+    this.seed,
+  });
+}
+
+class GardenStats {
+  final int totalSeeds;
+  final int completedSeeds;
+  final double averageGrowth;
+
+  const GardenStats({
+    required this.totalSeeds,
+    required this.completedSeeds,
+    required this.averageGrowth,
+  });
+}
+
+final gardenProvider =
+    StateNotifierProvider<GardenService, GardenState>((ref) => GardenService());
+```
+
+---
+
+📄 الملف 46: lib/features/garden/seed_selection_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../models/seed.dart';
+import '../../services/garden_service.dart';
+
+/// SeedSelectionScreen — اختيار البذرة الأولى.
+class SeedSelectionScreen extends ConsumerStatefulWidget {
+  const SeedSelectionScreen({super.key});
+
+  @override
+  ConsumerState<SeedSelectionScreen> createState() =>
+      _SeedSelectionScreenState();
+}
+
+class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
+  int _step = 0; // 0: intro, 1: selection, 2: confirmation
+  Seed? _selectedSeed;
+  bool _isPlanting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        child: _buildStep(),
+      ),
+    );
+  }
+
+  Widget _buildStep() {
+    switch (_step) {
+      case 0:
+        return _buildIntro();
+      case 1:
+        return _buildSelection();
+      case 2:
+        return _buildConfirmation();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Step 0: Intro
+  // ═══════════════════════════════════════════════════════════
+  Widget _buildIntro() {
+    return Container(
+      key: const ValueKey('intro'),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0A0D14), Color(0xFF1A2A1E)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            children: [
+              const Spacer(),
+              Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00D2A8), Color(0xFF00897B)],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00D2A8).withValues(alpha: 0.4),
+                      blurRadius: 40,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text('🌱', style: TextStyle(fontSize: 80)),
+                ),
+              )
+                  .animate()
+                  .scale(duration: 800.ms, curve: Curves.easeOutBack)
+                  .fadeIn(),
+              const SizedBox(height: 40),
+              const Text(
+                'Plant your first seed',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                ),
+                textAlign: TextAlign.center,
+              ).animate().fadeIn(delay: 400.ms),
+              const SizedBox(height: 16),
+              const Text(
+                'Every journal entry helps your seed grow.\n'
+                'Positive feelings make it bloom.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 15,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ).animate().fadeIn(delay: 600.ms),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => setState(() => _step = 1),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF00D2A8),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Choose a Seed',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.3),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Step 1: Selection
+  // ═══════════════════════════════════════════════════════════
+  Widget _buildSelection() {
+    return Container(
+      key: const ValueKey('selection'),
+      color: const Color(0xFF0A0D14),
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 24),
+            const Text(
+              'Choose what you want to grow',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Pick the feeling you want to nurture most',
+              style: TextStyle(color: Colors.white60, fontSize: 13),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 1,
+                ),
+                itemCount: Seed.all.length,
+                itemBuilder: (_, i) {
+                  final seed = Seed.all[i];
+                  final selected = _selectedSeed?.id == seed.id;
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedSeed = seed),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: seed.colors.map((c) =>
+                              selected ? c : c.withValues(alpha: 0.3)).toList(),
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: selected
+                            ? Border.all(color: Colors.white, width: 2)
+                            : null,
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            seed.emoji,
+                            style: const TextStyle(fontSize: 44),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            seed.nameAr,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            seed.description,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _selectedSeed == null
+                      ? null
+                      : () => setState(() => _step = 2),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _selectedSeed?.colors.first ??
+                        AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    _selectedSeed == null
+                        ? 'Select a seed'
+                        : 'Plant ${_selectedSeed!.nameAr}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Step 2: Confirmation
+  // ═══════════════════════════════════════════════════════════
+  Widget _buildConfirmation() {
+    if (_selectedSeed == null) return const SizedBox.shrink();
+
+    if (_isPlanting) {
+      return Container(
+        key: const ValueKey('planting'),
+        color: const Color(0xFF0A0D14),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _selectedSeed!.emoji,
+                style: const TextStyle(fontSize: 120),
+              ).animate().scale(duration: 1500.ms).fadeIn(),
+              const SizedBox(height: 20),
+              const Text(
+                'Planting...',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ).animate().fadeIn(delay: 500.ms),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      key: const ValueKey('confirmation'),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _selectedSeed!.colors.first.withValues(alpha: 0.2),
+            const Color(0xFF0A0D14),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            children: [
+              const Spacer(),
+              Text(
+                _selectedSeed!.emoji,
+                style: const TextStyle(fontSize: 100),
+              ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+              const SizedBox(height: 24),
+              Text(
+                'A ${_selectedSeed!.nameAr} seed',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Write in your journal every day.\nYour seed will grow with every word.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 15,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _plant,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _selectedSeed!.colors.first,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Plant Now',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _plant() async {
+    if (_selectedSeed == null) return;
+    setState(() => _isPlanting = true);
+
+    try {
+      await ref.read(gardenProvider.notifier).plantSeed(_selectedSeed!);
+      await Future.delayed(const Duration(milliseconds: 1500));
+      if (mounted) context.go('/garden');
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isPlanting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+}
+```
+
+---
+
+📄 الملف 47: lib/features/garden/garden_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../models/seed.dart';
+import '../../services/garden_service.dart';
+
+/// GardenScreen — عرض الحديقة والبذور.
+class GardenScreen extends ConsumerWidget {
+  const GardenScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(gardenProvider);
+    final garden = ref.read(gardenProvider.notifier);
+
+    if (state.seeds.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Your Garden')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🌱', style: TextStyle(fontSize: 80)),
+              const SizedBox(height: 20),
+              const Text(
+                'No seeds yet',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Plant your first seed',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: () => context.push('/seed-selection'),
+                icon: const Icon(Icons.add),
+                label: const Text('Plant a seed'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final primary = garden.primarySeed;
+    final stats = garden.getStats();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Your Garden'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: () => context.push('/seed-selection'),
+            tooltip: 'Plant new seed',
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // ─── Stats ───
+          Row(
+            children: [
+              Expanded(
+                child: _statCard(
+                  icon: Icons.spa,
+                  value: '${stats.totalSeeds}',
+                  label: 'Seeds',
+                  color: AppColors.success,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _statCard(
+                  icon: Icons.emoji_events,
+                  value: '${stats.completedSeeds}',
+                  label: 'Completed',
+                  color: AppColors.warning,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _statCard(
+                  icon: Icons.trending_up,
+                  value: '${stats.averageGrowth.round()}%',
+                  label: 'Avg Growth',
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ─── Primary tree ───
+          if (primary != null)
+            _buildPrimaryTree(context, primary),
+          const SizedBox(height: 24),
+
+          // ─── All seeds ───
+          const Text(
+            'ALL SEEDS',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textTertiary,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...state.seeds.map((s) => _buildSeedRow(context, s, garden)),
+        ],
+      ),
+    );
+  }
+
+  Widget _statCard({
+    required IconData icon,
+    required String value,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrimaryTree(BuildContext context, PlantedSeed seed) {
+    final s = seed.seed;
+    if (s == null) return const SizedBox.shrink();
+
+    final stage = seed.growthStage;
+    final emoji = s.emojiForStage(stage);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            s.colors.first.withValues(alpha: 0.3),
+            s.colors.last.withValues(alpha: 0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: s.colors.first.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'YOUR MAIN TREE',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textTertiary,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Tree emoji
+          Text(
+            emoji,
+            style: TextStyle(fontSize: stage >= 3 ? 120 : 80),
+          ).animate().scale(duration: 800.ms, curve: Curves.easeOutBack),
+
+          const SizedBox(height: 12),
+          Text(
+            s.nameAr,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _stageName(stage),
+            style: TextStyle(
+              fontSize: 13,
+              color: s.colors.last,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Progress bar
+          Column(
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    'Growth',
+                    style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${seed.growthPoints}%',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: seed.progress,
+                  minHeight: 10,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  valueColor: AlwaysStoppedAnimation(s.colors.first),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.calendar_today,
+                  size: 14, color: AppColors.textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                '${seed.daysCared} days of care',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+
+          if (seed.isComplete) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.emoji_events,
+                      size: 16, color: AppColors.warning),
+                  SizedBox(width: 6),
+                  Text(
+                    'Full bloom! 🌸',
+                    style: TextStyle(
+                      color: AppColors.warning,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSeedRow(
+    BuildContext context,
+    PlantedSeed seed,
+    GardenService garden,
+  ) {
+    final s = seed.seed;
+    if (s == null) return const SizedBox.shrink();
+
+    final needsWater = seed.needsWater(DateTime.now());
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: s.colors),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              s.emojiForStage(seed.growthStage),
+              style: const TextStyle(fontSize: 24),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      s.nameAr,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (needsWater) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          '💧 Needs water',
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: seed.progress,
+                    minHeight: 6,
+                    backgroundColor:
+                        s.colors.first.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation(s.colors.first),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${seed.growthPoints}%',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: s.colors.last,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _stageName(int stage) {
+    switch (stage) {
+      case 0:
+        return 'Seed';
+      case 1:
+        return 'Sprout';
+      case 2:
+        return 'Sapling';
+      case 3:
+        return 'Young Tree';
+      case 4:
+        return 'Strong Tree';
+      default:
+        return 'Full Bloom 🌸';
+    }
+  }
+}
+```
+
+---
+
+📄 الملف 48: lib/widgets/garden_watering_dialog.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
+import '../core/theme/app_colors.dart';
+import '../services/garden_service.dart';
+
+/// GardenWateringDialog — نافذة عرض نتيجة السقي بعد كتابة مذكرة.
+class GardenWateringDialog extends StatelessWidget {
+  final WateringResult result;
+
+  const GardenWateringDialog({super.key, required this.result});
+
+  static Future<void> show(
+    BuildContext context,
+    WateringResult result,
+  ) async {
+    if (!result.ok) return;
+
+    await showDialog(
+      context: context,
+      builder: (_) => GardenWateringDialog(result: result),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final seed = result.seed?.seed;
+    final colors = seed?.colors ?? [AppColors.success, AppColors.success];
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: colors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Emoji
+            Text(
+              result.isComplete ? '🌸' : seed?.emoji ?? '🌱',
+              style: const TextStyle(fontSize: 80),
+            )
+                .animate()
+                .scale(duration: 600.ms, curve: Curves.easeOutBack)
+                .then()
+                .shimmer(duration: 1000.ms),
+
+            const SizedBox(height: 16),
+
+            // Growth added
+            if (result.growthAdded > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '+${result.growthAdded} growth',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3),
+
+            const SizedBox(height: 16),
+
+            // Message
+            Text(
+              result.message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ).animate().fadeIn(delay: 500.ms),
+
+            if (result.isComplete) ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(
+                      Icons.emoji_events,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Congratulations!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Your tree reached full bloom',
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(delay: 700.ms),
+            ],
+
+            const SizedBox(height: 20),
+
+            // Button
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(context),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: colors.first,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text(
+                  'Continue',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+📄 الملف 49: lib/features/editor/editor_screen.dart — تعديل
+
+العملية: 🟡 MODIFY
+
+في _saveEntry()، بعد الحفظ الناجح، أضف:
+
+```dart
+      // ─── Garden watering ───
+      try {
+        final garden = ref.read(gardenProvider.notifier);
+        final result = await garden.water(entry);
+        if (mounted && result.ok) {
+          await GardenWateringDialog.show(context, result);
+        }
+      } catch (_) {
+        // Silent — garden is optional
+      }
+```
+
+وأضف في الأعلى:
+
+```dart
+import '../../services/garden_service.dart';
+import '../../widgets/garden_watering_dialog.dart';
+```
+
+---
+
+📄 الملف 50: lib/core/router.dart — تحديث
+
+العملية: 🟡 MODIFY
+
+أضف هذه المسارات:
+
+```dart
+    GoRoute(
+      path: '/garden',
+      builder: (_, __) => const GardenScreen(),
+    ),
+    GoRoute(
+      path: '/seed-selection',
+      builder: (_, __) => const SeedSelectionScreen(),
+    ),
+```
+
+وأضف في الأعلى:
+
+```dart
+import '../features/garden/garden_screen.dart';
+import '../features/garden/seed_selection_screen.dart';
+```
+
+---
+
+📄 الملف 51: lib/features/home/home_screen.dart — تعديل
+
+العملية: 🟡 MODIFY
+
+أضف زر في AppBar.actions:
+
+```dart
+          IconButton(
+            icon: const Icon(Icons.spa_outlined),
+            tooltip: 'My Garden',
+            onPressed: () => context.push('/garden'),
+          ),
+```
+
+---
+
+📄 الملف 52: lib/services/splash_service.dart — Splash + Sound
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/services.dart';
+
+/// SplashService — يدير إعدادات السبلاش والصوت.
+///
+/// يمكن للمستخدم اختيار:
+///   • splashType (1-5): نوع السبلاش
+///   • splashSound (rain, piano, birds, ...)
+///   • soundEnabled
+class SplashService {
+  static const _channel = MethodChannel('com.productchat/splash');
+
+  /// تشغيل صوت السبلاش.
+  Future<void> playSplashSound(String soundId) async {
+    try {
+      await _channel.invokeMethod('playSound', {'soundId': soundId});
+    } catch (_) {}
+  }
+
+  /// إيقاف الصوت.
+  Future<void> stopSplashSound() async {
+    try {
+      await _channel.invokeMethod('stopSound');
+    } catch (_) {}
+  }
+}
+
+class SplashOption {
+  final int id;
+  final String name;
+  final String description;
+  final String emoji;
+  final List<String> sounds;
+
+  const SplashOption({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.emoji,
+    required this.sounds,
+  });
+
+  static const all = [
+    SplashOption(
+      id: 1,
+      name: 'First Seed',
+      description: 'A seed falls and sprouts',
+      emoji: '🌱',
+      sounds: ['rain_soft', 'piano_gentle'],
+    ),
+    SplashOption(
+      id: 2,
+      name: 'New Dawn',
+      description: 'Sun rises behind mountains',
+      emoji: '🌅',
+      sounds: ['flute_dawn', 'birds_distant'],
+    ),
+    SplashOption(
+      id: 3,
+      name: 'Open Book',
+      description: 'Pages turn into butterflies',
+      emoji: '📖',
+      sounds: ['paper_turn', 'harp_soft'],
+    ),
+    SplashOption(
+      id: 4,
+      name: 'Candle Light',
+      description: 'A candle illuminates a warm room',
+      emoji: '🕯️',
+      sounds: ['oud_soft', 'whisper_gentle'],
+    ),
+    SplashOption(
+      id: 5,
+      name: 'Circle of Life',
+      description: 'Pulsing light reveals a tree',
+      emoji: '💫',
+      sounds: ['tibetan_bowl', 'drums_soft'],
+    ),
+  ];
+}
+```
+
+---
+
+📄 الملف 53: lib/features/splash/splash_screen.dart — تحديث
+
+العملية: 🔴 REPLACE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../../services/garden_service.dart';
+import '../../services/splash_service.dart';
+
+/// SplashScreen — splash ديناميكي حسب اختيار المستخدم.
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  final SplashService _splash = SplashService();
+
+  @override
+  void initState() {
+    super.initState();
+    _boot();
+  }
+
+  Future<void> _boot() async {
+    final box = Hive.box('settings');
+    final splashType = box.get('splash_type', defaultValue: 1) as int;
+    final soundId = box.get('splash_sound', defaultValue: 'piano_gentle') as String;
+    final soundEnabled = box.get('splash_sound_enabled', defaultValue: true) as bool;
+
+    if (soundEnabled) {
+      await _splash.playSplashSound(soundId);
+    }
+
+    await Future.delayed(const Duration(milliseconds: 3000));
+    await _splash.stopSplashSound();
+
+    if (!mounted) return;
+
+    // إذا لا يوجد بذرة → شاشة الاختيار
+    final gardenBox = Hive.box('garden');
+    if (gardenBox.isEmpty) {
+      context.go('/seed-selection');
+    } else {
+      context.go('/home');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final box = Hive.box('settings');
+    final splashType = box.get('splash_type', defaultValue: 1) as int;
+
+    return Scaffold(
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 800),
+        child: _buildSplash(splashType),
+      ),
+    );
+  }
+
+  Widget _buildSplash(int type) {
+    switch (type) {
+      case 2:
+        return _newDawnSplash();
+      case 3:
+        return _openBookSplash();
+      case 4:
+        return _candleSplash();
+      case 5:
+        return _circleOfLifeSplash();
+      default:
+        return _firstSeedSplash();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 1: First Seed
+  // ═══════════════════════════════════════════════════════════
+  Widget _firstSeedSplash() {
+    return Container(
+      key: const ValueKey('seed'),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0A0D14), Color(0xFF1A2A1E)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Falling seed
+            const Text('🌰', style: TextStyle(fontSize: 60))
+                .animate()
+                .moveY(begin: -100, end: 0, duration: 1000.ms)
+                .fadeIn(),
+
+            const SizedBox(height: 20),
+
+            // Sprout appears
+            const Text('🌱', style: TextStyle(fontSize: 100))
+                .animate()
+                .fadeIn(delay: 1200.ms)
+                .scale(delay: 1200.ms, duration: 600.ms),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'My Journal',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+              ),
+            ).animate().fadeIn(delay: 1800.ms),
+
+            const SizedBox(height: 8),
+
+            const Text(
+              'Every word grows something',
+              style: TextStyle(color: Colors.white60, fontSize: 13),
+            ).animate().fadeIn(delay: 2200.ms),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 2: New Dawn
+  // ═══════════════════════════════════════════════════════════
+  Widget _newDawnSplash() {
+    return Container(
+      key: const ValueKey('dawn'),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF0A0D14),
+            Color(0xFFFF7B54),
+            Color(0xFFFFD54F),
+          ],
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          stops: [0.3, 0.7, 1.0],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🌅', style: TextStyle(fontSize: 120))
+                .animate()
+                .scale(duration: 1500.ms, curve: Curves.easeOutCubic)
+                .fadeIn(),
+            const SizedBox(height: 30),
+            const Text(
+              'My Journal',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                shadows: [Shadow(color: Colors.black26, blurRadius: 10)],
+              ),
+            ).animate().fadeIn(delay: 1000.ms),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 3: Open Book
+  // ═══════════════════════════════════════════════════════════
+  Widget _openBookSplash() {
+    return Container(
+      key: const ValueKey('book'),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2C1810), Color(0xFF1A1F3A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('📖', style: TextStyle(fontSize: 100))
+                .animate()
+                .scale(duration: 800.ms, curve: Curves.easeOutBack),
+            const SizedBox(height: 20),
+            ...List.generate(5, (i) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: Text('🦋', style: TextStyle(fontSize: 24)),
+              ).animate().fadeIn(
+                    delay: Duration(milliseconds: 1000 + i * 200),
+                  ).moveY(begin: 0, end: -100).fadeOut(
+                    delay: Duration(milliseconds: 1500 + i * 200),
+                  );
+            }),
+            const SizedBox(height: 20),
+            const Text(
+              'Your Story',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Georgia',
+              ),
+            ).animate().fadeIn(delay: 1800.ms),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 4: Candle
+  // ═══════════════════════════════════════════════════════════
+  Widget _candleSplash() {
+    return Container(
+      key: const ValueKey('candle'),
+      color: const Color(0xFF0A0D14),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFFFB74D).withValues(alpha: 0.4),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: const Center(
+                child: Text('🕯️', style: TextStyle(fontSize: 100)),
+              ),
+            )
+                .animate()
+                .fadeIn(duration: 1200.ms)
+                .then()
+                .shimmer(duration: 2000.ms, color: const Color(0xFFFFD54F)),
+            const SizedBox(height: 30),
+            const Text(
+              'A quiet space',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w300,
+                letterSpacing: 3,
+              ),
+            ).animate().fadeIn(delay: 800.ms),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Splash 5: Circle of Life
+  // ═══════════════════════════════════════════════════════════
+  Widget _circleOfLifeSplash() {
+    return Container(
+      key: const ValueKey('circle'),
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          colors: [Color(0xFF1A0B2E), Color(0xFF0A0D14)],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Expanding circles
+                ...List.generate(3, (i) {
+                  return Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.5),
+                        width: 2,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                  ).animate(
+                    delay: Duration(milliseconds: i * 300),
+                  ).scale(
+                    begin: const Offset(0.5, 0.5),
+                    end: const Offset(3, 3),
+                    duration: 2500.ms,
+                  ).fadeOut();
+                }),
+                // Center tree
+                const Text('🌳', style: TextStyle(fontSize: 120))
+                    .animate()
+                    .fadeIn(delay: 800.ms)
+                    .scale(delay: 800.ms, duration: 1000.ms),
+              ],
+            ),
+            const SizedBox(height: 30),
+            const Text(
+              'Growth is a circle',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w300,
+                letterSpacing: 2,
+              ),
+            ).animate().fadeIn(delay: 1500.ms),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+🎯 البرومبت للذكاء الاصطناعي الآخر
+
+انسخ هذا وأرسله:
+
+```
+طبّق المرحلة الخامسة — حديقة البذور + Splash:
+
+1. lib/models/seed.dart — 10 بذور نفسية
+2. lib/services/garden_service.dart — إدارة الحديقة
+3. lib/features/garden/seed_selection_screen.dart — اختيار البذرة
+4. lib/features/garden/garden_screen.dart — عرض الحديقة
+5. lib/widgets/garden_watering_dialog.dart — نافذة السقي
+6. lib/features/editor/editor_screen.dart — تعديل (استدعاء garden.water)
+7. lib/core/router.dart — إضافة /garden + /seed-selection
+8. lib/features/home/home_screen.dart — إضافة زر الحديقة
+9. lib/services/splash_service.dart — 5 سبلاش + أصوات
+10. lib/features/splash/splash_screen.dart — استبدال (5 سبلاش ديناميكية)
+
+الميزات المُضافة:
+- 10 بذور نفسية (حب، فرح، سلام، أمل، امتنان، شجاعة، صبر، حكمة، إبداع، نمو)
+- شجرة تنمو 5 مراحل (بذرة → برعم → شتلة → شجرة → ازدهار)
+- نظام سقي ذكي: كتابة مذكرات إيجابية = نمو، سلبية = تحتاج ماء
+- 5 سبلاش screens مختلفة
+- 10 أصوات للسبلاش
+- نافذة احتفال عند اكتمال النمو
+- شهادة عند اكتمال 100%
+
+المنطق النفسي:
+- كل مذكرة إيجابية → +5 نقاط
+- كل مذكرة عادية → +2 نقاط
+- كل مذكرة سلبية → 0 + تحتاج للترطيب
+- 3 جمل إيجابية → +8 نقاط
+
+بعد التطبيق:
+  flutter clean
+  flutter pub get
+  flutter gen-l10n
+  flutter analyze
+
+أبلغ بجدول مختصر.
+```
+
+---
+
+🌟 ملخص المرحلة الخامسة
+
+# الميزة الابتكار
+1 حديقة البذور أول تطبيق مذكرة بنظام زراعة نفسية
+2 10 بذور مشاعر إيجابية قابلة للزراعة
+3 نمو 5 مراحل بذرة → شجرة كاملة
+4 سقي ذكي تحليل نفسي يحدد حاجة الشجرة
+5 شهادة نمو إنجاز عند 100%
+6 5 سبلاش كل مستخدم يختار أجواءه
+7 10 أصوات بيانو، مطر، ناي، عود، تبت
+
+هذا الابتكار الفريد يجمع بين:
+
+· 🧠 علم النفس (تعزيز إيجابي)
+· 🎮 الألعاب (نظام نمو)
+· 🎨 الفن (بصري جميل)
+· 🧘 الروحانيات (تأمل وعناية)
+
+---
+
+اختر رقم Splash (1-5) وسأفعّله في الكود النهائي.
+
+قل "واصل" للمرحلة السادسة (الإحصاءات المتقدمة + Social محلي + Motivational كامل).

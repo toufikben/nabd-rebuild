@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="500" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fgBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="50%" stop-color="#1A1F3A"/>
+      <stop offset="100%" stop-color="#2A1F3A"/>
+    </linearGradient>
+    <linearGradient id="fgPulse" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="50%" stop-color="#8B7BFF"/>
+      <stop offset="100%" stop-color="#00D2A8"/>
+    </linearGradient>
+    <filter id="fgGlow">
+      <feGaussianBlur stdDeviation="12" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- خلفية -->
+  <rect width="1024" height="500" fill="url(#fgBg)"/>
+
+  <!-- دوائر زخرفية -->
+  <circle cx="200" cy="250" r="180" fill="url(#fgPulse)" opacity="0.08"/>
+  <circle cx="850" cy="150" r="120" fill="url(#fgPulse)" opacity="0.06"/>
+
+  <!-- الأيقونة على اليسار -->
+  <g transform="translate(140, 250) scale(0.6)">
+    <rect x="-160" y="-160" width="320" height="320" rx="60" fill="#141821"/>
+    <path d="M -120 0 L -50 0 L -25 -40 L 0 40 L 25 -30 L 50 30 L 75 0 L 120 0"
+          stroke="url(#fgPulse)" stroke-width="14" fill="none"
+          stroke-linecap="round" filter="url(#fgGlow)"/>
+    <path d="M 0,-15 C -8,-28 -28,-28 -35,-10 C -40,5 -25,22 0,38
+             C 25,22 40,5 35,-10 C 28,-28 8,-28 0,-15 Z"
+          fill="#E91E63" filter="url(#fgGlow)"/>
+  </g>
+
+  <!-- النص -->
+  <text x="380" y="200"
+        font-family="system-ui, sans-serif"
+        font-size="72" font-weight="800"
+        fill="white" letter-spacing="2">نبض</text>
+  <text x="380" y="260"
+        font-family="system-ui, sans-serif"
+        font-size="32" font-weight="400"
+        fill="#8B95A8" letter-spacing="4">NABD · JOURNAL</text>
+  <text x="380" y="320"
+        font-family="system-ui, sans-serif"
+        font-size="24" font-weight="500"
+        fill="#6C5CE7">مذكرتك الخاصة · 100% محلية</text>
+
+  <!-- شارات صغيرة -->
+  <g transform="translate(380, 370)">
+    <rect x="0" y="0" width="90" height="34" rx="17" fill="#6C5CE7" opacity="0.2"/>
+    <text x="45" y="23" font-size="14" fill="#8B7BFF"
+          font-family="system-ui" text-anchor="middle">🌱 Garden</text>
+
+    <rect x="100" y="0" width="90" height="34" rx="17" fill="#00D2A8" opacity="0.2"/>
+    <text x="145" y="23" font-size="14" fill="#00D2A8"
+          font-family="system-ui" text-anchor="middle">🌤️ Mood</text>
+
+    <rect x="200" y="0" width="90" height="34" rx="17" fill="#F5A623" opacity="0.2"/>
+    <text x="245" y="23" font-size="14" fill="#F5A623"
+          font-family="system-ui" text-anchor="middle">🏆 10</text>
+  </g>
+</svg>

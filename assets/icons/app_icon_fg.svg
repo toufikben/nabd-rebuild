@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="50%" stop-color="#8B7BFF"/>
+      <stop offset="100%" stop-color="#00D2A8"/>
+    </linearGradient>
+    <radialGradient id="fgHeart" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF6B9D"/>
+      <stop offset="100%" stop-color="#E91E63"/>
+    </radialGradient>
+  </defs>
+
+  <!-- تصميم مركزي داخل 60% من المساحة -->
+  <g transform="translate(512, 512) scale(0.7)">
+    <path d="M -200 0 L -80 0 L -40 -70 L 0 70 L 40 -50 L 80 50 L 120 0 L 200 0"
+          stroke="url(#fgGrad)" stroke-width="20" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 0,-25 C -12,-45 -45,-45 -55,-15 C -62,10 -40,35 0,60
+             C 40,35 62,10 55,-15 C 45,-45 12,-45 0,-25 Z"
+          fill="url(#fgHeart)"/>
+  </g>
+</svg>

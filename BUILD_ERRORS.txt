@@ -1,0 +1,174 @@
+NABD BUILD/AUDIT ERRORS
+========================
+Generated: 2026-09-15
+
+Environment
+-----------
+- Flutter SDK is not installed in the sandbox, so `flutter pub get`, `flutter analyze`, `flutter test`, and Android/iOS builds could not be executed here.
+- The source attachments contain 105 logical file entries and 136 code blocks; 75 complete CREATE/REPLACE blocks were materialized.
+
+Source fidelity and replacement notes
+-------------------------------------
+- All 10 attachments are archived under docs/SOURCE_ATTACHMENTS/.
+- The complete code-block manifest is docs/SOURCE_FILE_MANIFEST.json.
+- MODIFY blocks were not silently applied because they are partial updates and several target files are absent; applying them blindly would delete or invent code.
+- Later REPLACE instructions take precedence over earlier CREATE/REPLACE bodies for the same path where a complete replacement was available.
+
+Known materialization problems
+------------------------------
+- Two attachment labels combined multiple paths: `lib/core/l10n/app_en.arb + app_ar.arb`.
+- Two asset labels contained descriptions in the filename: `app_icon_fg.svg (Foreground للأيقونة التكيفية)` and `mood_icons.svg (20 مشاعر)`.
+- The extractor preserved those labels verbatim rather than silently changing source names. They require explicit normalization before a production build.
+- Several referenced files were never supplied as complete CREATE/REPLACE blocks, including foundational theme, database, settings, voice, notification, model, and feature files.
+- The router references many screens whose complete source blocks were not materialized.
+- The extracted project therefore cannot be considered a complete Flutter application yet.
+
+Static dependency risks
+-----------------------
+- Missing local imports were detected by the static audit and must be resolved before compilation.
+- The requested dependency set includes native/platform packages, but there is no Flutter SDK or platform toolchain available for verification.
+- The supplied encryption implementation is described in its source as XOR/hash-based and is not AES-256; it must not be advertised as AES-256 without replacement by a vetted authenticated-encryption implementation.
+- The supplied backup password encryption is also XOR-based and must not be treated as secure encryption.
+- The supplied monetization section uses placeholder AdMob identifiers and requires store configuration; it was not materialized because it appears only as a proposal in pasted_content_10.txt.
+- Marketing claims such as AES-256, no tracking, and revenue projections require product/legal verification before publication.
+
+Commands attempted
+------------------
+- gh repo create nabd --private: initial syntax failed because gh accepts at most one positional argument with the selected flags; no repository was created by that failed command.
+- Corrected command succeeded: private repository toufikben/nabd was created.
+- Flutter command check: `flutter: command not found`, `dart: command not found`.
+
+Next required action
+--------------------
+Install/use a Flutter-enabled environment, normalize the three malformed extracted paths, add or explicitly approve the missing foundational files, then run pub get/analyze/test and platform builds. No claim of a successful Flutter build is made in this commit.
+
+Final static audit
+------------------
+- After adding the complete foundational files and extracting the complete home screen block, local Dart import resolution reports 0 missing local imports.
+- The malformed extracted filenames were normalized to `assets/icons/app_icon_fg.svg` and `assets/icons/mood_icons.svg`; the combined l10n instruction file was removed because the real `app_en.arb` and `app_ar.arb` files already exist.
+- JSON validation passed for both ARB files, and shell syntax validation passed for `scripts/convert_svg_to_png.sh`.
+- Ruby was unavailable, so Ruby-based YAML validation was skipped; Flutter validation remains unavailable for the same SDK reason.
+- This repository snapshot is therefore statically organized but not Flutter-build verified.
+
+V2 correction pass — 2026-09-15
+--------------------------------
+- Applied complete v2 blocks for AES-256-GCM encryption, encrypted backups, monetization, rewarded ads, Paywall, pubspec, l10n, asset setup, sound download, MODIFY checklist, and v2 report.
+- Fixed an extraction/API mismatch in `lib/main.dart`: the old `generateMasterKey()` call was replaced with `EncryptionService().initialize()`.
+- Added the missing `/paywall` route and the missing `AppColors.border` and `AppColors.surfaceAlt` constants.
+- Static local-import audit remains at 0 missing local imports.
+- Shell syntax checks pass for both new asset scripts.
+- Flutter SDK is still unavailable; package resolution, Dart analyzer, generated localization, tests, and platform builds remain unverified.
+- Missing binary assets remain: `assets/icons/app_icon.png`, `assets/icons/app_icon_fg.png`, `assets/icons/splash.png`, and the sound files under `assets/sounds/`.
+- The v2 source text contains claims of completed security and monetization; these are treated as code-level implementation only until runtime, cryptographic, store, and policy tests pass.
+
+Final v2 static pass — 2026-09-15
+---------------------------------
+- Added `MobileAds.instance.initialize()` to `main.dart`.
+- Package-import audit found no undeclared package imports against `pubspec.yaml`.
+- Bash syntax checks pass for `scripts/setup_assets.sh` and `scripts/download_sounds.sh`.
+- Remaining blockers are environmental or release-level: no Flutter/Dart SDK, no generated PNG/audio assets, incomplete platform scaffolding, no real store products, no production AdMob IDs, and no runtime cryptographic or purchase tests.
+- The roadmap is now tracked in `ROADMAP.md` and must be updated with every subsequent change.
+
+Asset generation pass — 2026-09-15
+----------------------------------
+- Installed `svgexport` with npm and ran `scripts/convert_svg_to_png.sh` successfully.
+- Generated 12 PNG files: app icon, adaptive foreground, launcher foreground, splash, Play Store icon, feature graphic, and six store screenshots.
+- Ran `scripts/setup_assets.sh`; SVG conversion completed, then the script stopped at `flutter pub get` with `flutter: command not found`.
+- No MP3 files were downloaded; the sounds step remains pending and requires license verification.
+- `identify` is unavailable in the sandbox, so verification used file presence, file sizes, and the conversion command output rather than ImageMagick metadata.
+- `.gitignore` was corrected so generated PNG assets can be tracked in Git.
+
+V3 final corrections — 2026-09-15
+---------------------------------
+- Added `lib/core/admob_config.dart` with Debug Test IDs and Release `--dart-define` Rewarded IDs.
+- Replaced the rewarded-ad service to use AdMobConfig and bounded retries.
+- Added Android AD_ID permission and Test App ID; added iOS GADApplicationIdentifier, SKAdNetwork entries, and tracking description.
+- Replaced both asset scripts with safer versions. The setup script now detects SVG tools, generates `ic_launcher_foreground.png`, and skips Flutter-only generation when Flutter is unavailable.
+- Added sound attribution, encryption tests, and a pre-launch checklist.
+- Safe sound download result: 2 files downloaded (`rain_soft.mp3`, `tibetan_bowl.mp3`); 8 source URLs returned HTTP 403 and remain missing.
+- Fixed the sound script so it does not overwrite or duplicate attribution entries on repeated runs.
+- Fixed AdMob production readiness to check the platform-specific iOS or Android Rewarded ID.
+- Important platform limitation: `--dart-define` does not automatically substitute values inside AndroidManifest.xml or Info.plist. Production App IDs still require a native/CI replacement step.
+- Additional missing platform resources: Android Manifest references `@xml/shortcuts`, `@xml/file_paths`, and `@xml/widget_journal_info`, but these files are absent. MainActivity, Gradle scaffolding, and iOS project/Podfile/entitlements are also absent from this extracted repository.
+
+V3 verification corrections — 2026-09-15
+-----------------------------------------
+- Initial v3 setup exposed two defects: `svgexport` received duplicated dimensions and the Android XML comment contained the invalid `--dart-define` token. Both were fixed.
+- Re-ran `scripts/setup_assets.sh`; all generated PNG dimensions now pass: icons 1024x1024, adaptive foreground 432x432, splash 800x800, Play icon 512x512, feature graphic 1024x500, screenshots 1080x1920.
+- AndroidManifest.xml and Info.plist now parse successfully as XML.
+- Safe downloader result remains 2/10 sounds; eight URLs return HTTP 403.
+- Remaining platform gaps are explicit: `@xml/shortcuts`, `@xml/file_paths`, and `@xml/widget_journal_info` are referenced but absent, and the Android/iOS scaffolds are incomplete.
+- The Test App IDs in native files are valid Google test values. Production App IDs cannot be generated locally and must be supplied through AdMob and inserted by a native/CI release step; dart-define alone does not rewrite native XML.
+
+V4 automation and remaining-gap fixes — 2026-09-15
+----------------------------------------------------
+- Added GitHub Actions workflow `.github/workflows/android-build.yml` for Flutter verify, Debug APK, and Debug AAB. It runs without signing or AdMob secrets and uploads both debug artifacts.
+- Added Android resources: `shortcuts.xml`, `file_paths.xml`, `widget_journal_info.xml`, `widget_journal.xml`, and `widget_journal_bg.xml`, plus widget strings.
+- Added `lib/core/app_settings.dart` and updated SplashScreen to skip unavailable sounds and fall back to `rain_soft`.
+- Replaced the sound downloader with Mixkit primary and Freesound fallback URLs, User-Agent, retries, MIME validation, and size validation.
+- Ran the new downloader successfully: 10/10 sound files are now present.
+- Added `docs/SOUNDS_MANUAL.md` and `docs/ANDROID_BUILD_WORKFLOW.md`.
+- Release APK/AAB signing remains intentionally disabled until keystore and GitHub Secrets are supplied. No secrets were added to the repository.
+- Local Flutter analyze/test/build remain unexecuted because Flutter is not installed in the sandbox; the first GitHub Actions run is the required verification point.
+- Production AdMob App IDs still need a native/CI replacement step; Dart `--dart-define` alone does not rewrite Manifest or Info.plist.
+
+GitHub Actions verification — 2026-09-15
+-----------------------------------------
+- Workflow runs checked:
+  - Push run: https://github.com/toufikben/nabd/actions/runs/35008414749
+  - Manual run: https://github.com/toufikben/nabd/actions/runs/35008427818
+- Both runs failed in `flutter analyze` during the `verify` job. The Test step and the Debug APK/AAB job were skipped, so no artifacts were produced.
+- Analyzer output contained 354 error lines and 16 warning lines.
+- 336 errors originate from `lib/features/stats/weather_screen.dart`. The file contains box-drawing characters and Arabic prose/table text outside a Dart comment or string, producing illegal-character, expected-token, duplicate-definition, and undefined-class errors.
+- Other independent analyzer errors include: missing `WeatherScreen` class reference in `lib/core/router.dart`; missing `AppColors.primaryGlow` in breathing, motivation, and year-review screens; undefined `Mood` in `lib/features/home/home_screen.dart`; syntax errors near line 286 in `lib/features/splash/splash_screen.dart`; invalid `$1`–`$4` record getters in `lib/features/stats/advanced/emotion_radar_screen.dart`; duplicate constants in `word_cloud_screen.dart`; non-constant monetization AdMob initialization; a missing `uiLocalNotificationDateInterpretation` argument in `notification_service.dart`; an incompatible `onAdImpression` callback in `rewarded_ad_service.dart`; and the stale `MyApp` reference in `test/widget_test.dart`.
+- The root issue must be fixed before the workflow can reach `flutter test` or build APK/AAB. No code was silently changed in response to this inspection.
+
+GitHub Actions rerun after v5 fixes — 2026-09-15
+-------------------------------------------------
+- Run: https://github.com/toufikben/nabd/actions/runs/35009616847
+- The 336 weather errors and the other major analyzer errors were resolved.
+- Remaining analyzer failures were only 3 syntax errors at `lib/features/splash/splash_screen.dart:286`: the callback used a comma after a chained `return` expression (`.fadeOut(),`) instead of a semicolon. This has now been corrected to `.fadeOut();`.
+- The run also reported 16 non-fatal warnings, primarily unused imports/locals and a duplicate router import. These do not block the build but should be cleaned after a successful build.
+- GitHub CLI reported a 403 while requesting annotations because the token lacks `checks:read`; this is a reporting-permission warning, not a Dart or Android build error.
+
+Analyzer cleanup pass — 2026-09-15
+----------------------------------
+- The latest run `35010087803` had no errors or warnings; it reported four informational lints and exited non-zero because the project treats analyzer infos as fatal.
+- Replaced deprecated `withOpacity` calls in `lib/features/home/home_screen.dart` with `withValues(alpha: ...)`.
+- Removed the unnecessary `.toList()` from the spread in `lib/features/stats/stats_screen.dart`.
+- Updated `lib/services/voice_to_text_service.dart` to use `SpeechListenOptions(localeId: ...)`.
+- The next Actions run will verify the analyzer, tests, and APK/AAB build after these changes.
+
+Final analyzer compatibility correction — 2026-09-15
+------------------------------------------------------
+- Run `35010351947` reached only one error: `speech_to_text: ^7.0.0` does not define the `options` named parameter.
+- Restored the package-compatible `localeId` call and added a targeted `deprecated_member_use` suppression on that line. No other analyzer errors were reported in this run.
+- A new workflow run is required to verify tests and APK/AAB compilation.
+
+Android build dependency correction — 2026-09-15
+--------------------------------------------------
+- Run `35010954907` passed `flutter analyze` and `flutter test`, then failed only during Debug APK compilation.
+- The failure was a package conflict: `record_linux-0.7.2` did not implement members required by `record_platform_interface-1.6.0` (`startStream` and the newer `hasPermission` signature).
+- Updated `record` from `^5.0.4` to `^6.1.0`, which is compatible with the current platform interface and retains the `AudioRecorder` API used by the editor.
+
+Android Gradle Plugin compatibility correction — 2026-09-15
+---------------------------------------------------------------
+- Run `35011798407` passed Analyze and Test but failed at `:app:checkDebugAarMetadata`.
+- `androidx.webkit:webkit:1.14.0` requires Android Gradle Plugin `8.1.1` or newer, while the workflow bootstrap generated AGP `8.1.0`.
+- Added a workflow step in both jobs to replace generated AGP `8.1.0` with `8.1.1` before dependency resolution and build.
+
+Android minSdk compatibility correction — 2026-09-15
+-------------------------------------------------------
+- Run `35012574091` passed Analyze, Test, and AGP alignment, then failed during Manifest merge because `record_android` requires `minSdkVersion 23` while the generated project used 21.
+- Added a workflow step in both jobs to set generated `android/app/build.gradle` minSdk to 23. The unsupported `tools:overrideLibrary` workaround was intentionally not used.
+
+Android Kotlin widget correction — 2026-09-15
+-----------------------------------------------
+- Run `35013386862` passed Analyze, Test, AGP alignment, and minSdk alignment, then failed at `:app:compileDebugKotlin`.
+- `android/app/src/main/kotlin/com/productchat/studio/native/JournalWidgetProvider.kt` incorrectly contained an Android Manifest `<receiver>` XML block, causing Kotlin `Expecting a top level declaration` errors.
+- Replaced it with a valid `AppWidgetProvider` implementation under `com.productchat.studio.nabd` and updated Manifest receiver name to `.nabd.JournalWidgetProvider`.
+
+Widget package import correction — 2026-09-15
+------------------------------------------------
+- Run `35014275182` reached Kotlin compilation and failed because `MainActivity` and generated `R` were imported from `com.productchat.studio`, while Flutter bootstrap generated them in the application package `com.productchat.studio.nabd`.
+- Removed both incorrect imports; the provider now resolves package-local `MainActivity` and `R` references.

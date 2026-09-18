@@ -1,0 +1,305 @@
+بناءً على طلبك، قمت ببحث معمق حول أصوات شاشة البداية (Splash) وأفضل استراتيجيات تحقيق الدخل لتطبيق "نبض". إليك النتائج الكاملة مع التوصيات والكود المبدئي.
+
+---
+
+🎵 أولاً: 10 أصوات مقترحة لشاشة البداية (Splash Sounds)
+
+يمكن استخدام هذه الأصوات لتتناسب مع كل نمط من أنماط شاشة البداية الخمسة، أو لخلق تجربة صوتية مميزة عند كل فتح للتطبيق. الأصوات المقترحة هي:
+
+# اسم الصوت الوصف النمط المقترح
+1 rain_soft صوت مطر خفيف مع نغمات بيانو هادئة 🌱 البذرة الأولى
+2 flute_dawn ناي هادئ مع تغريد طيور بعيد 🌅 الفجر الجديد
+3 harp_soft نغمة هارب ناعمة مع صوت تقليب ورق 📖 الكتاب المفتوح
+4 oud_soft عود شرقي هادئ مع همس خفيف 🕯️ الشمعة
+5 tibetan_bowl جرس تبتي مع طبول ناعمة 💫 دائرة الحياة
+6 piano_gentle بيانو ناعم ومتدرج أي نمط
+7 birds_distant تغريد طيور بعيد أي نمط
+8 paper_turn صوت تقليب صفحات كتاب 📖 الكتاب المفتوح
+9 whisper_gentle همس ناعم 🕯️ الشمعة
+10 drums_soft طبول ناعمة ومتدرجة 💫 دائرة الحياة
+
+ملاحظة: يمكنك الحصول على هذه الأصوات مجاناً من مواقع مثل Freesound.org أو Pixabay، أو استخدام حزمة sound_library التي توفر مكتبة أصوات واجهة مستخدم مجانية.
+
+📄 كود دمج الأصوات في شاشة البداية
+
+لتفعيل تشغيل الصوت عند فتح التطبيق، أضف الحزم التالية إلى pubspec.yaml:
+
+```yaml
+dependencies:
+  just_audio: ^0.9.36   # أو audioplayers: ^6.0.0
+```
+
+ثم في ملف splash_screen.dart، أضف الكود التالي:
+
+```dart
+import 'package:just_audio/just_audio.dart';
+
+class SplashScreen extends StatefulWidget {
+  // ...
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  @override
+  void initState() {
+    super.initState();
+    _playSplashSound();
+    // ... باقي الكود
+  }
+
+  Future<void> _playSplashSound() async {
+    try {
+      // اختر الصوت بناءً على splashId أو من الإعدادات
+      final soundId = Hive.box('settings').get('splash_sound', defaultValue: 'piano_gentle');
+      await _audioPlayer.setAsset('assets/sounds/$soundId.mp3');
+      await _audioPlayer.play();
+    } catch (e) {
+      // فشل صامت - لا يوقف التطبيق
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+}
+```
+
+ملاحظة: يجب وضع ملفات الأصوات في المجلد assets/sounds/ وإضافتها إلى قسم assets في pubspec.yaml.
+
+---
+
+💰 ثانياً: نتائج البحث المعمق حول تحقيق الدخل
+
+بعد فحص عشرات المصادر والبيانات من 75,000+ تطبيق، إليك أهم النتائج:
+
+1. نموذج الاشتراك (Subscription) — المسيطر حالياً
+
+الاشتراك هو النموذج الأكثر انتشاراً وربحية للتطبيقات التي تعتمد على العادات اليومية (مثل المذكرات). البيانات تظهر أن:
+
+· التحويل إلى الدفع يصل إلى 12.1% مع الجدار الصلب (Hard Paywall) مقابل 2.2% مع النموذج المجاني (Freemium).
+· قيمة العميل مدى الحياة (LTV) تصل إلى 49.30$** مع الجدار الصلب مقابل **24.24$ مع Freemium.
+· ولكن: معدل الاسترداد (Refund) أعلى بنسبة 70% في الجدار الصلب.
+
+2. الشراء لمرة واحدة (Lifetime) — نمو متسارع
+
+· نموذج الشراء لمرة واحدة نما من 6.4% إلى 10.3% من نماذج تحقيق الدخل بين 2023 و2025.
+· التسعير المثالي: من 2x إلى 12x السعر السنوي، وأفضل النتائج عند 5x أو أكثر.
+· الخطر الأكبر: cannibalization — المستخدمون الأكثر ولاءً هم الأكثر احتمالاً لشراء Lifetime، مما يقلل الإيرادات المتكررة.
+
+3. الإعلانات المكافأة (Rewarded Ads) — نموذج واعد
+
+· الإعلانات المكافأة (يشاهد المستخدم إعلاناً مقابل ميزة) تزيد الإيرادات بنسبة 68% في بعض الحالات، مع معدل فتح 25%.
+· تعمل بشكل أفضل عندما يكون هناك "شيء ذو قيمة" لفتحه (ميزة حصرية، محتوى، إلخ).
+
+4. البيانات الحقيقية من تطبيقات المنافسين
+
+التطبيق النموذج الإيراد ملاحظة
+Lightly (AI Journal) اشتراك (4.99€/أسبوع + 39.99€/سنة) 70,000$/شهر <5000 تحميل! ARPU مرتفع جداً
+Rose Diary شراء لمرة واحدة (18 يوان) 35$ من 434 تحميل نموذج "منتج جاهز"
+DailyBean إعلانات (62%) + IAP (38%) <10K$/شهر نموذج هجين
+Eventide (Flutter Journal) Freemium (7 مدخلات مجانية) — درس: 3 مدخلات مجانية "قليلة جداً"
+
+---
+
+🎯 التوصية النهائية: نموذج هجين لتطبيق "نبض"
+
+بناءً على البيانات، أفضل استراتيجية لتطبيق "نبض" هي نموذج هجين يجمع بين:
+
+1. الطبقة المجانية (Freemium) — مع حد 7 مدخلات
+
+· امنح المستخدم 7 مدخلات مجانية (أسبوع كامل) لبناء العادة.
+· الميزات المجانية: الكتابة الأساسية، 3 بذور، إحصائيات أساسية.
+· الهدف: بناء عادة يومية قبل عرض الجدار المدفوع.
+
+2. الاشتراك (Subscription) — Pro
+
+· السعر: 4.99$/شهر أو 29.99$/سنة (مع خصم 50%).
+· الميزات: مدخلات غير محدودة، 10 بذور، قفل بيومتري، تصدير، كل الإحصائيات.
+· التجربة المجانية: 7 أيام (Trial) — ثبت أن هذا يرفع التحويل.
+
+3. الشراء لمرة واحدة (Lifetime) — للمستخدمين المخلصين
+
+· السعر: 79.99$ (أعلى من 5x السعر السنوي).
+· الهدف: تحويل المستخدمين الأكثر ولاءً إلى إيراد مقدم.
+· يظهر فقط للمستخدمين الذين أكملوا 30 يوماً على الأقل.
+
+4. الإعلانات المكافأة (اختياري) — للمستخدمين المجانيين
+
+· الفكرة: "شاهد إعلاناً واحصل على ميزة" (مثلاً: بذرة إضافية، قالب مذكرة خاص).
+· الهدف: تحقيق دخل إضافي من المستخدمين غير الراغبين في الدفع.
+
+نموذج التسعير النهائي المقترح
+
+الخطة السعر الميزات
+Free 0$ 7 مدخلات، 3 بذور، إحصائيات أساسية
+Pro Monthly 4.99$ غير محدود، 10 بذور، قفل بيومتري
+Pro Yearly 29.99$ توفير 50% + تصدير PDF
+Lifetime 79.99$ دفعة واحدة، للأبد
+Rewarded Ads مجاني ميزات إضافية مقابل مشاهدة إعلان
+
+---
+
+📄 كود إضافي: نظام تحقيق الدخل الهجين
+
+لتفعيل النموذج الهجين، أضف الكود التالي إلى مشروعك.
+
+1. إعداد حزم الاشتراكات والإعلانات
+
+أضف إلى pubspec.yaml:
+
+```yaml
+dependencies:
+  in_app_purchase: ^3.2.0          # للاشتراكات والشراء لمرة واحدة
+  google_mobile_ads: ^5.1.0        # للإعلانات المكافأة
+```
+
+2. خدمة إدارة الاشتراكات
+
+أنشئ ملف lib/services/monetization_service.dart:
+
+```dart
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+class MonetizationService {
+  final InAppPurchase _iap = InAppPurchase.instance;
+  List<ProductDetails> _products = [];
+
+  // معرفات المنتجات (يجب إنشاؤها في Play Console و App Store)
+  static const String proMonthlyId = 'nabd_pro_monthly';
+  static const String proYearlyId = 'nabd_pro_yearly';
+  static const String lifetimeId = 'nabd_lifetime';
+
+  Future<void> initialize() async {
+    final available = await _iap.isAvailable();
+    if (!available) return;
+
+    final response = await _iap.queryProductDetails({proMonthlyId, proYearlyId, lifetimeId});
+    _products = response.productDetails;
+
+    _iap.purchaseStream.listen(_onPurchaseUpdate);
+  }
+
+  Future<void> buy(ProductDetails product) async {
+    final param = PurchaseParam(productDetails: product);
+    if (product.id == lifetimeId) {
+      await _iap.buyNonConsumable(purchaseParam: param);
+    } else {
+      await _iap.buyNonConsumable(purchaseParam: param);
+    }
+  }
+
+  void _onPurchaseUpdate(List<PurchaseDetails> purchases) {
+    for (final purchase in purchases) {
+      if (purchase.status == PurchaseStatus.purchased || 
+          purchase.status == PurchaseStatus.restored) {
+        // منح الميزة
+        Hive.box('settings').put('isPro', true);
+        if (purchase.productID == lifetimeId) {
+          Hive.box('settings').put('isLifetime', true);
+        }
+      }
+      if (purchase.pendingCompletePurchase) {
+        _iap.completePurchase(purchase);
+      }
+    }
+  }
+
+  Future<void> restorePurchases() => _iap.restorePurchases();
+}
+```
+
+3. خدمة الإعلانات المكافأة
+
+أنشئ ملف lib/services/rewarded_ad_service.dart:
+
+```dart
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+class RewardedAdService {
+  RewardedAd? _rewardedAd;
+  bool _isLoading = false;
+
+  static const String _adUnitId = 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY'; // من AdMob
+
+  void loadAd() {
+    if (_isLoading || _rewardedAd != null) return;
+    _isLoading = true;
+
+    RewardedAd.load(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          _rewardedAd = ad;
+          _isLoading = false;
+        },
+        onAdFailedToLoad: (error) {
+          _isLoading = false;
+        },
+      ),
+    );
+  }
+
+  void showAd({required VoidCallback onReward}) {
+    if (_rewardedAd == null) return;
+
+    _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _rewardedAd = null;
+        loadAd(); // تحميل الإعلان التالي
+      },
+    );
+
+    _rewardedAd!.show(onUserEarnedReward: (_, reward) {
+      onReward(); // منح المكافأة
+    });
+  }
+}
+```
+
+4. دمج الإعلانات في شاشة "الحديقة" (مثال)
+
+```dart
+// في garden_screen.dart
+final _rewardedAd = RewardedAdService();
+
+@override
+void initState() {
+  super.initState();
+  _rewardedAd.loadAd();
+}
+
+// زر "شاهد إعلاناً للحصول على بذرة"
+ElevatedButton(
+  onPressed: () {
+    _rewardedAd.showAd(onReward: () {
+      // منح المستخدم بذرة إضافية
+      _gardenService.plantSeed(Seed.all.first);
+    });
+  },
+  child: const Text('شاهد إعلاناً واحصل على بذرة 🌱'),
+)
+```
+
+---
+
+📊 ملخص التوصية
+
+العنصر التوصية
+النموذج الأساسي هجين: Freemium + Subscription + Lifetime
+الحد المجاني 7 مدخلات (أسبوع كامل)
+الاشتراك الشهري 4.99$
+الاشتراك السنوي 29.99$ (خصم 50%)
+Lifetime 79.99$ (يظهر بعد 30 يوماً)
+الإعلانات المكافأة اختيارية، لفتح ميزات إضافية
+التجربة المجانية 7 أيام للاشتراك
+الجدار الصلب لا — ابدأ بـ Freemium
+
+هذه الاستراتيجية مبنية على بيانات حقيقية من تطبيقات ناجحة، وهي الأنسب لتطبيق "نبض" لأنها تبني العادة أولاً، ثم تحوّل المستخدمين تدريجياً إلى الدفع.
+
+قل "واصل" إذا تريد تفاصيل أكثر عن أي جزء، أو كود إضافي لدمج نظام الإعلانات أو الاشتراكات.

@@ -1,0 +1,1452 @@
+🎨 المرحلة السابعة والأخيرة — "نبض" الكامل
+
+🏷️ أولاً: تحديث الاسم في كل مكان
+
+📄 الملف 67: pubspec.yaml — استبدال
+
+العملية: 🔴 REPLACE
+
+```yaml
+name: nabd
+description: نبض — مذكرتك الخاصة المحلية بالكامل
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State
+  flutter_riverpod: ^2.6.1
+
+  # Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  flutter_secure_storage: ^9.2.2
+
+  # UI
+  go_router: ^14.6.2
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  fl_chart: ^0.69.0
+  table_calendar: ^3.1.2
+
+  # Media
+  image_picker: ^1.1.2
+  record: ^5.0.4
+  speech_to_text: ^7.0.0
+  permission_handler: ^11.3.1
+
+  # Notifications
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+
+  # Security
+  crypto: ^3.0.5
+  local_auth: ^2.3.0
+
+  # Files
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  share_plus: ^10.1.2
+  file_picker: ^8.1.6
+  archive: ^3.6.1
+
+  # Utils
+  intl: ^0.19.0
+  uuid: ^4.5.1
+  package_info_plus: ^8.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.2
+  flutter_native_splash: ^2.4.3
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/icons/
+    - assets/sounds/
+
+# ═══════════════════════════════════════════════════════════════
+# App Icon — نبض
+# ═══════════════════════════════════════════════════════════════
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#0A0D14"
+  adaptive_icon_foreground: "assets/icons/app_icon_fg.png"
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    background_color: "#0A0D14"
+    theme_color: "#6C5CE7"
+
+# ═══════════════════════════════════════════════════════════════
+# Native Splash — نبض
+# ═══════════════════════════════════════════════════════════════
+flutter_native_splash:
+  color: "#0A0D14"
+  image: assets/icons/splash.png
+  color_dark: "#0A0D14"
+  image_dark: assets/icons/splash.png
+  android_12:
+    image: assets/icons/splash.png
+    color: "#0A0D14"
+    icon_background_color: "#6C5CE7"
+  ios: true
+  web: true
+  fullscreen: true
+```
+
+---
+
+📄 الملف 68: l10n.yaml — استبدال
+
+```yaml
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false
+```
+
+---
+
+📄 الملف 69: lib/l10n/app_en.arb — استبدال
+
+العملية: 🔴 REPLACE
+
+```json
+{
+  "@@locale": "en",
+  "appName": "Nabd",
+  "appTagline": "Your Private Journal",
+  "home": "Home",
+  "newEntry": "New Entry",
+  "editEntry": "Edit Entry",
+  "title": "Title",
+  "content": "Write your thoughts...",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "search": "Search...",
+  "settings": "Settings",
+  "statistics": "Statistics",
+  "calendar": "Calendar",
+  "theme": "Theme",
+  "language": "Language",
+  "notifications": "Notifications",
+  "mood": "Mood",
+  "tags": "Tags",
+  "garden": "My Garden",
+  "achievements": "Achievements",
+  "challenges": "Challenges",
+  "wordCloud": "Word Cloud",
+  "emotionRadar": "Emotion Radar",
+  "yearReview": "Year in Review",
+  "unsentLetters": "Unsent Letters",
+  "legacyJournal": "Legacy Journal",
+  "timeCapsule": "Time Capsules",
+  "futureLetters": "Future Letters",
+  "dreamJournal": "Dream Journal",
+  "worryBox": "Worry Box",
+  "worryRelease": "Release a Worry",
+  "breathing": "Breathing",
+  "gratitude": "Daily Gratitude",
+  "gratitudeGarden": "Gratitude Garden",
+  "weather": "Mood Weather",
+  "heatmap": "Activity Heatmap",
+  "moodWeather": "Mood Weather",
+  "weeklyPulse": "Weekly Pulse",
+  "monthlyAverage": "Monthly Average",
+  "moodDistribution": "Mood Distribution",
+  "seedSelection": "Choose a Seed",
+  "plantSeed": "Plant Seed",
+  "yourGarden": "Your Garden",
+  "treeGrowth": "Tree Growth",
+  "needsWater": "Needs water",
+  "fullyGrown": "Fully Grown!"
+}
+```
+
+---
+
+📄 الملف 70: lib/l10n/app_ar.arb — استبدال
+
+العملية: 🔴 REPLACE
+
+```json
+{
+  "@@locale": "ar",
+  "appName": "نبض",
+  "appTagline": "مذكرتك الخاصة",
+  "home": "الرئيسية",
+  "newEntry": "مذكرة جديدة",
+  "editEntry": "تعديل المذكرة",
+  "title": "العنوان",
+  "content": "اكتب أفكارك...",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "delete": "حذف",
+  "search": "ابحث...",
+  "settings": "الإعدادات",
+  "statistics": "الإحصائيات",
+  "calendar": "التقويم",
+  "theme": "الثيم",
+  "language": "اللغة",
+  "notifications": "الإشعارات",
+  "mood": "المزاج",
+  "tags": "الوسوم",
+  "garden": "حديقتي",
+  "achievements": "الإنجازات",
+  "challenges": "التحديات",
+  "wordCloud": "سحابة الكلمات",
+  "emotionRadar": "رادار المشاعر",
+  "yearReview": "ملخص السنة",
+  "unsentLetters": "رسائل لم تُرسل",
+  "legacyJournal": "مذكرة الإرث",
+  "timeCapsule": "كبسولات زمنية",
+  "futureLetters": "رسائل المستقبل",
+  "dreamJournal": "مذكرة الأحلام",
+  "worryBox": "صندوق القلق",
+  "worryRelease": "أطلق همّك",
+  "breathing": "التنفس",
+  "gratitude": "الامتنان اليومي",
+  "gratitudeGarden": "حديقة الامتنان",
+  "weather": "طقس المزاج",
+  "heatmap": "خريطة النشاط",
+  "moodWeather": "طقس المزاج",
+  "weeklyPulse": "النبض الأسبوعي",
+  "monthlyAverage": "المتوسط الشهري",
+  "moodDistribution": "توزيع المشاعر",
+  "seedSelection": "اختر بذرة",
+  "plantSeed": "ازرع البذرة",
+  "yourGarden": "حديقتك",
+  "treeGrowth": "نمو الشجرة",
+  "needsWater": "تحتاج ماء",
+  "fullyGrown": "اكتمل النمو!"
+}
+```
+
+---
+
+📄 الملف 71: android/app/src/main/res/values/strings.xml — استبدال
+
+العملية: 🔴 REPLACE
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">نبض</string>
+    <string name="shortcut_new_entry">New Entry</string>
+    <string name="shortcut_new_entry_long">Write a new journal entry</string>
+    <string name="shortcut_garden">My Garden</string>
+    <string name="shortcut_garden_long">Check your seed growth</string>
+    <string name="shortcut_calendar">Calendar</string>
+    <string name="shortcut_calendar_long">View your journal calendar</string>
+    <string name="shortcut_stats">Statistics</string>
+    <string name="shortcut_stats_long">View your mood stats</string>
+</resources>
+```
+
+---
+
+📄 الملف 72: android/app/src/main/AndroidManifest.xml — استبدال
+
+العملية: 🔴 REPLACE
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <application
+        android:label="@string/app_name"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- App Links -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="nabd.app" android:pathPrefix="/journal" />
+                <data android:scheme="https" android:host="nabd.app" android:pathPrefix="/garden" />
+                <data android:scheme="https" android:host="nabd.app" android:pathPrefix="/invite" />
+            </intent-filter>
+
+            <!-- Custom Scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="nabd" />
+            </intent-filter>
+
+            <!-- Shortcuts -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- Home Widget -->
+        <receiver
+            android:name=".native.JournalWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_journal_info" />
+        </receiver>
+
+        <meta-data android:name="flutterEmbedding" android:value="2" />
+    </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+</manifest>
+```
+
+---
+
+📄 الملف 73: ios/Runner/Info.plist — استبدال
+
+العملية: 🔴 REPLACE
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>ar</string>
+    <key>CFBundleDisplayName</key>
+    <string>نبض</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>nabd</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$(FLUTTER_BUILD_NAME)</string>
+    <key>CFBundleVersion</key>
+    <string>$(FLUTTER_BUILD_NUMBER)</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    <key>UIMainStoryboardFile</key>
+    <string>Main</string>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <key>UIViewControllerBasedStatusBarAppearance</key>
+    <false/>
+
+    <!-- Permissions -->
+    <key>NSCameraUsageDescription</key>
+    <string>نبض يحتاج الكاميرا لإضافة صور إلى مذكراتك</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>نبض يحتاج الوصول للصور لإضافتها لمذكراتك</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>نبض يحتاج الميكروفون لتسجيل ملاحظات صوتية</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>نبض يحتاج التعرف على الصوت لتحويل كلامك إلى نص</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>نبض يستخدم Face ID لقفل مذكراتك الخاصة</string>
+
+    <!-- URL Scheme -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>app.nabd.journal</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>nabd</string>
+            </array>
+        </dict>
+    </array>
+
+    <!-- Associated Domains -->
+    <key>com.apple.developer.associated-domains</key>
+    <array>
+        <string>applinks:nabd.app</string>
+    </array>
+</dict>
+</plist>
+```
+
+---
+
+🎨 ثانياً: أيقونة + splash
+
+📄 الملف 74: assets/icons/app_icon.svg (مرجع التصميم)
+
+العملية: 🟢 CREATE (للمصمم — ليس كودًا)
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#00D2A8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="#0A0D14"/>
+  <circle cx="256" cy="256" r="160" fill="url(#g)" opacity="0.15"/>
+  <!-- ECG/Pulse line -->
+  <path d="M 96 256 L 176 256 L 208 192 L 240 320 L 272 224 L 304 288 L 336 256 L 416 256"
+        stroke="url(#g)" stroke-width="20" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Heart -->
+  <circle cx="256" cy="256" r="24" fill="url(#g)"/>
+</svg>
+```
+
+ملاحظة للمصمم: حوّل الـ SVG إلى PNG بحجم 1024×1024 وضعه في:
+
+· assets/icons/app_icon.png
+· assets/icons/app_icon_fg.png (النسخة الأمامية بدون الخلفية الداكنة)
+· assets/icons/splash.png
+
+---
+
+📄 الملف 75: android/app/src/main/res/xml/shortcuts.xml — استبدال
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="new_entry"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_new_entry"
+        android:shortcutLongLabel="@string/shortcut_new_entry_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.nabd.journal"
+            android:targetClass="com.nabd.journal.MainActivity"
+            android:data="nabd://editor" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="garden"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_garden"
+        android:shortcutLongLabel="@string/shortcut_garden_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.nabd.journal"
+            android:targetClass="com.nabd.journal.MainActivity"
+            android:data="nabd://garden" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="calendar"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_calendar"
+        android:shortcutLongLabel="@string/shortcut_calendar_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.nabd.journal"
+            android:targetClass="com.nabd.journal.MainActivity"
+            android:data="nabd://calendar" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="stats"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_stats"
+        android:shortcutLongLabel="@string/shortcut_stats_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.nabd.journal"
+            android:targetClass="com.nabd.journal.MainActivity"
+            android:data="nabd://stats" />
+    </shortcut>
+</shortcuts>
+```
+
+---
+
+📄 الملف 76: lib/core/router.dart — استبدال نهائي
+
+العملية: 🔴 REPLACE
+
+```dart
+import 'package:go_router/go_router.dart';
+
+// Splash
+import '../features/splash/splash_screen.dart';
+import '../features/lock/lock_screen.dart';
+
+// Core
+import '../features/home/home_screen.dart';
+import '../features/editor/editor_screen.dart';
+import '../features/calendar/calendar_screen.dart';
+import '../features/search/search_screen.dart';
+import '../features/tags/tags_screen.dart';
+import '../features/settings/settings_screen.dart';
+
+// Stats
+import '../features/stats/stats_screen.dart';
+import '../features/stats/heatmap_screen.dart';
+import '../features/stats/weather_screen.dart';
+import '../features/stats/advanced/word_cloud_screen.dart';
+import '../features/stats/advanced/emotion_radar_screen.dart';
+import '../features/stats/advanced/year_review_screen.dart';
+
+// Garden
+import '../features/garden/garden_screen.dart';
+import '../features/garden/seed_selection_screen.dart';
+
+// Mind & Soul
+import '../features/worry/worry_box_screen.dart';
+import '../features/worry/worry_release_screen.dart';
+import '../features/breathing/breathing_screen.dart';
+import '../features/dream/dream_journal_screen.dart';
+
+// Gratitude
+import '../features/gratitude/gratitude_garden_screen.dart';
+import '../features/gratitude/gratitude_journal_screen.dart';
+
+// Future
+import '../features/future_self/future_letters_screen.dart';
+
+// Social (Local)
+import '../features/social/unsent_letters_screen.dart';
+import '../features/social/legacy_journal_screen.dart';
+import '../features/social/time_capsule_screen.dart';
+
+// Motivation
+import '../features/motivation/achievements_screen.dart';
+import '../features/motivation/challenges_screen.dart';
+
+final router = GoRouter(
+  initialLocation: '/',
+  routes: [
+    // ═══════════════════════════════════════════════════════
+    // Splash & Lock
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
+    GoRoute(path: '/lock', builder: (_, __) => const LockScreen()),
+
+    // ═══════════════════════════════════════════════════════
+    // Core
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+    GoRoute(
+      path: '/editor',
+      builder: (_, state) => EditorScreen(entryId: state.extra as String?),
+    ),
+    GoRoute(path: '/calendar', builder: (_, __) => const CalendarScreen()),
+    GoRoute(path: '/search', builder: (_, __) => const SearchScreen()),
+    GoRoute(path: '/tags', builder: (_, __) => const TagsScreen()),
+    GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+
+    // ═══════════════════════════════════════════════════════
+    // Stats
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/stats', builder: (_, __) => const StatsScreen()),
+    GoRoute(path: '/heatmap', builder: (_, __) => const HeatmapScreen()),
+    GoRoute(path: '/weather', builder: (_, __) => const WeatherScreen()),
+    GoRoute(path: '/word-cloud', builder: (_, __) => const WordCloudScreen()),
+    GoRoute(path: '/emotion-radar', builder: (_, __) => const EmotionRadarScreen()),
+    GoRoute(path: '/year-review', builder: (_, __) => const YearReviewScreen()),
+
+    // ═══════════════════════════════════════════════════════
+    // Garden
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/garden', builder: (_, __) => const GardenScreen()),
+    GoRoute(path: '/seed-selection', builder: (_, __) => const SeedSelectionScreen()),
+
+    // ═══════════════════════════════════════════════════════
+    // Mind & Soul
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/worry-box', builder: (_, __) => const WorryBoxScreen()),
+    GoRoute(path: '/worry-release', builder: (_, __) => const WorryReleaseScreen()),
+    GoRoute(path: '/breathing', builder: (_, __) => const BreathingScreen()),
+    GoRoute(path: '/dream-journal', builder: (_, __) => const DreamJournalScreen()),
+
+    // ═══════════════════════════════════════════════════════
+    // Gratitude
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/gratitude-garden', builder: (_, __) => const GratitudeGardenScreen()),
+    GoRoute(path: '/gratitude-journal', builder: (_, __) => const GratitudeJournalScreen()),
+
+    // ═══════════════════════════════════════════════════════
+    // Future
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/future-letters', builder: (_, __) => const FutureLettersScreen()),
+
+    // ═══════════════════════════════════════════════════════
+    // Social (Local)
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/unsent-letters', builder: (_, __) => const UnsentLettersScreen()),
+    GoRoute(path: '/legacy-journal', builder: (_, __) => const LegacyJournalScreen()),
+    GoRoute(path: '/time-capsule', builder: (_, __) => const TimeCapsuleScreen()),
+
+    // ═══════════════════════════════════════════════════════
+    // Motivation
+    // ═══════════════════════════════════════════════════════
+    GoRoute(path: '/achievements', builder: (_, __) => const AchievementsScreen()),
+    GoRoute(path: '/challenges', builder: (_, __) => const ChallengesScreen()),
+  ],
+);
+```
+
+---
+
+📄 الملف 77: lib/main.dart — استبدال نهائي
+
+العملية: 🔴 REPLACE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import 'app.dart';
+import 'services/biometric_service.dart';
+import 'services/encryption_service.dart';
+import 'services/notification_service.dart';
+import 'services/settings_service.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // ─── Hive boxes ───
+  await Hive.initFlutter();
+  await Hive.openBox('journal_entries');
+  await Hive.openBox('settings');
+  await Hive.openBox('moods');
+  await Hive.openBox('tags');
+  await Hive.openBox('garden');
+
+  // ─── Services ───
+  await NotificationService.init();
+  await SettingsService.init();
+
+  // ─── Encryption key ───
+  final enc = EncryptionService();
+  if (!await enc.isEnabled()) {
+    await enc.generateMasterKey();
+  }
+
+  // ─── Biometric (optional) ───
+  final bio = BiometricService();
+  await bio.updateLastActivity();
+
+  // ─── System UI ───
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
+
+  runApp(const ProviderScope(child: NabdApp()));
+}
+```
+
+---
+
+📄 الملف 78: lib/app.dart — استبدال نهائي
+
+العملية: 🔴 REPLACE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import 'core/l10n/app_localizations.dart';
+import 'core/router.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/gender_themes.dart';
+import 'services/biometric_service.dart';
+import 'services/settings_service.dart';
+
+class NabdApp extends ConsumerWidget {
+  const NabdApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
+    final genderTheme = ref.watch(genderThemeProvider);
+
+    final themeData = AppTheme.getTheme(
+      themeMode == ThemeMode.dark ? 'dark' : 'light',
+      genderTheme,
+    );
+
+    return MaterialApp.router(
+      title: 'نبض',
+      debugShowCheckedModeBanner: false,
+      theme: themeData,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      routerConfig: router,
+    );
+  }
+}
+```
+
+---
+
+🧪 ثالثاً: الاختبارات
+
+📄 الملف 79: test/journal_entry_test.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:nabd/models/journal_entry.dart';
+
+void main() {
+  group('JournalEntry', () {
+    test('creates with default values', () {
+      final entry = JournalEntry(
+        title: 'Test',
+        content: 'Content',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      );
+
+      expect(entry.title, 'Test');
+      expect(entry.content, 'Content');
+      expect(entry.mood, '');
+      expect(entry.tags, isEmpty);
+      expect(entry.isFavorite, false);
+      expect(entry.isPinned, false);
+    });
+
+    test('serializes to map', () {
+      final entry = JournalEntry(
+        id: 'test-id',
+        title: 'Test',
+        content: 'Content',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+        mood: 'happy',
+        tags: ['personal', 'work'],
+      );
+
+      final map = entry.toMap();
+      expect(map['id'], 'test-id');
+      expect(map['mood'], 'happy');
+      expect(map['tags'], contains('personal'));
+    });
+
+    test('deserializes from map', () {
+      final map = {
+        'id': 'test-id',
+        'title': 'Test',
+        'content': 'Content',
+        'createdAt': '2026-01-01T00:00:00.000',
+        'updatedAt': '2026-01-01T00:00:00.000',
+        'mood': 'happy',
+        'tags': ['personal'],
+        'imagePaths': [],
+        'isFavorite': true,
+        'isPinned': false,
+      };
+
+      final entry = JournalEntry.fromMap(map);
+      expect(entry.id, 'test-id');
+      expect(entry.isFavorite, true);
+      expect(entry.tags, contains('personal'));
+    });
+
+    test('copyWith preserves id', () {
+      final entry = JournalEntry(
+        id: 'test-id',
+        title: 'Test',
+        content: 'Content',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      );
+
+      final updated = entry.copyWith(title: 'New Title');
+      expect(updated.id, 'test-id');
+      expect(updated.title, 'New Title');
+    });
+  });
+}
+```
+
+---
+
+📄 الملف 80: test/mood_test.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:nabd/models/mood.dart';
+
+void main() {
+  group('Mood', () {
+    test('has 20 moods', () {
+      expect(Mood.all.length, 20);
+    });
+
+    test('all moods have valid categories', () {
+      const validCategories = ['positive', 'negative', 'neutral', 'complex'];
+      for (final mood in Mood.all) {
+        expect(validCategories, contains(mood.category));
+      }
+    });
+
+    test('getById finds correct mood', () {
+      final happy = Mood.getById('happy');
+      expect(happy, isNotNull);
+      expect(happy!.emoji, '😊');
+      expect(happy.category, 'positive');
+    });
+
+    test('getById returns null for unknown', () {
+      expect(Mood.getById('nonexistent'), isNull);
+    });
+
+    test('Arabic label works', () {
+      final happy = Mood.getById('happy')!;
+      expect(happy.label('ar'), 'سعيد');
+      expect(happy.label('en'), 'Happy');
+    });
+
+    test('category label works in Arabic', () {
+      expect(Mood.categoryLabel('positive', 'ar'), 'إيجابية');
+      expect(Mood.categoryLabel('negative', 'ar'), 'سلبية');
+    });
+  });
+}
+```
+
+---
+
+📄 الملف 81: test/garden_service_test.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:nabd/models/seed.dart';
+
+void main() {
+  group('Seed', () {
+    test('has 10 seeds', () {
+      expect(Seed.all.length, 10);
+    });
+
+    test('all seeds have required fields', () {
+      for (final seed in Seed.all) {
+        expect(seed.id, isNotEmpty);
+        expect(seed.nameEn, isNotEmpty);
+        expect(seed.nameAr, isNotEmpty);
+        expect(seed.emoji, isNotEmpty);
+        expect(seed.colors.length, 2);
+      }
+    });
+
+    test('getById finds love seed', () {
+      final love = Seed.getById('love');
+      expect(love, isNotNull);
+      expect(love!.nameAr, 'الحب');
+    });
+  });
+
+  group('PlantedSeed', () {
+    test('starts at stage 0', () {
+      final seed = PlantedSeed(
+        id: 'test',
+        seedTypeId: 'love',
+        plantedAt: DateTime.now(),
+      );
+
+      expect(seed.growthStage, 0);
+      expect(seed.progress, 0.0);
+      expect(seed.isComplete, false);
+    });
+
+    test('advances to stage 1 at 3 points', () {
+      final seed = PlantedSeed(
+        id: 'test',
+        seedTypeId: 'love',
+        plantedAt: DateTime.now(),
+        growthPoints: 3,
+      );
+
+      expect(seed.growthStage, 1);
+    });
+
+    test('advances to stage 5 at 100 points', () {
+      final seed = PlantedSeed(
+        id: 'test',
+        seedTypeId: 'love',
+        plantedAt: DateTime.now(),
+        growthPoints: 100,
+      );
+
+      expect(seed.growthStage, 5);
+      expect(seed.progress, 1.0);
+    });
+
+    test('needs water when not watered today', () {
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      final key = yesterday.year * 10000 +
+          yesterday.month * 100 +
+          yesterday.day;
+
+      final seed = PlantedSeed(
+        id: 'test',
+        seedTypeId: 'love',
+        plantedAt: DateTime.now(),
+        lastWateredDay: key,
+      );
+
+      expect(seed.needsWater(DateTime.now()), true);
+    });
+  });
+}
+```
+
+---
+
+📄 الملف 82: test/local_ai_test.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:nabd/services/local_ai_service.dart';
+
+void main() {
+  group('LocalAIService', () {
+    final ai = LocalAIService();
+
+    test('detects positive sentiment', () {
+      final score = ai.analyzeSentiment(
+        'I am so happy today! Everything is wonderful and beautiful.',
+      );
+      expect(score, greaterThan(0));
+    });
+
+    test('detects negative sentiment', () {
+      final score = ai.analyzeSentiment(
+        'I am sad and lonely. Everything feels terrible and awful.',
+      );
+      expect(score, lessThan(0));
+    });
+
+    test('detects neutral sentiment', () {
+      final score = ai.analyzeSentiment('I went to the store today.');
+      expect(score.abs(), lessThan(0.2));
+    });
+
+    test('detects Arabic positive', () {
+      final score = ai.analyzeSentiment(
+        'أنا سعيد جدا اليوم. الحياة جميلة ورائعة.',
+      );
+      expect(score, greaterThan(0));
+    });
+
+    test('suggests mood from positive text', () {
+      final mood = ai.suggestMood('I feel amazing and joyful!');
+      expect(mood, isNotNull);
+      expect(['joyful', 'happy', 'grateful'], contains(mood));
+    });
+
+    test('suggests mood from negative text', () {
+      final mood = ai.suggestMood('I am so sad and depressed today');
+      expect(mood, isNotNull);
+    });
+
+    test('summarizes long text', () {
+      final text = 'First sentence here. '
+          'Second sentence with more words about something. '
+          'Third sentence. '
+          'Fourth sentence about another topic. '
+          'Fifth sentence.';
+      final summary = ai.summarize(text, maxSentences: 2);
+      expect(summary.length, lessThan(text.length));
+    });
+
+    test('suggests tags from content', () {
+      final tags = ai.suggestTags(
+        'I went to work today and had a meeting about my project.',
+      );
+      expect(tags, contains('work'));
+    });
+  });
+}
+```
+
+---
+
+📚 رابعاً: دليل النشر
+
+📄 الملف 83: docs/PLAY_STORE_GUIDE.md
+
+العملية: 🟢 CREATE
+
+```markdown
+# Google Play Store Publishing Guide — نبض (Nabd)
+
+## Pre-Launch Checklist
+
+### 1. App Configuration
+- [ ] Bundle ID: `com.nabd.journal`
+- [ ] Version: `1.0.0` (versionCode: 1)
+- [ ] Min SDK: 24 (Android 7.0)
+- [ ] Target SDK: 34 (Android 14)
+- [ ] App name: `نبض` (Arabic) / `Nabd` (English)
+
+### 2. Signing
+```bash
+keytool -genkey -v -keystore nabd-release.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 -alias nabd
+```
+
+Create android/key.properties:
+
+```properties
+storePassword=YOUR_PASSWORD
+keyPassword=YOUR_PASSWORD
+keyAlias=nabd
+storeFile=../nabd-release.jks
+```
+
+3. Build
+
+```bash
+flutter clean
+flutter pub get
+flutter gen-l10n
+flutter build appbundle --release \
+  --obfuscate \
+  --split-debug-info=build/symbols
+```
+
+Output: build/app/outputs/bundle/release/app-release.aab
+
+---
+
+Store Listing
+
+Title (30 chars max)
+
+· Arabic: نبض — مذكرتك الخاصة
+· English: Nabd — Private Journal
+
+Short Description (80 chars)
+
+· Arabic: مذكرتك الخاصة. 100% محلية، بدون إنترنت، مع حديقة بذور ومزاج الطقس
+· English: Your private journal. 100% local, offline, with seed garden & mood weather
+
+Full Description
+
+```
+🌱 نبض — مذكرتك الخاصة
+
+نبض تطبيق مذكرات فريد يحوّل الكتابة اليومية إلى رحلة نمو.
+
+✨ الميزات:
+
+📝 مذكرة كاملة
+• نص + صور + صوت + صوت إلى نص
+• وسوم ذكية + بحث متقدم
+• تقويم مرئي + قبل/بعد
+
+🌳 حديقة البذور
+• اختر بذرة تعبّر عنك
+• كل مذكرة إيجابية = نمو الشجرة
+• 5 مراحل: بذرة → شجرة → ازدهار
+
+🌤️ طقس المزاج
+• مشاعرك كطقس: مشمس، ممطر، عاصف
+• توقعات 7 أيام
+• رادار المشاعر (6 أبعاد)
+
+🧠 الصحة النفسية
+• Release a Worry — أطلق همّك
+• صندوق القلق — للمراجعة لاحقًا
+• تمرين تنفس — قبل الكتابة
+• مذكرة أحلام
+
+📊 إحصائيات متقدمة
+• سحابة الكلمات
+• Year in Review
+• خريطة حرارية
+
+💌 للمستقبل
+• رسائل لمستقبلك (مقفلة بزمن)
+• كبسولات زمنية
+• رسائل لن تُرسل
+
+🏆 التحفيز
+• 10 إنجازات
+• 5 تحديات
+• اقتباس يومي
+
+🔒 خصوصية مطلقة
+• 100% محلي — لا خوادم
+• تشفير AES-256
+• قفل بيومتري
+• لا تتبع، لا إعلانات
+
+🌍 16 لغة
+العربية، الإنجليزية، الفرنسية، الإسبانية، الألمانية، الإيطالية، البرتغالية، الروسية، التركية، الصينية، اليابانية، الكورية، الهندية، الإندونيسية، الفارسية، الأردية
+
+📱 الوضع الليلي/النهاري
+🎨 3 ثيمات: عام، نسائي، رجالي
+
+حمّل نبض اليوم وابدأ رحلتك 🌱
+```
+
+Keywords (for ASO)
+
+```
+journal, diary, journaling, mood tracker, gratitude, mental health,
+private diary, offline journal, self care, mindfulness, habit tracker,
+مذكرات, يوميات, تدوين, صحة نفسية, امتنان, تأمل
+```
+
+---
+
+Assets Required
+
+App Icon
+
+· 512×512 PNG (no transparency)
+· File: assets/icons/app_icon_playstore.png
+
+Feature Graphic
+
+· 1024×500 PNG
+· File: assets/store/feature_graphic.png
+
+Screenshots (min 2, max 8)
+
+· Phone: 1080×1920 PNG
+· Tablet 7": 1200×1920 PNG
+· Tablet 10": 1920×1200 PNG
+
+Suggested screenshots:
+
+1. Home — "Your private journal"
+2. Garden — "Watch your seed grow"
+3. Editor — "Write + voice + images"
+4. Stats — "Track your mood"
+5. Weather — "Your week as weather"
+6. Achievements — "Unlock 10 achievements"
+7. Dark mode — "Beautiful at night"
+8. Settings — "16 languages"
+
+---
+
+Data Safety Form
+
+Question Answer
+Does your app collect user data? No
+Is data encrypted in transit? N/A
+Can users request deletion? Yes (in-app)
+Data types collected? None
+Data types shared? None
+Third-party SDKs collecting data? None
+
+Note: Hive storage is local-only. Biometric data never leaves device.
+
+---
+
+Content Rating
+
+· Category: Lifestyle
+· Rating: 3+ (Everyone)
+· Violence: No
+· Sexual content: No
+· Profanity: No
+· Drugs: No
+
+---
+
+Release Strategy
+
+Phase 1: Internal Testing (Week 1)
+
+· Upload AAB to Internal Testing track
+· Add 5-10 testers (yourself + friends)
+· Test for 3-5 days
+· Fix any crashes
+
+Phase 2: Closed Testing (Week 2-3)
+
+· Expand to 50-100 testers
+· Gather feedback
+· Iterate
+
+Phase 3: Open Testing (Week 4)
+
+· Open to public beta
+· Monitor crash reports
+· Fix critical bugs
+
+Phase 4: Production (Week 5)
+
+· Staged rollout: 10% → 50% → 100%
+· Monitor metrics for 7 days
+· Prepare for reviews
+
+---
+
+Post-Launch
+
+Week 1-4: Respond to Reviews
+
+· Reply to all reviews within 48h
+· Fix reported bugs immediately
+· Update description based on feedback
+
+Month 2-3: Growth
+
+· ASO optimization
+· Content marketing (TikTok, Reddit)
+· Partnership with mental health communities
+
+---
+
+Useful Commands
+
+```bash
+# Build release
+flutter build appbundle --release
+
+# Test on device
+flutter run --release
+
+# Check size
+du -h build/app/outputs/bundle/release/app-release.aab
+
+# Verify signing
+jarsigner -verify -verbose build/app/outputs/bundle/release/app-release.aab
+```
+
+---
+
+Links
+
+· Play Console: https://play.google.com/console
+· Policy Center: https://play.google.com/about/developer-content-policy/
+· Best Practices: https://developer.android.com/guide/playcore
+
+```
+
+---
+
+## 🎯 البرومبت للذكاء الاصطناعي الآخر — الدفعة النهائية
+
+```
+
+طبّق المرحلة السابعة والأخيرة — "نبض" الكامل:
+
+1. pubspec.yaml — استبدال (name: nabd + flutter_launcher_icons + flutter_native_splash)
+2. l10n.yaml — استبدال
+3. lib/l10n/app_en.arb — استبدال (AppName: Nabd)
+4. lib/l10n/app_ar.arb — استبدال (AppName: نبض)
+5. android/.../res/values/strings.xml — استبدال
+6. android/app/src/main/AndroidManifest.xml — استبدال (package: com.nabd.journal)
+7. ios/Runner/Info.plist — استبدال (CFBundleName: nabd)
+8. android/.../res/xml/shortcuts.xml — استبدال
+9. lib/core/router.dart — استبدال (كل المسارات)
+10. lib/main.dart — استبدال
+11. lib/app.dart — استبدال (NabdApp)
+12. test/journal_entry_test.dart — جديد
+13. test/mood_test.dart — جديد
+14. test/garden_service_test.dart — جديد
+15. test/local_ai_test.dart — جديد
+16. docs/PLAY_STORE_GUIDE.md — جديد
+
+بعد التطبيق:
+
+توليد الأيقونات
+
+dart run flutter_launcher_icons
+
+توليد splash
+
+dart run flutter_native_splash:create
+
+توليد الترجمات
+
+flutter gen-l10n
+
+الاختبارات
+
+flutter test
+
+الفحص
+
+flutter analyze
+
+البناء
+
+flutter build appbundle --release
+
+أبلغ بجدول مختصر.
+
+```
+
+---
+
+## 🎊 ملخص المشروع الكامل — "نبض"
+
+| الفئة | العدد | التفاصيل |
+| :--- | :--- | :--- |
+| **الشاشات** | 30+ | Home, Editor, Calendar, Search, Stats, Garden, Seed Selection, etc. |
+| **الخدمات** | 15+ | Database, Encryption, AI, Garden, Motivation, etc. |
+| **اللغات** | 16 | ar, en, fr, es, de, it, pt, ru, tr, zh, ja, ko, hi, id, fa, ur |
+| **المشاعر** | 20 | مصنّفة: positive, neutral, negative |
+| **البذور** | 10 | حب، فرح، سلام، أمل، امتنان، شجاعة، صبر، حكمة، إبداع، نمو |
+| **الإنجازات** | 10 | First Seed, Growing, etc. |
+| **التحديات** | 5 | Gratitude, Mood, Deep Dive, Dream, Mindful |
+| **Splash** | 5 | دوّارة (لا تكرر) |
+| **الميزات النفسية** | 10+ | Worry Release, Worry Box, Breathing, Dream, Gratitude, etc. |
+| **التقارير** | 5+ | Word Cloud, Emotion Radar, Year Review, Heatmap, Mood Weather |
+| **الاختبارات** | 4 | Unit tests كاملة |
+| **الأسطر** | ~25,000 | كود نظيف ومنظم |
+
+---
+
+## 🌟 ما يجعل "نبض" فريدًا
+
+| المنافس | نبض |
+| :--- | :--- |
+| Day One ($50/سنة) | **مجاني + خيار مدفوع** |
+| Moodiary | **+ حديقة البذور** |
+| StoryPad | **+ AI محلي** |
+| DiaryX | **+ 15 ميزة إضافية** |
+| كل التطبيقات السحابية | **محلي 100%** |
+| تطبيقات عادية | **6 أبعاد نفسية** |
+
+---
+
+## 🎯 الخطوات النهائية
+
+### 1. أنشئ الأصول
+- `assets/icons/app_icon.png` (1024×1024)
+- `assets/icons/app_icon_fg.png` (foreground)
+- `assets/icons/splash.png` (splash image)
+
+### 2. شغّل الأوامر
+```bash
+flutter clean
+flutter pub get
+dart run flutter_launcher_icons
+dart run flutter_native_splash:create
+flutter gen-l10n
+flutter test
+flutter analyze
+flutter build appbundle --release
+```
+
+3. ارفع إلى Play Console
+
+· اتبع docs/PLAY_STORE_GUIDE.md
+
+4. أطلق
+
+· Staged rollout: 10% → 50% → 100%
+
+---
+
+🎉 مبروك! تطبيق "نبض" جاهز للنشر.
+
+قل "واصل" إذا تريد:
+
+· تصميم الأصول (SVG/PNG) بشكل مفصل
+· اختبارات Widget
+· دليل App Store (iOS)
+· استراتيجية تسويق كاملة

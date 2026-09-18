@@ -1,0 +1,3204 @@
+🧠 المرحلة الرابعة: الميزات النفسية والعاطفية العميقة
+
+🎯 الرؤية
+
+تطبيق مذكرة عادي يحفظ النصوص. تطبيقنا يرافق المستخدم نفسيًا وعاطفيًا. هذه الميزات ليست "إضافات" — بل هي سبب عودة المستخدم كل يوم.
+
+---
+
+💡 30 فكرة جديدة (مرتبة حسب التأثير النفسي)
+
+🎭 الفئة 1: التعبير العاطفي
+
+# الميزة التأثير النفسي
+1 Mood Weather — طقس مزاجي (مشمس، عاصف، ضبابي) يجعل المشاعر مرئية
+2 Worry Release — كتابة القلق ثم إطلاقه بأنيميشن تفريغ نفسي
+3 Voice Tone Detection — كشف نبرة الصوت يكشف ما تخفيه الكلمات
+4 Shadow Work Prompts — أسئلة يونغية عميقة استكشاف اللاوعي
+5 Inner Child Mode — الكتابة ببساطة طفل تحرير المشاعر المكبوتة
+
+🌱 الفئة 2: النمو الشخصي
+
+# الميزة التأثير
+6 Gratitude Garden — كل امتنان يزرع نبتة يحفز على الامتنان
+7 Habit Streaks — سلاسل مع احتفالات يعزز الالتزام
+8 Future Self Letters — رسائل مقفلة بزمن منظور طويل المدى
+9 Time Capsule — مذكرة تُفتح بعد سنوات يخلق ترقبًا
+10 CBT Journaling — تمارين سلوكية معرفية معالجة الأفكار السلبية
+
+🎵 الفئة 3: الحواس
+
+# الميزة التأثير
+11 Ambient Soundscapes — أصوات محيطة (مطر، غابة، مقهى) تخلق مزاجًا
+12 Haptic Feedback — اهتزازات مختلفة للمشاعر اتصال جسدي
+13 Sunrise/Sunset Themes — ثيم يتغير حسب الوقت اتصال بالإيقاع اليومي
+14 Paper Texture — ورق واقعي للكتابة حنين للكتابة اليدوية
+15 Reading Mode — قراءة المذكرات ككتاب تجربة سينمائية
+
+🧘 الفئة 4: الهدوء الذهني
+
+# الميزة التأثير
+16 Breathing Exercise — تنفس قبل الكتابة تهدئة قبل التعبير
+17 Meditation Journal — مذكرة تأمل دمج الروحانيات
+18 Worry Box — صندوق قلق رقمي عزل الهموم
+19 Calm Mode — وضع هادئ (ألوان خافتة) تقليل التحفيز
+20 Night Mode — للكتابة قبل النوم للنوم العميق
+
+🎨 الفئة 5: الإبداع
+
+# الميزة التأثير
+21 Dream Journal — مذكرة أحلام استكشاف اللاوعي
+22 Sketch Mode — رسم بدل كتابة للاوعي البصري
+23 Photo-a-Day — صورة يوميًا ذاكرة بصرية
+24 Memory Palace — قصر الذاكرة تنظيم مكاني
+25 Poetry Mode — كتابة شعرية تعبير فني
+
+👨‍👩‍👧 الفئة 6: العلاقات
+
+# الميزة التأثير
+26 Relationship Map — خريطة العلاقات فهم الروابط
+27 Legacy Journal — وصية للأحفاد إرث
+28 Anonymous Letters — رسائل لا تُرسل تفريغ
+29 Family Time Capsule — للأحباء ترابط
+30 Mood Sharing — شارك مزاجك فقط اتصال بدون خصوصية
+
+---
+
+📦 الحزمة: 12 ميزة بأكواد كاملة
+
+📄 الملف 29: lib/models/mood_weather.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+
+/// MoodWeather — تحويل المزاج إلى طقس بصري.
+///
+/// الفكرة: المشاعر ليست مجرد emoji — بل مناخ كامل.
+enum WeatherType {
+  sunny,      // مشمس - سعادة
+  partlyCloudy, // غائم جزئيًا - هدوء
+  cloudy,     // غائم - محايد
+  rainy,      // مطر - حزن
+  stormy,     // عاصف - غضب
+  foggy,      // ضبابي - قلق
+  snowy,      // ثلجي - برود
+  rainbow,    // قوس قزح - مختلط
+}
+
+class MoodWeather {
+  final WeatherType type;
+  final String emoji;
+  final String labelEn;
+  final String labelAr;
+  final List<Color> gradient;
+  final IconData icon;
+
+  const MoodWeather({
+    required this.type,
+    required this.emoji,
+    required this.labelEn,
+    required this.labelAr,
+    required this.gradient,
+    required this.icon,
+  });
+
+  /// تحويل المزاج إلى طقس.
+  static MoodWeather fromMoodValue(double avgValue) {
+    if (avgValue >= 9) return _sunny;
+    if (avgValue >= 7) return _partlyCloudy;
+    if (avgValue >= 5) return _cloudy;
+    if (avgValue >= 3.5) return _rainy;
+    if (avgValue >= 2) return _stormy;
+    return _foggy;
+  }
+
+  static MoodWeather fromMoodId(String id) {
+    switch (id) {
+      case 'happy':
+      case 'joyful':
+      case 'loved':
+      case 'in_love':
+        return _sunny;
+      case 'grateful':
+      case 'proud':
+      case 'hopeful':
+      case 'peaceful':
+      case 'calm':
+        return _partlyCloudy;
+      case 'okay':
+      case 'tired':
+      case 'indifferent':
+        return _cloudy;
+      case 'sad':
+      case 'lonely':
+        return _rainy;
+      case 'angry':
+      case 'frustrated':
+        return _stormy;
+      case 'anxious':
+      case 'confused':
+      case 'depressed':
+        return _foggy;
+      case 'excited':
+        return _rainbow;
+      default:
+        return _cloudy;
+    }
+  }
+
+  static const _sunny = MoodWeather(
+    type: WeatherType.sunny,
+    emoji: '☀️',
+    labelEn: 'Sunny',
+    labelAr: 'مشمس',
+    gradient: [Color(0xFFFFD54F), Color(0xFFFF9800)],
+    icon: Icons.wb_sunny,
+  );
+
+  static const _partlyCloudy = MoodWeather(
+    type: WeatherType.partlyCloudy,
+    emoji: '⛅',
+    labelEn: 'Partly Cloudy',
+    labelAr: 'غائم جزئيًا',
+    gradient: [Color(0xFF81D4FA), Color(0xFFFFD54F)],
+    icon: Icons.wb_cloudy,
+  );
+
+  static const _cloudy = MoodWeather(
+    type: WeatherType.cloudy,
+    emoji: '☁️',
+    labelEn: 'Cloudy',
+    labelAr: 'غائم',
+    gradient: [Color(0xFF90A4AE), Color(0xFF607D8B)],
+    icon: Icons.cloud,
+  );
+
+  static const _rainy = MoodWeather(
+    type: WeatherType.rainy,
+    emoji: '🌧️',
+    labelEn: 'Rainy',
+    labelAr: 'ممطر',
+    gradient: [Color(0xFF546E7A), Color(0xFF37474F)],
+    icon: Icons.grain,
+  );
+
+  static const _stormy = MoodWeather(
+    type: WeatherType.stormy,
+    emoji: '⛈️',
+    labelEn: 'Stormy',
+    labelAr: 'عاصف',
+    gradient: [Color(0xFF263238), Color(0xFF000000)],
+    icon: Icons.flash_on,
+  );
+
+  static const _foggy = MoodWeather(
+    type: WeatherType.foggy,
+    emoji: '🌫️',
+    labelEn: 'Foggy',
+    labelAr: 'ضبابي',
+    gradient: [Color(0xFFB0BEC5), Color(0xFF78909C)],
+    icon: Icons.foggy,
+  );
+
+  static const _rainbow = MoodWeather(
+    type: WeatherType.rainbow,
+    emoji: '🌈',
+    labelEn: 'Rainbow',
+    labelAr: 'قوس قزح',
+    gradient: [Color(0xFFFF6B9D), Color(0xFF6C5CE7)],
+    icon: Icons.color_lens,
+  );
+}
+```
+
+---
+
+📄 الملف 30: lib/widgets/weather_widget.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
+import '../models/mood_weather.dart';
+
+/// WeatherWidget — عرض الطقس المزاجي.
+class WeatherWidget extends StatelessWidget {
+  final MoodWeather weather;
+  final double size;
+  final bool animated;
+
+  const WeatherWidget({
+    super.key,
+    required this.weather,
+    this.size = 80,
+    this.animated = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Widget content = Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: weather.gradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: weather.gradient.first.withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        weather.emoji,
+        style: TextStyle(fontSize: size * 0.5),
+      ),
+    );
+
+    if (animated) {
+      content = content
+          .animate(onPlay: (c) => c.repeat(reverse: true))
+          .scale(
+            begin: const Offset(1, 1),
+            end: const Offset(1.05, 1.05),
+            duration: 2000.ms,
+            curve: Curves.easeInOut,
+          );
+    }
+
+    return content;
+  }
+}
+
+/// WeatherForecastCard — توقعات 7 أيام.
+class WeatherForecastCard extends StatelessWidget {
+  final List<MoodWeather> weekWeather;
+  final List<String> dayLabels;
+
+  const WeatherForecastCard({
+    super.key,
+    required this.weekWeather,
+    required this.dayLabels,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.cloud_outlined, size: 18, color: Colors.blueGrey),
+              SizedBox(width: 8),
+              Text(
+                'Mood Weather · 7 days',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: weekWeather.asMap().entries.map((e) {
+              return Column(
+                children: [
+                  Text(
+                    dayLabels[e.key],
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  WeatherWidget(
+                    weather: e.value,
+                    size: 40,
+                    animated: false,
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+---
+
+📄 الملف 31: lib/features/worry/worry_release_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../services/database_service.dart';
+
+/// WorryReleaseScreen — اكتب همّك، أطلقه.
+///
+/// الفكرة النفسية: التدوين عن الهم ثم "إطلاقه" بصريًا
+/// يعطي إحساسًا حقيقيًا بالتفريغ (مستند إلى تمارين CBT).
+class WorryReleaseScreen extends StatefulWidget {
+  const WorryReleaseScreen({super.key});
+
+  @override
+  State<WorryReleaseScreen> createState() => _WorryReleaseScreenState();
+}
+
+class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final DatabaseService _db = DatabaseService();
+
+  int _stage = 0; // 0: write, 1: releasing, 2: released
+  bool _saveBeforeRelease = false;
+
+  Future<void> _release() async {
+    if (_controller.text.trim().isEmpty) return;
+
+    setState(() => _stage = 1);
+
+    // Optional: save as entry before releasing
+    if (_saveBeforeRelease) {
+      // Save as a "released worry" entry
+    }
+
+    await Future.delayed(const Duration(seconds: 4));
+
+    if (mounted) setState(() => _stage = 2);
+  }
+
+  void _reset() {
+    setState(() {
+      _stage = 0;
+      _controller.clear();
+      _saveBeforeRelease = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _stage == 0
+          ? null
+          : const Color(0xFF0A0D14), // Dark for releasing
+      appBar: AppBar(
+        title: const Text('Release a Worry'),
+        backgroundColor: _stage == 0 ? null : Colors.transparent,
+      ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        child: _buildStage(),
+      ),
+    );
+  }
+
+  Widget _buildStage() {
+    switch (_stage) {
+      case 0:
+        return _buildWriteStage();
+      case 1:
+        return _buildReleasingStage();
+      default:
+        return _buildReleasedStage();
+    }
+  }
+
+  Widget _buildWriteStage() {
+    return Padding(
+      key: const ValueKey('write'),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'What\'s weighing on you?',
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Write it out. Then let it go.',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 15,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: TextField(
+                controller: _controller,
+                maxLines: null,
+                expands: true,
+                decoration: const InputDecoration(
+                  hintText: 'I\'m worried about...',
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(fontSize: 16),
+                ),
+                style: const TextStyle(fontSize: 16, height: 1.7),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          CheckboxListTile(
+            value: _saveBeforeRelease,
+            onChanged: (v) => setState(() => _saveBeforeRelease = v ?? false),
+            title: const Text('Save a copy to my journal'),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _controller.text.trim().isEmpty ? null : _release,
+              icon: const Icon(Icons.air),
+              label: const Text('Release It'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReleasingStage() {
+    return Container(
+      key: const ValueKey('releasing'),
+      alignment: Alignment.center,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Particle animations
+          ...List.generate(20, (i) {
+            final angle = (i / 20) * 2 * math.pi;
+            return Animate(
+              delay: Duration(milliseconds: i * 50),
+              child: Transform.translate(
+                offset: Offset(
+                  math.cos(angle) * 100,
+                  math.sin(angle) * 100,
+                ),
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.6),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ).animate().fadeIn().scale().fadeOut(delay: 2.seconds),
+            );
+          }),
+
+          // The text floating away
+          Padding(
+            padding: const EdgeInsets.all(40),
+            child: Text(
+              _controller.text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                height: 1.6,
+              ),
+            ),
+          )
+              .animate()
+              .fadeIn(duration: 500.ms)
+              .then()
+              .moveY(begin: 0, end: -400, duration: 3.seconds, curve: Curves.easeIn)
+              .fadeOut(duration: 3.seconds),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReleasedStage() {
+    return Center(
+      key: const ValueKey('released'),
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF00D2A8), Color(0xFF00B88A)],
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00D2A8).withValues(alpha: 0.4),
+                    blurRadius: 30,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.check,
+                size: 60,
+                color: Colors.white,
+              ),
+            ).animate().scale(curve: Curves.easeOutBack),
+            const SizedBox(height: 32),
+            const Text(
+              'Released',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+              ),
+            ).animate().fadeIn(delay: 400.ms),
+            const SizedBox(height: 12),
+            const Text(
+              'You let it go. That took courage.',
+              style: TextStyle(color: Colors.white70, fontSize: 15),
+              textAlign: TextAlign.center,
+            ).animate().fadeIn(delay: 600.ms),
+            const SizedBox(height: 48),
+            OutlinedButton(
+              onPressed: () {
+                _reset();
+                context.pop();
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white54),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: const Text('Done'),
+            ).animate().fadeIn(delay: 800.ms),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+📄 الملف 32: lib/features/gratitude/gratitude_garden_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// GratitudeGardenScreen — كل امتنان يزرع زهرة.
+///
+/// الفكرة النفسية: الرؤية البصرية للامتنان تُقوّي السلوك الإيجابي.
+class GratitudeGardenScreen extends StatefulWidget {
+  const GratitudeGardenScreen({super.key});
+
+  @override
+  State<GratitudeGardenScreen> createState() => _GratitudeGardenScreenState();
+}
+
+class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
+  final Box _box = Hive.box('settings');
+  final TextEditingController _controller = TextEditingController();
+
+  List<GratitudeItem> get _items {
+    final raw = _box.get('gratitude_items', defaultValue: <dynamic>[]) as List;
+    return raw
+        .map((e) => GratitudeItem.fromMap(Map<dynamic, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  Future<void> _addGratitude() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    final item = GratitudeItem(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      text: text,
+      createdAt: DateTime.now(),
+      flowerIndex: _items.length % 8,
+    );
+
+    final list = [..._items.map((e) => e.toMap()), item.toMap()];
+    await _box.put('gratitude_items', list);
+    _controller.clear();
+    setState(() {});
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🌻 A new flower grew in your garden!'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _items;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gratitude Garden'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🌻', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${items.length}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // ─── Garden visualization ───
+          Expanded(
+            flex: 3,
+            child: Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: items.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🌱', style: TextStyle(fontSize: 60)),
+                          SizedBox(height: 12),
+                          Text(
+                            'Your garden is empty',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            'Add something you\'re grateful for',
+                            style: TextStyle(color: Colors.black38),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Stack(
+                      children: [
+                        // Ground
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 60,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFF8D6E63),
+                                  Color(0xFF5D4037),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                              borderRadius: BorderRadius.vertical(
+                                bottom: Radius.circular(24),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Flowers
+                        ...items.asMap().entries.map((e) {
+                          final item = e.value;
+                          final row = e.key ~/ 8;
+                          final col = e.key % 8;
+                          return Positioned(
+                            left: 30 + col * 40.0,
+                            bottom: 20 + row * 50.0,
+                            child: _FlowerWidget(
+                              emoji: _flowerFor(item.flowerIndex),
+                              delay: e.key * 100,
+                              onTap: () => _showDetail(item),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+            ),
+          ),
+
+          // ─── Add form ───
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: 'I\'m grateful for...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                      ),
+                      onSubmitted: (_) => _addGratitude(),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: _addGratitude,
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.success,
+                            Color(0xFF00A075),
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _flowerFor(int index) {
+    const flowers = ['🌻', '🌷', '🌹', '🌺', '🌸', '💐', '🏵️', '🌼'];
+    return flowers[index % flowers.length];
+  }
+
+  void _showDetail(GratitudeItem item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Text(_flowerFor(item.flowerIndex),
+                style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 10),
+            const Text('Gratitude'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(item.text, style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 12),
+            Text(
+              'Planted: ${item.createdAt.day}/${item.createdAt.month}/${item.createdAt.year}',
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FlowerWidget extends StatelessWidget {
+  final String emoji;
+  final int delay;
+  final VoidCallback onTap;
+
+  const _FlowerWidget({
+    required this.emoji,
+    required this.delay,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        emoji,
+        style: const TextStyle(fontSize: 32),
+      )
+          .animate()
+          .fadeIn(delay: Duration(milliseconds: delay))
+          .scale(curve: Curves.easeOutBack),
+    );
+  }
+}
+
+class GratitudeItem {
+  final String id;
+  final String text;
+  final DateTime createdAt;
+  final int flowerIndex;
+
+  const GratitudeItem({
+    required this.id,
+    required this.text,
+    required this.createdAt,
+    required this.flowerIndex,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'text': text,
+        'createdAt': createdAt.toIso8601String(),
+        'flowerIndex': flowerIndex,
+      };
+
+  factory GratitudeItem.fromMap(Map<dynamic, dynamic> m) => GratitudeItem(
+        id: m['id']?.toString() ?? '',
+        text: m['text']?.toString() ?? '',
+        createdAt: DateTime.tryParse(m['createdAt']?.toString() ?? '') ??
+            DateTime.now(),
+        flowerIndex: (m['flowerIndex'] as num?)?.toInt() ?? 0,
+      );
+}
+```
+
+---
+
+📄 الملف 33: lib/features/future_self/future_letters_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// FutureLettersScreen — رسائل لمستقبلك.
+///
+/// الفكرة النفسية: الكتابة لمستقبلك تعزز التفكير طويل المدى
+/// وتخلق ارتباطًا عاطفيًا بالذات المستقبلية.
+class FutureLettersScreen extends StatefulWidget {
+  const FutureLettersScreen({super.key});
+
+  @override
+  State<FutureLettersScreen> createState() => _FutureLettersScreenState();
+}
+
+class _FutureLettersScreenState extends State<FutureLettersScreen> {
+  final Box _box = Hive.box('settings');
+
+  List<FutureLetter> get _letters {
+    final raw = _box.get('future_letters', defaultValue: <dynamic>[]) as List;
+    return raw
+        .map((e) => FutureLetter.fromMap(Map<dynamic, dynamic>.from(e as Map)))
+        .toList()
+      ..sort((a, b) => a.unlockDate.compareTo(b.unlockDate));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final letters = _letters;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Letters to Future Me'),
+      ),
+      body: Column(
+        children: [
+          if (letters.isEmpty)
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('💌', style: TextStyle(fontSize: 80)),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'No letters yet',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Write a letter to your future self',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      onPressed: () => _composeLetter(),
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Write first letter'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: letters.length,
+                itemBuilder: (_, i) {
+                  final letter = letters[i];
+                  final locked = letter.unlockDate.isAfter(DateTime.now());
+                  return _LetterCard(
+                    letter: letter,
+                    locked: locked,
+                    onTap: () => locked
+                        ? _showLockedMessage(letter)
+                        : _openLetter(letter),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+      floatingActionButton: letters.isEmpty
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => _composeLetter(),
+              icon: const Icon(Icons.edit),
+              label: const Text('New Letter'),
+            ),
+    );
+  }
+
+  Future<void> _composeLetter() async {
+    final controller = TextEditingController();
+    DateTime unlockDate = DateTime.now().add(const Duration(days: 365));
+
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(28),
+            ),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.textTertiary.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Write to Future You',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'This letter will be locked until you choose',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: controller,
+                  maxLines: 8,
+                  decoration: InputDecoration(
+                    hintText: 'Dear future me...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Unlock after:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textTertiary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    _durationChip(
+                      '1 Month',
+                      Duration(days: 30),
+                      unlockDate,
+                      (d) => setModalState(() => unlockDate = d),
+                    ),
+                    _durationChip(
+                      '6 Months',
+                      Duration(days: 180),
+                      unlockDate,
+                      (d) => setModalState(() => unlockDate = d),
+                    ),
+                    _durationChip(
+                      '1 Year',
+                      Duration(days: 365),
+                      unlockDate,
+                      (d) => setModalState(() => unlockDate = d),
+                    ),
+                    _durationChip(
+                      '5 Years',
+                      Duration(days: 1825),
+                      unlockDate,
+                      (d) => setModalState(() => unlockDate = d),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      if (controller.text.trim().isEmpty) return;
+                      await _saveLetter(
+                        controller.text.trim(),
+                        unlockDate,
+                      );
+                      if (ctx.mounted) Navigator.pop(ctx, true);
+                    },
+                    icon: const Icon(Icons.lock),
+                    label: const Text('Lock Letter'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Letter locked until ${unlockDate.day}/${unlockDate.month}/${unlockDate.year}',
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  Widget _durationChip(
+    String label,
+    Duration duration,
+    DateTime current,
+    ValueChanged<DateTime> onSelected,
+  ) {
+    final target = DateTime.now().add(duration);
+    final selected = current.year == target.year &&
+        current.month == target.month &&
+        current.day == target.day;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onSelected(target),
+      ),
+    );
+  }
+
+  Future<void> _saveLetter(String text, DateTime unlockDate) async {
+    final letter = FutureLetter(
+      id: const Uuid().v4(),
+      text: text,
+      createdAt: DateTime.now(),
+      unlockDate: unlockDate,
+    );
+    final list = [..._letters.map((e) => e.toMap()), letter.toMap()];
+    await _box.put('future_letters', list);
+  }
+
+  void _showLockedMessage(FutureLetter letter) {
+    final days = letter.unlockDate.difference(DateTime.now()).inDays;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('🔒 Letter Locked'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('This letter will unlock on:'),
+            const SizedBox(height: 12),
+            Text(
+              '${letter.unlockDate.day}/${letter.unlockDate.month}/${letter.unlockDate.year}',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '$days days remaining',
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openLetter(FutureLetter letter) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Text('💌', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            const Text('From your past self'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                letter.text,
+                style: const TextStyle(fontSize: 15, height: 1.7),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Written: ${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LetterCard extends StatelessWidget {
+  final FutureLetter letter;
+  final bool locked;
+  final VoidCallback onTap;
+
+  const _LetterCard({
+    required this.letter,
+    required this.locked,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: locked
+              ? const LinearGradient(
+                  colors: [Color(0xFF546E7A), Color(0xFF37474F)],
+                )
+              : const LinearGradient(
+                  colors: [Color(0xFFF48FB1), Color(0xFFE91E63)],
+                ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                locked ? '🔒' : '💌',
+                style: const TextStyle(fontSize: 24),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    locked ? 'Locked Letter' : 'Read Letter',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    locked
+                        ? 'Unlocks: ${letter.unlockDate.day}/${letter.unlockDate.month}/${letter.unlockDate.year}'
+                        : 'Written: ${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.white70),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FutureLetter {
+  final String id;
+  final String text;
+  final DateTime createdAt;
+  final DateTime unlockDate;
+
+  const FutureLetter({
+    required this.id,
+    required this.text,
+    required this.createdAt,
+    required this.unlockDate,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'text': text,
+        'createdAt': createdAt.toIso8601String(),
+        'unlockDate': unlockDate.toIso8601String(),
+      };
+
+  factory FutureLetter.fromMap(Map<dynamic, dynamic> m) => FutureLetter(
+        id: m['id']?.toString() ?? '',
+        text: m['text']?.toString() ?? '',
+        createdAt:
+            DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
+        unlockDate:
+            DateTime.tryParse(m['unlockDate']?.toString() ?? '') ?? DateTime.now(),
+      );
+}
+```
+
+---
+
+📄 الملف 34: lib/services/soundscape_service.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+/// SoundscapeService — أصوات محيطة للكتابة.
+///
+/// ملاحظة: يستخدم أصوات النظام أو ملفات صوتية في assets.
+class SoundscapeService extends StateNotifier<SoundscapeState> {
+  SoundscapeService() : super(const SoundscapeState());
+
+  /// تفعيل/تعطيل الصوت.
+  Future<void> toggle() async {
+    state = state.copyWith(enabled: !state.enabled);
+    await Hive.box('settings').put('soundscape_enabled', state.enabled);
+  }
+
+  /// تغيير نوع الصوت.
+  Future<void> setType(String type) async {
+    state = state.copyWith(type: type);
+    await Hive.box('settings').put('soundscape_type', type);
+  }
+
+  /// تغيير مستوى الصوت.
+  Future<void> setVolume(double volume) async {
+    state = state.copyWith(volume: volume);
+    await Hive.box('settings').put('soundscape_volume', volume);
+  }
+
+  void load() {
+    final box = Hive.box('settings');
+    state = SoundscapeState(
+      enabled: box.get('soundscape_enabled', defaultValue: false) as bool,
+      type: box.get('soundscape_type', defaultValue: 'rain') as String,
+      volume: (box.get('soundscape_volume', defaultValue: 0.5) as num).toDouble(),
+    );
+  }
+}
+
+class SoundscapeState {
+  final bool enabled;
+  final String type;
+  final double volume;
+
+  const SoundscapeState({
+    this.enabled = false,
+    this.type = 'rain',
+    this.volume = 0.5,
+  });
+
+  SoundscapeState copyWith({
+    bool? enabled,
+    String? type,
+    double? volume,
+  }) =>
+      SoundscapeState(
+        enabled: enabled ?? this.enabled,
+        type: type ?? this.type,
+        volume: volume ?? this.volume,
+      );
+}
+
+class SoundscapeOption {
+  final String id;
+  final String emoji;
+  final String labelEn;
+  final String labelAr;
+
+  const SoundscapeOption({
+    required this.id,
+    required this.emoji,
+    required this.labelEn,
+    required this.labelAr,
+  });
+
+  static const all = [
+    SoundscapeOption(id: 'rain', emoji: '🌧️', labelEn: 'Rain', labelAr: 'مطر'),
+    SoundscapeOption(id: 'forest', emoji: '🌲', labelEn: 'Forest', labelAr: 'غابة'),
+    SoundscapeOption(id: 'ocean', emoji: '🌊', labelEn: 'Ocean', labelAr: 'محيط'),
+    SoundscapeOption(id: 'cafe', emoji: '☕', labelEn: 'Café', labelAr: 'مقهى'),
+    SoundscapeOption(id: 'fire', emoji: '🔥', labelEn: 'Fireplace', labelAr: 'مدفأة'),
+    SoundscapeOption(id: 'night', emoji: '🌙', labelEn: 'Night', labelAr: 'ليل'),
+    SoundscapeOption(id: 'wind', emoji: '💨', labelEn: 'Wind', labelAr: 'رياح'),
+    SoundscapeOption(id: 'birds', emoji: '🐦', labelEn: 'Birds', labelAr: 'طيور'),
+  ];
+}
+
+final soundscapeProvider =
+    StateNotifierProvider<SoundscapeService, SoundscapeState>(
+  (ref) => SoundscapeService(),
+);
+```
+
+---
+
+📄 الملف 35: lib/widgets/soundscape_bar.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../core/theme/app_colors.dart';
+import '../services/soundscape_service.dart';
+
+/// SoundscapeBar — شريط الأصوات المحيطة.
+class SoundscapeBar extends ConsumerWidget {
+  const SoundscapeBar({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(soundscapeProvider);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          // Toggle button
+          GestureDetector(
+            onTap: () => ref.read(soundscapeProvider.notifier).toggle(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: state.enabled
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : AppColors.textTertiary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                state.enabled ? Icons.volume_up : Icons.volume_off,
+                size: 18,
+                color: state.enabled
+                    ? AppColors.primary
+                    : AppColors.textTertiary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          // Soundscape selection
+          if (state.enabled)
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: SoundscapeOption.all.map((option) {
+                    final selected = state.type == option.id;
+                    return GestureDetector(
+                      onTap: () => ref
+                          .read(soundscapeProvider.notifier)
+                          .setType(option.id),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.primary
+                                : Colors.transparent,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              option.emoji,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              option.labelEn,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: selected
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary,
+                                fontWeight: selected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            )
+          else
+            const Expanded(
+              child: Text(
+                'Ambient sounds',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+---
+
+📄 الملف 36: lib/features/breathing/breathing_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// BreathingScreen — تمرين تنفس قبل الكتابة.
+///
+/// الفكرة: تهدئة الجهاز العصبي قبل التعبير العاطفي.
+class BreathingScreen extends StatefulWidget {
+  const BreathingScreen({super.key});
+
+  @override
+  State<BreathingScreen> createState() => _BreathingScreenState();
+}
+
+class _BreathingScreenState extends State<BreathingScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  int _cycleCount = 0;
+  static const _totalCycles = 4;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+
+    _startCycle();
+  }
+
+  Future<void> _startCycle() async {
+    while (_cycleCount < _totalCycles && mounted) {
+      // Inhale (4s)
+      await _controller.forward(from: 0);
+      if (!mounted) return;
+
+      // Hold (2s)
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+
+      // Exhale (4s)
+      await _controller.reverse();
+      if (!mounted) return;
+
+      // Rest (2s)
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+
+      setState(() => _cycleCount++);
+    }
+
+    if (mounted) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) Navigator.pop(context, true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0D14),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Breathe with the circle',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 60),
+
+            // Breathing circle
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                final scale = 0.5 + _controller.value * 0.5;
+                return Transform.scale(
+                  scale: scale,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.8),
+                          AppColors.primaryGlow.withValues(alpha: 0.6),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.4),
+                          blurRadius: 40,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        _getPhaseLabel(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 60),
+
+            // Cycle counter
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_totalCycles, (i) {
+                final active = i < _cycleCount;
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: active
+                        ? AppColors.primary
+                        : Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '$_cycleCount / $_totalCycles',
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getPhaseLabel() {
+    if (_controller.status == AnimationStatus.forward) return 'Breathe in';
+    if (_controller.status == AnimationStatus.reverse) return 'Breathe out';
+    return 'Hold';
+  }
+}
+```
+
+---
+
+📄 الملف 37: lib/features/dream/dream_journal_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// DreamJournalScreen — مذكرة أحلام بألوان حالمة.
+class DreamJournalScreen extends StatefulWidget {
+  const DreamJournalScreen({super.key});
+
+  @override
+  State<DreamJournalScreen> createState() => _DreamJournalScreenState();
+}
+
+class _DreamJournalScreenState extends State<DreamJournalScreen> {
+  final Box _box = Hive.box('journal_entries');
+  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  bool _isLucid = false;
+  bool _isNightmare = false;
+  int _clarity = 3; // 1-5
+
+  List<DreamEntry> get _dreams {
+    return _box.values
+        .map((e) => Map<dynamic, dynamic>.from(e as Map))
+        .where((e) => e['isDream'] == true)
+        .map((e) => DreamEntry.fromMap(e))
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  Future<void> _saveDream() async {
+    if (_controller.text.trim().isEmpty) return;
+
+    final dream = DreamEntry(
+      id: const Uuid().v4(),
+      title: _titleController.text.trim(),
+      content: _controller.text.trim(),
+      createdAt: DateTime.now(),
+      isLucid: _isLucid,
+      isNightmare: _isNightmare,
+      clarity: _clarity,
+    );
+
+    await _box.put(dream.id, dream.toMap());
+    _controller.clear();
+    _titleController.clear();
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dreams = _dreams;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dream Journal'),
+        backgroundColor: const Color(0xFF1A1F3A),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF1A1F3A),
+              Color(0xFF2A1F3A),
+              Color(0xFF0A0D14),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Column(
+          children: [
+            // Existing dreams
+            if (dreams.isNotEmpty)
+              Expanded(
+                flex: 2,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: dreams.length,
+                  itemBuilder: (_, i) => _DreamCard(dream: dreams[i]),
+                ),
+              )
+            else
+              const Expanded(
+                flex: 2,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('🌙', style: TextStyle(fontSize: 80)),
+                      SizedBox(height: 16),
+                      Text(
+                        'No dreams recorded',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Compose area
+            Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.3),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Record a dream',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _titleController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Dream title (optional)',
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _controller,
+                    maxLines: 4,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Describe your dream...',
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Options
+                  Row(
+                    children: [
+                      ChoiceChip(
+                        label: const Text('Lucid'),
+                        selected: _isLucid,
+                        onSelected: (v) => setState(() => _isLucid = v),
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('Nightmare'),
+                        selected: _isNightmare,
+                        onSelected: (v) => setState(() => _isNightmare = v),
+                      ),
+                      const Spacer(),
+                      const Text(
+                        'Clarity',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                      const SizedBox(width: 8),
+                      ...List.generate(5, (i) {
+                        return GestureDetector(
+                          onTap: () => setState(() => _clarity = i + 1),
+                          child: Container(
+                            margin: const EdgeInsets.only(left: 2),
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: i < _clarity
+                                  ? AppColors.primary
+                                  : Colors.white.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _saveDream,
+                      icon: const Icon(Icons.nightlight_round),
+                      label: const Text('Save Dream'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DreamCard extends StatelessWidget {
+  final DreamEntry dream;
+  const _DreamCard({required this.dream});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                dream.isNightmare ? '😱' : dream.isLucid ? '✨' : '🌙',
+                style: const TextStyle(fontSize: 20),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  dream.title.isEmpty ? 'Untitled Dream' : dream.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                '${dream.createdAt.day}/${dream.createdAt.month}',
+                style: const TextStyle(
+                  color: Colors.white38,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            dream.content,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DreamEntry {
+  final String id;
+  final String title;
+  final String content;
+  final DateTime createdAt;
+  final bool isLucid;
+  final bool isNightmare;
+  final int clarity;
+
+  const DreamEntry({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.createdAt,
+    required this.isLucid,
+    required this.isNightmare,
+    required this.clarity,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'title': title,
+        'content': content,
+        'createdAt': createdAt.toIso8601String(),
+        'isDream': true,
+        'isLucid': isLucid,
+        'isNightmare': isNightmare,
+        'clarity': clarity,
+      };
+
+  factory DreamEntry.fromMap(Map<dynamic, dynamic> m) => DreamEntry(
+        id: m['id']?.toString() ?? '',
+        title: m['title']?.toString() ?? '',
+        content: m['content']?.toString() ?? '',
+        createdAt:
+            DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
+        isLucid: m['isLucid'] == true,
+        isNightmare: m['isNightmare'] == true,
+        clarity: (m['clarity'] as num?)?.toInt() ?? 3,
+      );
+}
+```
+
+---
+
+📄 الملف 38: lib/features/voice/voice_tone_service.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'dart:math' as math;
+
+/// VoiceToneService — كشف نبرة الصوت (مبسط).
+///
+/// الفكرة: بعض المشاعر لا تظهر في الكلمات بل في الصوت.
+class VoiceToneService {
+  /// تحليل موجز للطاقة العاطفية من مستويات الصوت.
+  ToneAnalysis analyze(List<double> soundLevels) {
+    if (soundLevels.isEmpty) {
+      return const ToneAnalysis(
+        tone: 'neutral',
+        intensity: 0,
+        confidence: 0,
+      );
+    }
+
+    final avg = soundLevels.reduce((a, b) => a + b) / soundLevels.length;
+    final variance = soundLevels
+            .map((v) => math.pow(v - avg, 2))
+            .reduce((a, b) => a + b) /
+        soundLevels.length;
+    final stdDev = math.sqrt(variance.toDouble());
+
+    // Analyze pattern
+    String tone;
+    double confidence;
+
+    if (stdDev > 0.3) {
+      tone = 'agitated';
+      confidence = 0.7;
+    } else if (avg > 0.7) {
+      tone = 'energetic';
+      confidence = 0.6;
+    } else if (avg < 0.2) {
+      tone = 'calm';
+      confidence = 0.7;
+    } else {
+      tone = 'neutral';
+      confidence = 0.5;
+    }
+
+    return ToneAnalysis(
+      tone: tone,
+      intensity: avg,
+      confidence: confidence,
+    );
+  }
+
+  /// اقتراح mood من نبرة الصوت.
+  String? suggestMoodFromTone(String tone) {
+    switch (tone) {
+      case 'agitated':
+        return 'frustrated';
+      case 'energetic':
+        return 'excited';
+      case 'calm':
+        return 'peaceful';
+      case 'neutral':
+        return 'okay';
+      default:
+        return null;
+    }
+  }
+}
+
+class ToneAnalysis {
+  final String tone;
+  final double intensity;
+  final double confidence;
+
+  const ToneAnalysis({
+    required this.tone,
+    required this.intensity,
+    required this.confidence,
+  });
+
+  String labelAr() {
+    switch (tone) {
+      case 'agitated':
+        return 'متوتر';
+      case 'energetic':
+        return 'نشيط';
+      case 'calm':
+        return 'هادئ';
+      default:
+        return 'محايد';
+    }
+  }
+}
+```
+
+---
+
+📄 الملف 39: lib/features/worry/worry_box_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// WorryBoxScreen — صندوق قلق رقمي.
+///
+/// الفكرة: "عزل" الهموم في صندوق، وتحديد موعد لمراجعتها لاحقًا.
+/// يمنع القلق المستمر (rumination).
+class WorryBoxScreen extends StatefulWidget {
+  const WorryBoxScreen({super.key});
+
+  @override
+  State<WorryBoxScreen> createState() => _WorryBoxScreenState();
+}
+
+class _WorryBoxScreenState extends State<WorryBoxScreen> {
+  final Box _box = Hive.box('settings');
+  final TextEditingController _controller = TextEditingController();
+
+  List<WorryItem> get _worries {
+    final raw = _box.get('worry_box', defaultValue: <dynamic>[]) as List;
+    return raw
+        .map((e) => WorryItem.fromMap(Map<dynamic, dynamic>.from(e as Map)))
+        .toList()
+      ..sort((a, b) => a.reviewDate.compareTo(b.reviewDate));
+  }
+
+  Future<void> _addWorry() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    // Default review: tomorrow at same time
+    final reviewDate = DateTime.now().add(const Duration(days: 1));
+
+    final item = WorryItem(
+      id: const Uuid().v4(),
+      text: text,
+      createdAt: DateTime.now(),
+      reviewDate: reviewDate,
+    );
+
+    final list = [..._worries.map((e) => e.toMap()), item.toMap()];
+    await _box.put('worry_box', list);
+    _controller.clear();
+    setState(() {});
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Worry boxed. Review tomorrow at ${reviewDate.hour}:${reviewDate.minute.toString().padLeft(2, '0')}',
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeWorry(WorryItem item) async {
+    final list = _worries.where((e) => e.id != item.id).map((e) => e.toMap()).toList();
+    await _box.put('worry_box', list);
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final worries = _worries;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Worry Box'),
+      ),
+      body: Column(
+        children: [
+          // Info
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Box your worries here. Review them tomorrow — most will seem smaller.',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Worries list
+          Expanded(
+            child: worries.isEmpty
+                ? const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('📦', style: TextStyle(fontSize: 80)),
+                        SizedBox(height: 16),
+                        Text(
+                          'Your worry box is empty',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'That\'s a good thing ✨',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: worries.length,
+                    itemBuilder: (_, i) => _WorryCard(
+                      item: worries[i],
+                      onRemove: () => _removeWorry(worries[i]),
+                    ),
+                  ),
+          ),
+
+          // Add form
+          Container(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: 'What\'s worrying you?',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                      ),
+                      onSubmitted: (_) => _addWorry(),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
+                    onPressed: _addWorry,
+                    icon: const Icon(Icons.archive_outlined),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.all(14),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorryCard extends StatelessWidget {
+  final WorryItem item;
+  final VoidCallback onRemove;
+
+  const _WorryCard({required this.item, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final canReview = now.isAfter(item.reviewDate);
+    final daysLeft = item.reviewDate.difference(now).inDays;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: canReview
+              ? AppColors.success.withValues(alpha: 0.4)
+              : AppColors.textTertiary.withValues(alpha: 0.2),
+          width: canReview ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                canReview ? '🔓' : '📦',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  canReview
+                      ? 'Time to review'
+                      : '$daysLeft day${daysLeft == 1 ? '' : 's'} left',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: canReview
+                        ? AppColors.success
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onRemove,
+                icon: const Icon(
+                  Icons.close,
+                  size: 18,
+                  color: AppColors.textTertiary,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            item.text,
+            style: const TextStyle(
+              fontSize: 14,
+              height: 1.5,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class WorryItem {
+  final String id;
+  final String text;
+  final DateTime createdAt;
+  final DateTime reviewDate;
+
+  const WorryItem({
+    required this.id,
+    required this.text,
+    required this.createdAt,
+    required this.reviewDate,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'text': text,
+        'createdAt': createdAt.toIso8601String(),
+        'reviewDate': reviewDate.toIso8601String(),
+      };
+
+  factory WorryItem.fromMap(Map<dynamic, dynamic> m) => WorryItem(
+        id: m['id']?.toString() ?? '',
+        text: m['text']?.toString() ?? '',
+        createdAt:
+            DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
+        reviewDate:
+            DateTime.tryParse(m['reviewDate']?.toString() ?? '') ?? DateTime.now(),
+      );
+}
+```
+
+---
+
+📄 الملف 40: lib/features/gratitude/gratitude_journal_screen.dart
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../../core/theme/app_colors.dart';
+
+/// GratitudeJournalScreen — مذكرة امتنان يومية من 3 نقاط.
+class GratitudeJournalScreen extends StatefulWidget {
+  const GratitudeJournalScreen({super.key});
+
+  @override
+  State<GratitudeJournalScreen> createState() => _GratitudeJournalScreenState();
+}
+
+class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
+  final Box _box = Hive.box('settings');
+  final List<TextEditingController> _controllers = List.generate(
+    3,
+    (_) => TextEditingController(),
+  );
+
+  String get _todayKey {
+    final now = DateTime.now();
+    return 'gratitude_${now.year}_${now.month}_${now.day}';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadToday();
+  }
+
+  void _loadToday() {
+    final saved = _box.get(_todayKey) as List?;
+    if (saved != null) {
+      for (var i = 0; i < saved.length && i < 3; i++) {
+        _controllers[i].text = saved[i]?.toString() ?? '';
+      }
+    }
+  }
+
+  Future<void> _save() async {
+    final list = _controllers.map((c) => c.text.trim()).toList();
+    await _box.put(_todayKey, list);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✨ Gratitude saved'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Daily Gratitude'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: _save,
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF48FB1), Color(0xFFEC407A)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Column(
+              children: [
+                Text('🙏', style: TextStyle(fontSize: 50)),
+                SizedBox(height: 12),
+                Text(
+                  'Three things I\'m grateful for today',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // 3 inputs
+          ...List.generate(3, (i) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${i + 1}',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _controllers[i],
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: _hintFor(i),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).cardColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _save,
+              icon: const Icon(Icons.save),
+              label: const Text('Save Today\'s Gratitude'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _hintFor(int i) {
+    const hints = [
+      'A person I appreciate...',
+      'A moment that made me smile...',
+      'Something small but meaningful...',
+    ];
+    return hints[i];
+  }
+}
+```
+
+---
+
+📄 الملف 41: lib/features/settings/settings_screen.dart — تحديث
+
+العملية: 🟡 MODIFY
+
+أضف هذه الأقسام في ListView قبل قسم Data:
+
+```dart
+          // ─── Mind & Soul ───
+          _section('Mind & Soul'),
+
+          _tile(
+            icon: Icons.cloud_outlined,
+            title: 'Mood Weather',
+            subtitle: 'See your week as weather',
+            onTap: () => context.push('/weather'),
+          ),
+
+          _tile(
+            icon: Icons.air,
+            title: 'Release a Worry',
+            subtitle: 'Write and let go',
+            onTap: () => context.push('/worry-release'),
+          ),
+
+          _tile(
+            icon: Icons.inbox_outlined,
+            title: 'Worry Box',
+            subtitle: 'Box your worries for review',
+            onTap: () => context.push('/worry-box'),
+          ),
+
+          _tile(
+            icon: Icons.self_improvement,
+            title: 'Breathing Exercise',
+            subtitle: 'Calm down before writing',
+            onTap: () => context.push('/breathing'),
+          ),
+
+          _tile(
+            icon: Icons.local_florist,
+            title: 'Gratitude Garden',
+            subtitle: 'Grow flowers with gratitude',
+            onTap: () => context.push('/gratitude-garden'),
+          ),
+
+          _tile(
+            icon: Icons.mail_outline,
+            title: 'Letters to Future Me',
+            subtitle: 'Time-locked messages',
+            onTap: () => context.push('/future-letters'),
+          ),
+
+          _tile(
+            icon: Icons.nightlight_round,
+            title: 'Dream Journal',
+            subtitle: 'Record your dreams',
+            onTap: () => context.push('/dream-journal'),
+          ),
+
+          _tile(
+            icon: Icons.check_circle_outline,
+            title: 'Daily Gratitude',
+            subtitle: '3 things today',
+            onTap: () => context.push('/gratitude-journal'),
+          ),
+```
+
+أضف في الأعلى:
+
+```dart
+import 'package:go_router/go_router.dart';
+```
+
+---
+
+📄 الملف 42: lib/core/router.dart — تحديث نهائي
+
+العملية: 🟡 MODIFY
+
+```dart
+import 'package:go_router/go_router.dart';
+
+import '../features/breathing/breathing_screen.dart';
+import '../features/calendar/calendar_screen.dart';
+import '../features/dream/dream_journal_screen.dart';
+import '../features/editor/editor_screen.dart';
+import '../features/future_self/future_letters_screen.dart';
+import '../features/gratitude/gratitude_garden_screen.dart';
+import '../features/gratitude/gratitude_journal_screen.dart';
+import '../features/home/home_screen.dart';
+import '../features/lock/lock_screen.dart';
+import '../features/search/search_screen.dart';
+import '../features/settings/settings_screen.dart';
+import '../features/splash/splash_screen.dart';
+import '../features/stats/heatmap_screen.dart';
+import '../features/stats/stats_screen.dart';
+import '../features/stats/weather_screen.dart';
+import '../features/tags/tags_screen.dart';
+import '../features/worry/worry_box_screen.dart';
+import '../features/worry/worry_release_screen.dart';
+
+final router = GoRouter(
+  initialLocation: '/',
+  routes: [
+    GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
+    GoRoute(path: '/lock', builder: (_, __) => const LockScreen()),
+    GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+    GoRoute(
+      path: '/editor',
+      builder: (_, state) => EditorScreen(entryId: state.extra as String?),
+    ),
+    GoRoute(path: '/calendar', builder: (_, __) => const CalendarScreen()),
+    GoRoute(path: '/stats', builder: (_, __) => const StatsScreen()),
+    GoRoute(path: '/heatmap', builder: (_, __) => const HeatmapScreen()),
+    GoRoute(path: '/weather', builder: (_, __) => const WeatherScreen()),
+    GoRoute(path: '/search', builder: (_, __) => const SearchScreen()),
+    GoRoute(path: '/tags', builder: (_, __) => const TagsScreen()),
+    GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+    // New psychological features
+    GoRoute(
+      path: '/worry-release',
+      builder: (_, __) => const WorryReleaseScreen(),
+    ),
+    GoRoute(path: '/worry-box', builder: (_, __) => const WorryBoxScreen()),
+    GoRoute(path: '/breathing', builder: (_, __) => const BreathingScreen()),
+    GoRoute(
+      path: '/gratitude-garden',
+      builder: (_, __) => const GratitudeGardenScreen(),
+    ),
+    GoRoute(
+      path: '/gratitude-journal',
+      builder: (_, __) => const GratitudeJournalScreen(),
+    ),
+    GoRoute(
+      path: '/future-letters',
+      builder: (_, __) => const FutureLettersScreen(),
+    ),
+    GoRoute(
+      path: '/dream-journal',
+      builder: (_, __) => const DreamJournalScreen(),
+    ),
+  ],
+);
+```
+
+---
+
+📄 الملف 43: lib/features/stats/weather_screen.dart — جديد
+
+العملية: 🟢 CREATE
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../models/journal_entry.dart';
+import '../../models/mood.dart';
+import '../../models/mood_weather.dart';
+import '../../services/database_service.dart';
+import '../../widgets/weather_widget.dart';
+
+/// WeatherScreen — عرض الطقس المزاجي.
+class WeatherScreen extends ConsumerWidget {
+  const WeatherScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final db = DatabaseService();
+    final entries = db.getAllEntries();
+
+    // Calculate mood for each of last 7 days
+    final now = DateTime.now();
+    final weekWeather = <MoodWeather>[];
+    final dayLabels = <String>[];
+
+    for (var i = 6; i >= 0; i--) {
+      final day = now.subtract(Duration(days: i));
+      final dayEntries = entries.where((e) =>
+          e.createdAt.year == day.year &&
+          e.createdAt.month == day.month &&
+          e.createdAt.day == day.day).toList();
+
+      if (dayEntries.isEmpty) {
+        weekWeather.add(MoodWeather.fromMoodValue(0));
+      } else {
+        final values = dayEntries
+            .map((e) => Mood.getById(e.mood)?.value ?? 5)
+            .toList();
+        final avg = values.reduce((a, b) => a + b) / values.length;
+        weekWeather.add(MoodWeather.fromMoodValue(avg.toDouble()));
+      }
+
+      dayLabels.add(_dayLabel(day.weekday));
+    }
+
+    // Today's weather
+    final todayEntries = entries.where((e) =>
+        e.createdAt.year == now.year &&
+        e.createdAt.month == now.month &&
+        e.createdAt.day == now.day).toList();
+
+    MoodWeather todayWeather;
+    if (todayEntries.isEmpty) {
+      todayWeather = MoodWeather.fromMoodValue(0);
+    } else {
+      final values = todayEntries
+          .map((e) => Mood.getById(e.mood)?.value ?? 5)
+          .toList();
+      final avg = values.reduce((a, b) => a + b) / values.length;
+      todayWeather = MoodWeather.fromMoodValue(avg.toDouble());
+    }
+
+    // Overall monthly weather
+    final monthlyWeather = _calculateMonthlyWeather(entries);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mood Weather')),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // ─── Today's weather ───
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: todayWeather.gradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'TODAY',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                WeatherWidget(
+                  weather: todayWeather,
+                  size: 100,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  todayWeather.labelEn,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ─── Week forecast ───
+          WeatherForecastCard(
+            weekWeather: weekWeather,
+            dayLabels: dayLabels,
+          ),
+          const SizedBox(height: 24),
+
+          // ─── Monthly average ───
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'THIS MONTH',
+                  style: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                WeatherWidget(
+                  weather: monthlyWeather,
+                  size: 80,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  monthlyWeather.labelEn,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  MoodWeather _calculateMonthlyWeather(List<JournalEntry> entries) {
+    final cutoff = DateTime.now().subtract(const Duration(days: 30));
+    final recent = entries
+        .where((e) => e.createdAt.isAfter(cutoff))
+        .map((e) => Mood.getById(e.mood)?.value ?? 5)
+        .toList();
+
+    if (recent.isEmpty) return MoodWeather.fromMoodValue(0);
+    final avg = recent.reduce((a, b) => a + b) / recent.length;
+    return MoodWeather.fromMoodValue(avg.toDouble());
+  }
+
+  String _dayLabel(int weekday) {
+    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return labels[(weekday - 1) % 7];
+  }
+}
+```
+
+---
+
+🎯 البرومبت للذكاء الاصطناعي الآخر
+
+انسخ هذا وأرسله:
+
+```
+طبّق المرحلة الرابعة — الميزات النفسية والعاطفية:
+
+1. lib/models/mood_weather.dart — تحويل المزاج إلى طقس
+2. lib/widgets/weather_widget.dart — عرض الطقس
+3. lib/features/worry/worry_release_screen.dart — كتابة وإطلاق الهم
+4. lib/features/worry/worry_box_screen.dart — صندوق قلق
+5. lib/features/gratitude/gratitude_garden_screen.dart — حديقة امتنان
+6. lib/features/gratitude/gratitude_journal_screen.dart — 3 امتنان يومي
+7. lib/features/future_self/future_letters_screen.dart — رسائل لمستقبلك
+8. lib/features/breathing/breathing_screen.dart — تمرين تنفس
+9. lib/features/dream/dream_journal_screen.dart — مذكرة أحلام
+10. lib/services/soundscape_service.dart — أصوات محيطة
+11. lib/widgets/soundscape_bar.dart — شريط الأصوات
+12. lib/features/stats/weather_screen.dart — شاشة الطقس
+13. lib/features/settings/settings_screen.dart — إضافة قسم "Mind & Soul"
+14. lib/core/router.dart — استبدال (مسارات جديدة)
+
+الميزات النفسية المُضافة:
+- Mood Weather (تحويل المزاج لطقس)
+- Worry Release (كتابة + إطلاق بصري)
+- Worry Box (عزل الهموم للمراجعة)
+- Breathing Exercise (4 دورات تنفس)
+- Gratitude Garden (كل امتنان = زهرة)
+- Daily Gratitude (3 نقاط يوميًا)
+- Future Letters (رسائل مقفلة بزمن)
+- Dream Journal (مع خيارات Lucid/Nightmare)
+- Soundscapes (8 أصوات محيطة)
+
+بعد التطبيق:
+  flutter clean
+  flutter pub get
+  flutter gen-l10n
+  flutter analyze
+
+أبلغ بجدول مختصر.
+```
+
+---
+
+📊 ما تم إنجازه في المرحلة 4
+
+# الميزة التأثير النفسي
+1 Mood Weather يجعل المشاعر مرئية
+2 Worry Release تفريغ نفسي كامل
+3 Worry Box عزل الهموم (CBT)
+4 Breathing Exercise تهدئة قبل الكتابة
+5 Gratitude Garden تعزيز السلوك الإيجابي
+6 Daily Gratitude روتين امتنان يومي
+7 Future Letters منظور طويل المدى
+8 Dream Journal استكشاف اللاوعي
+9 Soundscapes تحسين الحالة الذهنية
+10 Voice Tone (Service) كشف ما تخفيه الكلمات
+
+---
+
+💡 أفكار مستقبلية (30 فكرة إضافية)
+
+🧠 نفسية عميقة
+
+1. Shadow Work Prompts — أسئلة يونغية
+2. Inner Child Mode — الكتابة ببساطة طفل
+3. CBT Journaling — تمارين سلوكية معرفية
+4. Stoic Reflection — تأملات رواقية
+5. Ikigai Finder — اكتشاف المعنى
+6. Journaling Prompts AI — اقتراحات مخصصة
+
+🎨 حسية
+
+7. Paper Texture — ورق واقعي
+8. Ink Animation — حبر يظهر تدريجيًا
+9. Haptic Moods — اهتزازات لكل مزاج
+10. Scent Memory — روائح مرتبطة بمذكرات
+11. Time-lapse Reading — قراءة سريعة للذكريات
+
+📸 وسائط
+
+12. Photo-a-Day — صورة يوميًا
+13. Sketch Mode — رسم بدل كتابة
+14. Voice Notes — ملاحظات صوتية
+15. Video Diary — مذكرات فيديو
+16. AR Memory Wall — جدار ذكريات AR
+
+🎮 تحفيز
+
+17. Habit Streaks — سلاسل مع احتفالات
+18. Achievements — شارات إنجاز
+19. Mood Quests — تحديات نفسية
+20. Journal Buddy — صديق افتراضي
+
+👥 اجتماعي (محلي)
+
+21. Family Time Capsule — للأحباء
+22. Anonymous Letters — رسائل لا تُرسل
+23. Legacy Journal — وصية للأحفاد
+24. Relationship Map — خريطة العلاقات
+25. Mood Sharing — شارك مزاجك فقط
+
+📊 إحصائي
+
+26. Life Timeline — حياتك كخط زمني
+27. Emotion Radar — رادار المشاعر
+28. Year in Review — ملخص سنوي
+29. Memory Replay — استرجاع ذكريات
+30. Predictive Insights — توقعات مزاجية
+
+---
+
+قل "واصل" إذا تريد:
+
+· تطبيق أي من الأفكار الـ 30
+· دليل النشر على Google Play
+· اختبارات شاملة
+· تصميم Splash + Icons

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="new_entry" android:enabled="true" android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/shortcut_new_entry" android:shortcutLongLabel="@string/shortcut_new_entry_long">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.nabd.journal" android:targetClass="com.nabd.journal.MainActivity" android:data="nabd://editor" />
+    </shortcut>
+    <shortcut android:shortcutId="garden" android:enabled="true" android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/shortcut_garden" android:shortcutLongLabel="@string/shortcut_garden_long">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.nabd.journal" android:targetClass="com.nabd.journal.MainActivity" android:data="nabd://garden" />
+    </shortcut>
+    <shortcut android:shortcutId="calendar" android:enabled="true" android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/shortcut_calendar" android:shortcutLongLabel="@string/shortcut_calendar_long">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.nabd.journal" android:targetClass="com.nabd.journal.MainActivity" android:data="nabd://calendar" />
+    </shortcut>
+    <shortcut android:shortcutId="stats" android:enabled="true" android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/shortcut_stats" android:shortcutLongLabel="@string/shortcut_stats_long">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.nabd.journal" android:targetClass="com.nabd.journal.MainActivity" android:data="nabd://stats" />
+    </shortcut>
+</shortcuts>

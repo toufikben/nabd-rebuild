@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pulse</string>
+    <string name="shortcut_new_entry">New Entry</string>
+    <string name="shortcut_new_entry_long">Write a new journal entry</string>
+    <string name="shortcut_garden">My Garden</string>
+    <string name="shortcut_garden_long">Check your seed growth</string>
+    <string name="shortcut_calendar">Calendar</string>
+    <string name="shortcut_calendar_long">View your journal calendar</string>
+    <string name="shortcut_stats">Statistics</string>
+    <string name="shortcut_stats_long">View your mood stats</string>
+    <string name="widget_description">اكتب مذكرة سريعة في Pulse</string>
+    <string name="widget_title">Pulse</string>
+    <string name="widget_subtitle">اكتب الآن</string>
+</resources>

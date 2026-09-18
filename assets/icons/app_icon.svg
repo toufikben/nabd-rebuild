@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient خلفية -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#1A1F3A"/>
+    </linearGradient>
+
+    <!-- Gradient النبض -->
+    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="50%" stop-color="#8B7BFF"/>
+      <stop offset="100%" stop-color="#00D2A8"/>
+    </linearGradient>
+
+    <!-- Gradient القلب -->
+    <radialGradient id="heartGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF6B9D"/>
+      <stop offset="100%" stop-color="#E91E63"/>
+    </radialGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- خلفية دائرية -->
+  <rect width="1024" height="1024" rx="220" fill="url(#bgGrad)"/>
+
+  <!-- دائرة خفيفة في الخلفية -->
+  <circle cx="512" cy="512" r="340" fill="url(#pulseGrad)" opacity="0.08"/>
+  <circle cx="512" cy="512" r="260" fill="url(#pulseGrad)" opacity="0.06"/>
+
+  <!-- خط النبض (ECG) -->
+  <path d="M 140 512 L 320 512 L 380 380 L 440 644 L 500 440 L 560 580 L 620 512 L 884 512"
+        stroke="url(#pulseGrad)"
+        stroke-width="28"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        filter="url(#glow)"/>
+
+  <!-- القلب في المركز -->
+  <g transform="translate(512, 512)">
+    <path d="M 0,-40
+             C -20,-70 -70,-70 -90,-30
+             C -105,5 -75,45 0,90
+             C 75,45 105,5 90,-30
+             C 70,-70 20,-70 0,-40 Z"
+          fill="url(#heartGrad)"
+          filter="url(#glow)"/>
+  </g>
+
+  <!-- نقطة البداية -->
+  <circle cx="140" cy="512" r="16" fill="#6C5CE7"/>
+  <circle cx="884" cy="512" r="16" fill="#00D2A8"/>
+</svg>

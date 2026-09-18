@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="homeBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#141821"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#8B7BFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- الخلفية -->
+  <rect width="1080" height="1920" fill="url(#homeBg)"/>
+
+  <!-- نص علوي -->
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">مذكرتك الخاصة</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">100% محلية · بدون إنترنت</text>
+
+  <!-- محاكاة الشاشة -->
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <!-- Header -->
+    <rect x="0" y="0" width="900" height="140" rx="40" fill="#141821"/>
+    <text x="450" y="70" font-family="system-ui" font-size="32" font-weight="700"
+          fill="white" text-anchor="middle">My Journal</text>
+
+    <!-- Stats -->
+    <g transform="translate(40, 180)">
+      <rect width="240" height="120" rx="20" fill="#6C5CE7" opacity="0.15"/>
+      <text x="120" y="55" font-size="36" fill="#6C5CE7" text-anchor="middle" font-weight="700">47</text>
+      <text x="120" y="90" font-size="18" fill="#8B95A8" text-anchor="middle">Entries</text>
+
+      <rect x="270" width="240" height="120" rx="20" fill="#00D2A8" opacity="0.15"/>
+      <text x="390" y="55" font-size="36" fill="#00D2A8" text-anchor="middle" font-weight="700">12.4K</text>
+      <text x="390" y="90" font-size="18" fill="#8B95A8" text-anchor="middle">Words</text>
+
+      <rect x="540" width="240" height="120" rx="20" fill="#F5A623" opacity="0.15"/>
+      <text x="660" y="55" font-size="36" fill="#F5A623" text-anchor="middle" font-weight="700">🔥 14</text>
+      <text x="660" y="90" font-size="18" fill="#8B95A8" text-anchor="middle">Streak</text>
+    </g>
+
+    <!-- Quote Card -->
+    <g transform="translate(40, 340)">
+      <rect width="820" height="200" rx="24" fill="#6C5CE7" opacity="0.1"
+            stroke="#6C5CE7" stroke-width="2" stroke-opacity="0.3"/>
+      <text x="30" y="50" font-size="24" fill="#6C5CE7">💭 Quote of the Day</text>
+      <text x="30" y="100" font-size="20" fill="white" font-style="italic"
+            font-family="Georgia">"The unexamined life is not worth living."</text>
+      <text x="30" y="150" font-size="18" fill="#8B95A8">— Socrates</text>
+    </g>
+
+    <!-- Entry Cards -->
+    <g transform="translate(40, 580)">
+      <rect width="820" height="180" rx="24" fill="#161B22"/>
+      <text x="30" y="50" font-size="32">😊</text>
+      <text x="90" y="45" font-size="24" fill="white" font-weight="600">صباح الخير</text>
+      <text x="90" y="80" font-size="16" fill="#8B95A8">12/03/2026 · 2h ago</text>
+      <text x="90" y="130" font-size="16" fill="#8B95A8">يوم جميل مع العائلة. الشمس مشرقة...</text>
+    </g>
+
+    <g transform="translate(40, 790)">
+      <rect width="820" height="180" rx="24" fill="#161B22"/>
+      <text x="30" y="50" font-size="32">😌</text>
+      <text x="90" y="45" font-size="24" fill="white" font-weight="600">هدوء المساء</text>
+      <text x="90" y="80" font-size="16" fill="#8B95A8">11/03/2026</text>
+      <text x="90" y="130" font-size="16" fill="#8B95A8">قرأت كتاباً جميلاً، شعرت بالسلام...</text>
+    </g>
+
+    <g transform="translate(40, 1000)">
+      <rect width="820" height="180" rx="24" fill="#161B22"/>
+      <text x="30" y="50" font-size="32">🌟</text>
+      <text x="90" y="45" font-size="24" fill="white" font-weight="600">إنجاز جديد</text>
+      <text x="90" y="80" font-size="16" fill="#8B95A8">10/03/2026</text>
+      <text x="90" y="130" font-size="16" fill="#8B95A8">أكملت مشروعاً كنت أعمل عليه منذ شهور...</text>
+    </g>
+  </g>
+</svg>

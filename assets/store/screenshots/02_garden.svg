@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gardenBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0A0D14"/>
+      <stop offset="100%" stop-color="#1A2A1E"/>
+    </linearGradient>
+    <radialGradient id="treeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00D2A8" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00D2A8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#gardenBg)"/>
+
+  <!-- العنوان -->
+  <text x="540" y="140" font-family="system-ui" font-size="44" font-weight="700"
+        fill="white" text-anchor="middle">حديقتك النفسية 🌱</text>
+  <text x="540" y="190" font-family="system-ui" font-size="24"
+        fill="#8B95A8" text-anchor="middle">شجرة تنمو مع كل مذكرة</text>
+
+  <g transform="translate(90, 240)">
+    <rect width="900" height="1600" rx="40" fill="#0A0D14" stroke="#252B3A" stroke-width="3"/>
+
+    <!-- Header -->
+    <text x="450" y="70" font-family="system-ui" font-size="32" font-weight="700"
+          fill="white" text-anchor="middle">My Garden</text>
+
+    <!-- Stats Row -->
+    <g transform="translate(40, 130)">
+      <rect width="240" height="110" rx="20" fill="#00D2A8" opacity="0.15"/>
+      <text x="120" y="55" font-size="36" fill="#00D2A8" text-anchor="middle" font-weight="700">3</text>
+      <text x="120" y="85" font-size="16" fill="#8B95A8" text-anchor="middle">Seeds</text>
+
+      <rect x="270" width="240" height="110" rx="20" fill="#F5A623" opacity="0.15"/>
+      <text x="390" y="55" font-size="36" fill="#F5A623" text-anchor="middle" font-weight="700">1</text>
+      <text x="390" y="85" font-size="16" fill="#8B95A8" text-anchor="middle">Completed</text>
+
+      <rect x="540" width="240" height="110" rx="20" fill="#6C5CE7" opacity="0.15"/>
+      <text x="660" y="55" font-size="36" fill="#6C5CE7" text-anchor="middle" font-weight="700">64%</text>
+      <text x="660" y="85" font-size="16" fill="#8B95A8" text-anchor="middle">Avg Growth</text>
+    </g>
+
+    <!-- Main Tree Card -->
+    <g transform="translate(40, 280)">
+      <rect width="820" height="700" rx="32" fill="#1A2A1E" stroke="#00D2A8" stroke-width="2"/>
+
+      <circle cx="410" cy="280" r="250" fill="url(#treeGlow)"/>
+
+      <text x="410" y="450" font-size="280" text-anchor="middle" font-family="system-ui">🌳</text>
+
+      <text x="410" y="540" font-size="36" fill="white" text-anchor="middle" font-weight="700">الحب</text>
+      <text x="410" y="580" font-size="20" fill="#00D2A8" text-anchor="middle">Strong Tree</text>
+
+      <!-- Progress bar -->
+      <rect x="80" y="620" width="660" height="20" rx="10" fill="#0A0D14"/>
+      <rect x="80" y="620" width="422" height="20" rx="10" fill="#00D2A8"/>
+      <text x="410" y="680" font-size="20" fill="white" text-anchor="middle" font-weight="700">64% Growth</text>
+    </g>
+
+    <!-- Other Seeds -->
+    <text x="40" y="1020" font-size="16" fill="#8B95A8" font-weight="700">ALL SEEDS</text>
+
+    <g transform="translate(40, 1050)">
+      <rect width="820" height="120" rx="20" fill="#161B22"/>
+      <text x="30" y="75" font-size="50">🌻</text>
+      <text x="110" y="55" font-size="22" fill="white" font-weight="700">الامتنان</text>
+      <rect x="110" y="75" width="600" height="12" rx="6" fill="#0A0D14"/>
+      <rect x="110" y="75" width="420" height="12" rx="6" fill="#F5A623"/>
+      <text x="750" y="85" font-size="18" fill="#F5A623" font-weight="700">70%</text>
+    </g>
+
+    <g transform="translate(40, 1190)">
+      <rect width="820" height="120" rx="20" fill="#161B22"/>
+      <text x="30" y="75" font-size="50">🌲</text>
+      <text x="110" y="55" font-size="22" fill="white" font-weight="700">السلام</text>
+      <rect x="110" y="75" width="600" height="12" rx="6" fill="#0A0D14"/>
+      <rect x="110" y="75" width="180" height="12" rx="6" fill="#4DD0E1"/>
+      <text x="750" y="85" font-size="18" fill="#4DD0E1" font-weight="700">30%</text>
+    </g>
+
+    <g transform="translate(40, 1330)">
+      <rect width="820" height="120" rx="20" fill="#161B22"/>
+      <text x="30" y="75" font-size="50">🌸</text>
+      <text x="110" y="55" font-size="22" fill="white" font-weight="700">الأمل</text>
+      <rect x="110" y="75" width="600" height="12" rx="6" fill="#0A0D14"/>
+      <rect x="110" y="75" width="540" height="12" rx="6" fill="#F48FB1"/>
+      <text x="750" y="85" font-size="18" fill="#F48FB1" font-weight="700">90%</text>
+    </g>
+  </g>
+</svg>
