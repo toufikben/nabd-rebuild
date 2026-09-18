@@ -196,7 +196,7 @@ class BreathingEngine {
     );
   }
 
-  List<_PhaseSegment> _buildPhasePlan(BreathingPattern p) {
+  static List<_PhaseSegment> _buildPhasePlan(BreathingPattern p) {
     final segments = <_PhaseSegment>[];
 
     if (p.inhaleSec > 0) {
