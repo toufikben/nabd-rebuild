@@ -178,4 +178,11 @@ class SessionsData {
       ambientSound: null,
     ),
   ];
+
+  static Session? byId(String id) {
+    for (final session in all) {
+      if (session.id == id) return session;
+    }
+    return null;
+  }
 }
