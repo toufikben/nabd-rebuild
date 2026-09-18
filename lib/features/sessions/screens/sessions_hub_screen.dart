@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/sessions_data.dart';
 import '../models/session.dart';
@@ -6,6 +7,10 @@ import '../widgets/session_card.dart';
 
 class SessionsHubScreen extends StatelessWidget {
   const SessionsHubScreen({super.key});
+
+  void _openSession(BuildContext context, Session session) {
+    context.push('/sessions/run?id=${session.id}');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +73,12 @@ class SessionsHubScreen extends StatelessWidget {
               ),
               itemCount: sessions.length,
               itemBuilder: (BuildContext context, int index) {
-                return SessionCard(session: sessions[index]);
+                final Session session = sessions[index];
+
+                return SessionCard(
+                  session: session,
+                  onTap: () => _openSession(context, session),
+                );
               },
             ),
           ),
