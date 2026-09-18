@@ -4,6 +4,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/lock/lock_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/sessions/screens/sessions_hub_screen.dart';
+import '../features/sessions/screens/session_runner_screen.dart';
 import '../features/editor/editor_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/search/search_screen.dart';
@@ -74,6 +76,16 @@ final router = GoRouter(
     GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
     GoRoute(path: '/lock', builder: (_, __) => const LockScreen()),
     GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+    GoRoute(
+      path: '/sessions',
+      builder: (_, __) => const SessionsHubScreen(),
+    ),
+    GoRoute(
+      path: '/sessions/run',
+      builder: (_, GoRouterState state) => SessionRunnerScreen(
+        sessionId: state.uri.queryParameters['id'] ?? '',
+      ),
+    ),
     GoRoute(
         path: '/writing',
         builder: (_, __) =>
