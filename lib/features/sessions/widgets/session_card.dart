@@ -49,13 +49,13 @@ class SessionCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: <Color>[
-                accent.withOpacity(topAlpha),
-                accent.withOpacity(bottomAlpha),
+                accent.withValues(alpha: topAlpha),
+                accent.withValues(alpha: bottomAlpha),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: accent.withOpacity(borderAlpha),
+              color: accent.withValues(alpha: borderAlpha),
               width: 1.2,
             ),
           ),
