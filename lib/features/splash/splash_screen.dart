@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
     } else if (BiometricService().shouldShowLock()) {
       context.go('/lock');
     } else {
-      context.go('/home');
+      context.go('/journal');
     }
   }
 

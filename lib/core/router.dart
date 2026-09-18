@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/lock/lock_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/shell/app_shell.dart';
 import '../features/sessions/screens/sessions_hub_screen.dart';
 import '../features/sessions/screens/session_runner_screen.dart';
 import '../features/editor/editor_screen.dart';
@@ -77,14 +78,53 @@ final router = GoRouter(
     GoRoute(path: '/lock', builder: (_, __) => const LockScreen()),
     GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
     GoRoute(
-      path: '/sessions',
-      builder: (_, __) => const SessionsHubScreen(),
-    ),
-    GoRoute(
       path: '/sessions/run',
       builder: (_, GoRouterState state) => SessionRunnerScreen(
         sessionId: state.uri.queryParameters['id'] ?? '',
       ),
+    ),
+    StatefulShellRoute.indexedStack(
+      builder: (
+        BuildContext context,
+        GoRouterState state,
+        StatefulNavigationShell navigationShell,
+      ) {
+        return AppShell(navigationShell: navigationShell);
+      },
+      branches: <StatefulShellBranch>[
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/journal',
+              builder: (_, __) => const HomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/sessions',
+              builder: (_, __) => const SessionsHubScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/garden',
+              builder: (_, __) => const GardenScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/stats',
+              builder: (_, __) => const StatsScreen(),
+            ),
+          ],
+        ),
+      ],
     ),
     GoRoute(
         path: '/writing',
@@ -106,14 +146,12 @@ final router = GoRouter(
     GoRoute(path: '/tags', builder: (_, __) => const TagsScreen()),
     GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
     GoRoute(path: '/paywall', builder: (_, __) => const PaywallScreen()),
-    GoRoute(path: '/stats', builder: (_, __) => const StatsScreen()),
     GoRoute(path: '/heatmap', builder: (_, __) => const HeatmapScreen()),
     GoRoute(path: '/weather', builder: (_, __) => const WeatherScreen()),
     GoRoute(path: '/word-cloud', builder: (_, __) => const WordCloudScreen()),
     GoRoute(
         path: '/emotion-radar', builder: (_, __) => const EmotionRadarScreen()),
     GoRoute(path: '/year-review', builder: (_, __) => const YearReviewScreen()),
-    GoRoute(path: '/garden', builder: (_, __) => const GardenScreen()),
     GoRoute(
         path: '/seed-selection',
         builder: (_, __) => const SeedSelectionScreen()),
