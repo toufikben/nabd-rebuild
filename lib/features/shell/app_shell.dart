@@ -22,22 +22,22 @@ class AppShell extends StatelessWidget {
           NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),
-            label: 'اليوميات',
+            label: 'Journal',
           ),
           NavigationDestination(
             icon: Icon(Icons.self_improvement_outlined),
             selectedIcon: Icon(Icons.self_improvement),
-            label: 'السلاسل',
+            label: 'Sessions',
           ),
           NavigationDestination(
             icon: Icon(Icons.park_outlined),
             selectedIcon: Icon(Icons.park),
-            label: 'الحديقة',
+            label: 'Garden',
           ),
           NavigationDestination(
             icon: Icon(Icons.insights_outlined),
             selectedIcon: Icon(Icons.insights),
-            label: 'الإحصائيات',
+            label: 'Stats',
           ),
         ],
       ),

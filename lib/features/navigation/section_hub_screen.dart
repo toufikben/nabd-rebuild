@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'app_bottom_navigation.dart';
 
 enum NabdSection { writing, journey, analytics }
 
@@ -11,12 +10,6 @@ class SectionHubScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = _config(section);
-    final index = section == NabdSection.writing
-        ? 1
-        : section == NabdSection.journey
-            ? 2
-            : 3;
-
     return Scaffold(
       appBar: AppBar(title: Text(c.title)),
       body: LayoutBuilder(
@@ -111,7 +104,6 @@ class SectionHubScreen extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: AppBottomNavigation(currentIndex: index),
     );
   }
 

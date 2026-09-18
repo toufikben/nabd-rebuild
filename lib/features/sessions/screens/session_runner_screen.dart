@@ -35,6 +35,8 @@ const Map<String, Color> _sessionAccentMap = <String, Color>{
   'teal': Color(0xFF16A085),
 };
 
+const bool _hasPremium = false;
+
 class SessionRunnerScreen extends StatefulWidget {
   const SessionRunnerScreen({
     super.key,
@@ -52,6 +54,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
   BreathingEngine? _engine;
 
   bool _invalid = false;
+  bool _premiumLocked = false;
   bool _completionHandled = false;
   bool _showSuccess = false;
 
@@ -67,6 +70,11 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
     }
 
     _session = session;
+
+    if (!session.isFree && !_hasPremium) {
+      _premiumLocked = true;
+      return;
+    }
 
     final engine = BreathingEngine(session.breathingPattern);
     _engine = engine;
@@ -175,6 +183,10 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
   Widget build(BuildContext context) {
     if (_invalid) {
       return _buildInvalid(context);
+    }
+
+    if (_premiumLocked) {
+      return _buildPremiumLocked(context);
     }
 
     final session = _session!;
@@ -349,6 +361,62 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
               FilledButton(
                 onPressed: _onExit,
                 child: const Text('رجوع'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumLocked(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: 'Back',
+          onPressed: _onExit,
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                Icons.lock_outline_rounded,
+                size: 64,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Premium Session',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'This session is available with Premium.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _onExit,
+                child: const Text('Back to Sessions'),
               ),
             ],
           ),
