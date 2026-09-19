@@ -168,9 +168,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       } else {
         await _db.addEntry(entry,
             isPro: ref.read(monetizationProvider.notifier).isProActive);
-        _existing = entry;
         await _processPostSave(entry);
       }
+      _existing = entry;
 
       if (mounted) {
         setState(() {});

@@ -69,7 +69,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push('/settings'),
+            onPressed: () async {
+              await context.push('/settings');
+              if (mounted) setState(() {});
+            },
           ),
         ],
       ),
@@ -199,7 +202,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/editor'),
+        onPressed: () async {
+          await context.push('/editor');
+          if (mounted) setState(() {});
+        },
         icon: const Icon(Icons.add),
         label: const Text('New Entry'),
       ),
@@ -319,7 +325,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (_selectedMood != null) {
       result = result.where((e) => e.mood == _selectedMood).toList();
     }
-    return result;
+    return [...result]..sort((a, b) {
+        if (a.isPinned != b.isPinned) return a.isPinned ? -1 : 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
   }
 
   int _calculateStreak() {
