@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+
+import '../../services/audio_service.dart';
 
 class SilentCompanionScreen extends StatefulWidget {
   const SilentCompanionScreen({super.key});
@@ -9,72 +12,77 @@ class SilentCompanionScreen extends StatefulWidget {
 }
 
 class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
-  static const _assetPath = 'assets/sounds/rain_soft.mp3';
+  static double _lastKnownVolume = 0.5;
 
-  final AudioPlayer _player = AudioPlayer();
-  double _volume = 0.5;
-  bool _isLoading = true;
-  String? _errorMessage;
+  final AudioService _audioService = AudioService.instance;
 
   @override
   void initState() {
     super.initState();
-    _prepareAudio();
+    unawaited(_prepareAmbient());
   }
 
-  Future<void> _prepareAudio() async {
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
-    }
-
-    try {
-      await _player.setLoopMode(LoopMode.one);
-      await _player.setVolume(_volume);
-      await _player.setAsset(_assetPath);
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Unable to load rain audio.';
-      });
-    }
+  Future<void> _prepareAmbient() async {
+    await _audioService.requestAmbient(AmbientSource.silent);
   }
 
-  Future<void> _togglePlayback() async {
-    if (_isLoading || _errorMessage != null) return;
+  Future<void> _handleMainAction(AmbientPlaybackState state) async {
+    if (state.source != null && state.source != AmbientSource.silent) {
+      if (state.source == AmbientSource.session) return;
+      await _prepareAmbient();
+      return;
+    }
 
-    try {
-      if (_player.playing) {
-        await _player.pause();
-      } else {
-        await _player.play();
-      }
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _errorMessage = 'Unable to play rain audio.');
+    switch (state.status) {
+      case AmbientPlaybackStatus.loading:
+        return;
+      case AmbientPlaybackStatus.error:
+        await _prepareAmbient();
+        return;
+      case AmbientPlaybackStatus.playing:
+        await _audioService.pause();
+        return;
+      case AmbientPlaybackStatus.ready:
+      case AmbientPlaybackStatus.paused:
+        await _audioService.resume();
+        return;
+      case AmbientPlaybackStatus.idle:
+        await _audioService.playAmbient(AmbientSource.silent);
+        return;
     }
   }
 
   void _setVolume(double value) {
-    setState(() => _volume = value);
-    _player.setVolume(value);
+    _lastKnownVolume = value;
+    unawaited(_audioService.setVolume(value));
   }
 
-  @override
-  void dispose() {
-    _player.stop();
-    _player.dispose();
-    super.dispose();
+  String _statusText(AmbientPlaybackState state) {
+    if (state.source == AmbientSource.session) {
+      return 'A session is currently playing.';
+    }
+    if (state.source == AmbientSource.garden) {
+      return 'Garden ambience is currently active.';
+    }
+    switch (state.status) {
+      case AmbientPlaybackStatus.loading:
+        return 'Loading rain...';
+      case AmbientPlaybackStatus.error:
+        return state.errorMessage ?? 'Unable to load rain audio.';
+      case AmbientPlaybackStatus.playing:
+        return 'Rain is playing';
+      case AmbientPlaybackStatus.ready:
+      case AmbientPlaybackStatus.paused:
+        return 'Tap to begin';
+      case AmbientPlaybackStatus.idle:
+        return 'Tap to begin';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -86,54 +94,61 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 420),
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.water_drop_outlined,
-                    size: 96,
-                    color: colors.primary,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Just be here.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              child: ValueListenableBuilder<AmbientPlaybackState>(
+                valueListenable: _audioService.ambientState,
+                builder: (context, state, _) {
+                  final isPlaying =
+                      state.source == AmbientSource.silent &&
+                      state.status == AmbientPlaybackStatus.playing;
+                  final isLoading =
+                      state.source == AmbientSource.silent &&
+                      state.status == AmbientPlaybackStatus.loading;
+                  final hasError =
+                      state.source == AmbientSource.silent &&
+                      state.status == AmbientPlaybackStatus.error;
+                  final sessionIsActive =
+                      state.source == AmbientSource.session;
+
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.water_drop_outlined,
+                        size: 96,
+                        color: colors.primary,
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Just be here.',
+                        textAlign: TextAlign.center,
+                        style: textTheme.headlineSmall?.copyWith(
                           color: colors.onSurface,
                           fontWeight: FontWeight.w700,
                         ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'No words. No tasks. Only rain.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'No words. No tasks. Only rain.',
+                        textAlign: TextAlign.center,
+                        style: textTheme.bodyLarge?.copyWith(
                           color: colors.onSurfaceVariant,
                         ),
-                  ),
-                  const SizedBox(height: 32),
-                  StreamBuilder<PlayerState>(
-                    stream: _player.playerStateStream,
-                    builder: (context, snapshot) {
-                      final isPlaying = snapshot.data?.playing ?? false;
-                      final isDisabled = _isLoading || _errorMessage != null;
-
-                      return SizedBox(
+                      ),
+                      const SizedBox(height: 32),
+                      SizedBox(
                         width: 96,
                         height: 96,
                         child: FilledButton(
-                          onPressed: _errorMessage != null
-                              ? _prepareAudio
-                              : isDisabled
-                                  ? null
-                                  : _togglePlayback,
+                          onPressed: sessionIsActive
+                              ? null
+                              : () => _handleMainAction(state),
                           style: FilledButton.styleFrom(
                             shape: const CircleBorder(),
                             padding: EdgeInsets.zero,
                             backgroundColor: colors.primary,
                             foregroundColor: colors.onPrimary,
                           ),
-                          child: _isLoading
+                          child: isLoading
                               ? SizedBox(
                                   width: 30,
                                   height: 30,
@@ -142,44 +157,40 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
                                     color: colors.onPrimary,
                                   ),
                                 )
-                              : _errorMessage != null
-                                  ? Icon(
-                                      Icons.refresh,
-                                      size: 32,
-                                      color: colors.onPrimary,
-                                    )
-                                  : Icon(
-                                      isPlaying
+                              : Icon(
+                                  hasError
+                                      ? Icons.refresh
+                                      : isPlaying
                                           ? Icons.pause
                                           : Icons.play_arrow,
-                                      size: 40,
-                                      color: colors.onPrimary,
-                                    ),
+                                  size: 40,
+                                  color: colors.onPrimary,
+                                ),
                         ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: 280,
-                    child: Slider(
-                      value: _volume,
-                      min: 0.0,
-                      max: 1.0,
-                      onChanged: _setVolume,
-                      activeColor: colors.primary,
-                      inactiveColor: colors.primary.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      _errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: colors.error),
-                    ),
-                  ],
-                ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _statusText(state),
+                        textAlign: TextAlign.center,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: hasError ? colors.error : colors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: 280,
+                        child: Slider(
+                          value: _lastKnownVolume,
+                          min: 0.0,
+                          max: 1.0,
+                          onChanged: sessionIsActive ? null : _setVolume,
+                          activeColor: colors.primary,
+                          inactiveColor: colors.primary.withValues(alpha: 0.2),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
