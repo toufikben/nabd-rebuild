@@ -3,7 +3,7 @@
 // R1.2-B — شاشة تشغيل الجلسة.
 // - يعتمد على BreathingEngine الحالي (R1.2-A). لا Engine جديد.
 // - يعرض BreathingCircle + RunnerControls.
-// - لا Activities حقيقية، لا TTS، لا Audio، لا Premium.
+// - لا Activities حقيقية، لا TTS، ولا Audio مستقل داخل الشاشة.
 // - لا Riverpod: ValueListenableBuilder + listener واحد.
 // - لا Timer جديد داخل الشاشة.
 //
@@ -12,6 +12,8 @@
 // الاعتماديات المؤجلة:
 // - SessionsData.byId(...) — patch منفصل على sessions_data.dart.
 // - route '/sessions/run' + '/sessions' — patch منفصل على router.dart.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -23,6 +25,7 @@ import '../engine/breathing_state.dart';
 import '../models/session.dart';
 import '../widgets/breathing_circle.dart';
 import '../widgets/runner_controls.dart';
+import '../../../services/audio_service.dart';
 
 const Map<String, Color> _sessionAccentMap = <String, Color>{
   'red': Color(0xFFE74C3C),
@@ -81,6 +84,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
 
     engine.state.addListener(_onEngineState);
     engine.start();
+    unawaited(_startSessionAmbient(session));
   }
 
   @override
@@ -92,8 +96,28 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
       engine.dispose();
     }
 
+    unawaited(_stopSessionAmbient());
     _engine = null;
     super.dispose();
+  }
+
+  Future<void> _startSessionAmbient(Session session) async {
+    final String? ambientSound = session.ambientSound;
+    if (ambientSound == null || ambientSound.isEmpty) return;
+
+    // AudioService owns the single ambient player and deliberately gives a
+    // configured Session priority over Garden/Silent ambient playback.
+    final started = await AudioService.instance.playAmbient(
+      AmbientSource.session,
+      assetPath: ambientSound,
+    );
+    if (!mounted && started) {
+      await AudioService.instance.stopAmbient(AmbientSource.session);
+    }
+  }
+
+  Future<void> _stopSessionAmbient() {
+    return AudioService.instance.stopAmbient(AmbientSource.session);
   }
 
   void _onEngineState() {
@@ -109,6 +133,8 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
 
   Future<void> _handleCompletion() async {
     if (!mounted) return;
+
+    await _stopSessionAmbient();
 
     setState(() {
       _showSuccess = true;
@@ -156,8 +182,9 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
     }
   }
 
-  void _onExit() {
+  Future<void> _onExit() async {
     _engine?.stop();
+    await _stopSessionAmbient();
 
     if (!mounted) return;
 
