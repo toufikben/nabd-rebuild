@@ -13,7 +13,6 @@ class GardenScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
     final state = ref.watch(gardenProvider);
     final garden = ref.read(gardenProvider.notifier);
 
@@ -34,9 +33,9 @@ class GardenScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 'Plant your first seed',
-                style: TextStyle(color: colorScheme.onSurfaceVariant),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
@@ -72,7 +71,6 @@ class GardenScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _statCard(
-                  context: context,
                   icon: Icons.spa,
                   value: '${stats.totalSeeds}',
                   label: 'Seeds',
@@ -82,7 +80,6 @@ class GardenScreen extends ConsumerWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _statCard(
-                  context: context,
                   icon: Icons.emoji_events,
                   value: '${stats.completedSeeds}',
                   label: 'Completed',
@@ -92,7 +89,6 @@ class GardenScreen extends ConsumerWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _statCard(
-                  context: context,
                   icon: Icons.trending_up,
                   value: '${stats.averageGrowth.round()}%',
                   label: 'Avg Growth',
@@ -109,12 +105,12 @@ class GardenScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // ─── All seeds ───
-          Text(
+          const Text(
             'ALL SEEDS',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: colorScheme.onSurfaceVariant,
+              color: AppColors.textTertiary,
               letterSpacing: 1,
             ),
           ),
@@ -126,7 +122,6 @@ class GardenScreen extends ConsumerWidget {
   }
 
   Widget _statCard({
-    required BuildContext context,
     required IconData icon,
     required String value,
     required String label,
@@ -152,10 +147,7 @@ class GardenScreen extends ConsumerWidget {
           ),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 10,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -185,12 +177,12 @@ class GardenScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          Text(
+          const Text(
             'YOUR MAIN TREE',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: AppColors.textTertiary,
               letterSpacing: 2,
             ),
           ),
@@ -226,12 +218,9 @@ class GardenScreen extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Text(
+                  const Text(
                     'Growth',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
                   ),
                   const Spacer(),
                   Text(
@@ -263,17 +252,14 @@ class GardenScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.calendar_today,
-                size: 14,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              const Icon(Icons.calendar_today,
+                  size: 14, color: AppColors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 '${seed.daysCared} days of care',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
