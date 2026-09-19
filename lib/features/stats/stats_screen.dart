@@ -61,6 +61,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
   // ═══════════════════════════════════════════════════════════
   Widget _buildOverview() {
     final entries = _db.getAllEntries();
+    final colorScheme = Theme.of(context).colorScheme;
     final totalEntries = entries.length;
     final totalWords = _db.getWordCount();
     final streak = _calculateStreak();
@@ -123,13 +124,13 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                   const Icon(Icons.analytics_outlined,
                       color: AppColors.primary, size: 20),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Average words per entry',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -162,9 +163,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                     : avgWords < 300
                         ? 'Good progress!'
                         : 'Amazing depth!',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -180,6 +181,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
   Widget _buildMoodPulse() {
     final entries = _db.getAllEntries();
     final distribution = _db.getMoodDistribution();
+    final colorScheme = Theme.of(context).colorScheme;
 
     // ─── Weekly pulse ───
     final weeklyPulse = _calculateWeeklyPulse(entries);
@@ -200,10 +202,10 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
             borderRadius: BorderRadius.circular(16),
           ),
           child: weeklyPulse.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'Write entries to see your mood pulse',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                 )
               : LineChart(
@@ -235,9 +237,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                               padding: const EdgeInsets.only(top: 6),
                               child: Text(
                                 days[i],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 10,
-                                  color: AppColors.textSecondary,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             );
@@ -309,20 +311,20 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Your average mood',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textSecondary,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           '${monthlyPulse.toStringAsFixed(1)} / 10',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -347,12 +349,12 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
         // ─── Mood distribution ───
         _sectionTitle('Mood Distribution'),
         if (distribution.isEmpty)
-          const Center(
+          Center(
             child: Padding(
               padding: EdgeInsets.all(20),
               child: Text(
                 'No moods recorded yet',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
             ),
           )
@@ -397,10 +399,10 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                                 mood.label('en'),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                             ),
@@ -446,6 +448,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
   Widget _buildActivity() {
     final entries = _db.getAllEntries();
     final last30 = _last30DaysData(entries);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -474,15 +477,16 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
-                    interval: 5,
+                    interval: 10,
+                    reservedSize: 28,
                     getTitlesWidget: (value, meta) {
                       return Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           '${value.toInt()}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
-                            color: AppColors.textSecondary,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       );
@@ -542,17 +546,17 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
           const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -564,10 +568,10 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Text(
           title.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: AppColors.textTertiary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             letterSpacing: 1,
           ),
         ),

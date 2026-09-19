@@ -59,11 +59,11 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
         ),
       ),
       child: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
             children: [
-              const Spacer(),
+              const SizedBox(height: 40),
               Container(
                 width: 160,
                 height: 160,
@@ -107,7 +107,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                 ),
                 textAlign: TextAlign.center,
               ).animate().fadeIn(delay: 600.ms),
-              const Spacer(),
+              const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -299,11 +299,11 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
         ),
       ),
       child: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
             children: [
-              const Spacer(),
+              const SizedBox(height: 40),
               Text(
                 _selectedSeed!.emoji,
                 style: const TextStyle(fontSize: 100),
@@ -327,7 +327,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const Spacer(),
+              const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
