@@ -65,7 +65,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.calendar_today_outlined),
-            onPressed: () => context.push('/calendar'),
+            onPressed: () async {
+              await context.push('/calendar');
+              if (mounted) setState(() {});
+            },
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
