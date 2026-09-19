@@ -465,8 +465,6 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
 
               return BarChart(
                 BarChartData(
-                  minX: 0,
-                  maxX: (last30.length - 1).toDouble(),
                   gridData: const FlGridData(show: false),
                   titlesData: FlTitlesData(
                     leftTitles: const AxisTitles(
