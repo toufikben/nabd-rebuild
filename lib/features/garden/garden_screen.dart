@@ -233,13 +233,16 @@ class GardenScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: seed.progress,
-                  minHeight: 10,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  valueColor: AlwaysStoppedAnimation(s.colors.first),
+              SizedBox(
+                width: double.infinity,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: seed.progress,
+                    minHeight: 10,
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    valueColor: AlwaysStoppedAnimation(s.colors.first),
+                  ),
                 ),
               ),
             ],
@@ -335,11 +338,15 @@ class GardenScreen extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      s.nameAr,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                    Expanded(
+                      child: Text(
+                        s.nameAr,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     if (needsWater) ...[
@@ -366,14 +373,17 @@ class GardenScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: seed.progress,
-                    minHeight: 6,
-                    backgroundColor:
-                        s.colors.first.withValues(alpha: 0.1),
-                    valueColor: AlwaysStoppedAnimation(s.colors.first),
+                SizedBox(
+                  width: double.infinity,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: seed.progress,
+                      minHeight: 6,
+                      backgroundColor:
+                          s.colors.first.withValues(alpha: 0.1),
+                      valueColor: AlwaysStoppedAnimation(s.colors.first),
+                    ),
                   ),
                 ),
               ],

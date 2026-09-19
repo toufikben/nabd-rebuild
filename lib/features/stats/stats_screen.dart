@@ -77,7 +77,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 1.4,
+          childAspectRatio: 1.25,
           children: [
             _statCard(
               icon: Icons.book_outlined,
@@ -123,15 +123,16 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                   const Icon(Icons.analytics_outlined,
                       color: AppColors.primary, size: 20),
                   const SizedBox(width: 10),
-                  const Text(
-                    'Average words per entry',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                  const Expanded(
+                    child: Text(
+                      'Average words per entry',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   Text(
                     '$avgWords',
                     style: const TextStyle(
@@ -143,13 +144,16 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                 ],
               ),
               const SizedBox(height: 12),
-              LinearProgressIndicator(
-                value: (avgWords / 500).clamp(0.0, 1.0),
-                backgroundColor:
-                    AppColors.primary.withValues(alpha: 0.1),
-                valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-                minHeight: 8,
-                borderRadius: BorderRadius.circular(4),
+              SizedBox(
+                width: double.infinity,
+                child: LinearProgressIndicator(
+                  value: (avgWords / 500).clamp(0.0, 1.0),
+                  backgroundColor:
+                      AppColors.primary.withValues(alpha: 0.1),
+                  valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
               const SizedBox(height: 6),
               Text(
@@ -388,15 +392,18 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                       children: [
                         Row(
                           children: [
-                            Text(
-                              mood.label('en'),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
+                            Expanded(
+                              child: Text(
+                                mood.label('en'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
                             ),
-                            const Spacer(),
                             Text(
                               '$percent%',
                               style: TextStyle(
@@ -408,15 +415,18 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                           ],
                         ),
                         const SizedBox(height: 6),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: e.value / total,
-                            minHeight: 6,
-                            backgroundColor:
-                                mood.color.withValues(alpha: 0.1),
-                            valueColor:
-                                AlwaysStoppedAnimation(mood.color),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: e.value / total,
+                              minHeight: 6,
+                              backgroundColor:
+                                  mood.color.withValues(alpha: 0.1),
+                              valueColor:
+                                  AlwaysStoppedAnimation(mood.color),
+                            ),
                           ),
                         ),
                       ],
