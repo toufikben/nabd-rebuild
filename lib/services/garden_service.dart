@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -27,21 +29,37 @@ class GardenService extends StateNotifier<GardenState> {
     if (!mounted) return;
     final box = Hive.box(_box);
     final seeds = <PlantedSeed>[];
+    final seedTypes = <String>{};
+    final duplicateKeys = <dynamic>[];
 
     for (final key in box.keys) {
       final raw = box.get(key);
       if (raw is Map) {
-        seeds.add(PlantedSeed.fromMap(Map<dynamic, dynamic>.from(raw)));
+        final planted = PlantedSeed.fromMap(Map<dynamic, dynamic>.from(raw));
+        if (seedTypes.add(planted.seedTypeId)) {
+          seeds.add(planted);
+        } else {
+          duplicateKeys.add(key);
+        }
       }
     }
+    for (final key in duplicateKeys) {
+      unawaited(box.delete(key));
+    }
 
-    state = GardenState(seeds: seeds);
+    state = GardenState(seeds: seeds, hasChosenSeed: seeds.isNotEmpty);
   }
+
+  /// Refresh persisted Garden data when returning to the screen.
+  void refresh() => _load();
 
   /// اختيار بذرة أولى.
   Future<PlantedSeed> plantSeed(Seed seed) async {
     if (state.seeds.length >= _maxSeeds) {
       throw StateError('Maximum $_maxSeeds seeds reached');
+    }
+    if (state.seeds.any((planted) => planted.seedTypeId == seed.id)) {
+      throw StateError('This seed is already planted');
     }
 
     final planted = PlantedSeed(
@@ -120,9 +138,8 @@ class GardenService extends StateNotifier<GardenState> {
       daysCared: target.daysCared + (growth > 0 ? 1 : 0),
       lastWateredDay: today,
       isComplete: isNowComplete,
-      completionCertificate: isNowComplete && !wasComplete
-          ? _generateCertificate(target)
-          : null,
+      completionCertificate:
+          isNowComplete && !wasComplete ? _generateCertificate(target) : null,
     );
 
     await Hive.box(_box).put(updated.id, updated.toMap());

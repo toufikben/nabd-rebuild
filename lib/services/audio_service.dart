@@ -45,6 +45,20 @@ class AmbientPlaybackState {
   }
 }
 
+enum SoundGardenPlaybackStatus { idle, loading, playing, error }
+
+class SoundGardenPlaybackState {
+  final String? ownerId;
+  final SoundGardenPlaybackStatus status;
+  final String? errorMessage;
+
+  const SoundGardenPlaybackState({
+    this.ownerId,
+    this.status = SoundGardenPlaybackStatus.idle,
+    this.errorMessage,
+  });
+}
+
 class AudioService {
   AudioService._internal();
 
@@ -64,6 +78,10 @@ class AudioService {
   final ValueNotifier<AmbientPlaybackState> ambientState = ValueNotifier(
     const AmbientPlaybackState(),
   );
+  final ValueNotifier<Map<String, SoundGardenPlaybackState>> soundGardenState =
+      ValueNotifier(const <String, SoundGardenPlaybackState>{});
+  final Map<String, just_audio.AudioPlayer> _soundGardenPlayers = {};
+  final Map<String, int> _soundGardenGenerations = {};
 
   double _ambientVolume = 0.5;
   AmbientSource? _requestedSource;
@@ -76,6 +94,124 @@ class AudioService {
   int beginAmbientRequest() => ++_ambientGeneration;
 
   int beginCueRequest() => ++_cueGeneration;
+
+  static const maxSoundGardenTracks = 4;
+
+  Future<bool> playSoundGardenTrack({
+    required String id,
+    required String assetPath,
+    required String ownerId,
+  }) async {
+    if (_disposed) return false;
+    final current = soundGardenState.value[id];
+    if (current?.status == SoundGardenPlaybackStatus.playing ||
+        current?.status == SoundGardenPlaybackStatus.loading) {
+      return true;
+    }
+    final activeCount = soundGardenState.value.values
+        .where((state) =>
+            state.status == SoundGardenPlaybackStatus.playing ||
+            state.status == SoundGardenPlaybackStatus.loading)
+        .length;
+    if (activeCount >= maxSoundGardenTracks) return false;
+
+    final generation = (_soundGardenGenerations[id] ?? 0) + 1;
+    _soundGardenGenerations[id] = generation;
+    final player = just_audio.AudioPlayer();
+    _soundGardenPlayers[id] = player;
+    _setSoundGardenState(
+      id,
+      SoundGardenPlaybackState(
+        ownerId: ownerId,
+        status: SoundGardenPlaybackStatus.loading,
+      ),
+    );
+
+    try {
+      await player.setLoopMode(just_audio.LoopMode.one);
+      await player.setVolume(_ambientVolume);
+      await player.setAsset(assetPath);
+      if (!_soundGardenRequestIsCurrent(id, ownerId, generation, player)) {
+        await player.dispose();
+        return false;
+      }
+      await player.play();
+      if (!_soundGardenRequestIsCurrent(id, ownerId, generation, player)) {
+        await player.stop();
+        await player.dispose();
+        return false;
+      }
+      _setSoundGardenState(
+        id,
+        SoundGardenPlaybackState(
+          ownerId: ownerId,
+          status: SoundGardenPlaybackStatus.playing,
+        ),
+      );
+      return true;
+    } catch (error) {
+      if (_soundGardenRequestIsCurrent(id, ownerId, generation, player)) {
+        _setSoundGardenState(
+          id,
+          SoundGardenPlaybackState(
+            ownerId: ownerId,
+            status: SoundGardenPlaybackStatus.error,
+            errorMessage: 'Unable to play sound: $error',
+          ),
+        );
+      }
+      await player.dispose();
+      return false;
+    }
+  }
+
+  Future<void> stopSoundGardenTrack({
+    required String id,
+    required String ownerId,
+  }) async {
+    final current = soundGardenState.value[id];
+    if (_disposed || current?.ownerId != ownerId) return;
+    _soundGardenGenerations[id] = (_soundGardenGenerations[id] ?? 0) + 1;
+    final player = _soundGardenPlayers.remove(id);
+    _setSoundGardenState(id, const SoundGardenPlaybackState());
+    if (player != null) {
+      await player.stop();
+      await player.dispose();
+    }
+  }
+
+  Future<void> stopAllSoundGardenTracks(String ownerId) async {
+    final ids = soundGardenState.value.entries
+        .where((entry) => entry.value.ownerId == ownerId)
+        .map((entry) => entry.key)
+        .toList();
+    for (final id in ids) {
+      await stopSoundGardenTrack(id: id, ownerId: ownerId);
+    }
+  }
+
+  bool _soundGardenRequestIsCurrent(
+    String id,
+    String ownerId,
+    int generation,
+    just_audio.AudioPlayer player,
+  ) =>
+      !_disposed &&
+      _soundGardenGenerations[id] == generation &&
+      _soundGardenPlayers[id] == player &&
+      soundGardenState.value[id]?.ownerId == ownerId;
+
+  void _setSoundGardenState(String id, SoundGardenPlaybackState state) {
+    if (_disposed) return;
+    final next =
+        Map<String, SoundGardenPlaybackState>.from(soundGardenState.value);
+    if (state.status == SoundGardenPlaybackStatus.idle) {
+      next.remove(id);
+    } else {
+      next[id] = state;
+    }
+    soundGardenState.value = next;
+  }
 
   Future<bool> requestAmbient(
     AmbientSource source, {
@@ -233,6 +369,9 @@ class AudioService {
     _ambientVolume = volume.clamp(0.0, 1.0).toDouble();
     try {
       await _ambientPlayer.setVolume(_ambientVolume);
+      for (final player in _soundGardenPlayers.values) {
+        await player.setVolume(_ambientVolume);
+      }
     } catch (error) {
       debugPrint('Unable to set ambient volume: $error');
     }
@@ -313,6 +452,12 @@ class AudioService {
     unawaited(_cuePlayer.stop());
     unawaited(_ambientPlayer.dispose());
     unawaited(_cuePlayer.dispose());
+    for (final player in _soundGardenPlayers.values) {
+      unawaited(player.stop());
+      unawaited(player.dispose());
+    }
+    _soundGardenPlayers.clear();
+    soundGardenState.dispose();
     ambientState.dispose();
   }
 }

@@ -23,6 +23,7 @@ import '../features/stats/advanced/emotion_radar_screen.dart';
 import '../features/stats/advanced/year_review_screen.dart';
 import '../features/garden/garden_screen.dart';
 import '../features/garden/seed_selection_screen.dart';
+import '../features/garden/sound_garden_screen.dart';
 import '../features/worry/worry_box_screen.dart';
 import '../features/worry/worry_release_screen.dart';
 import '../features/breathing/breathing_screen.dart';
@@ -161,6 +162,8 @@ final router = GoRouter(
     GoRoute(
         path: '/seed-selection',
         builder: (_, __) => const SeedSelectionScreen()),
+    GoRoute(
+        path: '/sound-garden', builder: (_, __) => const SoundGardenScreen()),
     GoRoute(path: '/worry-box', builder: (_, __) => const WorryBoxScreen()),
     GoRoute(
         path: '/worry-release', builder: (_, __) => const WorryReleaseScreen()),

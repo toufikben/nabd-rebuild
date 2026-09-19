@@ -46,6 +46,12 @@ class GardenScreen extends ConsumerWidget {
                 icon: const Icon(Icons.add),
                 label: const Text('Plant a seed'),
               ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => context.push('/sound-garden'),
+                icon: const Icon(Icons.library_music_outlined),
+                label: const Text('Open Sound Garden'),
+              ),
             ],
           ),
         ),
@@ -70,6 +76,15 @@ class GardenScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(20),
         children: [
           _buildGardenAudioControl(context),
+          const SizedBox(height: 20),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () => context.push('/sound-garden'),
+              icon: const Icon(Icons.library_music_outlined),
+              label: const Text('Open Sound Garden'),
+            ),
+          ),
           const SizedBox(height: 20),
           // ─── Stats ───
           Row(
@@ -105,8 +120,7 @@ class GardenScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // ─── Primary tree ───
-          if (primary != null)
-            _buildPrimaryTree(context, primary),
+          if (primary != null) _buildPrimaryTree(context, primary),
           const SizedBox(height: 24),
 
           // ─── All seeds ───
@@ -141,7 +155,8 @@ class GardenScreen extends ConsumerWidget {
         final hasError =
             isGarden && state.status == AmbientPlaybackStatus.error;
         final anotherAmbientIsActive = state.source != null &&
-            !isGarden && state.status != AmbientPlaybackStatus.idle;
+            !isGarden &&
+            state.status != AmbientPlaybackStatus.idle;
 
         return Card(
           child: ListTile(
@@ -159,9 +174,8 @@ class GardenScreen extends ConsumerWidget {
                               : 'Tap to play birds',
             ),
             trailing: IconButton(
-              tooltip: isPlaying
-                  ? 'Stop garden ambience'
-                  : 'Play garden ambience',
+              tooltip:
+                  isPlaying ? 'Stop garden ambience' : 'Play garden ambience',
               onPressed: anotherAmbientIsActive || isLoading
                   ? null
                   : () async {
@@ -211,7 +225,8 @@ class GardenScreen extends ConsumerWidget {
           ),
           Text(
             label,
-            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+            style:
+                const TextStyle(fontSize: 10, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -284,7 +299,8 @@ class GardenScreen extends ConsumerWidget {
                 children: [
                   const Text(
                     'Growth',
-                    style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                    style:
+                        TextStyle(fontSize: 11, color: AppColors.textSecondary),
                   ),
                   const Spacer(),
                   Text(
@@ -343,8 +359,7 @@ class GardenScreen extends ConsumerWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.emoji_events,
-                      size: 16, color: AppColors.warning),
+                  Icon(Icons.emoji_events, size: 16, color: AppColors.warning),
                   SizedBox(width: 6),
                   Text(
                     'Full bloom! 🌸',
@@ -444,8 +459,7 @@ class GardenScreen extends ConsumerWidget {
                     child: LinearProgressIndicator(
                       value: seed.progress,
                       minHeight: 6,
-                      backgroundColor:
-                          s.colors.first.withValues(alpha: 0.1),
+                      backgroundColor: s.colors.first.withValues(alpha: 0.1),
                       valueColor: AlwaysStoppedAnimation(s.colors.first),
                     ),
                   ),
