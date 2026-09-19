@@ -77,7 +77,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               selected: _selectedMood == null,
                               onTap: () => setState(() => _selectedMood = null),
                             ),
-                            ...Mood.all.map((m) => _filterChip(
+                            ...Mood.journalMoods.map((m) => _filterChip(
                                   label: m.emoji,
                                   selected: _selectedMood == m.id,
                                   onTap: () =>
@@ -193,10 +193,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     itemCount: results.length,
                     itemBuilder: (_, i) => EntryCard(
                       entry: results[i],
-                      onTap: () => context.push(
-                        '/editor',
-                        extra: results[i].id,
-                      ),
+                      onTap: () async {
+                        await context.push(
+                          '/editor',
+                          extra: results[i].id,
+                        );
+                        if (mounted) setState(() {});
+                      },
                     ),
                   ),
           ),

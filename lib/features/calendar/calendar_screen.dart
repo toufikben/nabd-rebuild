@@ -177,7 +177,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         ),
                         const SizedBox(height: 12),
                         TextButton.icon(
-                          onPressed: () => context.push('/editor'),
+                          onPressed: () async {
+                            await context.push('/editor');
+                            if (mounted) setState(() {});
+                          },
                           icon: const Icon(Icons.add),
                           label: const Text('Add entry'),
                         ),
@@ -189,10 +192,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     itemCount: selectedEntries.length,
                     itemBuilder: (_, i) => EntryCard(
                       entry: selectedEntries[i],
-                      onTap: () => context.push(
-                        '/editor',
-                        extra: selectedEntries[i].id,
-                      ),
+                      onTap: () async {
+                        await context.push(
+                          '/editor',
+                          extra: selectedEntries[i].id,
+                        );
+                        if (mounted) setState(() {});
+                      },
                     ),
                   ),
           ),

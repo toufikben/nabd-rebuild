@@ -8,18 +8,21 @@ class MoodPicker extends StatelessWidget {
   final String? selectedMoodId;
   final ValueChanged<String?> onSelected;
   final String langCode;
+  final List<Mood> moods;
 
   const MoodPicker({
     super.key,
     this.selectedMoodId,
     required this.onSelected,
     this.langCode = 'en',
+    this.moods = Mood.all,
   });
 
   static Future<String?> show(
     BuildContext context, {
     String? currentMoodId,
     String langCode = 'en',
+    List<Mood> moods = Mood.all,
   }) {
     return showModalBottomSheet<String?>(
       context: context,
@@ -28,6 +31,7 @@ class MoodPicker extends StatelessWidget {
       builder: (_) => MoodPicker(
         selectedMoodId: currentMoodId,
         langCode: langCode,
+        moods: moods,
         onSelected: (mood) => Navigator.pop(context, mood),
       ),
     );
@@ -87,10 +91,10 @@ class MoodPicker extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: categories.map((cat) {
-                  final moods = Mood.all
+                  final moodsForCategory = moods
                       .where((m) => m.category == cat)
                       .toList();
-                  if (moods.isEmpty) return const SizedBox.shrink();
+                  if (moodsForCategory.isEmpty) return const SizedBox.shrink();
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +117,7 @@ class MoodPicker extends StatelessWidget {
                       Wrap(
                         spacing: 10,
                         runSpacing: 10,
-                        children: moods.map((mood) {
+                        children: moodsForCategory.map((mood) {
                           final selected = mood.id == selectedMoodId;
                           return GestureDetector(
                             onTap: () => onSelected(mood.id),

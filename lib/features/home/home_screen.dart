@@ -7,7 +7,6 @@ import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
 import '../../widgets/entry_card.dart';
-import '../../widgets/soundscape_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -34,7 +33,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onSelected: (route) => context.push(route),
             itemBuilder: (_) => const [
               PopupMenuItem(value: '/search', child: Text('Search')),
-              PopupMenuItem(value: '/tags', child: Text('Tags')),
               PopupMenuItem(value: '/stats', child: Text('Statistics')),
               PopupMenuItem(value: '/heatmap', child: Text('Heatmap')),
               PopupMenuItem(value: '/weather', child: Text('Mood weather')),
@@ -47,8 +45,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               PopupMenuItem(
                   value: '/worry-release', child: Text('Worry release')),
               PopupMenuItem(value: '/breathing', child: Text('Breathing')),
-              PopupMenuItem(
-                  value: '/dream-journal', child: Text('Dream journal')),
               PopupMenuItem(
                   value: '/gratitude-garden', child: Text('Gratitude garden')),
               PopupMenuItem(
@@ -115,7 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   );
                 }
-                final mood = Mood.all[i - 1];
+                final mood = Mood.journalMoods[i - 1];
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
@@ -126,12 +122,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
             ),
-          ),
-
-          // Optional ambient sound control for the main journal view.
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: SoundscapeBar(),
           ),
 
           // Stats Row
@@ -171,12 +161,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No entries yet',
+                              entries.isEmpty ? 'No entries yet' : 'No matches',
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Tap + to write your first entry',
+                              entries.isEmpty
+                                  ? 'Tap + to write your first entry'
+                                  : 'Try another search or mood filter',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
                               ),
@@ -196,7 +188,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       final entry = filtered[i - 2];
                       return EntryCard(
                         entry: entry,
-                        onTap: () => context.push('/editor', extra: entry.id),
+                        onTap: () async {
+                          await context.push('/editor', extra: entry.id);
+                          if (mounted) setState(() {});
+                        },
                       );
                     },
                   ),
@@ -290,8 +285,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Text(
                       'Just rain. No words.',
                       style: TextStyle(
-                        color: colors.onSecondaryContainer
-                            .withValues(alpha: 0.8),
+                        color:
+                            colors.onSecondaryContainer.withValues(alpha: 0.8),
                         fontSize: 12,
                       ),
                     ),
@@ -316,7 +311,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       result = result
           .where((e) =>
               e.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              e.content.toLowerCase().contains(_searchQuery.toLowerCase()))
+              e.content.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              e.tags.any((tag) =>
+                  tag.toLowerCase().contains(_searchQuery.toLowerCase())))
           .toList();
     }
     if (_selectedMood != null) {

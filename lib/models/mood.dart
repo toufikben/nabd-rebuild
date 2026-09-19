@@ -69,9 +69,33 @@ class Mood {
         color: Color(0xFF311B92), value: 1, category: 'negative'),
   ];
 
+  static const List<Mood> journalMoods = [
+    allHappy,
+    allPeaceful,
+    allGrateful,
+    allExcited,
+    _journalNeutral,
+    allTired,
+    allAnxious,
+    allSad,
+    allAngry,
+    _journalDisappointed,
+  ];
+
+  static const allHappy = Mood(id: 'happy', emoji: '😊', labelEn: 'Happy', labelAr: 'سعيد', color: Color(0xFF64DD17), value: 9, category: 'positive');
+  static const allPeaceful = Mood(id: 'peaceful', emoji: '😇', labelEn: 'Peaceful', labelAr: 'هادئ', color: Color(0xFF4DD0E1), value: 8, category: 'positive');
+  static const allGrateful = Mood(id: 'grateful', emoji: '🙏', labelEn: 'Grateful', labelAr: 'ممتن', color: Color(0xFF009688), value: 9, category: 'positive');
+  static const allExcited = Mood(id: 'excited', emoji: '🤩', labelEn: 'Excited', labelAr: 'متحمس', color: Color(0xFFFFB300), value: 9, category: 'positive');
+  static const allTired = Mood(id: 'tired', emoji: '😴', labelEn: 'Tired', labelAr: 'متعب', color: Color(0xFF9E9E9E), value: 5, category: 'neutral');
+  static const allAnxious = Mood(id: 'anxious', emoji: '😰', labelEn: 'Anxious', labelAr: 'قلق', color: Color(0xFF7E57C2), value: 3, category: 'negative');
+  static const allSad = Mood(id: 'sad', emoji: '😢', labelEn: 'Sad', labelAr: 'حزين', color: Color(0xFF5C6BC0), value: 4, category: 'negative');
+  static const allAngry = Mood(id: 'angry', emoji: '😠', labelEn: 'Angry', labelAr: 'غاضب', color: Color(0xFFD50000), value: 2, category: 'negative');
+  static const _journalNeutral = Mood(id: 'neutral', emoji: '😐', labelEn: 'Neutral', labelAr: 'محايد', color: Color(0xFFFFD600), value: 6, category: 'neutral');
+  static const _journalDisappointed = Mood(id: 'disappointed', emoji: '😞', labelEn: 'Disappointed', labelAr: 'خذلان', color: Color(0xFFFF6D00), value: 3, category: 'negative');
+
   static Mood? getById(String id) {
     try {
-      return all.firstWhere((m) => m.id == id);
+      return [...all, ...journalMoods].firstWhere((m) => m.id == id);
     } catch (_) {
       return null;
     }
