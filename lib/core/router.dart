@@ -8,6 +8,7 @@ import '../features/home/home_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/sessions/screens/sessions_hub_screen.dart';
 import '../features/sessions/screens/session_runner_screen.dart';
+import '../features/silent/silent_companion_screen.dart';
 import '../features/editor/editor_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/search/search_screen.dart';
@@ -83,6 +84,10 @@ final router = GoRouter(
       builder: (_, GoRouterState state) => SessionRunnerScreen(
         sessionId: state.uri.queryParameters['id'] ?? '',
       ),
+    ),
+    GoRoute(
+      path: '/silent',
+      builder: (_, __) => const SilentCompanionScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (

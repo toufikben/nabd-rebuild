@@ -156,6 +156,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
                       _sessionsCard(context),
+                      const SizedBox(height: 10),
+                      _silentCompanionCard(context),
                       const SizedBox(height: 24),
                       Center(
                         child: Column(
@@ -186,11 +188,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: filtered.length + 1,
+                    itemCount: filtered.length + 2,
                     separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (_, i) {
                       if (i == 0) return _sessionsCard(context);
-                      final entry = filtered[i - 1];
+                      if (i == 1) return _silentCompanionCard(context);
+                      final entry = filtered[i - 2];
                       return EntryCard(
                         entry: entry,
                         onTap: () => context.push('/editor', extra: entry.id),
@@ -247,6 +250,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               Icon(Icons.arrow_forward_ios,
                   size: 16, color: colors.onPrimaryContainer),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _silentCompanionCard(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      color: colors.secondaryContainer,
+      child: InkWell(
+        onTap: () => context.push('/silent'),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(
+                Icons.water_drop_outlined,
+                color: colors.onSecondaryContainer,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Silent Companion',
+                      style: TextStyle(
+                        color: colors.onSecondaryContainer,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Just rain. No words.',
+                      style: TextStyle(
+                        color: colors.onSecondaryContainer
+                            .withValues(alpha: 0.8),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: colors.onSecondaryContainer,
+              ),
             ],
           ),
         ),
