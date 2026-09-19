@@ -164,7 +164,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
-                  childAspectRatio: 1,
+                  mainAxisExtent: 172,
                 ),
                 itemCount: Seed.all.length,
                 itemBuilder: (_, i) {
