@@ -60,6 +60,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
   bool _premiumLocked = false;
   bool _completionHandled = false;
   bool _showSuccess = false;
+  int? _ambientRequestId;
 
   @override
   void initState() {
@@ -90,13 +91,15 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
   @override
   void dispose() {
     final engine = _engine;
+    final ambientRequestId = _ambientRequestId;
 
     if (engine != null) {
       engine.state.removeListener(_onEngineState);
       engine.dispose();
     }
 
-    unawaited(_stopSessionAmbient());
+    unawaited(_stopSessionAmbient(ambientRequestId));
+    _ambientRequestId = null;
     _engine = null;
     super.dispose();
   }
@@ -105,19 +108,29 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
     final String? ambientSound = session.ambientSound;
     if (ambientSound == null || ambientSound.isEmpty) return;
 
+    final requestId = AudioService.instance.beginAmbientRequest();
+    _ambientRequestId = requestId;
+
     // AudioService owns the single ambient player and deliberately gives a
     // configured Session priority over Garden/Silent ambient playback.
     final started = await AudioService.instance.playAmbient(
       AmbientSource.session,
       assetPath: ambientSound,
+      requestId: requestId,
     );
-    if (!mounted && started) {
-      await AudioService.instance.stopAmbient(AmbientSource.session);
+    if ((!mounted || _ambientRequestId != requestId) && started) {
+      await AudioService.instance.stopAmbient(
+        AmbientSource.session,
+        requestId: requestId,
+      );
     }
   }
 
-  Future<void> _stopSessionAmbient() {
-    return AudioService.instance.stopAmbient(AmbientSource.session);
+  Future<void> _stopSessionAmbient([int? requestId]) {
+    return AudioService.instance.stopAmbient(
+      AmbientSource.session,
+      requestId: requestId ?? _ambientRequestId,
+    );
   }
 
   void _onEngineState() {
@@ -134,7 +147,8 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
   Future<void> _handleCompletion() async {
     if (!mounted) return;
 
-    await _stopSessionAmbient();
+    await _stopSessionAmbient(_ambientRequestId);
+    if (!mounted) return;
 
     setState(() {
       _showSuccess = true;
@@ -184,7 +198,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
 
   Future<void> _onExit() async {
     _engine?.stop();
-    await _stopSessionAmbient();
+    await _stopSessionAmbient(_ambientRequestId);
 
     if (!mounted) return;
 

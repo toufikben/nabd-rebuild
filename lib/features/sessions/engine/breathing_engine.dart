@@ -121,12 +121,19 @@ class BreathingEngine {
       BreathingPhase.exhale => 'assets/sounds/exhale.mp3',
       BreathingPhase.holdIn ||
       BreathingPhase.holdOut ||
-      BreathingPhase.finished => null,
+      BreathingPhase.finished =>
+        null,
     };
 
     _lastCuePhase = phase;
     if (assetPath != null) {
-      unawaited(_audioService.playCue(assetPath));
+      final requestId = _audioService.beginCueRequest();
+      unawaited(
+        _audioService.playCue(
+          assetPath,
+          requestId: requestId,
+        ),
+      );
     }
   }
 
@@ -171,9 +178,8 @@ class BreathingEngine {
         final int secondInPhase = elapsedInPhaseMs ~/ 1000;
         final int phaseDurationSec = seg.durationMs ~/ 1000;
 
-        final double raw = seg.durationMs == 0
-            ? 0.0
-            : elapsedInPhaseMs / seg.durationMs;
+        final double raw =
+            seg.durationMs == 0 ? 0.0 : elapsedInPhaseMs / seg.durationMs;
 
         double progress;
 

@@ -67,15 +67,25 @@ class AudioService {
 
   double _ambientVolume = 0.5;
   AmbientSource? _requestedSource;
+  int _ambientGeneration = 0;
+  int _cueGeneration = 0;
   bool _disposed = false;
 
   double get ambientVolume => _ambientVolume;
 
+  int beginAmbientRequest() => ++_ambientGeneration;
+
+  int beginCueRequest() => ++_cueGeneration;
+
   Future<bool> requestAmbient(
     AmbientSource source, {
     String? assetPath,
+    int? requestId,
   }) async {
     if (_disposed || !_canTakeAmbientPriority(source)) return false;
+
+    final generation = requestId ?? ++_ambientGeneration;
+    if (generation != _ambientGeneration) return false;
 
     final current = ambientState.value;
     if (assetPath == null &&
@@ -97,14 +107,20 @@ class AudioService {
       await _ambientPlayer.setAsset(
         assetPath ?? _defaultAmbientAssets[source]!,
       );
-      if (_disposed || _requestedSource != source) return false;
+      if (_disposed ||
+          _requestedSource != source ||
+          generation != _ambientGeneration) {
+        return false;
+      }
       ambientState.value = AmbientPlaybackState(
         source: source,
         status: AmbientPlaybackStatus.ready,
       );
       return true;
     } catch (error) {
-      _setAmbientError(source, 'Unable to load ambient audio: $error');
+      if (generation == _ambientGeneration) {
+        _setAmbientError(source, 'Unable to load ambient audio: $error');
+      }
       return false;
     }
   }
@@ -112,13 +128,19 @@ class AudioService {
   Future<bool> playAmbient(
     AmbientSource source, {
     String? assetPath,
+    int? requestId,
   }) async {
-    final isReady = await requestAmbient(source, assetPath: assetPath);
+    final generation = requestId ?? ++_ambientGeneration;
+    final isReady = await requestAmbient(
+      source,
+      assetPath: assetPath,
+      requestId: generation,
+    );
     if (!isReady || _disposed) return false;
 
     try {
       await _ambientPlayer.play();
-      if (!_disposed) {
+      if (!_disposed && generation == _ambientGeneration) {
         ambientState.value = AmbientPlaybackState(
           source: source,
           status: AmbientPlaybackStatus.playing,
@@ -126,7 +148,9 @@ class AudioService {
       }
       return true;
     } catch (error) {
-      _setAmbientError(source, 'Unable to play ambient audio: $error');
+      if (generation == _ambientGeneration) {
+        _setAmbientError(source, 'Unable to play ambient audio: $error');
+      }
       return false;
     }
   }
@@ -145,7 +169,8 @@ class AudioService {
         );
       }
     } catch (error) {
-      _setAmbientError(ambientState.value.source, 'Unable to pause audio: $error');
+      _setAmbientError(
+          ambientState.value.source, 'Unable to pause audio: $error');
     }
   }
 
@@ -176,6 +201,8 @@ class AudioService {
   Future<void> stop() async {
     if (_disposed) return;
 
+    ++_ambientGeneration;
+
     try {
       await _ambientPlayer.stop();
     } catch (error) {
@@ -188,8 +215,15 @@ class AudioService {
     }
   }
 
-  Future<void> stopAmbient(AmbientSource source) async {
-    if (_disposed || ambientState.value.source != source) return;
+  Future<void> stopAmbient(
+    AmbientSource source, {
+    int? requestId,
+  }) async {
+    if (_disposed ||
+        ambientState.value.source != source ||
+        (requestId != null && requestId != _ambientGeneration)) {
+      return;
+    }
     await stop();
   }
 
@@ -207,15 +241,20 @@ class AudioService {
   Future<bool> playCue(
     String assetPath, {
     double volume = 1.0,
+    int? requestId,
   }) async {
     if (_disposed) return false;
+
+    final generation = requestId ?? ++_cueGeneration;
+    if (generation != _cueGeneration) return false;
 
     try {
       await _cuePlayer.stop();
       await _cuePlayer.setVolume(volume.clamp(0.0, 1.0).toDouble());
       await _cuePlayer.setAsset(assetPath);
+      if (_disposed || generation != _cueGeneration) return false;
       await _cuePlayer.play();
-      return true;
+      return !_disposed && generation == _cueGeneration;
     } catch (error) {
       debugPrint('Unable to play cue $assetPath: $error');
       return false;
@@ -224,6 +263,8 @@ class AudioService {
 
   Future<void> stopCue() async {
     if (_disposed) return;
+
+    ++_cueGeneration;
 
     try {
       await _cuePlayer.stop();
