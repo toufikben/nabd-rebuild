@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../../services/audio_service.dart';
@@ -16,20 +14,10 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
 
   final AudioService _audioService = AudioService.instance;
 
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_prepareAmbient());
-  }
-
-  Future<void> _prepareAmbient() async {
-    await _audioService.requestAmbient(AmbientSource.silent);
-  }
-
   Future<void> _handleMainAction(AmbientPlaybackState state) async {
     if (state.source != null && state.source != AmbientSource.silent) {
       if (state.source == AmbientSource.session) return;
-      await _prepareAmbient();
+      await _audioService.playAmbient(AmbientSource.silent);
       return;
     }
 
@@ -37,7 +25,7 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
       case AmbientPlaybackStatus.loading:
         return;
       case AmbientPlaybackStatus.error:
-        await _prepareAmbient();
+        await _audioService.requestAmbient(AmbientSource.silent);
         return;
       case AmbientPlaybackStatus.playing:
         await _audioService.pause();
