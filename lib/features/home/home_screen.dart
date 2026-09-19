@@ -152,31 +152,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Entries List
           Expanded(
             child: filtered.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.book_outlined,
-                            size: 80,
-                            color:
-                                AppColors.textSecondary.withValues(alpha: 0.3)),
-                        const SizedBox(height: 16),
-                        Text('No entries yet',
-                            style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(height: 8),
-                        Text('Tap + to write your first entry',
-                            style: TextStyle(color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
+                ? ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: filtered.length,
-                    itemBuilder: (_, i) => EntryCard(
-                      entry: filtered[i],
-                      onTap: () =>
-                          context.push('/editor', extra: filtered[i].id),
-                    ),
+                    children: [
+                      _sessionsCard(context),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.book_outlined,
+                              size: 80,
+                              color: AppColors.textSecondary
+                                  .withValues(alpha: 0.3),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No entries yet',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tap + to write your first entry',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: filtered.length + 1,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (_, i) {
+                      if (i == 0) return _sessionsCard(context);
+                      final entry = filtered[i - 1];
+                      return EntryCard(
+                        entry: entry,
+                        onTap: () => context.push('/editor', extra: entry.id),
+                      );
+                    },
                   ),
           ),
         ],
@@ -185,6 +204,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: () => context.push('/editor'),
         icon: const Icon(Icons.add),
         label: const Text('New Entry'),
+      ),
+    );
+  }
+
+  Widget _sessionsCard(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      color: colors.primaryContainer,
+      child: InkWell(
+        onTap: () => context.push('/sessions'),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(Icons.self_improvement, color: colors.onPrimaryContainer),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sessions',
+                      style: TextStyle(
+                        color: colors.onPrimaryContainer,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Take a mindful pause',
+                      style: TextStyle(
+                        color: colors.onPrimaryContainer.withValues(alpha: 0.8),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios,
+                  size: 16, color: colors.onPrimaryContainer),
+            ],
+          ),
+        ),
       ),
     );
   }
