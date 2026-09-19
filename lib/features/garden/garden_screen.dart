@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../models/seed.dart';
+import '../../services/audio_service.dart';
 import '../../services/garden_service.dart';
 
 /// GardenScreen — عرض الحديقة والبذور.
@@ -23,6 +24,8 @@ class GardenScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              _buildGardenAudioControl(context),
+              const SizedBox(height: 20),
               const Text('🌱', style: TextStyle(fontSize: 80)),
               const SizedBox(height: 20),
               const Text(
@@ -66,6 +69,8 @@ class GardenScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          _buildGardenAudioControl(context),
+          const SizedBox(height: 20),
           // ─── Stats ───
           Row(
             children: [
@@ -118,6 +123,65 @@ class GardenScreen extends ConsumerWidget {
           ...state.seeds.map((s) => _buildSeedRow(context, s, garden)),
         ],
       ),
+    );
+  }
+
+  Widget _buildGardenAudioControl(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final audio = AudioService.instance;
+
+    return ValueListenableBuilder<AmbientPlaybackState>(
+      valueListenable: audio.ambientState,
+      builder: (context, state, _) {
+        final isGarden = state.source == AmbientSource.garden;
+        final isPlaying =
+            isGarden && state.status == AmbientPlaybackStatus.playing;
+        final isLoading =
+            isGarden && state.status == AmbientPlaybackStatus.loading;
+        final hasError =
+            isGarden && state.status == AmbientPlaybackStatus.error;
+        final anotherAmbientIsActive = state.source != null &&
+            !isGarden && state.status != AmbientPlaybackStatus.idle;
+
+        return Card(
+          child: ListTile(
+            leading: Icon(Icons.nature, color: colors.primary),
+            title: const Text('Garden ambience'),
+            subtitle: Text(
+              hasError
+                  ? 'Unable to load garden audio. Tap to retry.'
+                  : anotherAmbientIsActive
+                      ? 'Another ambience is currently active.'
+                      : isLoading
+                          ? 'Loading garden ambience...'
+                          : isPlaying
+                              ? 'Birds are playing'
+                              : 'Tap to play birds',
+            ),
+            trailing: IconButton(
+              tooltip: isPlaying
+                  ? 'Stop garden ambience'
+                  : 'Play garden ambience',
+              onPressed: anotherAmbientIsActive || isLoading
+                  ? null
+                  : () async {
+                      if (isPlaying) {
+                        await audio.stop();
+                      } else {
+                        await audio.playAmbient(AmbientSource.garden);
+                      }
+                    },
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(isPlaying ? Icons.stop_circle : Icons.play_circle),
+            ),
+          ),
+        );
+      },
     );
   }
 

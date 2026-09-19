@@ -53,7 +53,7 @@ class AudioService {
 
   static const _defaultAmbientAssets = <AmbientSource, String>{
     AmbientSource.silent: 'assets/sounds/rain_soft.mp3',
-    AmbientSource.garden: 'assets/sounds/birds_distant.mp3',
+    AmbientSource.garden: 'assets/sounds/garden_birds.mp3',
     AmbientSource.session: 'assets/sounds/flute_dawn.mp3',
   };
 
