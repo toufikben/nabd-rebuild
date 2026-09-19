@@ -458,53 +458,68 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: BarChart(
-            BarChartData(
-              gridData: const FlGridData(show: false),
-              titlesData: FlTitlesData(
-                leftTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    interval: 5,
-                    getTitlesWidget: (value, meta) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          '${value.toInt()}',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              borderData: FlBorderData(show: false),
-              barGroups: last30.asMap().entries.map((e) {
-                return BarChartGroupData(
-                  x: e.key,
-                  barRods: [
-                    BarChartRodData(
-                      toY: e.value.toDouble(),
-                      color: AppColors.primary,
-                      width: 6,
-                      borderRadius: BorderRadius.circular(2),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final labelInterval = constraints.maxWidth >= 340 ? 5.0 : 10.0;
+              final colorScheme = Theme.of(context).colorScheme;
+
+              return BarChart(
+                BarChartData(
+                  minX: 0,
+                  maxX: (last30.length - 1).toDouble(),
+                  gridData: const FlGridData(show: false),
+                  titlesData: FlTitlesData(
+                    leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
                     ),
-                  ],
-                );
-              }).toList(),
-            ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: labelInterval,
+                        reservedSize: 28,
+                        getTitlesWidget: (value, meta) {
+                          return SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            space: 6,
+                            fitInside: SideTitleFitInsideData.fromTitleMeta(
+                              meta,
+                              distanceFromEdge: 4,
+                            ),
+                            child: Text(
+                              value.toInt().toString(),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barGroups: last30.asMap().entries.map((e) {
+                    return BarChartGroupData(
+                      x: e.key,
+                      barRods: [
+                        BarChartRodData(
+                          toY: e.value.toDouble(),
+                          color: AppColors.primary,
+                          width: 6,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              );
+            },
           ),
         ),
       ],
