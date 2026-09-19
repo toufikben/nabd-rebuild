@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,11 +22,6 @@ Future<void> main() async {
   await Hive.openBox('tags');
   await Hive.openBox('garden');
 
-  await NotificationService.init();
-  await SettingsService.init();
-  await EncryptionService().initialize();
-  await MobileAds.instance.initialize();
-
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -32,4 +29,15 @@ Future<void> main() async {
   ));
 
   runApp(const ProviderScope(child: NabdApp()));
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_initializeDeferredServices());
+  });
+}
+
+Future<void> _initializeDeferredServices() async {
+  await NotificationService.init();
+  await SettingsService.init();
+  await EncryptionService().initialize();
+  await MobileAds.instance.initialize();
 }
