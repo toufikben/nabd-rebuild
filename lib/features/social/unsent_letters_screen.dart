@@ -204,6 +204,8 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
       ),
     );
 
+    toController.dispose();
+    contentController.dispose();
     if (saved == true && mounted) {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
@@ -254,6 +256,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
           .map((l) => l.toMap())
           .toList();
       await _box.put('unsent_letters', list);
+      if (!mounted) return;
       setState(() {});
     }
   }

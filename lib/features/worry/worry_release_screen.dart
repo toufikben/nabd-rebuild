@@ -47,6 +47,12 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _stage == 0

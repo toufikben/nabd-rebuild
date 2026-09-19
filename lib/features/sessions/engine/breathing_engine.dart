@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../services/audio_service.dart';
 import '../models/breathing_pattern.dart';
 import 'breathing_state.dart';
 
@@ -16,11 +17,13 @@ class BreathingEngine {
   final ValueNotifier<BreathingState> state;
   final List<_PhaseSegment> _plan;
   final Stopwatch _stopwatch = Stopwatch();
+  final AudioService _audioService = AudioService.instance;
 
   Timer? _timer;
   bool _paused = false;
   bool _finished = false;
   bool _disposed = false;
+  BreathingPhase? _lastCuePhase;
 
   void start() {
     if (_disposed) return;
@@ -36,6 +39,8 @@ class BreathingEngine {
     _finished = false;
 
     state.value = BreathingState.initial(pattern);
+    _lastCuePhase = null;
+    _playCueFor(state.value.phase);
 
     _timer = Timer.periodic(
       const Duration(milliseconds: 100),
@@ -74,6 +79,7 @@ class BreathingEngine {
     _timer?.cancel();
     _timer = null;
     _stopwatch.stop();
+    unawaited(_audioService.stopCue());
   }
 
   void dispose() {
@@ -83,6 +89,7 @@ class BreathingEngine {
     _timer?.cancel();
     _timer = null;
     _stopwatch.stop();
+    unawaited(_audioService.stopCue());
     state.dispose();
   }
 
@@ -99,7 +106,28 @@ class BreathingEngine {
       _stopwatch.stop();
     }
 
+    if (next.phase != state.value.phase) {
+      _playCueFor(next.phase);
+    }
+
     state.value = next;
+  }
+
+  void _playCueFor(BreathingPhase phase) {
+    if (_disposed || phase == _lastCuePhase) return;
+
+    final assetPath = switch (phase) {
+      BreathingPhase.inhale => 'assets/sounds/inhale.mp3',
+      BreathingPhase.exhale => 'assets/sounds/exhale.mp3',
+      BreathingPhase.holdIn ||
+      BreathingPhase.holdOut ||
+      BreathingPhase.finished => null,
+    };
+
+    _lastCuePhase = phase;
+    if (assetPath != null) {
+      unawaited(_audioService.playCue(assetPath));
+    }
   }
 
   BreathingState _computeStateFrom(int elapsedMs) {

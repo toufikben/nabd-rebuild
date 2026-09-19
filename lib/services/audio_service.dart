@@ -7,6 +7,7 @@ enum AmbientSource {
   silent,
   garden,
   session,
+  soundscape,
 }
 
 enum AmbientPlaybackStatus {
@@ -55,6 +56,7 @@ class AudioService {
     AmbientSource.silent: 'assets/sounds/rain_soft.mp3',
     AmbientSource.garden: 'assets/sounds/garden_birds.mp3',
     AmbientSource.session: 'assets/sounds/flute_dawn.mp3',
+    AmbientSource.soundscape: 'assets/sounds/rain_soft.mp3',
   };
 
   final just_audio.AudioPlayer _ambientPlayer = just_audio.AudioPlayer();
@@ -76,7 +78,8 @@ class AudioService {
     if (_disposed || !_canTakeAmbientPriority(source)) return false;
 
     final current = ambientState.value;
-    if (current.source == source &&
+    if (assetPath == null &&
+        current.source == source &&
         current.status != AmbientPlaybackStatus.error &&
         current.status != AmbientPlaybackStatus.idle) {
       return true;
@@ -185,6 +188,11 @@ class AudioService {
     }
   }
 
+  Future<void> stopAmbient(AmbientSource source) async {
+    if (_disposed || ambientState.value.source != source) return;
+    await stop();
+  }
+
   Future<void> setVolume(double volume) async {
     if (_disposed) return;
 
@@ -214,6 +222,16 @@ class AudioService {
     }
   }
 
+  Future<void> stopCue() async {
+    if (_disposed) return;
+
+    try {
+      await _cuePlayer.stop();
+    } catch (error) {
+      debugPrint('Unable to stop cue audio: $error');
+    }
+  }
+
   bool _canTakeAmbientPriority(AmbientSource source) {
     final current = ambientState.value;
     final currentSource = current.source;
@@ -232,6 +250,8 @@ class AudioService {
         return 2;
       case AmbientSource.session:
         return 3;
+      case AmbientSource.soundscape:
+        return 1;
     }
   }
 

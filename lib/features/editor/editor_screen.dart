@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -70,6 +71,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   @override
   void dispose() {
+    if (_isListening) unawaited(_voice.stopListening());
     _titleController.dispose();
     _contentController.dispose();
     _recorder.dispose();
@@ -215,12 +217,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       newPaths.add(newPath);
     }
 
-    setState(() => _imagePaths = [..._imagePaths, ...newPaths]);
+    if (mounted) setState(() => _imagePaths = [..._imagePaths, ...newPaths]);
   }
 
   Future<void> _toggleRecording() async {
     if (_isRecording) {
       final path = await _recorder.stop();
+      if (!mounted) return;
       setState(() {
         _isRecording = false;
         _audioPath = path;
@@ -244,22 +247,24 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final path =
         '${audioDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
+    if (!mounted) return;
     await _recorder.start(const RecordConfig(), path: path);
-    setState(() => _isRecording = true);
+    if (mounted) setState(() => _isRecording = true);
   }
 
   Future<void> _toggleVoiceToText() async {
     final localeId = Localizations.localeOf(context).toLanguageTag();
     if (_isListening) {
       await _voice.stopListening();
-      setState(() => _isListening = false);
+      if (mounted) setState(() => _isListening = false);
       return;
     }
 
     final initialized = await _voice.initialize();
-    if (!initialized) return;
+    if (!initialized || !mounted) return;
 
-    setState(() => _isListening = true);
+    if (mounted) setState(() => _isListening = true);
+    if (!mounted) return;
     await _voice.startListening(
       localeId: localeId,
       onResult: (text) {
@@ -278,7 +283,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       currentMoodId: _moodId,
       langCode: 'en',
     );
-    setState(() => _moodId = moodId);
+    if (mounted) setState(() => _moodId = moodId);
   }
 
   Future<void> _addTag() async {
@@ -304,8 +309,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         ],
       ),
     );
+    controller.dispose();
 
-    if (tag != null && tag.isNotEmpty && !_tags.contains(tag)) {
+    if (mounted && tag != null && tag.isNotEmpty && !_tags.contains(tag)) {
       setState(() => _tags = [..._tags, tag]);
     }
   }

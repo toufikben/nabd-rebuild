@@ -224,6 +224,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
         ),
       ),
     );
+    controller.dispose();
 
     if (result == true && mounted) {
       setState(() {});

@@ -52,6 +52,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   Future<void> _init() async {
     final available = await _iap.isAvailable();
+    if (!mounted) return;
     if (!available) return;
     state = state.copyWith(storeAvailable: true);
     _purchaseSub = _iap.purchaseStream.listen(_onPurchaseUpdate);
@@ -61,11 +62,13 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   Future<void> _loadProducts() async {
     try {
       final response = await _iap.queryProductDetails(productIds);
+      if (!mounted) return;
       state = state.copyWith(
         products: response.productDetails,
         error: response.error?.message,
       );
     } catch (error) {
+      if (!mounted) return;
       state = state.copyWith(
           error: '$error', entitlementStatus: EntitlementStatus.error);
     }
@@ -85,6 +88,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
       await _iap.buyNonConsumable(
           purchaseParam: PurchaseParam(productDetails: product));
     } catch (error) {
+      if (!mounted) return;
       state = state.copyWith(
           purchasing: false,
           error: '$error',
@@ -100,6 +104,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     try {
       await _iap.restorePurchases();
     } catch (error) {
+      if (!mounted) return;
       state = state.copyWith(
           restoring: false,
           error: '$error',
@@ -108,6 +113,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   }
 
   void _onPurchaseUpdate(List<PurchaseDetails> purchases) {
+    if (!mounted) return;
     for (final purchase in purchases) {
       final status = _entitlements.statusFor(purchase);
       if (status == EntitlementStatus.lifetime) {

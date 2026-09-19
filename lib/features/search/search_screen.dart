@@ -26,6 +26,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   String _sortBy = 'newest';
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final results = _performSearch();
 

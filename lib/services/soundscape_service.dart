@@ -1,24 +1,31 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:just_audio/just_audio.dart';
+
+import 'audio_service.dart';
 
 /// SoundscapeService — أصوات محيطة فعلية للكتابة.
 class SoundscapeService extends StateNotifier<SoundscapeState> {
   SoundscapeService() : super(const SoundscapeState()) {
     load();
+    _audioService.ambientState.addListener(_onAmbientStateChanged);
   }
 
-  final AudioPlayer _player = AudioPlayer();
+  final AudioService _audioService = AudioService.instance;
 
   Future<void> toggle() async {
     final enabled = !state.enabled;
-    state = state.copyWith(enabled: enabled);
-    await Hive.box('settings').put('soundscape_enabled', enabled);
     if (enabled) {
-      await _playCurrent();
+      final started = await _playCurrent();
+      if (!mounted) return;
+      state = state.copyWith(enabled: started);
+      await Hive.box('settings').put('soundscape_enabled', started);
     } else {
-      await _player.stop();
+      state = state.copyWith(enabled: false);
+      await Hive.box('settings').put('soundscape_enabled', false);
+      await _audioService.stopAmbient(AmbientSource.soundscape);
     }
   }
 
@@ -29,10 +36,10 @@ class SoundscapeService extends StateNotifier<SoundscapeState> {
   }
 
   Future<void> setVolume(double volume) async {
-    final safeVolume = volume.clamp(0.0, 1.0);
+    final safeVolume = volume.clamp(0.0, 1.0).toDouble();
     state = state.copyWith(volume: safeVolume);
     await Hive.box('settings').put('soundscape_volume', safeVolume);
-    await _player.setVolume(safeVolume);
+    await _audioService.setVolume(safeVolume);
   }
 
   void load() {
@@ -45,14 +52,24 @@ class SoundscapeService extends StateNotifier<SoundscapeState> {
     );
   }
 
-  Future<void> _playCurrent() async {
+  Future<bool> _playCurrent() async {
     try {
-      await _player.setAsset('assets/sounds/${_assetFor(state.type)}.mp3');
-      await _player.setLoopMode(LoopMode.one);
-      await _player.setVolume(state.volume);
-      await _player.play();
+      return await _audioService.playAmbient(
+        AmbientSource.soundscape,
+        assetPath: 'assets/sounds/${_assetFor(state.type)}.mp3',
+      );
     } catch (error) {
       debugPrint('Soundscape failed for ${state.type}: $error');
+      return false;
+    }
+  }
+
+  void _onAmbientStateChanged() {
+    if (!mounted) return;
+    if (state.enabled &&
+        _audioService.ambientState.value.source != AmbientSource.soundscape) {
+      state = state.copyWith(enabled: false);
+      unawaited(Hive.box('settings').put('soundscape_enabled', false));
     }
   }
 
@@ -81,7 +98,7 @@ class SoundscapeService extends StateNotifier<SoundscapeState> {
 
   @override
   void dispose() {
-    _player.dispose();
+    _audioService.ambientState.removeListener(_onAmbientStateChanged);
     super.dispose();
   }
 }

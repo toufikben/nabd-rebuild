@@ -112,14 +112,15 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
         ],
       ),
     );
+    controller.dispose();
 
-    if (result != null && result.isNotEmpty) {
+    if (mounted && result != null && result.isNotEmpty) {
       await _db.saveTag(Tag(
         id: result.toLowerCase().replaceAll(' ', '_'),
         name: result,
         color: 0xFF6C5CE7,
       ));
-      setState(() {});
+      if (mounted) setState(() {});
     }
   }
 
@@ -143,9 +144,9 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
       ),
     );
 
-    if (ok == true) {
+    if (mounted && ok == true) {
       await _db.deleteTag(tag.name, tag.id);
-      setState(() {});
+      if (mounted) setState(() {});
     }
   }
 }

@@ -179,6 +179,9 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
       ),
     );
 
+    titleController.dispose();
+    contentController.dispose();
+    if (!mounted) return;
     setState(() {});
   }
 

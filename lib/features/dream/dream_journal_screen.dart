@@ -43,9 +43,17 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
     );
 
     await _box.put(dream.id, dream.toMap());
+    if (!mounted) return;
     _controller.clear();
     _titleController.clear();
     setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _titleController.dispose();
+    super.dispose();
   }
 
   @override

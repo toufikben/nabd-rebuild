@@ -43,6 +43,7 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
 
     final list = [..._worries.map((e) => e.toMap()), item.toMap()];
     await _box.put('worry_box', list);
+    if (!mounted) return;
     _controller.clear();
     setState(() {});
 
@@ -61,7 +62,14 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
   Future<void> _removeWorry(WorryItem item) async {
     final list = _worries.where((e) => e.id != item.id).map((e) => e.toMap()).toList();
     await _box.put('worry_box', list);
+    if (!mounted) return;
     setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

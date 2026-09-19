@@ -38,6 +38,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
 
     final list = [..._items.map((e) => e.toMap()), item.toMap()];
     await _box.put('gratitude_items', list);
+    if (!mounted) return;
     _controller.clear();
     setState(() {});
 
@@ -49,6 +50,12 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
         ),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

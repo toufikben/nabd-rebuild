@@ -24,6 +24,7 @@ class GardenService extends StateNotifier<GardenState> {
   final _ai = LocalAIService();
 
   void _load() {
+    if (!mounted) return;
     final box = Hive.box(_box);
     final seeds = <PlantedSeed>[];
 
@@ -50,7 +51,7 @@ class GardenService extends StateNotifier<GardenState> {
     );
 
     await Hive.box(_box).put(planted.id, planted.toMap());
-    _load();
+    if (mounted) _load();
     return planted;
   }
 
@@ -125,7 +126,7 @@ class GardenService extends StateNotifier<GardenState> {
     );
 
     await Hive.box(_box).put(updated.id, updated.toMap());
-    _load();
+    if (mounted) _load();
 
     return WateringResult(
       ok: true,
@@ -139,7 +140,7 @@ class GardenService extends StateNotifier<GardenState> {
   /// حذف بذرة.
   Future<void> removeSeed(String id) async {
     await Hive.box(_box).delete(id);
-    _load();
+    if (mounted) _load();
   }
 
   /// البذرة الأكثر احتياجًا.
