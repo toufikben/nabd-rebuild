@@ -67,6 +67,8 @@ class AudioService {
   AmbientSource? _requestedSource;
   bool _disposed = false;
 
+  double get ambientVolume => _ambientVolume;
+
   Future<bool> requestAmbient(
     AmbientSource source, {
     String? assetPath,

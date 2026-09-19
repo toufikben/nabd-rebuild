@@ -12,8 +12,6 @@ class SilentCompanionScreen extends StatefulWidget {
 }
 
 class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
-  static double _lastKnownVolume = 0.5;
-
   final AudioService _audioService = AudioService.instance;
 
   Future<void> _handleMainAction(AmbientPlaybackState state) async {
@@ -43,8 +41,8 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
   }
 
   void _setVolume(double value) {
-    _lastKnownVolume = value;
     unawaited(_audioService.setVolume(value));
+    setState(() {});
   }
 
   String _statusText(AmbientPlaybackState state) {
@@ -170,7 +168,7 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
                       SizedBox(
                         width: 280,
                         child: Slider(
-                          value: _lastKnownVolume,
+                          value: _audioService.ambientVolume,
                           min: 0.0,
                           max: 1.0,
                           onChanged: sessionIsActive ? null : _setVolume,
