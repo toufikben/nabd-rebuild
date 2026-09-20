@@ -89,9 +89,16 @@ class MotivationService {
     return _arabicQuotes[day % _arabicQuotes.length];
   }
 
-  static (String, String) getRandomQuoteArabic() {
-    final idx = DateTime.now().microsecondsSinceEpoch % _arabicQuotes.length;
-    return _arabicQuotes[idx];
+  static (String, String) getRandomQuoteArabic({String? excludingQuote}) {
+    final start = DateTime.now().microsecondsSinceEpoch % _arabicQuotes.length;
+    if (excludingQuote == null || _arabicQuotes.length < 2) {
+      return _arabicQuotes[start];
+    }
+    for (var offset = 0; offset < _arabicQuotes.length; offset++) {
+      final candidate = _arabicQuotes[(start + offset) % _arabicQuotes.length];
+      if (candidate.$1 != excludingQuote) return candidate;
+    }
+    return _arabicQuotes[start];
   }
 }
 

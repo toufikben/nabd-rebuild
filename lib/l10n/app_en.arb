@@ -46,5 +46,17 @@
   "yourGarden": "Your Garden",
   "treeGrowth": "Tree Growth",
   "needsWater": "Needs water",
-  "fullyGrown": "Fully Grown!"
+  "fullyGrown": "Fully Grown!",
+  "echoes": "Echoes",
+  "resolvedEcho": "Resolved echo",
+  "awaitingEcho": "An echo waiting for a response",
+  "laterPositiveEntry": "Later positive entry",
+  "original": "Original",
+  "resolved": "Resolved",
+  "echoesEmpty": "Echoes appear when a difficult mood has a later positive entry 3–90 days afterward.",
+  "sage": "Sage",
+  "quietThought": "A quiet thought",
+  "sageLocalNote": "Sage uses the app’s local library. It changes only when you press Refresh.",
+  "refresh": "Refresh",
+  "unknownMood": "Unknown mood"
 }

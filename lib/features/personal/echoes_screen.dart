@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_localizations.dart';
+import '../../models/mood.dart';
 import '../../services/r_personal_service.dart';
 
 class EchoesScreen extends StatefulWidget {
@@ -27,18 +29,18 @@ class _EchoesScreenState extends State<EchoesScreen> {
   @override
   Widget build(BuildContext context) {
     final echoes = _echoes;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Echoes')),
-      body:
-          echoes == null
-              ? const Center(child: CircularProgressIndicator())
-              : echoes.isEmpty
-              ? const _EmptyEchoes()
+      appBar: AppBar(title: Text(l10n.echoes)),
+      body: echoes == null
+          ? const Center(child: CircularProgressIndicator())
+          : echoes.isEmpty
+              ? _EmptyEchoes(message: l10n.echoesEmpty)
               : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: echoes.length,
-                itemBuilder: (_, index) => _EchoCard(record: echoes[index]),
-              ),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: echoes.length,
+                  itemBuilder: (_, index) => _EchoCard(record: echoes[index]),
+                ),
     );
   }
 }
@@ -49,7 +51,8 @@ class _EchoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mood = record.original.mood;
+    final l10n = AppLocalizations.of(context);
+    final mood = Mood.getById(record.original.mood);
     final resolved = record.resolution != null;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -69,15 +72,22 @@ class _EchoCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    resolved
-                        ? 'Resolved echo'
-                        : 'An echo waiting for a response',
+                    resolved ? l10n.resolvedEcho : l10n.awaitingEcho,
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
-                Text(
-                  mood,
-                  style: const TextStyle(color: AppColors.textTertiary),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(mood?.emoji ?? '❔',
+                        style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 4),
+                    Text(
+                      mood?.label(l10n.isArabic ? 'ar' : 'en') ??
+                          l10n.unknownMood,
+                      style: const TextStyle(color: AppColors.textTertiary),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -89,7 +99,7 @@ class _EchoCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'Original: ${_date(record.original.createdAt)}',
+              '${l10n.original}: ${_date(record.original.createdAt)}',
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
@@ -97,8 +107,8 @@ class _EchoCard extends StatelessWidget {
             ),
             if (record.resolution case final resolution?) ...[
               const Divider(height: 24),
-              const Text(
-                'Later positive entry',
+              Text(
+                l10n.laterPositiveEntry,
                 style: TextStyle(
                   color: AppColors.success,
                   fontWeight: FontWeight.w700,
@@ -112,7 +122,7 @@ class _EchoCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Resolved: ${_date(resolution.createdAt)}',
+                '${l10n.resolved}: ${_date(resolution.createdAt)}',
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -130,15 +140,13 @@ class _EchoCard extends StatelessWidget {
 }
 
 class _EmptyEchoes extends StatelessWidget {
-  const _EmptyEchoes();
+  const _EmptyEchoes({required this.message});
+  final String message;
   @override
-  Widget build(BuildContext context) => const Center(
-    child: Padding(
-      padding: EdgeInsets.all(32),
-      child: Text(
-        'Echoes appear when Journal entries with a difficult mood have a later positive entry 3–90 days afterward.',
-        textAlign: TextAlign.center,
-      ),
-    ),
-  );
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(message, textAlign: TextAlign.center),
+        ),
+      );
 }

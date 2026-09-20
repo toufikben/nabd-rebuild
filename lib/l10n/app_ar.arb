@@ -46,5 +46,17 @@
   "yourGarden": "حديقتك",
   "treeGrowth": "نمو الشجرة",
   "needsWater": "تحتاج ماء",
-  "fullyGrown": "اكتمل النمو!"
+  "fullyGrown": "اكتمل النمو!",
+  "echoes": "أصداء",
+  "resolvedEcho": "صدى تم تجاوزه",
+  "awaitingEcho": "صدى ينتظر استجابة",
+  "laterPositiveEntry": "مدخلة إيجابية لاحقة",
+  "original": "الأصلية",
+  "resolved": "تم التجاوز",
+  "echoesEmpty": "تظهر الأصداء عندما يتبع مزاج صعب مدخلة إيجابية بعد 3 إلى 90 يومًا.",
+  "sage": "الحكيم",
+  "quietThought": "فكرة هادئة",
+  "sageLocalNote": "يعتمد الحكيم على مكتبة المحتوى المحلية في التطبيق، ولا يتغير إلا عند الضغط على تحديث.",
+  "refresh": "تحديث",
+  "unknownMood": "مزاج غير معروف"
 }

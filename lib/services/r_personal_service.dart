@@ -24,12 +24,12 @@ class PersonalLetter {
   bool get isFuture => kind == PersonalLetterKind.future;
 
   Map<String, dynamic> toMap() => {
-    'id': id,
-    if (isFuture) 'text': content else 'content': content,
-    if (isFuture) 'unlockDate': unlockDate?.toIso8601String(),
-    if (!isFuture) 'to': address,
-    'createdAt': createdAt.toIso8601String(),
-  };
+        'id': id,
+        if (isFuture) 'text': content else 'content': content,
+        if (isFuture) 'unlockDate': unlockDate?.toIso8601String(),
+        if (!isFuture) 'to': address,
+        'createdAt': createdAt.toIso8601String(),
+      };
 
   factory PersonalLetter.fromMap(
     Map<dynamic, dynamic> map, {
@@ -40,8 +40,7 @@ class PersonalLetter {
       kind: kind,
       address: map['to']?.toString() ?? 'My future self',
       content: (map['content'] ?? map['text'])?.toString() ?? '',
-      createdAt:
-          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
+      createdAt: DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
       unlockDate: DateTime.tryParse(map['unlockDate']?.toString() ?? ''),
     );
@@ -79,29 +78,29 @@ class WeeklyPulse {
   final bool insufficientData;
 
   Map<String, dynamic> toMap() => {
-    'weekKey': weekKey,
-    'entryCount': entryCount,
-    'wordCount': wordCount,
-    'positiveCount': positiveCount,
-    'negativeCount': negativeCount,
-    'averageMood': averageMood,
-    'insufficientData': insufficientData,
-  };
+        'weekKey': weekKey,
+        'entryCount': entryCount,
+        'wordCount': wordCount,
+        'positiveCount': positiveCount,
+        'negativeCount': negativeCount,
+        'averageMood': averageMood,
+        'insufficientData': insufficientData,
+      };
 
   factory WeeklyPulse.fromMap(Map<dynamic, dynamic> map) => WeeklyPulse(
-    weekKey: map['weekKey']?.toString() ?? '',
-    entryCount: (map['entryCount'] as num?)?.toInt() ?? 0,
-    wordCount: (map['wordCount'] as num?)?.toInt() ?? 0,
-    positiveCount: (map['positiveCount'] as num?)?.toInt() ?? 0,
-    negativeCount: (map['negativeCount'] as num?)?.toInt() ?? 0,
-    averageMood: (map['averageMood'] as num?)?.toDouble() ?? 0,
-    insufficientData: map['insufficientData'] == true,
-  );
+        weekKey: map['weekKey']?.toString() ?? '',
+        entryCount: (map['entryCount'] as num?)?.toInt() ?? 0,
+        wordCount: (map['wordCount'] as num?)?.toInt() ?? 0,
+        positiveCount: (map['positiveCount'] as num?)?.toInt() ?? 0,
+        negativeCount: (map['negativeCount'] as num?)?.toInt() ?? 0,
+        averageMood: (map['averageMood'] as num?)?.toDouble() ?? 0,
+        insufficientData: map['insufficientData'] == true,
+      );
 }
 
 class RPersonalService {
   RPersonalService({DatabaseService? database})
-    : _database = database ?? DatabaseService();
+      : _database = database ?? DatabaseService();
 
   static const futureLettersKey = 'future_letters';
   static const unsentLettersKey = 'unsent_letters';
@@ -130,11 +129,10 @@ class RPersonalService {
 
   Future<void> deleteLetter(PersonalLetter letter) async {
     final key = letter.isFuture ? futureLettersKey : unsentLettersKey;
-    final values =
-        _readLetters(
-          key,
-          letter.kind,
-        ).where((item) => item.id != letter.id).map((e) => e.toMap()).toList();
+    final values = _readLetters(
+      key,
+      letter.kind,
+    ).where((item) => item.id != letter.id).map((e) => e.toMap()).toList();
     await _settings.put(key, values);
   }
 
@@ -172,10 +170,10 @@ class RPersonalService {
       if (mood == null || mood.category != 'negative') continue;
       JournalEntry? resolution;
       for (final candidate in ordered) {
-        final days = candidate.createdAt.difference(original.createdAt).inDays;
+        final difference = candidate.createdAt.difference(original.createdAt);
         final candidateMood = Mood.getById(candidate.mood);
-        if (days >= 3 &&
-            days <= 90 &&
+        if (difference >= const Duration(days: 3) &&
+            difference <= const Duration(days: 90) &&
             candidate.createdAt.isAfter(original.createdAt) &&
             candidateMood?.category == 'positive') {
           resolution = candidate;
@@ -196,15 +194,14 @@ class RPersonalService {
     final stored = _settings.get('$weeklyPulsePrefix$key');
     if (stored is Map) return WeeklyPulse.fromMap(stored);
 
-    final entries =
-        _database.getAllEntries().where((entry) {
-          final day = DateTime(
-            entry.createdAt.year,
-            entry.createdAt.month,
-            entry.createdAt.day,
-          );
-          return !day.isBefore(weekStart) && !day.isAfter(sunday);
-        }).toList();
+    final entries = _database.getAllEntries().where((entry) {
+      final day = DateTime(
+        entry.createdAt.year,
+        entry.createdAt.month,
+        entry.createdAt.day,
+      );
+      return !day.isBefore(weekStart) && !day.isAfter(sunday);
+    }).toList();
     final moods = entries.map((e) => Mood.getById(e.mood)).whereType<Mood>();
     final pulse = WeeklyPulse(
       weekKey: key,
@@ -212,11 +209,9 @@ class RPersonalService {
       wordCount: entries.fold(0, (sum, e) => sum + _words(e.content)),
       positiveCount: moods.where((m) => m.category == 'positive').length,
       negativeCount: moods.where((m) => m.category == 'negative').length,
-      averageMood:
-          moods.isEmpty
-              ? 0
-              : moods.fold<int>(0, (sum, mood) => sum + mood.value) /
-                  moods.length,
+      averageMood: moods.isEmpty
+          ? 0
+          : moods.fold<int>(0, (sum, mood) => sum + mood.value) / moods.length,
       insufficientData: entries.isEmpty,
     );
     await _settings.put('$weeklyPulsePrefix$key', pulse.toMap());
