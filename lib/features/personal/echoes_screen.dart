@@ -6,13 +6,15 @@ import '../../models/mood.dart';
 import '../../services/r_personal_service.dart';
 
 class EchoesScreen extends StatefulWidget {
-  const EchoesScreen({super.key});
+  const EchoesScreen({super.key, this.service});
+
+  final RPersonalService? service;
+
   @override
   State<EchoesScreen> createState() => _EchoesScreenState();
 }
 
 class _EchoesScreenState extends State<EchoesScreen> {
-  final _service = RPersonalService();
   List<EchoRecord>? _echoes;
 
   @override
@@ -22,7 +24,7 @@ class _EchoesScreenState extends State<EchoesScreen> {
   }
 
   Future<void> _load() async {
-    final echoes = await _service.loadEchoes();
+    final echoes = await (widget.service ?? RPersonalService()).loadEchoes();
     if (mounted) setState(() => _echoes = echoes);
   }
 
