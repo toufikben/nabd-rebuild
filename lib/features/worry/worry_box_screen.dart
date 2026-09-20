@@ -4,10 +4,6 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/theme/app_colors.dart';
 
-/// WorryBoxScreen — صندوق قلق رقمي.
-///
-/// الفكرة: "عزل" الهموم في صندوق، وتحديد موعد لمراجعتها لاحقًا.
-/// يمنع القلق المستمر (rumination).
 class WorryBoxScreen extends StatefulWidget {
   const WorryBoxScreen({super.key});
 
@@ -22,7 +18,9 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
   List<WorryItem> get _worries {
     final raw = _box.get('worry_box', defaultValue: <dynamic>[]) as List;
     return raw
-        .map((e) => WorryItem.fromMap(Map<dynamic, dynamic>.from(e as Map)))
+        .whereType<Map>()
+        .map((item) => WorryItem.fromMap(Map<dynamic, dynamic>.from(item)))
+        .where((item) => item.text.trim().isNotEmpty)
         .toList()
       ..sort((a, b) => a.reviewDate.compareTo(b.reviewDate));
   }
@@ -31,39 +29,33 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    // Default review: tomorrow at same time
-    final reviewDate = DateTime.now().add(const Duration(days: 1));
-
+    final now = DateTime.now();
     final item = WorryItem(
       id: const Uuid().v4(),
       text: text,
-      createdAt: DateTime.now(),
-      reviewDate: reviewDate,
+      createdAt: now,
+      reviewDate: now.add(const Duration(days: 1)),
     );
-
-    final list = [..._worries.map((e) => e.toMap()), item.toMap()];
-    await _box.put('worry_box', list);
+    await _box
+        .put('worry_box', [..._worries.map((e) => e.toMap()), item.toMap()]);
     if (!mounted) return;
     _controller.clear();
     setState(() {});
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Worry boxed. Review tomorrow at ${reviewDate.hour}:${reviewDate.minute.toString().padLeft(2, '0')}',
-          ),
-          backgroundColor: AppColors.success,
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('تم حفظ القلق. يمكنك مراجعته غدًا.'),
+        backgroundColor: AppColors.success,
+      ),
+    );
   }
 
   Future<void> _removeWorry(WorryItem item) async {
-    final list = _worries.where((e) => e.id != item.id).map((e) => e.toMap()).toList();
-    await _box.put('worry_box', list);
-    if (!mounted) return;
-    setState(() {});
+    final remaining = _worries
+        .where((entry) => entry.id != item.id)
+        .map((entry) => entry.toMap())
+        .toList();
+    await _box.put('worry_box', remaining);
+    if (mounted) setState(() {});
   }
 
   @override
@@ -75,125 +67,121 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
   @override
   Widget build(BuildContext context) {
     final worries = _worries;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Worry Box'),
-      ),
-      body: Column(
-        children: [
-          // Info
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.info_outline, color: AppColors.primary, size: 20),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Box your worries here. Review them tomorrow — most will seem smaller.',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 12,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Worries list
-          Expanded(
-            child: worries.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('📦', style: TextStyle(fontSize: 80)),
-                        SizedBox(height: 16),
-                        Text(
-                          'Your worry box is empty',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          'That\'s a good thing ✨',
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: worries.length,
-                    itemBuilder: (_, i) => _WorryCard(
-                      item: worries[i],
-                      onRemove: () => _removeWorry(worries[i]),
-                    ),
-                  ),
-          ),
-
-          // Add form
-          Container(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('صندوق القلق')),
+        body: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
               ),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
+              child: const Row(
                 children: [
+                  Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                  SizedBox(width: 12),
                   Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: 'What\'s worrying you?',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
+                    child: Text(
+                      'ضع ما يقلقك هنا. راجعه غدًا؛ غالبًا سيبدو أصغر.',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 12,
+                        height: 1.5,
                       ),
-                      onSubmitted: (_) => _addWorry(),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    onPressed: _addWorry,
-                    icon: const Icon(Icons.archive_outlined),
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.all(14),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: worries.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('📦', style: TextStyle(fontSize: 80)),
+                          SizedBox(height: 16),
+                          Text(
+                            'صندوق القلق فارغ',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            'وهذا أمر جيد ✨',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: worries.length,
+                      itemBuilder: (_, index) => _WorryCard(
+                        item: worries[index],
+                        onRemove: () => _removeWorry(worries[index]),
+                      ),
+                    ),
+            ),
+            Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 12,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration: InputDecoration(
+                          hintText: 'ما الذي يقلقك؟',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                        ),
+                        onSubmitted: (_) => _addWorry(),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    IconButton(
+                      onPressed: _addWorry,
+                      icon: const Icon(Icons.archive_outlined),
+                      tooltip: 'حفظ القلق',
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.all(14),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -208,8 +196,8 @@ class _WorryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final canReview = now.isAfter(item.reviewDate);
-    final daysLeft = item.reviewDate.difference(now).inDays;
+    final canReview = !now.isBefore(item.reviewDate);
+    final daysLeft = item.reviewDate.difference(now).inDays.clamp(0, 999);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -229,32 +217,26 @@ class _WorryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                canReview ? '🔓' : '📦',
-                style: const TextStyle(fontSize: 18),
-              ),
+              Text(canReview ? '🔓' : '📦',
+                  style: const TextStyle(fontSize: 18)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   canReview
-                      ? 'Time to review'
-                      : '$daysLeft day${daysLeft == 1 ? '' : 's'} left',
+                      ? 'حان وقت المراجعة'
+                      : 'متبقٍ $daysLeft ${daysLeft == 1 ? 'يوم' : 'أيام'}',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: canReview
-                        ? AppColors.success
-                        : AppColors.textSecondary,
+                    color:
+                        canReview ? AppColors.success : AppColors.textSecondary,
                   ),
                 ),
               ),
               IconButton(
                 onPressed: onRemove,
-                icon: const Icon(
-                  Icons.close,
-                  size: 18,
-                  color: AppColors.textTertiary,
-                ),
+                tooltip: 'حذف',
+                icon: const Icon(Icons.delete_outline, size: 18),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
@@ -295,12 +277,12 @@ class WorryItem {
         'reviewDate': reviewDate.toIso8601String(),
       };
 
-  factory WorryItem.fromMap(Map<dynamic, dynamic> m) => WorryItem(
-        id: m['id']?.toString() ?? '',
-        text: m['text']?.toString() ?? '',
-        createdAt:
-            DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
-        reviewDate:
-            DateTime.tryParse(m['reviewDate']?.toString() ?? '') ?? DateTime.now(),
+  factory WorryItem.fromMap(Map<dynamic, dynamic> map) => WorryItem(
+        id: map['id']?.toString() ?? '',
+        text: map['text']?.toString() ?? '',
+        createdAt: DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
+            DateTime.now(),
+        reviewDate: DateTime.tryParse(map['reviewDate']?.toString() ?? '') ??
+            DateTime.now(),
       );
 }

@@ -5,20 +5,71 @@ class MotivationService {
   /// اقتباسات محلية.
   static const _quotes = [
     ('The unexamined life is not worth living.', 'Socrates'),
-    ('We are what we repeatedly do. Excellence, then, is not an act, but a habit.', 'Aristotle'),
-    ('The best time to plant a tree was 20 years ago. The second best time is now.', 'Chinese Proverb'),
+    (
+      'We are what we repeatedly do. Excellence, then, is not an act, but a habit.',
+      'Aristotle'
+    ),
+    (
+      'The best time to plant a tree was 20 years ago. The second best time is now.',
+      'Chinese Proverb'
+    ),
     ('Write hard and clear about what hurts.', 'Ernest Hemingway'),
-    ('You don\'t have to be great to start, but you have to start to be great.', 'Zig Ziglar'),
-    ('Almost everything will work again if you unplug it for a few minutes, including you.', 'Anne Lamott'),
-    ('Feelings are much like waves. We can\'t stop them from coming, but we can choose which one to surf.', 'Jonatan Mårtensson'),
+    (
+      'You don\'t have to be great to start, but you have to start to be great.',
+      'Zig Ziglar'
+    ),
+    (
+      'Almost everything will work again if you unplug it for a few minutes, including you.',
+      'Anne Lamott'
+    ),
+    (
+      'Feelings are much like waves. We can\'t stop them from coming, but we can choose which one to surf.',
+      'Jonatan Mårtensson'
+    ),
     ('The wound is the place where the light enters you.', 'Rumi'),
-    ('Nothing is impossible. The word itself says "I\'m possible!"', 'Audrey Hepburn'),
-    ('You are allowed to be both a masterpiece and a work in progress.', 'Sophia Bush'),
+    (
+      'Nothing is impossible. The word itself says "I\'m possible!"',
+      'Audrey Hepburn'
+    ),
+    (
+      'You are allowed to be both a masterpiece and a work in progress.',
+      'Sophia Bush'
+    ),
     ('The only way out is through.', 'Robert Frost'),
     ('Wherever you are, be there totally.', 'Eckhart Tolle'),
     ('The journey of a thousand miles begins with a single step.', 'Lao Tzu'),
     ('What you seek is seeking you.', 'Rumi'),
     ('Be gentle with yourself. You are a child of the universe.', 'Desiderata'),
+  ];
+
+  static const _arabicQuotes = [
+    ('الحياة التي لا نفحصها لا تستحق أن نعيشها.', 'سقراط'),
+    ('نحن ما نكرره باستمرار؛ فالتميّز ليس فعلًا بل عادة.', 'أرسطو'),
+    (
+      'أفضل وقت لزرع شجرة كان قبل عشرين عامًا، وثاني أفضل وقت هو الآن.',
+      'مثل صيني'
+    ),
+    ('اكتب بصدق ووضوح عمّا يؤلمك.', 'إرنست همنغواي'),
+    (
+      'لست بحاجة إلى أن تكون عظيمًا كي تبدأ، لكن عليك أن تبدأ كي تصبح عظيمًا.',
+      'زيغ زيغلر'
+    ),
+    (
+      'كل شيء تقريبًا سيعمل مجددًا إذا منحته بضع دقائق من الراحة، بما في ذلك أنت.',
+      'آن لاموت'
+    ),
+    (
+      'المشاعر تشبه الأمواج؛ لا نستطيع منعها من الوصول، لكن يمكننا اختيار الموجة التي نركبها.',
+      'جوناثان مارتنسون'
+    ),
+    ('الجرح هو المكان الذي يدخل منه النور إليك.', 'الرومي'),
+    ('لا شيء مستحيل؛ فالكلمة نفسها تقول: أنا ممكن.', 'أودري هيبورن'),
+    ('يسمح لك أن تكون تحفة فنية وعملًا قيد التطور في الوقت نفسه.', 'صوفيا بوش'),
+    ('الطريق الوحيد للخروج هو العبور من خلاله.', 'روبرت فروست'),
+    ('أينما كنت، كن حاضرًا بكل كيانك.', 'إيكهارت تول'),
+    ('رحلة الألف ميل تبدأ بخطوة واحدة.', 'لاو تزو'),
+    ('ما تبحث عنه يبحث عنك أيضًا.', 'الرومي'),
+    ('كن لطيفًا مع نفسك؛ فأنت ابن هذا الكون.', 'ديسيديراتا'),
   ];
 
   /// اقتباس اليوم (ثابت خلال اليوم).
@@ -31,6 +82,16 @@ class MotivationService {
   static (String, String) getRandomQuote() {
     final idx = DateTime.now().microsecondsSinceEpoch % _quotes.length;
     return _quotes[idx];
+  }
+
+  static (String, String) getTodayQuoteArabic() {
+    final day = DateTime.now().difference(DateTime(2025)).inDays;
+    return _arabicQuotes[day % _arabicQuotes.length];
+  }
+
+  static (String, String) getRandomQuoteArabic() {
+    final idx = DateTime.now().microsecondsSinceEpoch % _arabicQuotes.length;
+    return _arabicQuotes[idx];
   }
 }
 
@@ -153,7 +214,8 @@ class AchievementService {
   Box get _box => Hive.box('settings');
 
   Set<String> get unlockedIds {
-    final raw = _box.get('unlocked_achievements', defaultValue: <dynamic>[]) as List;
+    final raw =
+        _box.get('unlocked_achievements', defaultValue: <dynamic>[]) as List;
     return raw.map((e) => e.toString()).toSet();
   }
 

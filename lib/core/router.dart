@@ -26,6 +26,8 @@ import '../features/garden/seed_selection_screen.dart';
 import '../features/garden/sound_garden_screen.dart';
 import '../features/worry/worry_box_screen.dart';
 import '../features/worry/worry_release_screen.dart';
+import '../features/motivation/motivation_screen.dart';
+import '../features/motivation/wisdom_screen.dart';
 import '../features/breathing/breathing_screen.dart';
 import '../features/dream/dream_journal_screen.dart';
 import '../features/gratitude/gratitude_garden_screen.dart';
@@ -176,6 +178,10 @@ final router = GoRouter(
     GoRoute(
         path: '/gratitude-journal',
         builder: (_, __) => const GratitudeJournalScreen()),
+    GoRoute(
+        path: '/gratitude', builder: (_, __) => const GratitudeJournalScreen()),
+    GoRoute(path: '/motivation', builder: (_, __) => const MotivationScreen()),
+    GoRoute(path: '/wisdom', builder: (_, __) => const WisdomScreen()),
     GoRoute(
         path: '/future-letters',
         builder: (_, __) => const FutureLettersScreen()),
