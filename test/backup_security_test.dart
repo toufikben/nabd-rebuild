@@ -1,7 +1,51 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nabd/services/backup_service.dart';
 
 void main() {
+  test('backup creation requires a password', () async {
+    expect(
+      () => BackupService().createBackup(password: ''),
+      throwsA(isA<FormatException>()),
+    );
+  });
+
+  test('restore rejects missing password without reading a backup', () async {
+    final result = await BackupService().restoreBackup('/does/not/exist');
+    expect(result.ok, isFalse);
+    expect(result.error, 'Backup password is required');
+  });
+
+  test('restore rejects corrupted and unsupported encrypted envelopes',
+      () async {
+    final directory = await Directory.systemTemp.createTemp('nabd_backup_test');
+    addTearDown(() => directory.delete(recursive: true));
+
+    final corrupted = File('${directory.path}/corrupted.nabd')
+      ..writeAsBytesSync([1, 2, 3, 4]);
+    final corruptedResult = await BackupService().restoreBackup(
+      corrupted.path,
+      password: 'correct-password',
+    );
+    expect(corruptedResult.ok, isFalse);
+
+    final unsupported = File('${directory.path}/unsupported.nabd')
+      ..writeAsBytesSync([
+        0x4E,
+        0x41,
+        0x42,
+        0x44,
+        99,
+        ...List<int>.filled(40, 0),
+      ]);
+    final unsupportedResult = await BackupService().restoreBackup(
+      unsupported.path,
+      password: 'correct-password',
+    );
+    expect(unsupportedResult.ok, isFalse);
+  });
+
   test('accepts only known backup paths', () {
     expect(BackupService.isSafeArchivePath('entries.json'), isTrue);
     expect(BackupService.isSafeArchivePath('images/photo.jpg'), isTrue);

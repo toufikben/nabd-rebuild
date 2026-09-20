@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'encryption_service.dart';
-
-/// Deletes all user-owned local data, including media and the encryption key.
+/// Deletes all user-owned local data while preserving the active encryption
+/// key. Key rotation is intentionally deferred because rotating an open Hive
+/// store here could make unrelated application state unreadable.
 class PrivacyService {
   Future<void> deleteEverything() async {
     for (final boxName in [
@@ -26,8 +26,6 @@ class PrivacyService {
         await directory.delete(recursive: true);
       }
     }
-
-    await EncryptionService().deleteKey();
   }
 
   Future<int> getStorageUsageBytes() async {

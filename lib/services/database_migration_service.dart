@@ -23,7 +23,10 @@ class DatabaseMigrationService {
       : encryption = encryption ?? EncryptionService();
 
   Future<void> migrate() async {
-    await encryption.initialize();
+    final dataState = await _detectDataState();
+    await encryption.initialize(
+      hasExistingData: dataState == HiveDataState.encryptedOrUnreadable,
+    );
     final currentVersion = await encryption.readMetadata(_marker);
     if (currentVersion == '$schemaVersion') return;
 
@@ -38,9 +41,41 @@ class DatabaseMigrationService {
     await encryption.writeMetadata(_marker, '$schemaVersion');
   }
 
+  Future<HiveDataState> _detectDataState() async {
+    var foundLegacyData = false;
+    for (final name in _boxes) {
+      if (!await Hive.boxExists(name)) continue;
+      try {
+        final box = await Hive.openBox<dynamic>(name);
+        foundLegacyData = true;
+        await box.close();
+      } catch (_) {
+        return HiveDataState.encryptedOrUnreadable;
+      }
+    }
+    return foundLegacyData
+        ? HiveDataState.legacyPlaintext
+        : HiveDataState.empty;
+  }
+
   Future<void> _migrateBox(String name, List<int> key) async {
     final temporaryName = '$name$_temporarySuffix';
-    final oldBox = await Hive.openBox<dynamic>(name);
+    late final Box<dynamic> oldBox;
+    try {
+      oldBox = await Hive.openBox<dynamic>(name);
+    } catch (_) {
+      // A previous run may have completed the encrypted copy but stopped
+      // before writing its metadata marker. Verify it and leave it intact.
+      final encrypted = await Hive.openBox<dynamic>(
+        name,
+        encryptionCipher: HiveAesCipher(key),
+      );
+      for (final entryKey in encrypted.keys) {
+        encrypted.get(entryKey);
+      }
+      await encrypted.close();
+      return;
+    }
     final snapshot = <dynamic, dynamic>{
       for (final key in oldBox.keys) key: oldBox.get(key),
     };
@@ -75,8 +110,15 @@ class DatabaseMigrationService {
       });
       await encryptedBox.flush();
     }
+    // Read the target before deleting the recovery copy. If this throws,
+    // the encrypted staging box remains available for the next startup.
+    for (final key in encryptedBox.keys) {
+      encryptedBox.get(key);
+    }
     await staged.close();
     await Hive.deleteBoxFromDisk(temporaryName);
     await encryptedBox.close();
   }
 }
+
+enum HiveDataState { empty, legacyPlaintext, encryptedOrUnreadable }

@@ -14,13 +14,26 @@ import 'services/settings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
-  await DatabaseMigrationService().migrate();
-  await Hive.openBox('journal_entries');
-  await Hive.openBox('settings');
-  await Hive.openBox('moods');
-  await Hive.openBox('tags');
-  await Hive.openBox('garden');
+  Object? storageError;
+  try {
+    await Hive.initFlutter();
+    await DatabaseMigrationService().migrate();
+    final hiveCipher = HiveAesCipher(
+      await EncryptionService().hiveKeyBytes(),
+    );
+    await Hive.openBox('journal_entries', encryptionCipher: hiveCipher);
+    await Hive.openBox('settings', encryptionCipher: hiveCipher);
+    await Hive.openBox('moods', encryptionCipher: hiveCipher);
+    await Hive.openBox('tags', encryptionCipher: hiveCipher);
+    await Hive.openBox('garden', encryptionCipher: hiveCipher);
+  } catch (_) {
+    storageError = const Object();
+  }
+
+  if (storageError != null) {
+    runApp(const StorageFailureApp());
+    return;
+  }
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -40,4 +53,39 @@ Future<void> _initializeDeferredServices() async {
   await SettingsService.init();
   await EncryptionService().initialize();
   await MobileAds.instance.initialize();
+}
+
+class StorageFailureApp extends StatelessWidget {
+  const StorageFailureApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_outline, size: 56),
+                const SizedBox(height: 20),
+                const Text(
+                  'Secure storage could not be opened.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Your data was not changed. Please restart the app or contact support.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

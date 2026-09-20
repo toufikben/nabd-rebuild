@@ -26,6 +26,8 @@ import 'encryption_service.dart';
 ///   audio/           — التسجيلات
 class BackupService {
   final _encryption = EncryptionService();
+  static const _backupMagic = <int>[0x4E, 0x41, 0x42, 0x44]; // NABD
+  static const _backupFormatVersion = 1;
   static const maxBackupBytes = 50 * 1024 * 1024;
   static const maxExtractedBytes = 200 * 1024 * 1024;
   static const maxFileBytes = 25 * 1024 * 1024;
@@ -33,9 +35,12 @@ class BackupService {
 
   /// إنشاء نسخة احتياطية.
   Future<File> createBackup({
-    String? password,
+    required String password,
     void Function(double progress)? onProgress,
   }) async {
+    if (password.isEmpty) {
+      throw const FormatException('Backup password is required');
+    }
     final docs = await getApplicationDocumentsDirectory();
     final tempDir = await getTemporaryDirectory();
     final archive = Archive();
@@ -106,10 +111,11 @@ class BackupService {
 
     // 6. Metadata
     final metadata = {
-      'version': 2,
+      'version': 3,
+      'formatVersion': _backupFormatVersion,
       'app': 'nabd',
       'exportedAt': DateTime.now().toIso8601String(),
-      'encrypted': password != null && password.isNotEmpty,
+      'encrypted': true,
       'entryCount': entriesBox.length,
       'gardenCount': gardenBox.length,
     };
@@ -122,16 +128,13 @@ class BackupService {
       throw Exception('Failed to encode ZIP');
     }
 
-    // 8. Encrypt if password provided (using real AES-256-GCM)
-    final outputBytes = (password != null && password.isNotEmpty)
-        ? await _encryptZip(Uint8List.fromList(zipBytes), password)
-        : Uint8List.fromList(zipBytes);
+    // 8. Always encrypt backups (using real AES-256-GCM).
+    final outputBytes =
+        await _encryptZip(Uint8List.fromList(zipBytes), password);
 
     // 9. Save
-    final extension =
-        (password != null && password.isNotEmpty) ? 'nabd' : 'zip';
     final filename =
-        'nabd_backup_${DateTime.now().millisecondsSinceEpoch}.$extension';
+        'nabd_backup_${DateTime.now().millisecondsSinceEpoch}.nabd';
     final backupFile = File('${tempDir.path}/$filename');
     await backupFile.writeAsBytes(outputBytes);
 
@@ -145,6 +148,12 @@ class BackupService {
     RestoreMode mode = RestoreMode.merge,
   }) async {
     try {
+      if (password == null || password.isEmpty) {
+        return const ImportResult(
+          ok: false,
+          error: 'Backup password is required',
+        );
+      }
       final input = File(backupPath);
       if (!await input.exists() || await input.length() > maxBackupBytes) {
         return const ImportResult(
@@ -152,16 +161,14 @@ class BackupService {
       }
       var bytes = await input.readAsBytes();
 
-      // 1. Decrypt if needed
-      if (password != null && password.isNotEmpty) {
-        try {
-          bytes = await _decryptZip(Uint8List.fromList(bytes), password);
-        } catch (e) {
-          return ImportResult(
-            ok: false,
-            error: 'فشل فك التشفير: كلمة المرور خاطئة أو الملف تالف',
-          );
-        }
+      // 1. Decrypt the mandatory authenticated envelope.
+      try {
+        bytes = await _decryptZip(Uint8List.fromList(bytes), password);
+      } catch (_) {
+        return const ImportResult(
+          ok: false,
+          error: 'فشل فك التشفير: كلمة المرور خاطئة أو الملف تالف',
+        );
       }
 
       // 2. Decode ZIP
@@ -170,9 +177,22 @@ class BackupService {
         return const ImportResult(
             ok: false, error: 'Backup contains too many files');
       }
-      if (!archive.any((file) => file.isFile && file.name == 'metadata.json')) {
+      final metadataFile = archive.whereType<ArchiveFile>().firstWhere(
+            (file) => file.isFile && file.name == 'metadata.json',
+            orElse: () =>
+                throw const FormatException('Backup metadata is missing'),
+          );
+      final metadata = jsonDecode(
+        utf8.decode(metadataFile.content as List<int>),
+      );
+      if (metadata is! Map ||
+          metadata['formatVersion'] != _backupFormatVersion ||
+          metadata['version'] is! num ||
+          metadata['version'] > 3) {
         return const ImportResult(
-            ok: false, error: 'Backup metadata is missing');
+          ok: false,
+          error: 'Unsupported backup schema',
+        );
       }
       var extractedBytes = 0;
       for (final file in archive) {
@@ -187,19 +207,12 @@ class BackupService {
         }
       }
 
-      if (mode == RestoreMode.replace) {
-        await Hive.box('journal_entries').clear();
-        await Hive.box('settings').clear();
-        await Hive.box('garden').clear();
-      }
+      final stagedEntries = <String, Map<String, dynamic>>{};
+      final stagedSettings = <Object?, Object?>{};
+      final stagedGarden = <Object?, Object?>{};
+      final stagedFiles = <String, List<int>>{};
 
-      var imported = 0;
-      var imagesRestored = 0;
-      var audioRestored = 0;
-
-      final docs = await getApplicationDocumentsDirectory();
-
-      // 3. Restore files
+      // 3. Decode and validate everything before touching current data.
       for (final file in archive) {
         if (!file.isFile) continue;
 
@@ -207,65 +220,85 @@ class BackupService {
         final content = file.content as List<int>;
 
         if (name == 'metadata.json') {
-          final metadata = jsonDecode(utf8.decode(content));
-          if (metadata is! Map ||
-              metadata['version'] is! num ||
-              metadata['version'] > 2) {
-            return const ImportResult(
-              ok: false,
-              error: 'Unsupported backup schema',
-            );
-          }
+          continue;
         } else if (name == 'entries.json') {
           final decoded = jsonDecode(utf8.decode(content));
           if (decoded is! List || !validateEntriesPayload(decoded)) {
             return const ImportResult(ok: false, error: 'Invalid entries data');
           }
-          final entries = decoded;
-          final box = Hive.box('journal_entries');
-          for (final entry in entries) {
+          for (final entry in decoded) {
             final map = Map<String, dynamic>.from(entry as Map);
             final id = map['id']?.toString() ?? '';
-            if (id.isNotEmpty) {
-              await box.put(id, map);
-              imported++;
-            }
+            stagedEntries[id] = map;
           }
         } else if (name == 'settings.json') {
-          final settings = jsonDecode(utf8.decode(content)) as Map;
-          final box = Hive.box('settings');
-          for (final e in filterRestoredSettings(settings).entries) {
-            await box.put(e.key.toString(), e.value);
+          final settings = jsonDecode(utf8.decode(content));
+          if (settings is! Map) {
+            return const ImportResult(
+                ok: false, error: 'Invalid settings data');
           }
+          stagedSettings.addAll(filterRestoredSettings(settings));
         } else if (name == 'garden.json') {
-          final garden = jsonDecode(utf8.decode(content)) as Map;
-          final box = Hive.box('garden');
-          for (final e in garden.entries) {
-            await box.put(e.key.toString(), e.value);
+          final garden = jsonDecode(utf8.decode(content));
+          if (garden is! Map) {
+            return const ImportResult(ok: false, error: 'Invalid garden data');
           }
+          stagedGarden.addAll(garden);
         } else if (name == 'achievements.json') {
-          final data = jsonDecode(utf8.decode(content)) as Map;
-          final box = Hive.box('settings');
-          for (final e in filterRestoredSettings(data).entries) {
-            await box.put(e.key.toString(), e.value);
+          final data = jsonDecode(utf8.decode(content));
+          if (data is! Map) {
+            return const ImportResult(
+                ok: false, error: 'Invalid achievements data');
           }
+          stagedSettings.addAll(filterRestoredSettings(data));
         } else if (name.startsWith('images/')) {
-          final filename = p.basename(name.substring(7));
-          final imagesDir = Directory('${docs.path}/images');
-          if (!await imagesDir.exists()) {
-            await imagesDir.create(recursive: true);
-          }
-          await File('${imagesDir.path}/$filename').writeAsBytes(content);
-          imagesRestored++;
+          stagedFiles['images/${p.basename(name.substring(7))}'] = content;
         } else if (name.startsWith('audio/')) {
-          final filename = p.basename(name.substring(6));
-          final audioDir = Directory('${docs.path}/audio');
-          if (!await audioDir.exists()) {
-            await audioDir.create(recursive: true);
-          }
-          await File('${audioDir.path}/$filename').writeAsBytes(content);
-          audioRestored++;
+          stagedFiles['audio/${p.basename(name.substring(6))}'] = content;
         }
+      }
+
+      final entriesBox = Hive.box('journal_entries');
+      final settingsBox = Hive.box('settings');
+      final gardenBox = Hive.box('garden');
+      final snapshots = {
+        entriesBox: Map<dynamic, dynamic>.from(entriesBox.toMap()),
+        settingsBox: Map<dynamic, dynamic>.from(settingsBox.toMap()),
+        gardenBox: Map<dynamic, dynamic>.from(gardenBox.toMap()),
+      };
+      var imported = 0;
+      var imagesRestored = 0;
+      var audioRestored = 0;
+      try {
+        if (mode == RestoreMode.replace) {
+          await entriesBox.clear();
+          await settingsBox.clear();
+          await gardenBox.clear();
+        }
+        await entriesBox.putAll(stagedEntries);
+        await settingsBox.putAll(stagedSettings);
+        await gardenBox.putAll(stagedGarden);
+        imported = stagedEntries.length;
+
+        final docs = await getApplicationDocumentsDirectory();
+        for (final entry in stagedFiles.entries) {
+          final file = File('${docs.path}/${entry.key}');
+          await file.parent.create(recursive: true);
+          await file.writeAsBytes(entry.value, flush: true);
+          if (entry.key.startsWith('images/')) {
+            imagesRestored++;
+          } else {
+            audioRestored++;
+          }
+        }
+      } catch (_) {
+        await entriesBox.clear();
+        await settingsBox.clear();
+        await gardenBox.clear();
+        await entriesBox.putAll(snapshots[entriesBox]!);
+        await settingsBox.putAll(snapshots[settingsBox]!);
+        await gardenBox.putAll(snapshots[gardenBox]!);
+        return const ImportResult(ok: false, error: 'Restore failed safely');
       }
 
       return ImportResult(
@@ -309,6 +342,8 @@ class BackupService {
 
     // 4. Combine: salt + nonce + ciphertext + mac
     return Uint8List.fromList([
+      ..._backupMagic,
+      _backupFormatVersion,
       ...salt,
       ...secretBox.nonce,
       ...secretBox.cipherText,
@@ -320,20 +355,32 @@ class BackupService {
   Future<Uint8List> _decryptZip(Uint8List encrypted, String password) async {
     final algorithm = AesGcm.with256bits();
 
+    const headerLength = 5;
     const saltLength = 16;
     const nonceLength = 12;
     const macLength = 16;
 
-    if (encrypted.length < saltLength + nonceLength + macLength) {
+    if (encrypted.length <
+        headerLength + saltLength + nonceLength + macLength) {
       throw const FormatException('Encrypted backup too short');
     }
 
+    for (var index = 0; index < _backupMagic.length; index++) {
+      if (encrypted[index] != _backupMagic[index]) {
+        throw const FormatException('Unsupported backup format');
+      }
+    }
+    if (encrypted[4] != _backupFormatVersion) {
+      throw const FormatException('Unsupported backup format version');
+    }
+
     // 1. Extract parts
-    final salt = encrypted.sublist(0, saltLength);
-    final nonce = encrypted.sublist(saltLength, saltLength + nonceLength);
+    final salt = encrypted.sublist(headerLength, headerLength + saltLength);
+    final nonceStart = headerLength + saltLength;
+    final nonce = encrypted.sublist(nonceStart, nonceStart + nonceLength);
     final macBytes = encrypted.sublist(encrypted.length - macLength);
     final cipherText = encrypted.sublist(
-      saltLength + nonceLength,
+      nonceStart + nonceLength,
       encrypted.length - macLength,
     );
 

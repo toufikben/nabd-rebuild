@@ -27,21 +27,45 @@ class EncryptionService {
 
   static final _algorithm = AesGcm.with256bits();
 
+  static EncryptionKeyAction keyAction({
+    required String? storedValue,
+    required bool hasExistingData,
+  }) {
+    if (storedValue == null) {
+      return hasExistingData
+          ? EncryptionKeyAction.failMissing
+          : EncryptionKeyAction.create;
+    }
+    try {
+      return base64Decode(storedValue).length == 32
+          ? EncryptionKeyAction.useStored
+          : EncryptionKeyAction.failInvalid;
+    } catch (_) {
+      return EncryptionKeyAction.failInvalid;
+    }
+  }
+
   SecretKey? _cachedKey;
 
   /// تهيئة المفتاح — يُستدعى مرة واحدة عند بدء التطبيق.
-  Future<void> initialize() async {
+  ///
+  /// لا يُنشأ مفتاح جديد إذا كانت بيانات Hive موجودة؛ في هذه الحالة يجب
+  /// إظهار مسار استعادة آمن بدل الكتابة فوق البيانات القديمة.
+  Future<void> initialize({bool hasExistingData = false}) async {
     final stored = await _storage.read(key: _keyAlias);
-    if (stored != null) {
-      try {
-        final bytes = base64Decode(stored);
-        if (bytes.length == 32) {
-          _cachedKey = SecretKey(bytes);
-          return;
-        }
-      } catch (_) {
-        // مفتاح تالف → أنشئ جديد
-      }
+    switch (keyAction(
+      storedValue: stored,
+      hasExistingData: hasExistingData,
+    )) {
+      case EncryptionKeyAction.useStored:
+        _cachedKey = SecretKey(base64Decode(stored!));
+        return;
+      case EncryptionKeyAction.failMissing:
+        throw const MissingEncryptionKeyException();
+      case EncryptionKeyAction.failInvalid:
+        throw const InvalidEncryptionKeyException();
+      case EncryptionKeyAction.create:
+        break;
     }
 
     // إنشاء مفتاح جديد
@@ -66,7 +90,11 @@ class EncryptionService {
 
   Future<SecretKey> _getKey() async {
     if (_cachedKey != null) return _cachedKey!;
-    await initialize();
+    final stored = await _storage.read(key: _keyAlias);
+    if (stored == null) throw const MissingEncryptionKeyException();
+    final bytes = base64Decode(stored);
+    if (bytes.length != 32) throw const InvalidEncryptionKeyException();
+    _cachedKey = SecretKey(bytes);
     return _cachedKey!;
   }
 
@@ -175,4 +203,20 @@ class EncryptionService {
       List<int>.generate(length, (_) => random.nextInt(256)),
     );
   }
+}
+
+enum EncryptionKeyAction { useStored, create, failMissing, failInvalid }
+
+class MissingEncryptionKeyException implements Exception {
+  const MissingEncryptionKeyException();
+
+  @override
+  String toString() => 'Encryption key is unavailable';
+}
+
+class InvalidEncryptionKeyException implements Exception {
+  const InvalidEncryptionKeyException();
+
+  @override
+  String toString() => 'Encryption key is invalid';
 }

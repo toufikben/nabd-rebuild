@@ -3,8 +3,49 @@ import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nabd/services/encryption_service.dart';
 
 void main() {
+  group('Hive key initialization decisions', () {
+    test('creates a key only when storage is empty', () {
+      expect(
+        EncryptionService.keyAction(
+          storedValue: null,
+          hasExistingData: false,
+        ),
+        EncryptionKeyAction.create,
+      );
+    });
+
+    test('missing key over existing data fails without overwrite', () {
+      expect(
+        EncryptionService.keyAction(
+          storedValue: null,
+          hasExistingData: true,
+        ),
+        EncryptionKeyAction.failMissing,
+      );
+    });
+
+    test('valid stored key is reused and invalid key is rejected', () {
+      final valid = base64Encode(List<int>.filled(32, 7));
+      expect(
+        EncryptionService.keyAction(
+          storedValue: valid,
+          hasExistingData: true,
+        ),
+        EncryptionKeyAction.useStored,
+      );
+      expect(
+        EncryptionService.keyAction(
+          storedValue: base64Encode(List<int>.filled(16, 7)),
+          hasExistingData: true,
+        ),
+        EncryptionKeyAction.failInvalid,
+      );
+    });
+  });
+
   group('AES-256-GCM Encryption', () {
     final algorithm = AesGcm.with256bits();
 
