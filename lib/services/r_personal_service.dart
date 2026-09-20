@@ -106,6 +106,24 @@ class RPersonalService {
   static const unsentLettersKey = 'unsent_letters';
   static const echoResolutionsKey = 'echo_resolutions';
   static const weeklyPulsePrefix = 'weekly_pulse_';
+  static const _positiveMoodIds = {
+    'happy',
+    'peaceful',
+    'grateful',
+    'excited',
+  };
+  static const _negativeMoodIds = {
+    'anxious',
+    'sad',
+    'angry',
+    'disappointed',
+  };
+  static const _journalMoodIds = {
+    ..._positiveMoodIds,
+    'neutral',
+    'tired',
+    ..._negativeMoodIds,
+  };
 
   final DatabaseService _database;
   Box get _settings => Hive.box('settings');
@@ -166,16 +184,14 @@ class RPersonalService {
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     final echoes = <EchoRecord>[];
     for (final original in ordered) {
-      final mood = Mood.getById(original.mood);
-      if (mood == null || mood.category != 'negative') continue;
+      if (!_negativeMoodIds.contains(original.mood)) continue;
       JournalEntry? resolution;
       for (final candidate in ordered) {
         final difference = candidate.createdAt.difference(original.createdAt);
-        final candidateMood = Mood.getById(candidate.mood);
         if (difference >= const Duration(days: 3) &&
             difference <= const Duration(days: 90) &&
             candidate.createdAt.isAfter(original.createdAt) &&
-            candidateMood?.category == 'positive') {
+            _positiveMoodIds.contains(candidate.mood)) {
           resolution = candidate;
           break;
         }
@@ -189,8 +205,9 @@ class RPersonalService {
     final current = now ?? DateTime.now();
     if (current.weekday != DateTime.sunday) return null;
     final sunday = DateTime(current.year, current.month, current.day);
-    final weekStart = sunday.subtract(const Duration(days: 6));
-    final key = _dateKey(sunday);
+    final previousSunday = sunday.subtract(const Duration(days: 7));
+    final weekStart = previousSunday.subtract(const Duration(days: 6));
+    final key = _dateKey(previousSunday);
     final stored = _settings.get('$weeklyPulsePrefix$key');
     if (stored is Map) return WeeklyPulse.fromMap(stored);
 
@@ -200,9 +217,13 @@ class RPersonalService {
         entry.createdAt.month,
         entry.createdAt.day,
       );
-      return !day.isBefore(weekStart) && !day.isAfter(sunday);
+      return _journalMoodIds.contains(entry.mood) &&
+          !day.isBefore(weekStart) &&
+          !day.isAfter(previousSunday);
     }).toList();
-    final moods = entries.map((e) => Mood.getById(e.mood)).whereType<Mood>();
+    final moods = entries
+        .map((e) => Mood.journalMoods.firstWhere((mood) => mood.id == e.mood))
+        .toList();
     final pulse = WeeklyPulse(
       weekKey: key,
       entryCount: entries.length,
