@@ -1,14 +1,18 @@
+import 'dart:convert';
+
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'encryption_service.dart';
 
 /// Migrates legacy plaintext Hive boxes to encrypted boxes without changing
-/// their public names, so existing callers continue to use the same API.
+/// their public names. The source is retained until an encrypted target has
+/// been fully written and read back for validation.
 class DatabaseMigrationService {
   static const schemaVersion = 1;
   static const _marker = 'nabd_hive_schema_version';
   static const _temporarySuffix = '__encrypted_migration';
+  static const _targetSuffix = '__encrypted_target';
   static const _boxes = <String>[
     'journal_entries',
     'settings',
@@ -27,12 +31,11 @@ class DatabaseMigrationService {
     await encryption.initialize(
       hasExistingData: dataState == HiveDataState.encryptedOrUnreadable,
     );
-    final currentVersion = await encryption.readMetadata(_marker);
-    if (currentVersion == '$schemaVersion') return;
-
     final key = await encryption.hiveKeyBytes();
+
     for (final name in _boxes) {
-      if (await encryption.readMetadata('box_$name') == '$schemaVersion') {
+      if (await encryption.readMetadata('box_$name') == '$schemaVersion' &&
+          await _encryptedBoxIsValid(name, key)) {
         continue;
       }
       await _migrateBox(name, key);
@@ -42,82 +45,197 @@ class DatabaseMigrationService {
   }
 
   Future<HiveDataState> _detectDataState() async {
-    var foundLegacyData = false;
+    var foundLegacy = false;
     for (final name in _boxes) {
-      if (!await Hive.boxExists(name)) continue;
+      final hasPublicBox = await Hive.boxExists(name);
+      final hasRecoveryBox = await Hive.boxExists('$name$_temporarySuffix') ||
+          await Hive.boxExists('$name$_targetSuffix');
+      if (!hasPublicBox && hasRecoveryBox) {
+        return HiveDataState.encryptedOrUnreadable;
+      }
+      if (!hasPublicBox) continue;
       try {
-        final box = await Hive.openBox<dynamic>(name);
-        foundLegacyData = true;
+        final box = await Hive.openBox<dynamic>(name, crashRecovery: false);
+        foundLegacy = true;
         await box.close();
       } catch (_) {
         return HiveDataState.encryptedOrUnreadable;
       }
     }
-    return foundLegacyData
-        ? HiveDataState.legacyPlaintext
-        : HiveDataState.empty;
+    return foundLegacy ? HiveDataState.legacyPlaintext : HiveDataState.empty;
   }
 
   Future<void> _migrateBox(String name, List<int> key) async {
-    final temporaryName = '$name$_temporarySuffix';
-    late final Box<dynamic> oldBox;
-    try {
-      oldBox = await Hive.openBox<dynamic>(name);
-    } catch (_) {
-      // A previous run may have completed the encrypted copy but stopped
-      // before writing its metadata marker. Verify it and leave it intact.
-      final encrypted = await Hive.openBox<dynamic>(
-        name,
-        encryptionCipher: HiveAesCipher(key),
-      );
-      for (final entryKey in encrypted.keys) {
-        encrypted.get(entryKey);
+    final stagingName = '$name$_temporarySuffix';
+    final targetName = '$name$_targetSuffix';
+    Map<dynamic, dynamic>? source;
+    final publicBoxExists = await Hive.boxExists(name);
+    final recoveryStagingExists = await Hive.boxExists(stagingName);
+    late final bool existingEncrypted;
+
+    if (publicBoxExists) {
+      try {
+        final plain = await Hive.openBox<dynamic>(name, crashRecovery: false);
+        source = _snapshot(plain);
+        await plain.close();
+      } catch (_) {
+        // The public name may already be encrypted, or the process may have
+        // stopped after deleting the plaintext source. Recovery below uses
+        // validated staging/target copies instead of creating fake data.
       }
-      await encrypted.close();
+    }
+
+    existingEncrypted = source == null && publicBoxExists
+        ? await _encryptedBoxIsValid(name, key)
+        : false;
+
+    if (source == null && existingEncrypted) {
       return;
     }
-    final snapshot = <dynamic, dynamic>{
-      for (final key in oldBox.keys) key: oldBox.get(key),
-    };
-    await oldBox.close();
 
-    // A completed temporary box is valid recovery material after an
-    // interrupted migration. Reuse it rather than discarding user data.
-    final encryptedTemporary = await Hive.openBox<dynamic>(
-      temporaryName,
+    final staging = await Hive.openBox<dynamic>(
+      stagingName,
       encryptionCipher: HiveAesCipher(key),
+      crashRecovery: false,
     );
-    if (encryptedTemporary.isEmpty && snapshot.isNotEmpty) {
-      await encryptedTemporary.putAll(snapshot);
-      await encryptedTemporary.flush();
+    if (source == null && recoveryStagingExists && staging.isEmpty) {
+      await staging.close();
+      throw StateError('Migration staging is empty or corrupted for $name');
     }
-    await encryptedTemporary.close();
+    if (source != null) {
+      await staging.clear();
+      await staging.putAll(source);
+      await staging.flush();
+      await _validateBox(staging, source);
+      await encryption.writeMetadata('box_state_$name', 'staged');
+    } else if (staging.isNotEmpty) {
+      await _validateBox(staging, _snapshot(staging));
+    }
+    final stagedData = _snapshot(staging);
+    if (source == null &&
+        publicBoxExists &&
+        stagedData.isEmpty &&
+        !existingEncrypted &&
+        !await _encryptedBoxIsValid(name, key)) {
+      await staging.close();
+      throw StateError('No recoverable migration data for $name');
+    }
 
-    // Delete the plaintext box only after the encrypted copy is durable.
-    await Hive.deleteBoxFromDisk(name);
+    final target = await Hive.openBox<dynamic>(
+      targetName,
+      encryptionCipher: HiveAesCipher(key),
+      crashRecovery: false,
+    );
+    if (source != null) {
+      await target.clear();
+    }
+    if (target.isEmpty && stagedData.isNotEmpty) {
+      await target.putAll(stagedData);
+      await target.flush();
+    }
+    final targetData = _snapshot(target);
+    if (stagedData.isNotEmpty) {
+      await _validateBox(target, stagedData);
+    } else if (targetData.isNotEmpty) {
+      await _validateBox(target, targetData);
+    }
+    await target.close();
+    await staging.close();
 
-    final encryptedBox = await Hive.openBox<dynamic>(
+    // The encrypted target and staging copy are now independently readable.
+    // Only now may the legacy source be removed.
+    if (await Hive.boxExists(name)) {
+      try {
+        final open = Hive.isBoxOpen(name) ? Hive.box(name) : null;
+        if (open != null) await open.close();
+      } catch (_) {}
+      await Hive.deleteBoxFromDisk(name);
+    }
+
+    final finalBox = await Hive.openBox<dynamic>(
       name,
       encryptionCipher: HiveAesCipher(key),
+      crashRecovery: false,
     );
-    final staged = await Hive.openBox<dynamic>(
-      temporaryName,
+    final targetForCommit = await Hive.openBox<dynamic>(
+      targetName,
       encryptionCipher: HiveAesCipher(key),
+      crashRecovery: false,
     );
-    if (encryptedBox.isEmpty && staged.isNotEmpty) {
-      await encryptedBox.putAll({
-        for (final key in staged.keys) key: staged.get(key),
-      });
-      await encryptedBox.flush();
+    final commitData = _snapshot(targetForCommit);
+    await _validateBox(targetForCommit, commitData);
+    await finalBox.clear();
+    await finalBox.putAll(commitData);
+    await finalBox.flush();
+    await _validateBox(finalBox, commitData);
+    await targetForCommit.close();
+    await finalBox.close();
+
+    await Hive.deleteBoxFromDisk(targetName);
+    await Hive.deleteBoxFromDisk(stagingName);
+    await encryption.writeMetadata('box_state_$name', 'completed');
+  }
+
+  Future<bool> _encryptedBoxIsValid(String name, List<int> key) async {
+    if (!await Hive.boxExists(name)) return false;
+    try {
+      final box = await Hive.openBox<dynamic>(
+        name,
+        encryptionCipher: HiveAesCipher(key),
+        crashRecovery: false,
+      );
+      for (final entryKey in box.keys) {
+        box.get(entryKey);
+      }
+      await box.close();
+      return true;
+    } catch (_) {
+      return false;
     }
-    // Read the target before deleting the recovery copy. If this throws,
-    // the encrypted staging box remains available for the next startup.
-    for (final key in encryptedBox.keys) {
-      encryptedBox.get(key);
+  }
+
+  Map<dynamic, dynamic> _snapshot(Box<dynamic> box) => {
+        for (final key in box.keys) key: box.get(key),
+      };
+
+  Future<void> _validateBox(
+    Box<dynamic> box,
+    Map<dynamic, dynamic> expected,
+  ) async {
+    if (box.length != expected.length) {
+      throw StateError('Migration item count mismatch');
     }
-    await staged.close();
-    await Hive.deleteBoxFromDisk(temporaryName);
-    await encryptedBox.close();
+    for (final entry in expected.entries) {
+      if (!box.containsKey(entry.key) ||
+          !_valuesEqual(box.get(entry.key), entry.value)) {
+        throw StateError('Migration key/value mismatch');
+      }
+    }
+  }
+
+  bool _valuesEqual(Object? left, Object? right) {
+    if (left is Map && right is Map) {
+      if (left.length != right.length) return false;
+      for (final key in left.keys) {
+        if (!right.containsKey(key) || !_valuesEqual(left[key], right[key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (left is List && right is List) {
+      return left.length == right.length &&
+          List.generate(left.length, (i) => _valuesEqual(left[i], right[i]))
+              .every((value) => value);
+    }
+    if (left is DateTime && right is DateTime) return left == right;
+    if (left is num && right is num) return left == right;
+    if (left == null || right == null) return left == right;
+    try {
+      return jsonEncode(left) == jsonEncode(right);
+    } catch (_) {
+      return left == right;
+    }
   }
 }
 

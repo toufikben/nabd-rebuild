@@ -166,9 +166,20 @@ class EncryptionService {
 
   /// إعادة إنشاء المفتاح الرئيسي — **يُفقد كل البيانات المشفرة**.
   Future<void> rotateKey() async {
-    await _storage.delete(key: _keyAlias);
-    _cachedKey = null;
-    await initialize();
+    final newKey = await _algorithm.newSecretKey();
+    final bytes = await newKey.extractBytes();
+    await _storage.write(key: _keyAlias, value: base64Encode(bytes));
+    _cachedKey = newKey;
+  }
+
+  Future<List<int>> currentKeyBytes() async => hiveKeyBytes();
+
+  Future<void> restoreKeyBytes(List<int> bytes) async {
+    if (bytes.length != 32) {
+      throw const FormatException('Invalid encryption key length');
+    }
+    await _storage.write(key: _keyAlias, value: base64Encode(bytes));
+    _cachedKey = SecretKey(bytes);
   }
 
   /// حذف المفتاح (عند حذف كل البيانات).

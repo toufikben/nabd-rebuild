@@ -25,13 +25,24 @@ import 'encryption_service.dart';
 ///   images/          — الصور
 ///   audio/           — التسجيلات
 class BackupService {
-  final _encryption = EncryptionService();
+  final EncryptionService _encryption;
+  final Future<Directory> Function() _documentsDirectory;
+  final Future<Directory> Function() _temporaryDirectory;
   static const _backupMagic = <int>[0x4E, 0x41, 0x42, 0x44]; // NABD
   static const _backupFormatVersion = 1;
   static const maxBackupBytes = 50 * 1024 * 1024;
   static const maxExtractedBytes = 200 * 1024 * 1024;
   static const maxFileBytes = 25 * 1024 * 1024;
   static const maxFileCount = 500;
+
+  BackupService({
+    EncryptionService? encryption,
+    Future<Directory> Function()? documentsDirectory,
+    Future<Directory> Function()? temporaryDirectory,
+  })  : _encryption = encryption ?? EncryptionService(),
+        _documentsDirectory =
+            documentsDirectory ?? getApplicationDocumentsDirectory,
+        _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory;
 
   /// إنشاء نسخة احتياطية.
   Future<File> createBackup({
@@ -41,12 +52,12 @@ class BackupService {
     if (password.isEmpty) {
       throw const FormatException('Backup password is required');
     }
-    final docs = await getApplicationDocumentsDirectory();
-    final tempDir = await getTemporaryDirectory();
+    final docs = await _documentsDirectory();
+    final tempDir = await _temporaryDirectory();
     final archive = Archive();
 
     var step = 0;
-    const totalSteps = 6;
+    const totalSteps = 8;
 
     void reportProgress() {
       step++;
@@ -77,7 +88,14 @@ class BackupService {
     _addJson(archive, 'garden.json', gardenJson);
     reportProgress();
 
-    // 4. Achievements + Challenges
+    // 4. Moods and tags
+    for (final name in ['moods', 'tags']) {
+      final box = Hive.box(name);
+      _addJson(archive, '$name.json', box.toMap());
+      reportProgress();
+    }
+
+    // 5. Achievements + Challenges
     final achievementsJson = <String, dynamic>{
       'unlocked': settingsBox.get('unlocked_achievements', defaultValue: []),
       'joined_challenges':
@@ -92,7 +110,7 @@ class BackupService {
     _addJson(archive, 'achievements.json', achievementsJson);
     reportProgress();
 
-    // 5. Media files
+    // 6. Media files
     for (final dirName in ['images', 'audio']) {
       final dir = Directory('${docs.path}/$dirName');
       if (await dir.exists()) {
@@ -100,6 +118,9 @@ class BackupService {
           if (entity is File) {
             final name = p.basename(entity.path);
             final bytes = await entity.readAsBytes();
+            if (bytes.length > maxFileBytes || archive.length >= maxFileCount) {
+              throw const FormatException('Backup exceeds file limits');
+            }
             archive.addFile(
               ArchiveFile('$dirName/$name', bytes.length, bytes),
             );
@@ -109,7 +130,7 @@ class BackupService {
     }
     reportProgress();
 
-    // 6. Metadata
+    // 7. Metadata
     final metadata = {
       'version': 3,
       'formatVersion': _backupFormatVersion,
@@ -131,6 +152,9 @@ class BackupService {
     // 8. Always encrypt backups (using real AES-256-GCM).
     final outputBytes =
         await _encryptZip(Uint8List.fromList(zipBytes), password);
+    if (outputBytes.length > maxBackupBytes) {
+      throw const FormatException('Backup exceeds size limit');
+    }
 
     // 9. Save
     final filename =
@@ -188,11 +212,16 @@ class BackupService {
       if (metadata is! Map ||
           metadata['formatVersion'] != _backupFormatVersion ||
           metadata['version'] is! num ||
-          metadata['version'] > 3) {
+          metadata['version'] > 3 ||
+          metadata['app'] != 'nabd' ||
+          metadata['encrypted'] != true) {
         return const ImportResult(
           ok: false,
           error: 'Unsupported backup schema',
         );
+      }
+      if (metadata['entryCount'] is! num || metadata['entryCount'] < 0) {
+        return const ImportResult(ok: false, error: 'Invalid backup metadata');
       }
       var extractedBytes = 0;
       for (final file in archive) {
@@ -210,7 +239,10 @@ class BackupService {
       final stagedEntries = <String, Map<String, dynamic>>{};
       final stagedSettings = <Object?, Object?>{};
       final stagedGarden = <Object?, Object?>{};
+      final stagedMoods = <Object?, Object?>{};
+      final stagedTags = <Object?, Object?>{};
       final stagedFiles = <String, List<int>>{};
+      final seenPayloads = <String>{};
 
       // 3. Decode and validate everything before touching current data.
       for (final file in archive) {
@@ -220,8 +252,16 @@ class BackupService {
         final content = file.content as List<int>;
 
         if (name == 'metadata.json') {
+          if (!seenPayloads.add(name)) {
+            return const ImportResult(
+                ok: false, error: 'Duplicate backup payload');
+          }
           continue;
         } else if (name == 'entries.json') {
+          if (!seenPayloads.add(name)) {
+            return const ImportResult(
+                ok: false, error: 'Duplicate backup payload');
+          }
           final decoded = jsonDecode(utf8.decode(content));
           if (decoded is! List || !validateEntriesPayload(decoded)) {
             return const ImportResult(ok: false, error: 'Invalid entries data');
@@ -232,6 +272,10 @@ class BackupService {
             stagedEntries[id] = map;
           }
         } else if (name == 'settings.json') {
+          if (!seenPayloads.add(name)) {
+            return const ImportResult(
+                ok: false, error: 'Duplicate backup payload');
+          }
           final settings = jsonDecode(utf8.decode(content));
           if (settings is! Map) {
             return const ImportResult(
@@ -239,12 +283,30 @@ class BackupService {
           }
           stagedSettings.addAll(filterRestoredSettings(settings));
         } else if (name == 'garden.json') {
+          if (!seenPayloads.add(name)) {
+            return const ImportResult(
+                ok: false, error: 'Duplicate backup payload');
+          }
           final garden = jsonDecode(utf8.decode(content));
           if (garden is! Map) {
             return const ImportResult(ok: false, error: 'Invalid garden data');
           }
           stagedGarden.addAll(garden);
+        } else if (name == 'moods.json' || name == 'tags.json') {
+          if (!seenPayloads.add(name)) {
+            return const ImportResult(
+                ok: false, error: 'Duplicate backup payload');
+          }
+          final values = jsonDecode(utf8.decode(content));
+          if (values is! Map) {
+            return const ImportResult(ok: false, error: 'Invalid box data');
+          }
+          (name == 'moods.json' ? stagedMoods : stagedTags).addAll(values);
         } else if (name == 'achievements.json') {
+          if (!seenPayloads.add(name)) {
+            return const ImportResult(
+                ok: false, error: 'Duplicate backup payload');
+          }
           final data = jsonDecode(utf8.decode(content));
           if (data is! Map) {
             return const ImportResult(
@@ -252,39 +314,103 @@ class BackupService {
           }
           stagedSettings.addAll(filterRestoredSettings(data));
         } else if (name.startsWith('images/')) {
-          stagedFiles['images/${p.basename(name.substring(7))}'] = content;
+          final safeName = 'images/${p.basename(name.substring(7))}';
+          if (!seenPayloads.add(safeName) ||
+              p.basename(name.substring(7)).isEmpty ||
+              content.isEmpty) {
+            return const ImportResult(
+                ok: false, error: 'Duplicate or malformed media');
+          }
+          stagedFiles[safeName] = content;
         } else if (name.startsWith('audio/')) {
-          stagedFiles['audio/${p.basename(name.substring(6))}'] = content;
+          final safeName = 'audio/${p.basename(name.substring(6))}';
+          if (!seenPayloads.add(safeName) ||
+              p.basename(name.substring(6)).isEmpty ||
+              content.isEmpty) {
+            return const ImportResult(
+                ok: false, error: 'Duplicate or malformed media');
+          }
+          stagedFiles[safeName] = content;
         }
+      }
+
+      const requiredPayloads = {
+        'metadata.json',
+        'entries.json',
+        'settings.json',
+        'garden.json',
+        'moods.json',
+        'tags.json',
+        'achievements.json',
+      };
+      if (!requiredPayloads.every(seenPayloads.contains) ||
+          metadata['entryCount'] != stagedEntries.length) {
+        return const ImportResult(
+          ok: false,
+          error: 'Backup payload is incomplete',
+        );
+      }
+
+      final tempRoot = Directory(
+        '${(await _temporaryDirectory()).path}/nabd_restore_${DateTime.now().microsecondsSinceEpoch}',
+      );
+      final mediaStage = Directory('${tempRoot.path}/media');
+      final mediaRollback = Directory('${tempRoot.path}/rollback');
+      await mediaStage.create(recursive: true);
+      for (final entry in stagedFiles.entries) {
+        final stagedFile = File('${mediaStage.path}/${entry.key}');
+        await stagedFile.parent.create(recursive: true);
+        await stagedFile.writeAsBytes(entry.value, flush: true);
       }
 
       final entriesBox = Hive.box('journal_entries');
       final settingsBox = Hive.box('settings');
       final gardenBox = Hive.box('garden');
+      final moodsBox = Hive.box('moods');
+      final tagsBox = Hive.box('tags');
+      final docs = await _documentsDirectory();
       final snapshots = {
         entriesBox: Map<dynamic, dynamic>.from(entriesBox.toMap()),
         settingsBox: Map<dynamic, dynamic>.from(settingsBox.toMap()),
         gardenBox: Map<dynamic, dynamic>.from(gardenBox.toMap()),
+        moodsBox: Map<dynamic, dynamic>.from(moodsBox.toMap()),
+        tagsBox: Map<dynamic, dynamic>.from(tagsBox.toMap()),
       };
       var imported = 0;
       var imagesRestored = 0;
       var audioRestored = 0;
       try {
+        for (final directoryName in ['images', 'audio']) {
+          final current = Directory('${docs.path}/$directoryName');
+          if (await current.exists()) {
+            await _copyDirectory(
+                current, Directory('${mediaRollback.path}/$directoryName'));
+          }
+        }
         if (mode == RestoreMode.replace) {
           await entriesBox.clear();
           await settingsBox.clear();
           await gardenBox.clear();
+          await moodsBox.clear();
+          await tagsBox.clear();
         }
         await entriesBox.putAll(stagedEntries);
         await settingsBox.putAll(stagedSettings);
         await gardenBox.putAll(stagedGarden);
+        await moodsBox.putAll(stagedMoods);
+        await tagsBox.putAll(stagedTags);
         imported = stagedEntries.length;
 
-        final docs = await getApplicationDocumentsDirectory();
+        if (mode == RestoreMode.replace) {
+          for (final directoryName in ['images', 'audio']) {
+            final current = Directory('${docs.path}/$directoryName');
+            if (await current.exists()) await current.delete(recursive: true);
+          }
+        }
         for (final entry in stagedFiles.entries) {
           final file = File('${docs.path}/${entry.key}');
           await file.parent.create(recursive: true);
-          await file.writeAsBytes(entry.value, flush: true);
+          await File('${mediaStage.path}/${entry.key}').copy(file.path);
           if (entry.key.startsWith('images/')) {
             imagesRestored++;
           } else {
@@ -295,11 +421,26 @@ class BackupService {
         await entriesBox.clear();
         await settingsBox.clear();
         await gardenBox.clear();
+        await moodsBox.clear();
+        await tagsBox.clear();
         await entriesBox.putAll(snapshots[entriesBox]!);
         await settingsBox.putAll(snapshots[settingsBox]!);
         await gardenBox.putAll(snapshots[gardenBox]!);
+        await moodsBox.putAll(snapshots[moodsBox]!);
+        await tagsBox.putAll(snapshots[tagsBox]!);
+        for (final directoryName in ['images', 'audio']) {
+          final current = Directory('${docs.path}/$directoryName');
+          if (await current.exists()) await current.delete(recursive: true);
+          final rollback = Directory('${mediaRollback.path}/$directoryName');
+          if (await rollback.exists()) {
+            await _copyDirectory(rollback, current);
+          }
+        }
+        if (await tempRoot.exists()) await tempRoot.delete(recursive: true);
         return const ImportResult(ok: false, error: 'Restore failed safely');
       }
+
+      if (await tempRoot.exists()) await tempRoot.delete(recursive: true);
 
       return ImportResult(
         ok: true,
@@ -315,6 +456,18 @@ class BackupService {
   // ═══════════════════════════════════════════════════════════════
   // Internal — AES-256-GCM for ZIP files
   // ═══════════════════════════════════════════════════════════════
+
+  Future<void> _copyDirectory(Directory source, Directory target) async {
+    await target.create(recursive: true);
+    await for (final entity in source.list()) {
+      final destination = '${target.path}/${p.basename(entity.path)}';
+      if (entity is Directory) {
+        await _copyDirectory(entity, Directory(destination));
+      } else if (entity is File) {
+        await entity.copy(destination);
+      }
+    }
+  }
 
   /// تشفير ZIP بـ AES-256-GCM باستخدام مفتاح مشتق من كلمة المرور.
   ///
@@ -436,9 +589,12 @@ class BackupService {
     }
     final decoded = Uri.decodeFull(name).replaceAll('\\', '/');
     if (decoded.split('/').contains('..')) return false;
-    return decoded == 'entries.json' ||
+    return decoded == 'metadata.json' ||
+        decoded == 'entries.json' ||
         decoded == 'settings.json' ||
         decoded == 'garden.json' ||
+        decoded == 'moods.json' ||
+        decoded == 'tags.json' ||
         decoded == 'achievements.json' ||
         decoded.startsWith('images/') ||
         decoded.startsWith('audio/');
