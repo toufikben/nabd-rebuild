@@ -1,11 +1,57 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 
+class AppLockPolicy {
+  AppLockPolicy({DateTime Function()? now}) : _now = now ?? DateTime.now;
+
+  final DateTime Function() _now;
+  bool _coldStartPending = true;
+  DateTime? _backgroundedAt;
+
+  void setLockEnabled(bool enabled) {
+    if (!enabled) {
+      _backgroundedAt = null;
+    } else {
+      markColdStartComplete();
+    }
+  }
+
+  void updateLastActivity() {
+    markColdStartComplete();
+    _backgroundedAt = null;
+  }
+
+  void markBackgrounded() {
+    _backgroundedAt ??= _now();
+  }
+
+  void clearBackgrounded() {
+    _backgroundedAt = null;
+  }
+
+  void markColdStartComplete() {
+    _coldStartPending = false;
+  }
+
+  bool shouldShowLock({
+    required bool enabled,
+    required int timeoutMinutes,
+    bool coldStart = false,
+  }) {
+    if (!enabled) return false;
+    if (coldStart) return _coldStartPending;
+
+    final backgroundedAt = _backgroundedAt;
+    if (backgroundedAt == null || timeoutMinutes <= 0) return false;
+    return _now().difference(backgroundedAt) >=
+        Duration(minutes: timeoutMinutes);
+  }
+}
+
 /// BiometricService — قفل بالبصمة/الوجه.
 class BiometricService {
   final LocalAuthentication _auth = LocalAuthentication();
-  static bool _coldStartPending = true;
-  static DateTime? _backgroundedAt;
+  static final AppLockPolicy _policy = AppLockPolicy();
 
   /// هل الجهاز يدعم المصادقة الحيوية؟
   Future<bool> isAvailable() async {
@@ -42,11 +88,7 @@ class BiometricService {
   /// تفعيل/تعطيل القفل.
   Future<void> setLockEnabled(bool enabled) async {
     await Hive.box('settings').put('lock_enabled', enabled);
-    if (!enabled) {
-      _backgroundedAt = null;
-    } else {
-      markColdStartComplete();
-    }
+    _policy.setLockEnabled(enabled);
   }
 
   /// قفل بعد فترة عدم استخدام (بالدقائق).
@@ -68,34 +110,29 @@ class BiometricService {
   Future<void> updateLastActivity() async {
     await Hive.box('settings')
         .put('last_activity', DateTime.now().toIso8601String());
-    markColdStartComplete();
-    _backgroundedAt = null;
+    _policy.updateLastActivity();
   }
 
   /// يسجل بداية فترة الخلفية مرة واحدة حتى لا يتأثر القرار بإعادة البناء.
   void markBackgrounded() {
-    _backgroundedAt ??= DateTime.now();
+    _policy.markBackgrounded();
   }
 
   void clearBackgrounded() {
-    _backgroundedAt = null;
+    _policy.clearBackgrounded();
   }
 
   /// ينهي شرط القفل الخاص بالتشغيل البارد بعد دخول المستخدم للتطبيق.
   void markColdStartComplete() {
-    _coldStartPending = false;
+    _policy.markColdStartComplete();
   }
 
   /// هل يجب عرض شاشة القفل؟
   bool shouldShowLock({bool coldStart = false}) {
-    if (!isLockEnabled()) return false;
-    if (coldStart) return _coldStartPending;
-
-    final backgroundedAt = _backgroundedAt;
-    if (backgroundedAt == null) return false;
-    final timeout = getLockTimeout();
-    if (timeout <= 0) return false;
-    return DateTime.now().difference(backgroundedAt) >=
-        Duration(minutes: timeout);
+    return _policy.shouldShowLock(
+      enabled: isLockEnabled(),
+      timeoutMinutes: getLockTimeout(),
+      coldStart: coldStart,
+    );
   }
 }

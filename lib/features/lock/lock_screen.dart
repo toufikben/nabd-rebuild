@@ -15,6 +15,7 @@ class LockScreen extends StatefulWidget {
 class _LockScreenState extends State<LockScreen> {
   final BiometricService _bio = BiometricService();
   String? _error;
+  bool _authenticating = false;
 
   @override
   void initState() {
@@ -23,15 +24,23 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   Future<void> _authenticate() async {
+    if (_authenticating) return;
+    _authenticating = true;
     final ok = await _bio.authenticate(
       reason: 'Unlock your journal',
     );
 
+    if (!mounted) return;
     if (ok) {
       await _bio.updateLastActivity();
-      if (mounted) context.go('/home');
+      if (!mounted) return;
+      _authenticating = false;
+      context.go('/home');
     } else {
-      setState(() => _error = 'Authentication failed');
+      setState(() {
+        _authenticating = false;
+        _error = 'Authentication failed';
+      });
     }
   }
 
