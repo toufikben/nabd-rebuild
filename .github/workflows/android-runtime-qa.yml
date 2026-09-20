@@ -1,0 +1,300 @@
+name: Android Runtime QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.27.0'
+  JAVA_VERSION: '17'
+  PACKAGE_NAME: 'com.nabd.journal'
+
+jobs:
+  runtime-qa:
+    name: Build, install, launch, and smoke-test on Android Emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies and generate localization
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          flutter pub get
+          flutter gen-l10n
+
+      - name: Build debug APK
+        shell: bash
+        run: flutter build apk --debug
+
+      - name: Install Maestro and prepare UI flow
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.maestro/bin:$PATH"
+
+          mkdir -p .maestro runtime-evidence
+
+          cat > .maestro/nabd-deep-smoke.yaml <<'EOF'
+          appId: com.nabd.journal
+          ---
+          - launchApp:
+              clearState: true
+          - extendedWaitUntil:
+              visible: "Choose a Seed"
+              timeout: 60000
+          - tapOn: "Choose a Seed"
+          - tapOn: "الحب"
+          - tapOn: "Plant الحب"
+          - tapOn: "Plant Now"
+          - extendedWaitUntil:
+              visible: "My Journal"
+              timeout: 30000
+          - assertVisible: "New Entry"
+          - tapOn: "New Entry"
+          - tapOn: "Title"
+          - inputText: "Maestro UI smoke"
+          - tapOn: "Write your thoughts..."
+          - inputText: "Verifying the journal editor and navigation surfaces."
+          - pressKey: Back
+          - tapOn: "Save"
+          - tapOn: "Writing"
+          - assertVisible: "Writing"
+          - tapOn: "Search"
+          - extendedWaitUntil:
+              visible: "Search entries..."
+              timeout: 10000
+          - pressKey: Back
+          - tapOn: "Journey"
+          - assertVisible: "My Journey"
+          - tapOn: "Breathing"
+          - pressKey: Back
+          - tapOn: "Insights"
+          - assertVisible: "Insights"
+          - tapOn: "Settings"
+          - assertVisible: "Settings"
+          EOF
+
+          cat > .maestro/run-runtime-smoke.sh <<'EOF'
+          #!/usr/bin/env bash
+          set -Eeuo pipefail
+
+          mkdir -p runtime-evidence
+          app="${PACKAGE_NAME:?PACKAGE_NAME must be set}"
+
+          capture_failure() {
+            status=$?
+            {
+              echo "Runtime script failed with exit code $status"
+              date -u
+            } > runtime-evidence/runtime-script-failure.txt
+            timeout 20 adb devices -l > runtime-evidence/adb-devices-failure.txt 2>&1 || true
+            timeout 20 adb logcat -d -v time > runtime-evidence/logcat-failure.txt 2>&1 || true
+            timeout 20 adb shell dumpsys meminfo "$app" > runtime-evidence/meminfo-failure.txt 2>&1 || true
+            timeout 20 adb shell dumpsys activity activities > runtime-evidence/activity-failure.txt 2>&1 || true
+            exit "$status"
+          }
+          trap capture_failure ERR
+
+          adb wait-for-device
+          adb devices -l | tee runtime-evidence/adb-devices.txt
+
+          timeout 300 bash -c '
+            until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ] &&
+                  [ "$(adb shell getprop dev.bootcomplete | tr -d "\r")" = "1" ]; do
+              sleep 5
+            done
+          '
+
+          adb shell input keyevent KEYCODE_WAKEUP
+          adb shell input keyevent 82
+
+          timeout 180 bash -c '
+            until adb shell pidof com.android.systemui >/dev/null 2>&1 &&
+                  adb shell cmd package resolve-activity --brief \
+                    -a android.intent.action.MAIN \
+                    -c android.intent.category.HOME >/dev/null 2>&1; do
+              sleep 5
+            done
+          '
+
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+          sleep 15
+
+          adb shell dumpsys window windows | tee runtime-evidence/windows-before-app.txt
+          adb shell dumpsys activity activities | tee runtime-evidence/activities-before-app.txt
+          adb shell getprop ro.build.version.release | tee runtime-evidence/android-version.txt
+          adb shell getprop ro.product.model | tee runtime-evidence/device-model.txt
+          adb shell getprop sys.boot_completed | tee runtime-evidence/boot-completed.txt
+
+          adb install -r build/app/outputs/flutter-apk/app-debug.apk | tee runtime-evidence/adb-install.txt
+          adb shell dumpsys package "$app" | tee runtime-evidence/package-info.txt
+          adb shell am force-stop "$app"
+          adb logcat -c
+          adb shell monkey -p "$app" 1 | tee runtime-evidence/launch.txt
+          sleep 10
+          adb shell dumpsys activity activities | tee runtime-evidence/activity-after-launch.txt
+          adb shell pidof "$app" | tee runtime-evidence/app-pid.txt
+          adb exec-out screencap -p > runtime-evidence/home.png
+
+          adb shell input keyevent 3
+          sleep 3
+          adb shell monkey -p "$app" 1 | tee runtime-evidence/relaunch.txt
+          sleep 8
+          adb shell dumpsys activity activities | tee runtime-evidence/activity-after-relaunch.txt
+          adb exec-out screencap -p > runtime-evidence/relaunch.png
+          adb logcat -d -v time > runtime-evidence/logcat.txt
+
+          if grep -Eiq 'FATAL EXCEPTION.*com\.nabd\.journal|ANR in com\.nabd\.journal|Process: com\.nabd\.journal' runtime-evidence/logcat.txt; then
+            echo 'Nabd crash or ANR signature found' | tee runtime-evidence/crash-summary.txt
+            exit 1
+          fi
+          echo 'No Nabd crash or ANR signature found' | tee runtime-evidence/crash-summary.txt
+          echo 'Runtime smoke test completed' | tee runtime-evidence/smoke-result.txt
+
+          # Run Maestro and preserve its exit code in the same shell process.
+          maestro_status=0
+          maestro test .maestro/nabd-deep-smoke.yaml \
+            > runtime-evidence/maestro.log 2>&1 || maestro_status=$?
+          printf 'Maestro exit code: %s\n' "$maestro_status" \
+            | tee runtime-evidence/maestro-status.txt
+
+          adb logcat -d -v time > runtime-evidence/logcat-after-maestro.txt || true
+
+          if grep -Eiq 'FATAL EXCEPTION.*com\.nabd\.journal|ANR in com\.nabd\.journal|Process: com\.nabd\.journal' runtime-evidence/logcat-after-maestro.txt; then
+            echo 'Nabd crash or ANR signature found after Maestro' \
+              | tee runtime-evidence/maestro-crash-summary.txt
+            exit 1
+          fi
+          echo 'No Nabd crash or ANR signature found after Maestro' \
+            | tee runtime-evidence/maestro-crash-summary.txt
+
+          if [ "$maestro_status" -ne 0 ]; then
+            echo "Maestro UI test failed with exit code $maestro_status" \
+              | tee runtime-evidence/maestro-result.txt
+            exit "$maestro_status"
+          fi
+
+          echo 'Maestro UI test completed successfully' \
+            | tee runtime-evidence/maestro-result.txt
+          EOF
+
+          chmod +x .maestro/run-runtime-smoke.sh
+
+      - name: Record build and package metadata
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p runtime-evidence
+          sha256sum build/app/outputs/flutter-apk/app-debug.apk \
+            | tee runtime-evidence/apk-sha256.txt
+          stat -c '%n %s bytes' build/app/outputs/flutter-apk/app-debug.apk \
+            | tee runtime-evidence/apk-size.txt
+          grep -R "$PACKAGE_NAME" -n build/app/outputs/logs 2>/dev/null \
+            | head -50 | tee runtime-evidence/package-build-evidence.txt || true
+
+      - name: Run emulator smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: google_apis
+          arch: x86
+          profile: pixel_2
+          avd-name: test
+          cores: 2
+          ram-size: 3072M
+          heap-size: 512M
+          force-avd-creation: true
+          emulator-boot-timeout: 1200
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot
+          disable-spellchecker: true
+          enable-hw-keyboard: true
+          disable-animations: true
+          script: bash .maestro/run-runtime-smoke.sh
+
+      - name: Capture evidence on failure
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p runtime-evidence
+          timeout 20 adb devices -l > runtime-evidence/adb-devices-failure.txt 2>&1 || true
+          timeout 20 adb logcat -d -v time > runtime-evidence/logcat-failure.txt 2>&1 || true
+          timeout 20 adb shell dumpsys meminfo "$PACKAGE_NAME" > runtime-evidence/meminfo-failure.txt 2>&1 || true
+          timeout 20 adb shell dumpsys activity activities > runtime-evidence/activity-failure.txt 2>&1 || true
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nabd-runtime-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: warn
+
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nabd-runtime-evidence
+          path: runtime-evidence
+          if-no-files-found: warn
+
+      - name: Upload Maestro results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-results
+          path: |
+            ~/.maestro/tests
+            runtime-evidence/maestro.log
+            runtime-evidence/maestro-status.txt
+            runtime-evidence/maestro-result.txt
+            runtime-evidence/logcat-after-maestro.txt
+          if-no-files-found: warn
+
+      - name: Stop emulator
+        if: always()
+        shell: bash
+        run: adb emu kill || true
+
+      - name: Enforce Maestro result
+        if: always()
+        shell: bash
+        run: |
+          if [ -f runtime-evidence/maestro-status.txt ]; then
+            code="$(awk '{print $NF}' runtime-evidence/maestro-status.txt)"
+            if [ "$code" != "0" ]; then
+              echo "Maestro failed with exit code $code"
+              exit 1
+            fi
+          elif [ -f runtime-evidence/runtime-script-failure.txt ]; then
+            echo 'Runtime script failed before Maestro produced a result.'
+            exit 1
+          fi
+          echo 'Maestro result enforcement passed.'
