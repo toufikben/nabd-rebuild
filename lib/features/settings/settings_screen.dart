@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../services/database_service.dart';
+import '../../services/biometric_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/settings_service.dart';
@@ -19,10 +20,20 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final DatabaseService _db = DatabaseService();
   final PrivacyService _privacy = PrivacyService();
+  final BiometricService _biometric = BiometricService();
 
   bool _notificationsEnabled = true;
+  bool _lockEnabled = false;
+  int _lockTimeoutMinutes = 5;
   int _reminderHour = 20;
   int _reminderMinute = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _lockEnabled = _biometric.isLockEnabled();
+    _lockTimeoutMinutes = _biometric.getLockTimeout();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,12 +72,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => _pickLanguage(locale.languageCode),
           ),
 
+          // ─── Lock ───
+          _section('Lock'),
+
+          SwitchListTile(
+            secondary: const Icon(Icons.lock_outline, color: AppColors.primary),
+            title: const Text('App Lock'),
+            subtitle: const Text('Require authentication when returning later'),
+            value: _lockEnabled,
+            onChanged: (value) async {
+              await _biometric.setLockEnabled(value);
+              if (!mounted) return;
+              setState(() => _lockEnabled = value);
+            },
+          ),
+
+          if (_lockEnabled)
+            _tile(
+              icon: Icons.timer_outlined,
+              title: 'Lock after background',
+              subtitle: _lockTimeoutLabel(_lockTimeoutMinutes),
+              onTap: _pickLockTimeout,
+            ),
+
           // ─── Notifications ───
           _section('Notifications'),
 
           SwitchListTile(
-            secondary: const Icon(Icons.notifications_outlined,
-                color: AppColors.primary),
+            secondary: const Icon(
+              Icons.notifications_outlined,
+              color: AppColors.primary,
+            ),
             title: const Text('Daily Reminder'),
             subtitle: const Text('Get reminded to write'),
             value: _notificationsEnabled,
@@ -87,7 +123,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _tile(
               icon: Icons.access_time,
               title: 'Reminder Time',
-              subtitle: '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
+              subtitle:
+                  '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
               onTap: _pickReminderTime,
             ),
 
@@ -117,9 +154,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Share App',
             subtitle: 'Tell your friends',
             onTap: () {
-              Share.share(
-                'Check out My Journal — a private journaling app!',
-              );
+              Share.share('Check out My Journal — a private journaling app!');
             },
           ),
 
@@ -161,10 +196,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     bool danger = false,
   }) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: danger ? AppColors.danger : AppColors.primary,
-      ),
+      leading: Icon(icon, color: danger ? AppColors.danger : AppColors.primary),
       title: Text(
         title,
         style: TextStyle(
@@ -173,8 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       subtitle: Text(subtitle),
       trailing: onTap != null
-          ? const Icon(Icons.chevron_right,
-              color: AppColors.textTertiary)
+          ? const Icon(Icons.chevron_right, color: AppColors.textTertiary)
           : null,
       onTap: onTap,
     );
@@ -222,6 +253,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       'ur': 'اردو',
     };
     return names[code] ?? code;
+  }
+
+  String _lockTimeoutLabel(int minutes) {
+    switch (minutes) {
+      case 1:
+        return '1 minute';
+      case 5:
+        return '5 minutes';
+      case 15:
+        return '15 minutes';
+      case 30:
+        return '30 minutes';
+      default:
+        return 'Never';
+    }
+  }
+
+  Future<void> _pickLockTimeout() async {
+    const options = <int>[1, 5, 15, 30, 0];
+    final result = await showModalBottomSheet<int>(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final minutes in options)
+              ListTile(
+                leading: const Icon(Icons.timer_outlined),
+                title: Text(_lockTimeoutLabel(minutes)),
+                trailing: _lockTimeoutMinutes == minutes
+                    ? const Icon(Icons.check, color: AppColors.success)
+                    : null,
+                onTap: () => Navigator.pop(context, minutes),
+              ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+    if (result == null) return;
+    await _biometric.setLockTimeout(result);
+    if (mounted) setState(() => _lockTimeoutMinutes = result);
   }
 
   Future<void> _pickTheme(ThemeMode current) async {
@@ -279,7 +352,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => Navigator.pop(context, 'neutral'),
           ),
           ListTile(
-            leading: const Icon(Icons.favorite, color: AppColors.femininePrimary),
+            leading: const Icon(
+              Icons.favorite,
+              color: AppColors.femininePrimary,
+            ),
             title: const Text('Feminine'),
             subtitle: const Text('Softer, pink palette'),
             trailing: current == GenderTheme.feminine
@@ -288,7 +364,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => Navigator.pop(context, 'feminine'),
           ),
           ListTile(
-            leading: const Icon(Icons.shield, color: AppColors.masculinePrimary),
+            leading: const Icon(
+              Icons.shield,
+              color: AppColors.masculinePrimary,
+            ),
             title: const Text('Masculine'),
             subtitle: const Text('Bold, dark palette'),
             trailing: current == GenderTheme.masculine
@@ -382,9 +461,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await Share.share(text, subject: 'My Journal Export');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Export failed: $e')));
       }
     }
   }
@@ -414,9 +492,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (ok == true) {
       await _privacy.deleteEverything();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All data deleted')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('All data deleted')));
       }
     }
   }

@@ -32,8 +32,17 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _biometric.shouldShowLock()) {
-      router.go('/lock');
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _biometric.markBackgrounded();
+      return;
+    }
+    if (state == AppLifecycleState.resumed) {
+      if (_biometric.shouldShowLock()) {
+        router.go('/lock');
+      } else {
+        _biometric.clearBackgrounded();
+      }
     }
   }
 

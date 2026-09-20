@@ -4,6 +4,8 @@ import 'package:local_auth/local_auth.dart';
 /// BiometricService — قفل بالبصمة/الوجه.
 class BiometricService {
   final LocalAuthentication _auth = LocalAuthentication();
+  static bool _coldStartPending = true;
+  static DateTime? _backgroundedAt;
 
   /// هل الجهاز يدعم المصادقة الحيوية؟
   Future<bool> isAvailable() async {
@@ -17,9 +19,7 @@ class BiometricService {
   }
 
   /// عرض نافذة المصادقة.
-  Future<bool> authenticate({
-    String reason = 'Unlock your journal',
-  }) async {
+  Future<bool> authenticate({String reason = 'Unlock your journal'}) async {
     try {
       return await _auth.authenticate(
         localizedReason: reason,
@@ -42,6 +42,11 @@ class BiometricService {
   /// تفعيل/تعطيل القفل.
   Future<void> setLockEnabled(bool enabled) async {
     await Hive.box('settings').put('lock_enabled', enabled);
+    if (!enabled) {
+      _backgroundedAt = null;
+    } else {
+      markColdStartComplete();
+    }
   }
 
   /// قفل بعد فترة عدم استخدام (بالدقائق).
@@ -63,13 +68,34 @@ class BiometricService {
   Future<void> updateLastActivity() async {
     await Hive.box('settings')
         .put('last_activity', DateTime.now().toIso8601String());
+    markColdStartComplete();
+    _backgroundedAt = null;
+  }
+
+  /// يسجل بداية فترة الخلفية مرة واحدة حتى لا يتأثر القرار بإعادة البناء.
+  void markBackgrounded() {
+    _backgroundedAt ??= DateTime.now();
+  }
+
+  void clearBackgrounded() {
+    _backgroundedAt = null;
+  }
+
+  /// ينهي شرط القفل الخاص بالتشغيل البارد بعد دخول المستخدم للتطبيق.
+  void markColdStartComplete() {
+    _coldStartPending = false;
   }
 
   /// هل يجب عرض شاشة القفل؟
-  bool shouldShowLock() {
+  bool shouldShowLock({bool coldStart = false}) {
     if (!isLockEnabled()) return false;
-    final last = getLastActivity();
-    if (last == null) return true;
-    return DateTime.now().difference(last).inMinutes >= getLockTimeout();
+    if (coldStart) return _coldStartPending;
+
+    final backgroundedAt = _backgroundedAt;
+    if (backgroundedAt == null) return false;
+    final timeout = getLockTimeout();
+    if (timeout <= 0) return false;
+    return DateTime.now().difference(backgroundedAt) >=
+        Duration(minutes: timeout);
   }
 }

@@ -75,12 +75,14 @@ final router = GoRouter(
     }
     final onboardingComplete =
         Hive.box('settings').get('onboarding_completed', defaultValue: false) ==
-        true;
-    final exempt =
-        location == '/' ||
+            true;
+    final exempt = location == '/' ||
         location == '/lock' ||
         (location == '/seed-selection' && !onboardingComplete);
-    if (!exempt && BiometricService().shouldShowLock()) return '/lock';
+    if (!exempt &&
+        BiometricService().shouldShowLock(coldStart: location != '/')) {
+      return '/lock';
+    }
     return null;
   },
   routes: [
@@ -89,10 +91,8 @@ final router = GoRouter(
     GoRoute(path: '/home', redirect: (_, __) => '/journal'),
     GoRoute(
       path: '/sessions/run',
-      builder:
-          (_, GoRouterState state) => SessionRunnerScreen(
-            sessionId: state.uri.queryParameters['id'] ?? '',
-          ),
+      builder: (_, GoRouterState state) =>
+          SessionRunnerScreen(sessionId: state.uri.queryParameters['id'] ?? ''),
     ),
     GoRoute(path: '/silent', builder: (_, __) => const SilentCompanionScreen()),
     StatefulShellRoute.indexedStack(
@@ -139,8 +139,8 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/analytics',
-      builder:
-          (_, __) => const SectionHubScreen(section: NabdSection.analytics),
+      builder: (_, __) =>
+          const SectionHubScreen(section: NabdSection.analytics),
     ),
     GoRoute(
       path: '/editor',

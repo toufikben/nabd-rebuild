@@ -54,9 +54,10 @@ class _SplashScreenState extends State<SplashScreen> {
         settings.get('onboarding_completed', defaultValue: false) == true;
     if (!onboardingCompleted && gardenBox.isEmpty) {
       context.go('/seed-selection');
-    } else if (BiometricService().shouldShowLock()) {
+    } else if (BiometricService().shouldShowLock(coldStart: true)) {
       context.go('/lock');
     } else {
+      BiometricService().markColdStartComplete();
       context.go('/journal');
     }
   }
@@ -109,18 +110,19 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🌰', style: TextStyle(fontSize: 60))
-                .animate()
-                .moveY(begin: -100, end: 0, duration: 1000.ms)
-                .fadeIn(),
+            const Text(
+              '🌰',
+              style: TextStyle(fontSize: 60),
+            ).animate().moveY(begin: -100, end: 0, duration: 1000.ms).fadeIn(),
             const SizedBox(height: 20),
             const Text('🌱', style: TextStyle(fontSize: 100))
                 .animate()
                 .fadeIn(delay: 1200.ms)
                 .scale(
-                    delay: 1200.ms,
-                    duration: 600.ms,
-                    curve: Curves.easeOutBack),
+                  delay: 1200.ms,
+                  duration: 600.ms,
+                  curve: Curves.easeOutBack,
+                ),
             const SizedBox(height: 24),
             _buildBrand(),
           ],
@@ -137,11 +139,7 @@ class _SplashScreenState extends State<SplashScreen> {
       key: const ValueKey('dawn'),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xFF0A0D14),
-            Color(0xFFFF7B54),
-            Color(0xFFFFD54F),
-          ],
+          colors: [Color(0xFF0A0D14), Color(0xFFFF7B54), Color(0xFFFFD54F)],
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           stops: [0.2, 0.75, 1.0],
