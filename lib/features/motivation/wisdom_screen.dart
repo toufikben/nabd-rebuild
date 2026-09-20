@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../services/motivation_service.dart';
@@ -11,24 +14,55 @@ class WisdomScreen extends StatefulWidget {
 }
 
 class _WisdomScreenState extends State<WisdomScreen> {
+  static const _wisdomStorageKey = 'wisdom_state';
+
+  final Box _settings = Hive.box('settings');
   (String, String)? _wisdom;
 
   @override
   void initState() {
     super.initState();
-    _wisdom = MotivationService.getTodayQuoteArabic();
+    final raw = _settings.get(_wisdomStorageKey);
+    if (raw is Map && raw['deleted'] == true) return;
+
+    final quote = raw is Map ? raw['quote']?.toString() : null;
+    final author = raw is Map ? raw['author']?.toString() : null;
+    if (quote != null &&
+        quote.isNotEmpty &&
+        author != null &&
+        author.isNotEmpty) {
+      _wisdom = (quote, author);
+    } else {
+      _wisdom = MotivationService.getTodayQuoteArabic();
+      _persistWisdom(_wisdom, deleted: false);
+    }
   }
 
   void _createWisdom() {
-    setState(() => _wisdom = MotivationService.getTodayQuoteArabic());
+    final wisdom = MotivationService.getRandomQuoteArabic();
+    setState(() => _wisdom = wisdom);
+    _persistWisdom(wisdom, deleted: false);
   }
 
   void _changeWisdom() {
-    setState(() => _wisdom = MotivationService.getRandomQuoteArabic());
+    final wisdom = MotivationService.getRandomQuoteArabic();
+    setState(() => _wisdom = wisdom);
+    _persistWisdom(wisdom, deleted: false);
   }
 
   void _deleteWisdom() {
     setState(() => _wisdom = null);
+    _persistWisdom(null, deleted: true);
+  }
+
+  void _persistWisdom((String, String)? wisdom, {required bool deleted}) {
+    unawaited(
+      _settings.put(_wisdomStorageKey, {
+        'deleted': deleted,
+        'quote': wisdom?.$1,
+        'author': wisdom?.$2,
+      }),
+    );
   }
 
   @override
