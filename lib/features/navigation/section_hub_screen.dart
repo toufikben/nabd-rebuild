@@ -31,22 +31,26 @@ class SectionHubScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(c.icon,
-                        size: 34, color: Theme.of(context).colorScheme.primary),
+                    Icon(
+                      c.icon,
+                      size: 34,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
-                        child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(c.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 4),
-                        Text(c.subtitle),
-                      ],
-                    )),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            c.title,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(c.subtitle),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -76,23 +80,29 @@ class SectionHubScreen extends StatelessWidget {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primaryContainer,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer,
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: Icon(f.icon,
-                                  color: Theme.of(context).colorScheme.primary),
+                              child: Icon(
+                                f.icon,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                             const Spacer(),
-                            Text(f.title,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700)),
+                            Text(
+                              f.title,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
                             const SizedBox(height: 3),
-                            Text(f.subtitle,
-                                maxLines: 2, overflow: TextOverflow.ellipsis),
+                            Text(
+                              f.subtitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
                       ),
@@ -111,70 +121,190 @@ class SectionHubScreen extends StatelessWidget {
     switch (s) {
       case NabdSection.writing:
         return const _Config(
-            'Writing',
-            'Everything you need to capture your thoughts.',
-            Icons.edit_note_rounded, [
-          _Feature('New Entry', 'Write something new',
-              Icons.add_circle_outline_rounded, '/editor'),
-          _Feature(
-              'Search', 'Find an old entry', Icons.search_rounded, '/search'),
-          _Feature('Calendar', 'Browse by date', Icons.calendar_month_rounded,
-              '/calendar'),
-          _Feature('Dream Journal', 'Record your dreams',
-              Icons.nightlight_round, '/dream-journal'),
-          _Feature('Gratitude Journal', 'Keep the good moments',
-              Icons.favorite_rounded, '/gratitude-journal'),
-          _Feature('Worry Box', 'Put worries somewhere safe',
-              Icons.inventory_2_outlined, '/worry-box'),
-          _Feature('Future Letters', 'Write to your future self',
-              Icons.mark_email_unread_outlined, '/future-letters'),
-          _Feature('Unsent Letters', 'Words you never sent',
-              Icons.mail_outline_rounded, '/unsent-letters'),
-          _Feature('Legacy Journal', 'Preserve your story',
-              Icons.auto_stories_rounded, '/legacy-journal'),
-          _Feature('Time Capsule', 'Save memories for later',
-              Icons.schedule_rounded, '/time-capsule'),
-        ]);
+          'Writing',
+          'Everything you need to capture your thoughts.',
+          Icons.edit_note_rounded,
+          [
+            _Feature(
+              'New Entry',
+              'Write something new',
+              Icons.add_circle_outline_rounded,
+              '/editor',
+            ),
+            _Feature(
+              'Search',
+              'Find an old entry',
+              Icons.search_rounded,
+              '/search',
+            ),
+            _Feature(
+              'Calendar',
+              'Browse by date',
+              Icons.calendar_month_rounded,
+              '/calendar',
+            ),
+            _Feature(
+              'Dream Journal',
+              'Record your dreams',
+              Icons.nightlight_round,
+              '/dream-journal',
+            ),
+            _Feature(
+              'Gratitude Journal',
+              'Keep the good moments',
+              Icons.favorite_rounded,
+              '/gratitude-journal',
+            ),
+            _Feature(
+              'Worry Box',
+              'Put worries somewhere safe',
+              Icons.inventory_2_outlined,
+              '/worry-box',
+            ),
+            _Feature(
+              'Letters',
+              'Future and unsent letters in one place',
+              Icons.mark_email_unread_outlined,
+              '/letters',
+            ),
+            _Feature(
+              'Legacy Journal',
+              'Preserve your story',
+              Icons.auto_stories_rounded,
+              '/legacy-journal',
+            ),
+            _Feature(
+              'Time Capsule',
+              'Save memories for later',
+              Icons.schedule_rounded,
+              '/time-capsule',
+            ),
+          ],
+        );
       case NabdSection.journey:
-        return const _Config('My Journey',
-            'Small practices that help you move forward.', Icons.spa_rounded, [
-          _Feature('Garden', 'Grow your personal garden',
-              Icons.local_florist_rounded, '/garden'),
-          _Feature('Gratitude Garden', 'Grow gratitude', Icons.eco_rounded,
-              '/gratitude-garden'),
-          _Feature('Breathing', 'Take a mindful pause', Icons.air_rounded,
-              '/breathing'),
-          _Feature('Worry Release', 'Let thoughts go',
-              Icons.self_improvement_rounded, '/worry-release'),
-          _Feature('Motivation', 'رسالة تساعدك على التقدم',
-              Icons.auto_awesome_rounded, '/motivation'),
-          _Feature('Wisdom', 'حكمة من بيانات التطبيق',
-              Icons.lightbulb_outline_rounded, '/wisdom'),
-          _Feature('Challenges', 'Build positive habits', Icons.flag_rounded,
-              '/challenges'),
-          _Feature('Achievements', 'See your progress',
-              Icons.emoji_events_rounded, '/achievements'),
-        ]);
+        return const _Config(
+          'My Journey',
+          'Small practices that help you move forward.',
+          Icons.spa_rounded,
+          [
+            _Feature(
+              'Garden',
+              'Grow your personal garden',
+              Icons.local_florist_rounded,
+              '/garden',
+            ),
+            _Feature(
+              'Gratitude Garden',
+              'Grow gratitude',
+              Icons.eco_rounded,
+              '/gratitude-garden',
+            ),
+            _Feature(
+              'Breathing',
+              'Take a mindful pause',
+              Icons.air_rounded,
+              '/breathing',
+            ),
+            _Feature(
+              'Worry Release',
+              'Let thoughts go',
+              Icons.self_improvement_rounded,
+              '/worry-release',
+            ),
+            _Feature(
+              'Motivation',
+              'رسالة تساعدك على التقدم',
+              Icons.auto_awesome_rounded,
+              '/motivation',
+            ),
+            _Feature(
+              'Wisdom',
+              'حكمة من بيانات التطبيق',
+              Icons.lightbulb_outline_rounded,
+              '/wisdom',
+            ),
+            _Feature(
+              'Sage',
+              'A local thought, when you ask for one',
+              Icons.auto_awesome_rounded,
+              '/sage',
+            ),
+            _Feature(
+              'Challenges',
+              'Build positive habits',
+              Icons.flag_rounded,
+              '/challenges',
+            ),
+            _Feature(
+              'Achievements',
+              'See your progress',
+              Icons.emoji_events_rounded,
+              '/achievements',
+            ),
+          ],
+        );
       case NabdSection.analytics:
         return const _Config(
-            'Insights',
-            'Understand your journal and your patterns.',
-            Icons.insights_rounded, [
-          _Feature('Statistics', 'Your journal numbers',
-              Icons.bar_chart_rounded, '/stats'),
-          _Feature('Heatmap', 'Your writing activity', Icons.grid_view_rounded,
-              '/heatmap'),
-          _Feature('Mood Weather', 'Your emotional climate',
-              Icons.cloud_rounded, '/weather'),
-          _Feature('Word Cloud', 'Words that appear most',
-              Icons.cloud_queue_rounded, '/word-cloud'),
-          _Feature('Emotion Radar', 'Explore emotional patterns',
-              Icons.radar_rounded, '/emotion-radar'),
-          _Feature('Year Review', 'Look back at your year',
-              Icons.calendar_view_month_rounded, '/year-review'),
-          _Feature(
-              'Tags', 'Organize your entries', Icons.sell_outlined, '/tags'),
-        ]);
+          'Insights',
+          'Understand your journal and your patterns.',
+          Icons.insights_rounded,
+          [
+            _Feature(
+              'Statistics',
+              'Your journal numbers',
+              Icons.bar_chart_rounded,
+              '/stats',
+            ),
+            _Feature(
+              'Heatmap',
+              'Your writing activity',
+              Icons.grid_view_rounded,
+              '/heatmap',
+            ),
+            _Feature(
+              'Mood Weather',
+              'Your emotional climate',
+              Icons.cloud_rounded,
+              '/weather',
+            ),
+            _Feature(
+              'Word Cloud',
+              'Words that appear most',
+              Icons.cloud_queue_rounded,
+              '/word-cloud',
+            ),
+            _Feature(
+              'Emotion Radar',
+              'Explore emotional patterns',
+              Icons.radar_rounded,
+              '/emotion-radar',
+            ),
+            _Feature(
+              'Year Review',
+              'Look back at your year',
+              Icons.calendar_view_month_rounded,
+              '/year-review',
+            ),
+            _Feature(
+              'Tags',
+              'Organize your entries',
+              Icons.sell_outlined,
+              '/tags',
+            ),
+            _Feature(
+              'Echoes',
+              'See later positive responses',
+              Icons.wb_sunny_outlined,
+              '/echoes',
+            ),
+            _Feature(
+              'Weekly Pulse',
+              'A Sunday snapshot of your week',
+              Icons.calendar_today_outlined,
+              '/weekly-pulse',
+            ),
+          ],
+        );
     }
   }
 }

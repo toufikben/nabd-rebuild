@@ -38,6 +38,10 @@ import '../features/social/legacy_journal_screen.dart';
 import '../features/social/time_capsule_screen.dart';
 import '../features/motivation/achievements_screen.dart';
 import '../features/motivation/challenges_screen.dart';
+import '../features/personal/letters_screen.dart';
+import '../features/personal/echoes_screen.dart';
+import '../features/personal/weekly_pulse_screen.dart';
+import '../features/personal/sage_screen.dart';
 import '../features/navigation/section_hub_screen.dart';
 import '../services/biometric_service.dart';
 
@@ -71,8 +75,9 @@ final router = GoRouter(
     }
     final onboardingComplete =
         Hive.box('settings').get('onboarding_completed', defaultValue: false) ==
-            true;
-    final exempt = location == '/' ||
+        true;
+    final exempt =
+        location == '/' ||
         location == '/lock' ||
         (location == '/seed-selection' && !onboardingComplete);
     if (!exempt && BiometricService().shouldShowLock()) return '/lock';
@@ -84,14 +89,12 @@ final router = GoRouter(
     GoRoute(path: '/home', redirect: (_, __) => '/journal'),
     GoRoute(
       path: '/sessions/run',
-      builder: (_, GoRouterState state) => SessionRunnerScreen(
-        sessionId: state.uri.queryParameters['id'] ?? '',
-      ),
+      builder:
+          (_, GoRouterState state) => SessionRunnerScreen(
+            sessionId: state.uri.queryParameters['id'] ?? '',
+          ),
     ),
-    GoRoute(
-      path: '/silent',
-      builder: (_, __) => const SilentCompanionScreen(),
-    ),
+    GoRoute(path: '/silent', builder: (_, __) => const SilentCompanionScreen()),
     StatefulShellRoute.indexedStack(
       builder: (
         BuildContext context,
@@ -103,10 +106,7 @@ final router = GoRouter(
       branches: <StatefulShellBranch>[
         StatefulShellBranch(
           routes: <RouteBase>[
-            GoRoute(
-              path: '/journal',
-              builder: (_, __) => const HomeScreen(),
-            ),
+            GoRoute(path: '/journal', builder: (_, __) => const HomeScreen()),
           ],
         ),
         StatefulShellBranch(
@@ -119,37 +119,33 @@ final router = GoRouter(
         ),
         StatefulShellBranch(
           routes: <RouteBase>[
-            GoRoute(
-              path: '/garden',
-              builder: (_, __) => const GardenScreen(),
-            ),
+            GoRoute(path: '/garden', builder: (_, __) => const GardenScreen()),
           ],
         ),
         StatefulShellBranch(
           routes: <RouteBase>[
-            GoRoute(
-              path: '/stats',
-              builder: (_, __) => const StatsScreen(),
-            ),
+            GoRoute(path: '/stats', builder: (_, __) => const StatsScreen()),
           ],
         ),
       ],
     ),
     GoRoute(
-        path: '/writing',
-        builder: (_, __) =>
-            const SectionHubScreen(section: NabdSection.writing)),
+      path: '/writing',
+      builder: (_, __) => const SectionHubScreen(section: NabdSection.writing),
+    ),
     GoRoute(
-        path: '/journey',
-        builder: (_, __) =>
-            const SectionHubScreen(section: NabdSection.journey)),
+      path: '/journey',
+      builder: (_, __) => const SectionHubScreen(section: NabdSection.journey),
+    ),
     GoRoute(
-        path: '/analytics',
-        builder: (_, __) =>
-            const SectionHubScreen(section: NabdSection.analytics)),
+      path: '/analytics',
+      builder:
+          (_, __) => const SectionHubScreen(section: NabdSection.analytics),
+    ),
     GoRoute(
-        path: '/editor',
-        builder: (_, state) => EditorScreen(entryId: _entryIdFromState(state))),
+      path: '/editor',
+      builder: (_, state) => EditorScreen(entryId: _entryIdFromState(state)),
+    ),
     GoRoute(path: '/calendar', builder: (_, __) => const CalendarScreen()),
     GoRoute(path: '/search', builder: (_, __) => const SearchScreen()),
     GoRoute(path: '/tags', builder: (_, __) => const TagsScreen()),
@@ -159,42 +155,69 @@ final router = GoRouter(
     GoRoute(path: '/weather', builder: (_, __) => const WeatherScreen()),
     GoRoute(path: '/word-cloud', builder: (_, __) => const WordCloudScreen()),
     GoRoute(
-        path: '/emotion-radar', builder: (_, __) => const EmotionRadarScreen()),
+      path: '/emotion-radar',
+      builder: (_, __) => const EmotionRadarScreen(),
+    ),
     GoRoute(path: '/year-review', builder: (_, __) => const YearReviewScreen()),
     GoRoute(
-        path: '/seed-selection',
-        builder: (_, __) => const SeedSelectionScreen()),
+      path: '/seed-selection',
+      builder: (_, __) => const SeedSelectionScreen(),
+    ),
     GoRoute(
-        path: '/sound-garden', builder: (_, __) => const SoundGardenScreen()),
+      path: '/sound-garden',
+      builder: (_, __) => const SoundGardenScreen(),
+    ),
     GoRoute(path: '/worry-box', builder: (_, __) => const WorryBoxScreen()),
     GoRoute(
-        path: '/worry-release', builder: (_, __) => const WorryReleaseScreen()),
+      path: '/worry-release',
+      builder: (_, __) => const WorryReleaseScreen(),
+    ),
     GoRoute(path: '/breathing', builder: (_, __) => const BreathingScreen()),
     GoRoute(
-        path: '/dream-journal', builder: (_, __) => const DreamJournalScreen()),
+      path: '/dream-journal',
+      builder: (_, __) => const DreamJournalScreen(),
+    ),
     GoRoute(
-        path: '/gratitude-garden',
-        builder: (_, __) => const GratitudeGardenScreen()),
+      path: '/gratitude-garden',
+      builder: (_, __) => const GratitudeGardenScreen(),
+    ),
     GoRoute(
-        path: '/gratitude-journal',
-        builder: (_, __) => const GratitudeJournalScreen()),
+      path: '/gratitude-journal',
+      builder: (_, __) => const GratitudeJournalScreen(),
+    ),
     GoRoute(
-        path: '/gratitude', builder: (_, __) => const GratitudeJournalScreen()),
+      path: '/gratitude',
+      builder: (_, __) => const GratitudeJournalScreen(),
+    ),
     GoRoute(path: '/motivation', builder: (_, __) => const MotivationScreen()),
     GoRoute(path: '/wisdom', builder: (_, __) => const WisdomScreen()),
+    GoRoute(path: '/letters', builder: (_, __) => const LettersScreen()),
+    GoRoute(path: '/echoes', builder: (_, __) => const EchoesScreen()),
     GoRoute(
-        path: '/future-letters',
-        builder: (_, __) => const FutureLettersScreen()),
+      path: '/weekly-pulse',
+      builder: (_, __) => const WeeklyPulseScreen(),
+    ),
+    GoRoute(path: '/sage', builder: (_, __) => const SageScreen()),
     GoRoute(
-        path: '/unsent-letters',
-        builder: (_, __) => const UnsentLettersScreen()),
+      path: '/future-letters',
+      builder: (_, __) => const FutureLettersScreen(),
+    ),
     GoRoute(
-        path: '/legacy-journal',
-        builder: (_, __) => const LegacyJournalScreen()),
+      path: '/unsent-letters',
+      builder: (_, __) => const UnsentLettersScreen(),
+    ),
     GoRoute(
-        path: '/time-capsule', builder: (_, __) => const TimeCapsuleScreen()),
+      path: '/legacy-journal',
+      builder: (_, __) => const LegacyJournalScreen(),
+    ),
     GoRoute(
-        path: '/achievements', builder: (_, __) => const AchievementsScreen()),
+      path: '/time-capsule',
+      builder: (_, __) => const TimeCapsuleScreen(),
+    ),
+    GoRoute(
+      path: '/achievements',
+      builder: (_, __) => const AchievementsScreen(),
+    ),
     GoRoute(path: '/challenges', builder: (_, __) => const ChallengesScreen()),
   ],
 );
