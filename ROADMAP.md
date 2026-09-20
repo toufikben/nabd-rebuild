@@ -1,69 +1,82 @@
-# خارطة طريق نبض — Nabd
+# خارطة طريق نبض — الحالة الموثقة
 
-**آخر تحديث:** 2026-09-16 بعد حزمة UI/UX  
-**الفرع:** `main`  
-**آخر commit:** `defd8fd` — `feat: refresh Nabd navigation and Material 3 theme`
+**آخر تحديث:** 2026-09-20 بعد تدقيق شامل للكود والاختبارات وCI وبناء Android المحلي
+**الفرع:** `main`
+**آخر commit:** `a889014` — `test: add personal screen widget coverage`
+**حالة المستودع بعد التدقيق:** نظيف ومتزامن مع `origin/main`
 
-## الحالة الحالية
+## الحكم التنفيذي
 
-المستودع مرفوع بالكامل إلى GitHub، والفرع المحلي `main` متزامن مع `origin/main`. آخر تشغيل GitHub Actions نجح في التحليل والاختبارات وبناء Debug APK وDebug AAB ورفع الـArtifacts.
+المراحل من **R-Launch إلى R-Personal منفذة فعليًا بدرجات متفاوتة**، ولذلك لم يعد صحيحًا وضع Garden وStats وWellbeing وPersonal تحت «لاحقًا». المرحلة الوحيدة المفتوحة كحاجز أمني فعلي هي **R-Data & Security**. لا ينبغي الانتقال إلى Monetization النهائية أو Final QA قبل إغلاق تدوير المفاتيح، وتوحيد مسار التصدير مع النسخ الاحتياطي المشفر، وإجراء تحقق runtime على جهاز أو emulator.
 
-| الأولوية | البند | الحالة | الملاحظات المتبقية |
-|---|---|---|---|
-| P0 | حماية بيانات Hive at rest | ✅ مطبق | Migration versioned إلى `HiveAesCipher` مع مفتاح Secure Storage؛ يلزم اختبار runtime على جهاز فعلي |
-| P0 | تشفير النصوص والنسخ الاحتياطي | ✅ مطبق | AES-256-GCM ومفتاح غير hardcoded |
-| P0 | منع entitlement من النسخ الاحتياطي | ✅ مطبق | restore يتجاهل `is_pro` و`is_lifetime` و`pro_expiry` مع regression tests |
-| P0 | اشتراكات المتجر | ⚠️ صادق جزئيًا | lifetime يعتمد على callback فعلي؛ monthly/yearly تحتاج server-side receipt/entitlement verification |
-| P0 | Android package وManifest وWidget وShortcuts | ✅ متحقق | CI بنى المشروع بنجاح |
-| P1 | CI Analyze/Test | ✅ ناجح | GitHub Actions run `35025782130` |
-| P1 | Debug APK | ✅ ناجح | بُني على GitHub runner وتم رفعه كـArtifact |
-| P1 | Debug AAB | ✅ ناجح | بُني على GitHub runner وتم رفعه كـArtifact |
-| P1 | Release APK/AAB | ⏳ متبقٍ | يحتاج keystore production وSecrets وتهيئة signing داخل workflow |
-| P1 | App Links routes | ✅ مطبق | custom scheme وHTTPS routes مرتبطة بالـGoRouter |
-| P1 | App Links domain verification | ❌ غير مكتمل | `https://nabd.app/.well-known/assetlinks.json` يعيد 404؛ يلزم SHA-256 لشهادة Release ونشر الملف |
-| P1 | Backup validation | ✅ مطبق | metadata/schema/duplicate IDs/path traversal/ZIP limits/entitlement filtering |
-| P1 | UI/UX navigation refresh | ✅ مطبق | Material 3 theme، bottom navigation، Writing/Journey/Insights hubs، ودعم dark/gender themes |
-| P1 | Localization وRTL وTheme | ⚠️ static فقط | يلزم اختبار runtime على جهاز أو emulator |
-| P2 | Physical runtime validation | ⏳ متبقٍ | لا يوجد جهاز أو emulator متاح في بيئة التدقيق |
-| P2 | iOS scaffold/release | ⏳ متبقٍ | لم يُجهز مسار release كامل لـiOS |
+| # | المرحلة | الحالة الموثقة | القرار التالي |
+|---:|---|---|---|
+| 1 | R-Launch & Splash | ✅ منفذة | إبقاء صوت Splash الحالي ومراجعة UX لاحقًا فقط |
+| 2 | R-Journal Core | 🟡 منفذة مع ديون صغيرة | تأجيل الأخطاء المعروفة، مع منعها من تعطيل Security وQA |
+| 3 | R-Sessions | ✅ منفذة | إضافة اختبارات UI/runtime لاحقًا ضمن Final QA |
+| 4 | R-Garden | ✅ منفذة | لا تُعاد إلى قائمة الانتظار؛ يلزم تحقق runtime فقط |
+| 5 | R-Stats | ✅ منفذة | مراجعة دقة البيانات وRTL ضمن R-Polish/Final QA |
+| 6 | R-Wellbeing | ✅ منفذة | تشمل Gratitude وWorry وBreathing وSilent وMotivation |
+| 7 | R-Personal | ✅ منفذة | Letters وEchoes وWeekly Pulse وSage مرتبطة بالمسارات وتملك اختبارات منطق وWidget |
+| 8 | R-Settings & Lock | ✅ منفذة جزئيًا | Settings وApp Lock موجودان؛ يلزم اختبار جهاز فعلي وتوحيد i18n |
+| 9 | R-Data & Security | 🔴 الحاجز الحالي | إغلاق Key Rotation والتصدير غير المشفر واختبارات runtime للترحيل والنسخ |
+| 10 | R-Monetization | 🟡 منفذة جزئيًا | Lifetime يعمل من callback المتجر؛ Monthly/Yearly تحتاج تحقق entitlement خادمي |
+| 11 | R-Polish | ⏳ بعد Security | i18n وRTL وcontrast وWater-drop + echo وApp Icon وSilent rain/storm |
+| 12 | R-Final QA | ⏳ أخيرة | Release signing وruntime matrix وApp Links وBackup/Restore وStore checklist |
 
-## التحقق المنجز
+## R-Data & Security — ما تم وما بقي
 
-- `flutter analyze`: **PASS — No issues found**
-- `flutter test`: **PASS — 42 tests passed**
-- `dart format` للملفات المعدلة: **PASS**
-- `git diff --check`: **PASS**
-- GitHub Actions Analyze/Test: **PASS**
-- GitHub Actions Debug APK: **PASS**
-- GitHub Actions Debug AAB: **PASS**
-- فحص secrets داخل source: لم توجد مفاتيح أو tokens مضمّنة.
-- البناء المحلي لم يُنفذ بنجاح بسبب عدم وجود Android SDK، لذلك الاعتماد في APK/AAB على نتيجة GitHub Actions الفعلية.
+| الموضوع | الحالة الفعلية | الملاحظة |
+|---|---|---|
+| تشفير Hive at rest | ✅ مطبق | Migration versioned مع `HiveAesCipher` ومفتاح Secure Storage؛ يحتاج اختبار جهاز فعلي |
+| AES-256-GCM للنصوص | ✅ مطبق | Nonce عشوائي وMAC للتحقق من التلاعب |
+| Backup/Restore مشفر | 🟡 مطبق مع فجوات | النسخة مشفرة ومتحققة، لكن مسار التصدير في Settings يشارك JSON نصيًا غير مشفر |
+| منع entitlement من النسخة | 🟡 جزئي | `restore` يفلتر entitlement، لكن `createBackup` يجمع إعدادات entitlement داخل الأرشيف قبل الفلترة |
+| Key Rotation | 🔴 غير مغلق | `rotateKey()` يحذف المفتاح وينشئ مفتاحًا جديدًا دون إعادة تشفير Hive؛ قد يجعل البيانات غير قابلة للقراءة |
+| Delete All Data | 🟡 مطبق | يحذف الصناديق والوسائط، لكنه يتعمد إبقاء مفتاح التشفير؛ يجب تثبيت قرار دورة حياة المفتاح باختبار وسياسة واضحة |
+| حماية مسارات ZIP | ✅ مطبق | فحص traversal والحجم وعدد الملفات والـschema والـduplicate IDs |
+| Runtime migration recovery | ⏳ غير مثبت | يلزم جهاز أو اختبار تكاملي يحاكي ترقية بيانات plaintext وفشل الاستئناف |
 
-## خارطة الطريق التالية
+## القرارات المؤجلة التي تبقى كما هي
 
-### 1. تفعيل Release signing
+يبقى تأجيل أخطاء Journal الصغيرة مقبولًا. تبقى ملفات Android الثلاثة المولدة سابقًا دينًا تقنيًا للمراجعة، لكنها ليست تغييرات غير متتبعة في working tree الحالي. يبقى Splash sound الحالي. يؤجل Water-drop + echo، وApp Icon، وSilent rain/storm الجديد إلى R-Polish.
 
-إضافة keystore production إلى GitHub Actions Secrets، ثم تعديل workflow ليستخدم `ANDROID_KEYSTORE_BASE64` و`ANDROID_KEYSTORE_PASSWORD` و`ANDROID_KEY_PASSWORD` و`ANDROID_KEY_ALIAS`، وبعدها تشغيل Release APK/AAB.
+## شروط إغلاق Security
 
-### 2. إكمال App Links
+لا تُغلق R-Data & Security قبل تنفيذ تدوير مفتاح آمن أو إزالة API الحالي واستبداله بمسار واضح يحافظ على البيانات. يجب أن يصبح Export Data إما نسخة احتياطية مشفرة أو أن يوضح للمستخدم صراحة أنه تصدير نصي غير مشفر مع تأكيد أمني. يجب حذف entitlement من محتوى النسخة عند الإنشاء، لا الاكتفاء بتجاهله عند الاستعادة. بعد ذلك يجب اختبار migration وbackup/restore وdelete-all وkey lifecycle على جهاز أو emulator.
 
-استخراج SHA-256 من شهادة Release الفعلية، إنشاء `/.well-known/assetlinks.json` بالقيم الحقيقية، نشره على `nabd.app`، ثم اختبار `/journal` و`/garden` على Android.
+## التحقق الأخير
 
-### 3. إكمال entitlement verification
+- `flutter analyze`: **PASS — No issues found**.
+- `flutter test`: **PASS — 65 tests passed**.
+- `flutter build apk --debug`: **PASS** محليًا بعد تجهيز Android SDK وJDK.
+- GitHub Actions على commit `a889014`: **PASS** في run `35501185195`.
+- `git diff --check`: **PASS**.
+- working tree: **clean** ومتزامن مع `origin/main`.
 
-ربط `PurchaseProvider` بخدمة تحقق موثوقة للـGoogle Play/App Store لتحديد renewal وexpiry وcancellation، وعدم اعتبار الاشتراك Pro قبل وصول entitlement موثوق.
+## الترتيب التنفيذي بعد التدقيق
 
-### 4. اختبار runtime
+1. إغلاق R-Data & Security: key rotation، تصدير آمن، entitlement filtering عند الإنشاء، واختبارات runtime.
+2. تشغيل Release APK/AAB مع keystore production والتحقق من نتيجة CI الفعلية.
+3. تنفيذ App Links domain verification ونشر `assetlinks.json` ببصمة Release.
+4. إكمال R-Polish، مع التركيز على i18n وRTL وcontrast قبل التجميل الصوتي والبصري.
+5. تنفيذ R-Final QA على جهاز أو emulator، ثم مراجعة الأذونات وAdMob وسياسة الخصوصية ومتطلبات المتجر.
+6. اعتبار Monetization مغلقة فقط بعد وصول entitlement موثوق للاشتراكات الشهرية والسنوية.
 
-على جهاز أو emulator: install، onboarding، إنشاء/تعديل/حذف entry، البحث، tags، garden، lock، background/resume، notification، widget، shortcut، deep link، Arabic RTL، dark mode، backup/restore، وdelete-all.
+## مراجع الكود الأساسية
 
-### 5. Release readiness
+- [EncryptionService][1]
+- [BackupService][2]
+- [PrivacyService][3]
+- [MonetizationService][4]
+- [AppLockPolicy وBiometricService][5]
+- [SettingsScreen][6]
+- [CI Workflow][7]
 
-بعد إغلاق signing وApp Links وentitlements وruntime tests، تشغيل release builds، مراجعة الأذونات، سياسة الخصوصية، AdMob IDs الإنتاجية، وPlay Store checklist.
-
-## القيود المعروفة
-
-- لا يمكن اعتبار App Links verified قبل نشر `assetlinks.json` ببصمة Release حقيقية.
-- لا يمكن اعتبار monthly/yearly subscriptions verified دون server-side receipt validation.
-- لا توجد نتيجة physical device/emulator في هذه البيئة.
-- صلاحية GitHub Secrets نفسها لم يمكن قراءتها عبر token الحالي؛ قيم الأسرار لا تُكشف ولا تُفحص من داخل المصدر.
+[1]: lib/services/encryption_service.dart "تشفير البيانات وإدارة المفتاح"
+[2]: lib/services/backup_service.dart "إنشاء واستعادة النسخ الاحتياطية"
+[3]: lib/services/privacy_service.dart "حذف البيانات المحلية"
+[4]: lib/services/monetization_service.dart "حالة المشتريات والتحقق المحلي"
+[5]: lib/services/biometric_service.dart "سياسة قفل التطبيق والمصادقة الحيوية"
+[6]: lib/features/settings/settings_screen.dart "إعدادات التطبيق والتصدير والحذف"
+[7]: .github/workflows/android-build.yml "فحص وبناء Android عبر GitHub Actions"
