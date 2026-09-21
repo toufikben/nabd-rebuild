@@ -1,9 +1,9 @@
 # خارطة طريق نبض — الحالة الموثقة
 
-**آخر تحديث:** 2026-09-20 بعد تدقيق شامل للكود والاختبارات وCI وبناء Android المحلي
-**الفرع:** `main`
-**آخر commit:** `a889014` — `test: add personal screen widget coverage`
-**حالة المستودع بعد التدقيق:** نظيف ومتزامن مع `origin/main`
+**آخر تحديث:** 2026-09-21 بعد إصلاح App Lock lifecycle والتحقق المحلي
+**الفرع:** `qa/runtime-emulator`
+**آخر commit:** `737522b` — `fix: harden app lock lifecycle`
+**حالة المستودع بعد التحقق:** نظيف؛ التغيير لم يُدمج في `main`
 
 ## الحكم التنفيذي
 
@@ -18,7 +18,7 @@
 | 5 | R-Stats | ✅ منفذة | مراجعة دقة البيانات وRTL ضمن R-Polish/Final QA |
 | 6 | R-Wellbeing | ✅ منفذة | تشمل Gratitude وWorry وBreathing وSilent وMotivation |
 | 7 | R-Personal | ✅ منفذة | Letters وEchoes وWeekly Pulse وSage مرتبطة بالمسارات وتملك اختبارات منطق وWidget |
-| 8 | R-Settings & Lock | ✅ منفذة جزئيًا | Settings وApp Lock موجودان؛ يلزم اختبار جهاز فعلي وتوحيد i18n |
+| 8 | R-Settings & Lock | 🟡 منفذة مع Runtime محجوب | تم إصلاح `inactive`/`hidden`/`paused`/`resumed` lifecycle وإضافة تغطية policy؛ يلزم Runtime على جهاز أو Emulator مع KVM |
 | 9 | R-Data & Security | 🔴 الحاجز الحالي | إغلاق Key Rotation والتصدير غير المشفر واختبارات runtime للترحيل والنسخ |
 | 10 | R-Monetization | 🟡 منفذة جزئيًا | Lifetime يعمل من callback المتجر؛ Monthly/Yearly تحتاج تحقق entitlement خادمي |
 | 11 | R-Polish | ⏳ بعد Security | i18n وRTL وcontrast وWater-drop + echo وApp Icon وSilent rain/storm |
@@ -37,6 +37,16 @@
 | حماية مسارات ZIP | ✅ مطبق | فحص traversal والحجم وعدد الملفات والـschema والـduplicate IDs |
 | Runtime migration recovery | ⏳ غير مثبت | يلزم جهاز أو اختبار تكاملي يحاكي ترقية بيانات plaintext وفشل الاستئناف |
 
+## R-Settings & Lock — تحديث 2026-09-21
+
+| الموضوع | الحالة الفعلية | الدليل أو المتبقي |
+|---|---|---|
+| `inactive` لا يبدأ lock timeout | ✅ مطبق | `lib/app.dart` يتجاهل الحالة transient لحماية biometric prompt |
+| `hidden` و`paused` يسجلان الخلفية | ✅ مطبق | كلاهما يستدعي `BiometricService.markBackgrounded()` |
+| `resumed` يفحص القفل دون navigation loop | ✅ مطبق | يفحص `shouldShowLock()` ولا ينتقل إلى `/lock` إذا كان المسار الحالي هو `/lock` |
+| تكرار أحداث الخلفية | ✅ مختبر | اختبار مضاف في `test/app_lock_policy_test.dart` يثبت حفظ وقت الخلفية الأصلي |
+| Runtime lock lifecycle | ⏳ محجوب | Emulator المحلي لم يقلع: `/dev/kvm` غير متاح؛ لا تُعتبر سيناريوهات cold start/background/biometric مثبتة |
+
 ## القرارات المؤجلة التي تبقى كما هي
 
 يبقى تأجيل أخطاء Journal الصغيرة مقبولًا. تبقى ملفات Android الثلاثة المولدة سابقًا دينًا تقنيًا للمراجعة، لكنها ليست تغييرات غير متتبعة في working tree الحالي. يبقى Splash sound الحالي. يؤجل Water-drop + echo، وApp Icon، وSilent rain/storm الجديد إلى R-Polish.
@@ -47,21 +57,26 @@
 
 ## التحقق الأخير
 
+- `dart format --output=none --set-exit-if-changed lib/app.dart test/app_lock_policy_test.dart`: **PASS**.
 - `flutter analyze`: **PASS — No issues found**.
-- `flutter test`: **PASS — 65 tests passed**.
-- `flutter build apk --debug`: **PASS** محليًا بعد تجهيز Android SDK وJDK.
+- `flutter test`: **PASS — All tests passed** (72 test completions في السجل).
+- `flutter build apk --debug`: **PASS** محليًا باستخدام JDK 17 — `app-debug.apk`.
+- `flutter build apk --release`: **PASS** محليًا باستخدام JDK 17 — `app-release.apk`.
+- `flutter build appbundle --release`: **PASS** محليًا باستخدام JDK 17 — `app-release.aab`.
+- Runtime Emulator: **BLOCKED** — لا يوجد `/dev/kvm`، ولم يصل الجهاز إلى `sys.boot_completed=1` خلال 120 ثانية.
 - GitHub Actions على commit `a889014`: **PASS** في run `35501185195`.
 - `git diff --check`: **PASS**.
-- working tree: **clean** ومتزامن مع `origin/main`.
+- working tree: **clean** على `qa/runtime-emulator`؛ `main` بقي دون تعديل.
 
 ## الترتيب التنفيذي بعد التدقيق
 
-1. إغلاق R-Data & Security: key rotation، تصدير آمن، entitlement filtering عند الإنشاء، واختبارات runtime.
-2. تشغيل Release APK/AAB مع keystore production والتحقق من نتيجة CI الفعلية.
-3. تنفيذ App Links domain verification ونشر `assetlinks.json` ببصمة Release.
-4. إكمال R-Polish، مع التركيز على i18n وRTL وcontrast قبل التجميل الصوتي والبصري.
-5. تنفيذ R-Final QA على جهاز أو emulator، ثم مراجعة الأذونات وAdMob وسياسة الخصوصية ومتطلبات المتجر.
-6. اعتبار Monetization مغلقة فقط بعد وصول entitlement موثوق للاشتراكات الشهرية والسنوية.
+1. دفع ومراجعة إصلاح R-Settings & Lock على `qa/runtime-emulator` ثم تشغيل Runtime على runner يدعم KVM أو جهاز فعلي.
+2. إغلاق R-Data & Security: key rotation، تصدير آمن، entitlement filtering عند الإنشاء، واختبارات runtime.
+3. تشغيل Release APK/AAB مع keystore production والتحقق من نتيجة CI الفعلية.
+4. تنفيذ App Links domain verification ونشر `assetlinks.json` ببصمة Release.
+5. إكمال R-Polish، مع التركيز على i18n وRTL وcontrast قبل التجميل الصوتي والبصري.
+6. تنفيذ R-Final QA على جهاز أو emulator، ثم مراجعة الأذونات وAdMob وسياسة الخصوصية ومتطلبات المتجر.
+7. اعتبار Monetization مغلقة فقط بعد وصول entitlement موثوق للاشتراكات الشهرية والسنوية.
 
 ## مراجع الكود الأساسية
 
