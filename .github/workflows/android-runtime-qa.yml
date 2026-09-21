@@ -134,7 +134,7 @@ jobs:
 
           adb shell getprop sys.boot_completed | tee runtime-evidence/boot-completed.txt
           adb shell getprop dev.bootcomplete | tee runtime-evidence/dev-bootcomplete.txt
-          adb shell get-state | tee runtime-evidence/adb-state.txt
+          adb get-state | tee runtime-evidence/adb-state.txt
 
           adb shell input keyevent KEYCODE_WAKEUP
           adb shell input keyevent 82
@@ -203,7 +203,7 @@ jobs:
 
           # Capture the exact device/ADB state immediately before Maestro.
           adb devices -l | tee runtime-evidence/adb-devices-before-maestro.txt
-          adb shell get-state | tee runtime-evidence/adb-state-before-maestro.txt
+          adb get-state | tee runtime-evidence/adb-state-before-maestro.txt
           adb shell getprop sys.boot_completed | tee runtime-evidence/boot-before-maestro.txt
           adb shell getprop dev.bootcomplete | tee runtime-evidence/dev-boot-before-maestro.txt
           adb shell pm path "$app" | tee runtime-evidence/package-before-maestro.txt
@@ -223,7 +223,7 @@ jobs:
               echo "===== Maestro attempt $maestro_attempt ====="
               date -u
               adb devices -l
-              adb shell get-state
+              adb get-state
               adb shell getprop sys.boot_completed
               adb shell getprop dev.bootcomplete
               adb shell pidof "$app"
@@ -266,7 +266,7 @@ jobs:
             | tee runtime-evidence/maestro-status.txt
 
           adb devices -l | tee runtime-evidence/adb-devices-after-maestro.txt || true
-          adb shell get-state | tee runtime-evidence/adb-state-after-maestro.txt || true
+          adb get-state | tee runtime-evidence/adb-state-after-maestro.txt || true
           adb shell pidof "$app" | tee runtime-evidence/pid-after-maestro.txt || true
           adb shell dumpsys activity activities \
             | tee runtime-evidence/activity-after-maestro.txt || true
