@@ -59,6 +59,7 @@ jobs:
           export PATH="$HOME/.maestro/bin:$PATH"
 
           mkdir -p .maestro runtime-evidence
+          maestro --version | tee runtime-evidence/maestro-version.txt
 
           cat > .maestro/nabd-deep-smoke.yaml <<'EOF'
           appId: com.nabd.journal
@@ -131,6 +132,10 @@ jobs:
             done
           '
 
+          adb shell getprop sys.boot_completed | tee runtime-evidence/boot-completed.txt
+          adb shell getprop dev.bootcomplete | tee runtime-evidence/dev-bootcomplete.txt
+          adb shell get-state | tee runtime-evidence/adb-state.txt
+
           adb shell input keyevent KEYCODE_WAKEUP
           adb shell input keyevent 82
 
@@ -153,8 +158,17 @@ jobs:
           adb shell getprop ro.build.version.release | tee runtime-evidence/android-version.txt
           adb shell getprop ro.product.model | tee runtime-evidence/device-model.txt
           adb shell getprop sys.boot_completed | tee runtime-evidence/boot-completed.txt
+          adb shell getprop dev.bootcomplete | tee runtime-evidence/dev-bootcomplete.txt
 
           adb install -r build/app/outputs/flutter-apk/app-debug.apk | tee runtime-evidence/adb-install.txt
+          adb shell pm path "$app" | tee runtime-evidence/package-path.txt
+          if ! adb shell pm path "$app" | grep -q "package:"; then
+            echo "APK install verification failed: package $app is not installed" \
+              | tee runtime-evidence/install-verification.txt
+            exit 1
+          fi
+          echo "APK install verification succeeded for $app" \
+            | tee runtime-evidence/install-verification.txt
           adb shell dumpsys package "$app" | tee runtime-evidence/package-info.txt
           adb shell am force-stop "$app"
           adb logcat -c
@@ -162,6 +176,14 @@ jobs:
           sleep 10
           adb shell dumpsys activity activities | tee runtime-evidence/activity-after-launch.txt
           adb shell pidof "$app" | tee runtime-evidence/app-pid.txt
+          if ! grep -q "$app/." runtime-evidence/activity-after-launch.txt || \
+             ! grep -Eq '[0-9]+' runtime-evidence/app-pid.txt; then
+            echo "App launch verification failed for $app" \
+              | tee runtime-evidence/launch-verification.txt
+            exit 1
+          fi
+          echo "App launch verification succeeded for $app" \
+            | tee runtime-evidence/launch-verification.txt
           adb exec-out screencap -p > runtime-evidence/home.png
 
           adb shell input keyevent 3
@@ -179,13 +201,75 @@ jobs:
           echo 'No Nabd crash or ANR signature found' | tee runtime-evidence/crash-summary.txt
           echo 'Runtime smoke test completed' | tee runtime-evidence/smoke-result.txt
 
-          # Run Maestro and preserve its exit code in the same shell process.
-          maestro_status=0
-          maestro test .maestro/nabd-deep-smoke.yaml \
-            > runtime-evidence/maestro.log 2>&1 || maestro_status=$?
+          # Capture the exact device/ADB state immediately before Maestro.
+          adb devices -l | tee runtime-evidence/adb-devices-before-maestro.txt
+          adb shell get-state | tee runtime-evidence/adb-state-before-maestro.txt
+          adb shell getprop sys.boot_completed | tee runtime-evidence/boot-before-maestro.txt
+          adb shell getprop dev.bootcomplete | tee runtime-evidence/dev-boot-before-maestro.txt
+          adb shell pm path "$app" | tee runtime-evidence/package-before-maestro.txt
+          adb shell pidof "$app" | tee runtime-evidence/pid-before-maestro.txt
+          adb shell dumpsys activity activities \
+            | tee runtime-evidence/activity-before-maestro.txt
+          adb logcat -d -v time -t 400 \
+            | tee runtime-evidence/logcat-before-maestro.txt
+
+          # Maestro's DeviceServer is an ADB bridge. Select the emulator explicitly,
+          # record every attempt, and recover ADB once after a transient channel drop.
+          maestro_status=1
+          maestro_attempt=1
+          : > runtime-evidence/maestro.log
+          while [ "$maestro_attempt" -le 2 ]; do
+            {
+              echo "===== Maestro attempt $maestro_attempt ====="
+              date -u
+              adb devices -l
+              adb shell get-state
+              adb shell getprop sys.boot_completed
+              adb shell getprop dev.bootcomplete
+              adb shell pidof "$app"
+            } >> runtime-evidence/maestro.log 2>&1
+
+            set +e
+            maestro test --device emulator-5554 .maestro/nabd-deep-smoke.yaml \
+              >> runtime-evidence/maestro.log 2>&1
+            maestro_status=$?
+            set -e
+            printf 'Maestro attempt %s exit code: %s\n' \
+              "$maestro_attempt" "$maestro_status" \
+              | tee -a runtime-evidence/maestro.log
+
+            if [ "$maestro_status" -eq 0 ]; then
+              break
+            fi
+
+            if [ "$maestro_attempt" -eq 1 ]; then
+              echo 'Maestro attempt 1 failed; restarting ADB and revalidating emulator.' \
+                | tee -a runtime-evidence/maestro.log
+              adb kill-server || true
+              adb start-server
+              adb wait-for-device
+              timeout 120 bash -c '
+                until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ] &&
+                      [ "$(adb shell getprop dev.bootcomplete | tr -d "\r")" = "1" ]; do
+                  sleep 3
+                done
+              '
+              adb shell input keyevent KEYCODE_WAKEUP
+              adb shell am force-stop "$app"
+              adb shell monkey -p "$app" 1 >> runtime-evidence/maestro-relaunch.txt 2>&1
+              sleep 5
+            fi
+            maestro_attempt=$((maestro_attempt + 1))
+          done
+
           printf 'Maestro exit code: %s\n' "$maestro_status" \
             | tee runtime-evidence/maestro-status.txt
 
+          adb devices -l | tee runtime-evidence/adb-devices-after-maestro.txt || true
+          adb shell get-state | tee runtime-evidence/adb-state-after-maestro.txt || true
+          adb shell pidof "$app" | tee runtime-evidence/pid-after-maestro.txt || true
+          adb shell dumpsys activity activities \
+            | tee runtime-evidence/activity-after-maestro.txt || true
           adb logcat -d -v time > runtime-evidence/logcat-after-maestro.txt || true
 
           if grep -Eiq 'FATAL EXCEPTION.*com\.nabd\.journal|ANR in com\.nabd\.journal|Process: com\.nabd\.journal' runtime-evidence/logcat-after-maestro.txt; then
