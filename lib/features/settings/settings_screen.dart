@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -29,12 +30,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _lockTimeoutMinutes = 5;
   int _reminderHour = 20;
   int _reminderMinute = 0;
+  String? _automaticBackupDirectory;
 
   @override
   void initState() {
     super.initState();
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
+    _automaticBackupDirectory = Hive.box('settings').get(
+      'automatic_backup_directory',
+    ) as String?;
   }
 
   @override
@@ -145,6 +150,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Restore Database',
             subtitle: 'Import an encrypted .nabd file using its password',
             onTap: _restoreEncryptedBackup,
+          ),
+
+          _tile(
+            icon: Icons.folder_open_outlined,
+            title: 'Default Backup Folder',
+            subtitle: _automaticBackupDirectory == null
+                ? 'Choose a folder for automatic backups'
+                : _automaticBackupDirectory!,
+            onTap: _chooseAutomaticBackupDirectory,
           ),
 
           _tile(
@@ -544,6 +558,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _chooseAutomaticBackupDirectory() async {
+    final selected = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Choose default backup folder',
+    );
+    if (!mounted || selected == null || selected.isEmpty) return;
+
+    await Hive.box('settings').put('automatic_backup_directory', selected);
+    if (!mounted) return;
+    setState(() => _automaticBackupDirectory = selected);
+    _showDataMessage('Default backup folder saved');
   }
 
   Future<void> _createEncryptedBackup() async {
