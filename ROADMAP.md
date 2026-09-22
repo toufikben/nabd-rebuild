@@ -1,9 +1,9 @@
 # خارطة طريق نبض — الحالة الموثقة
 
-**آخر تحديث:** 2026-09-21 بعد إصلاح App Lock lifecycle والتحقق المحلي
+**آخر تحديث:** 2026-09-22 بعد إصلاح biometric prompt والتحقق على هاتف فعلي
 **الفرع:** `qa/runtime-emulator`
-**آخر commit:** `737522b` — `fix: harden app lock lifecycle`
-**حالة المستودع بعد التحقق:** نظيف؛ التغيير لم يُدمج في `main`
+**آخر commit:** `cd47f6d` — `fix: restore Android biometric prompt lifecycle`
+**حالة المستودع بعد التحقق:** إصلاح App Lock مدفوع إلى `qa/runtime-emulator`، ونُسخ إلى `main` كـcommit مستقل
 
 ## الحكم التنفيذي
 
@@ -18,7 +18,7 @@
 | 5 | R-Stats | ✅ منفذة | مراجعة دقة البيانات وRTL ضمن R-Polish/Final QA |
 | 6 | R-Wellbeing | ✅ منفذة | تشمل Gratitude وWorry وBreathing وSilent وMotivation |
 | 7 | R-Personal | ✅ منفذة | Letters وEchoes وWeekly Pulse وSage مرتبطة بالمسارات وتملك اختبارات منطق وWidget |
-| 8 | R-Settings & Lock | 🟡 منفذة مع Runtime محجوب | تم إصلاح `inactive`/`hidden`/`paused`/`resumed` lifecycle وإضافة تغطية policy؛ يلزم Runtime على جهاز أو Emulator مع KVM |
+| 8 | R-Settings & Lock | 🟡 منفذة مع Runtime جزئي مثبت | تم التحقق على هاتف فعلي من cold start وظهور شاشة القفل ونجاح البصمة؛ ما زال يلزم اختبار background timeout وfailure/retry وlifecycle الكامل |
 | 9 | R-Data & Security | 🔴 الحاجز الحالي | إغلاق Key Rotation والتصدير غير المشفر واختبارات runtime للترحيل والنسخ |
 | 10 | R-Monetization | 🟡 منفذة جزئيًا | Lifetime يعمل من callback المتجر؛ Monthly/Yearly تحتاج تحقق entitlement خادمي |
 | 11 | R-Polish | ⏳ بعد Security | i18n وRTL وcontrast وWater-drop + echo وApp Icon وSilent rain/storm |
@@ -37,7 +37,7 @@
 | حماية مسارات ZIP | ✅ مطبق | فحص traversal والحجم وعدد الملفات والـschema والـduplicate IDs |
 | Runtime migration recovery | ⏳ غير مثبت | يلزم جهاز أو اختبار تكاملي يحاكي ترقية بيانات plaintext وفشل الاستئناف |
 
-## R-Settings & Lock — تحديث 2026-09-21
+## R-Settings & Lock — تحديث 2026-09-22
 
 | الموضوع | الحالة الفعلية | الدليل أو المتبقي |
 |---|---|---|
@@ -45,7 +45,11 @@
 | `hidden` و`paused` يسجلان الخلفية | ✅ مطبق | كلاهما يستدعي `BiometricService.markBackgrounded()` |
 | `resumed` يفحص القفل دون navigation loop | ✅ مطبق | يفحص `shouldShowLock()` ولا ينتقل إلى `/lock` إذا كان المسار الحالي هو `/lock` |
 | تكرار أحداث الخلفية | ✅ مختبر | اختبار مضاف في `test/app_lock_policy_test.dart` يثبت حفظ وقت الخلفية الأصلي |
-| Runtime lock lifecycle | ⏳ محجوب | Emulator المحلي لم يقلع: `/dev/kvm` غير متاح؛ لا تُعتبر سيناريوهات cold start/background/biometric مثبتة |
+| Android biometric Activity | ✅ أصلحت | `MainActivity` أصبحت `FlutterFragmentActivity` المطلوبة لـ`local_auth` |
+| Cold start lock | ✅ مثبت جزئيًا | المستخدم أغلق وفتح التطبيق، وظهرت `Journal Locked` على هاتف فعلي |
+| Biometric prompt وفتح القفل | ✅ مثبت جزئيًا | بعد الإصلاح ظهرت نافذة المصادقة ونجحت البصمة وفتح التطبيق |
+| Failure ثم Retry | 🟡 يحتاج إعادة تحقق | ظهرت مشكلة سابقة بعد فشل المحاولة؛ أضيف reset للحالة و`useErrorDialogs`، ويلزم اختبار فشل ثم إعادة المحاولة |
+| Background/timeout lifecycle | ⏳ غير مثبت | يلزم اختبار إرسال التطبيق للخلفية والعودة بعد المهلة |
 
 ## القرارات المؤجلة التي تبقى كما هي
 
@@ -63,20 +67,21 @@
 - `flutter build apk --debug`: **PASS** محليًا باستخدام JDK 17 — `app-debug.apk`.
 - `flutter build apk --release`: **PASS** محليًا باستخدام JDK 17 — `app-release.apk`.
 - `flutter build appbundle --release`: **PASS** محليًا باستخدام JDK 17 — `app-release.aab`.
-- Runtime Emulator: **BLOCKED** — لا يوجد `/dev/kvm`، ولم يصل الجهاز إلى `sys.boot_completed=1` خلال 120 ثانية.
+- Runtime Emulator: **BLOCKED سابقًا** — لا يوجد `/dev/kvm` محليًا؛ أما App Lock فقد تم التحقق جزئيًا على هاتف فعلي.
 - GitHub Actions على commit `a889014`: **PASS** في run `35501185195`.
 - `git diff --check`: **PASS**.
 - working tree: **clean** على `qa/runtime-emulator`؛ `main` بقي دون تعديل.
 
 ## الترتيب التنفيذي بعد التدقيق
 
-1. دفع ومراجعة إصلاح R-Settings & Lock على `qa/runtime-emulator` ثم تشغيل Runtime على runner يدعم KVM أو جهاز فعلي.
+1. إعادة اختبار App Lock على الهاتف: بصمة خاطئة ثم `Unlock`، ثم background/timeout.
 2. إغلاق R-Data & Security: key rotation، تصدير آمن، entitlement filtering عند الإنشاء، واختبارات runtime.
-3. تشغيل Release APK/AAB مع keystore production والتحقق من نتيجة CI الفعلية.
-4. تنفيذ App Links domain verification ونشر `assetlinks.json` ببصمة Release.
-5. إكمال R-Polish، مع التركيز على i18n وRTL وcontrast قبل التجميل الصوتي والبصري.
-6. تنفيذ R-Final QA على جهاز أو emulator، ثم مراجعة الأذونات وAdMob وسياسة الخصوصية ومتطلبات المتجر.
-7. اعتبار Monetization مغلقة فقط بعد وصول entitlement موثوق للاشتراكات الشهرية والسنوية.
+3. تنفيذ Runtime backup/restore وmigration وDelete All على الهاتف.
+4. تشغيل Release APK/AAB مع keystore production والتحقق من نتيجة CI الفعلية.
+5. تنفيذ App Links domain verification ونشر `assetlinks.json` ببصمة Release.
+6. إكمال R-Polish، مع التركيز على i18n وRTL وcontrast قبل التجميل الصوتي والبصري.
+7. تنفيذ R-Final QA على جهاز أو emulator، ثم مراجعة الأذونات وAdMob وسياسة الخصوصية ومتطلبات المتجر.
+8. اعتبار Monetization مغلقة فقط بعد وصول entitlement موثوق للاشتراكات الشهرية والسنوية.
 
 ## مراجع الكود الأساسية
 
