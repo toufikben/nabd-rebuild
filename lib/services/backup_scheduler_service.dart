@@ -69,7 +69,7 @@ class BackupSchedulerService {
       automaticBackupUniqueName,
       automaticBackupTask,
       frequency: frequency,
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
+      existingWorkPolicy: ExistingWorkPolicy.replace,
       constraints: Constraints(
         networkType: NetworkType.notRequired,
         requiresBatteryNotLow: true,
