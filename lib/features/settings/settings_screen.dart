@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../services/database_service.dart';
 import '../../services/biometric_service.dart';
 import '../../services/backup_service.dart';
+import '../../services/backup_scheduler_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/settings_service.dart';
@@ -21,6 +23,10 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  static const _secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
   final PrivacyService _privacy = PrivacyService();
   final BiometricService _biometric = BiometricService();
   final BackupService _backup = BackupService();
@@ -31,6 +37,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _reminderHour = 20;
   int _reminderMinute = 0;
   String? _automaticBackupDirectory;
+  bool _automaticBackupEnabled = false;
+  int _automaticBackupFrequencyHours = 24;
+  String? _automaticBackupLastSuccess;
 
   @override
   void initState() {
@@ -40,6 +49,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _automaticBackupDirectory = Hive.box('settings').get(
       'automatic_backup_directory',
     ) as String?;
+    final settings = Hive.box('settings');
+    _automaticBackupEnabled =
+        settings.get('automatic_backup_enabled', defaultValue: false) as bool;
+    _automaticBackupFrequencyHours = settings.get(
+      'automatic_backup_frequency_hours',
+      defaultValue: 24,
+    ) as int;
+    _automaticBackupLastSuccess =
+        settings.get('automatic_backup_last_success') as String?;
   }
 
   @override
@@ -160,6 +178,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 : _automaticBackupDirectory!,
             onTap: _chooseAutomaticBackupDirectory,
           ),
+
+          SwitchListTile(
+            secondary: const Icon(
+              Icons.schedule_outlined,
+              color: AppColors.primary,
+            ),
+            title: const Text('Automatic Database Backup'),
+            subtitle: Text(
+              _automaticBackupEnabled
+                  ? 'Every ${_automaticBackupFrequencyHours == 24 ? 'day' : 'week'} when the system allows'
+                  : 'Off — enable after choosing a folder and password',
+            ),
+            value: _automaticBackupEnabled,
+            onChanged: _setAutomaticBackupEnabled,
+          ),
+
+          if (_automaticBackupEnabled)
+            _tile(
+              icon: Icons.event_repeat_outlined,
+              title: 'Backup Frequency',
+              subtitle: _automaticBackupFrequencyHours == 24
+                  ? 'Daily'
+                  : 'Weekly',
+              onTap: _pickAutomaticBackupFrequency,
+            ),
+
+          if (_automaticBackupLastSuccess != null)
+            _tile(
+              icon: Icons.check_circle_outline,
+              title: 'Last Automatic Backup',
+              subtitle: _automaticBackupLastSuccess!,
+              onTap: null,
+            ),
 
           _tile(
             icon: Icons.delete_outline,
@@ -570,6 +621,82 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!mounted) return;
     setState(() => _automaticBackupDirectory = selected);
     _showDataMessage('Default backup folder saved');
+  }
+
+  Future<void> _setAutomaticBackupEnabled(bool enabled) async {
+    if (!enabled) {
+      await BackupSchedulerService.cancel();
+      await Hive.box('settings').put('automatic_backup_enabled', false);
+      if (!mounted) return;
+      setState(() => _automaticBackupEnabled = false);
+      _showDataMessage('Automatic database backup disabled');
+      return;
+    }
+
+    if (_automaticBackupDirectory == null ||
+        _automaticBackupDirectory!.isEmpty) {
+      _showDataMessage('Choose a Default Backup Folder first');
+      return;
+    }
+
+    final password = await _askForBackupPassword(
+      title: 'Set automatic backup password',
+    );
+    if (!mounted || password == null || password.length < 8) {
+      if (mounted && password != null && password.isNotEmpty) {
+        _showDataMessage('Use a password with at least 8 characters');
+      }
+      return;
+    }
+
+    try {
+      await _secureStorage.write(
+        key: automaticBackupPasswordKey,
+        value: password,
+      );
+      await Hive.box('settings').put('automatic_backup_enabled', true);
+      await BackupSchedulerService.schedule(
+        frequency: Duration(hours: _automaticBackupFrequencyHours),
+      );
+      if (!mounted) return;
+      setState(() => _automaticBackupEnabled = true);
+      _showDataMessage('Automatic database backup enabled');
+    } catch (error) {
+      _showDataMessage('Could not schedule automatic backup: $error');
+    }
+  }
+
+  Future<void> _pickAutomaticBackupFrequency() async {
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Backup frequency'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 24),
+            child: const Text('Daily'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 168),
+            child: const Text('Weekly'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || selected == null) return;
+
+    await Hive.box('settings').put(
+      'automatic_backup_frequency_hours',
+      selected,
+    );
+    if (_automaticBackupEnabled) {
+      await BackupSchedulerService.schedule(
+        frequency: Duration(hours: selected),
+      );
+    }
+    if (!mounted) return;
+    setState(() => _automaticBackupFrequencyHours = selected);
+    _showDataMessage('Backup frequency updated');
   }
 
   Future<void> _createEncryptedBackup() async {

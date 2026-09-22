@@ -165,6 +165,24 @@ class BackupService {
     return backupFile;
   }
 
+  /// إنشاء نسخة مشفرة وحفظها في مجلد محدد للنسخ التلقائي.
+  Future<File> createBackupAtDirectory({
+    required String password,
+    required String directoryPath,
+  }) async {
+    final temporaryBackup = await createBackup(password: password);
+    final directory = Directory(directoryPath);
+    if (!await directory.exists()) {
+      await directory.create(recursive: true);
+    }
+    final destination = File('${directory.path}/${p.basename(temporaryBackup.path)}');
+    await temporaryBackup.copy(destination.path);
+    if (await temporaryBackup.exists()) {
+      await temporaryBackup.delete();
+    }
+    return destination;
+  }
+
   /// استيراد نسخة احتياطية.
   Future<ImportResult> restoreBackup(
     String backupPath, {
