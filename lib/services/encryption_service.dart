@@ -164,8 +164,20 @@ class EncryptionService {
     return await _storage.containsKey(key: _keyAlias);
   }
 
-  /// إعادة إنشاء المفتاح الرئيسي — **يُفقد كل البيانات المشفرة**.
+  /// تدوير المفتاح غير متاح حتى يتم تنفيذ عملية إعادة تشفير ذرية.
+  ///
+  /// استبدال المفتاح مباشرة يترك صناديق Hive مشفرة بالمفتاح القديم، ولذلك
+  /// كان يؤدي إلى فقدان قابلية قراءة البيانات. يجب على المستدعي استخدام
+  /// مسار تدوير يتحقق من staging قبل تبديل المفتاح.
   Future<void> rotateKey() async {
+    throw const UnsupportedError(
+      'Unsafe key rotation is disabled until an atomic re-encryption flow exists',
+    );
+  }
+
+  /// إنشاء مفتاح جديد بعد اكتمال حذف جميع البيانات القديمة.
+  /// لا يجوز استخدام هذا المسار مع صناديق Hive تحتوي على بيانات.
+  Future<void> createFreshKeyAfterDataDeletion() async {
     final newKey = await _algorithm.newSecretKey();
     final bytes = await newKey.extractBytes();
     await _storage.write(key: _keyAlias, value: base64Encode(bytes));

@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 ///
 /// للبناء الإنتاجي:
 ///   flutter build appbundle --release \
+///     --dart-define=ADMOB_ANDROID_APP_ID=ca-app-pub-...~... \
 ///     --dart-define=ADMOB_ANDROID_REWARDED_ID=ca-app-pub-.../... \
 ///     --dart-define=ADMOB_IOS_REWARDED_ID=ca-app-pub-.../...
 ///
@@ -46,25 +47,17 @@ class AdMobConfig {
           : _androidTestRewarded;
     }
 
-    // في Release: استخدم الإنتاجي أو ارمِ خطأ
+    // في Release: استخدم الإنتاجي أو عطّل تحميل الإعلان
     final prod = defaultTargetPlatform == TargetPlatform.iOS
         ? _iosProdRewarded
         : _androidProdRewarded;
 
-    if (prod.isEmpty || prod.contains('XXXX')) {
-      // في Release بدون ID صالح → نعود للـ Test ID لتجنب crash
-      // (يجب إضافة تحذير في Crashlytics)
-      assert(() {
-        debugPrint('⚠️ AdMob Production ID missing — falling back to test');
-        return true;
-      }());
-      return defaultTargetPlatform == TargetPlatform.iOS
-          ? _iosTestRewarded
-          : _androidTestRewarded;
-    }
-
+    if (!_isValidId(prod)) return '';
     return prod;
   }
+
+  static bool _isValidId(String value) =>
+      value.isNotEmpty && !value.contains('XXXX');
 
   /// AdMob App ID للاستخدام في Native config (مرجع فقط).
   static String get androidAppId => _androidAppId;
@@ -72,11 +65,13 @@ class AdMobConfig {
 
   /// هل الإعدادات الإنتاجية جاهزة؟
   static bool get isProductionReady {
-    if (kDebugMode) return true; // Test IDs كافية للتطوير
-    final androidReady = _androidProdRewarded.isNotEmpty &&
-        !_androidProdRewarded.contains('XXXX');
-    final iosReady = _iosProdRewarded.isNotEmpty &&
-        !_iosProdRewarded.contains('XXXX');
-    return defaultTargetPlatform == TargetPlatform.iOS ? iosReady : androidReady;
+    if (kDebugMode) return true;
+    final rewarded = defaultTargetPlatform == TargetPlatform.iOS
+        ? _iosProdRewarded
+        : _androidProdRewarded;
+    final appId = defaultTargetPlatform == TargetPlatform.iOS
+        ? _iosAppId
+        : _androidAppId;
+    return _isValidId(rewarded) && _isValidId(appId);
   }
 }

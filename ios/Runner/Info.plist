@@ -57,13 +57,15 @@
             <array>
                 <string>nabd</string>
             </array>
+        </dict>
+    </array>
 
 <!-- ═══════════════════════════════════════════════════════════
          AdMob App ID — يُستبدل بـ App ID الإنتاجي من AdMob
          القيمة الحالية هي Test ID الرسمية من Google
          ═══════════════════════════════════════════════════════════ -->
     <key>GADApplicationIdentifier</key>
-    <string>ca-app-pub-3940256099942544~1458002511</string>
+    <string>$(ADMOB_IOS_APP_ID)</string>
 
     <!-- SKAdNetwork للـ Ad Attribution -->
     <key>SKAdNetworkItems</key>
@@ -85,9 +87,6 @@
     <!-- App Tracking Transparency -->
     <key>NSUserTrackingUsageDescription</key>
     <string>نبض يستخدم هذا لتحسين الإعلانات وعرض محتوى مناسب لك</string>
-</dict>
-    </array>
-
     <!-- Associated Domains -->
     <key>com.apple.developer.associated-domains</key>
     <array>

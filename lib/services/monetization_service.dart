@@ -1,7 +1,30 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+
+class MonetizationConfig {
+  static const monthlyId = String.fromEnvironment(
+    'NABD_PRO_MONTHLY_ID',
+    defaultValue: 'nabd_pro_monthly',
+  );
+  static const yearlyId = String.fromEnvironment(
+    'NABD_PRO_YEARLY_ID',
+    defaultValue: 'nabd_pro_yearly',
+  );
+  static const lifetimeId = String.fromEnvironment(
+    'NABD_LIFETIME_ID',
+    defaultValue: 'nabd_lifetime',
+  );
+  static const productionConfigured = bool.fromEnvironment(
+    'NABD_PRODUCTION_CONFIGURED',
+    defaultValue: false,
+  );
+
+  static bool get isReady =>
+      monthlyId.isNotEmpty && yearlyId.isNotEmpty && lifetimeId.isNotEmpty;
+}
 
 /// The app never derives subscription expiry locally. Subscription entitlement
 /// is `unknown` until a trusted verifier is connected; lifetime is granted only
@@ -42,15 +65,24 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   }
 
   static final _iap = InAppPurchase.instance;
-  static const String proMonthlyId = 'nabd_pro_monthly';
-  static const String proYearlyId = 'nabd_pro_yearly';
-  static const String lifetimeId = 'nabd_lifetime';
+  static const String proMonthlyId = MonetizationConfig.monthlyId;
+  static const String proYearlyId = MonetizationConfig.yearlyId;
+  static const String lifetimeId = MonetizationConfig.lifetimeId;
   static const Set<String> productIds = {proMonthlyId, proYearlyId, lifetimeId};
 
   final _entitlements = EntitlementService();
   StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
 
   Future<void> _init() async {
+    if (kReleaseMode && !MonetizationConfig.productionConfigured) {
+      if (mounted) {
+        state = state.copyWith(
+          error: 'Purchases are not configured for this release.',
+          entitlementStatus: EntitlementStatus.error,
+        );
+      }
+      return;
+    }
     final available = await _iap.isAvailable();
     if (!mounted) return;
     if (!available) return;
@@ -75,6 +107,13 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   }
 
   Future<void> buy(ProductDetails product) async {
+    if (kReleaseMode && !MonetizationConfig.productionConfigured) {
+      state = state.copyWith(
+        error: 'Purchases are not configured for this release.',
+        entitlementStatus: EntitlementStatus.error,
+      );
+      return;
+    }
     if (!productIds.contains(product.id)) {
       state = state.copyWith(
           error: 'Unknown product', entitlementStatus: EntitlementStatus.error);

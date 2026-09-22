@@ -5,8 +5,8 @@ import 'package:path_provider/path_provider.dart';
 
 import 'encryption_service.dart';
 
-/// Deletes all user-owned local data and rotates the Hive key only after all
-/// encrypted boxes have been safely closed.
+/// Deletes all user-owned local data and creates a fresh Hive key only after
+/// all encrypted boxes have been safely deleted.
 class PrivacyService {
   static const _boxNames = <String>[
     'journal_entries',
@@ -44,7 +44,7 @@ class PrivacyService {
         }
       }
 
-      await encryption.rotateKey();
+      await encryption.createFreshKeyAfterDataDeletion();
       final newKey = HiveAesCipher(await encryption.currentKeyBytes());
       await _openAll(newKey);
       await _verifyOpenBoxes();

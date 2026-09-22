@@ -6,15 +6,15 @@ The repository contains an in-app purchase paywall and three product identifiers
 
 | Product ID | Intended type | Current code path |
 |---|---|---|
-| `nabd_pro_monthly` | Auto-renewing monthly subscription | Queried and displayed; entitlement remains unverified |
-| `nabd_pro_yearly` | Auto-renewing yearly subscription | Queried and displayed; entitlement remains unverified |
-| `nabd_lifetime` | One-time non-consumable purchase | Queried, purchased, restored, and grants Pro for the current process after a store callback |
+| `NABD_PRO_MONTHLY_ID` | Auto-renewing monthly subscription | Injected at build time; entitlement remains unverified until a trusted verifier is connected |
+| `NABD_PRO_YEARLY_ID` | Auto-renewing yearly subscription | Injected at build time; entitlement remains unverified until a trusted verifier is connected |
+| `NABD_LIFETIME_ID` | One-time non-consumable purchase | Injected at build time; queried, purchased, restored, and grants Pro for the current process after a store callback |
 
 The paywall is available at `/paywall` and uses `in_app_purchase`. Product metadata and prices are fetched from Google Play Billing or App Store Connect; they are not hard-coded in the app.
 
 ## Important limitation
 
-The current app does **not** implement a seven-day trial. It also does not persist or verify subscription entitlement. Monthly and yearly purchases are deliberately marked `subscriptionUnverified` in `lib/services/monetization_service.dart`, because a production app must validate receipts or purchase tokens through a trusted server or an approved entitlement service before granting access.
+The current app does **not** implement a seven-day trial. It also does not persist or verify subscription entitlement. Monthly and yearly purchases are deliberately marked `subscriptionUnverified` in `lib/services/monetization_service.dart`, because a production app must validate receipts or purchase tokens through a trusted server or an approved entitlement service before granting access. Release builds also require `NABD_PRODUCTION_CONFIGURED=true`; otherwise the purchase service stays disabled instead of silently presenting an unconfigured store.
 
 The current `canWriteEntry` limit is a local seven-entry limit, not a seven-day trial. It must not be described to users as a time-based trial.
 

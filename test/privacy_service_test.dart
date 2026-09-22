@@ -14,7 +14,7 @@ class _RotatingEncryption extends EncryptionService {
   Future<List<int>> currentKeyBytes() async => key;
 
   @override
-  Future<void> rotateKey() async {
+  Future<void> createFreshKeyAfterDataDeletion() async {
     key = List<int>.generate(32, (index) => index + 101);
   }
 
@@ -25,7 +25,7 @@ class _RotatingEncryption extends EncryptionService {
 }
 
 void main() {
-  test('Delete All rotates key and reopens empty encrypted boxes', () async {
+  test('Delete All creates a fresh key and reopens empty encrypted boxes', () async {
     final directory = await Directory.systemTemp.createTemp('nabd_delete_all');
     addTearDown(() async {
       await Hive.close();

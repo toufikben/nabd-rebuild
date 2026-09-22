@@ -13,8 +13,8 @@ import 'encryption_service.dart';
 /// BackupService — نسخ احتياطي محلي مع تشفير AES-256-GCM حقيقي.
 ///
 /// التنسيق:
-///   • بدون كلمة مرور → ZIP عادي
-///   • مع كلمة مرور → ZIP + AES-256-GCM
+///   • كلمة المرور إلزامية
+///   • ZIP داخل غلاف AES-256-GCM موثق بـ MAC
 ///
 /// البنية داخل ZIP:
 ///   entries.json     — المذكرات
@@ -74,7 +74,10 @@ class BackupService {
     final settingsBox = Hive.box('settings');
     final settingsJson = <String, dynamic>{};
     for (final key in settingsBox.keys) {
-      settingsJson[key.toString()] = settingsBox.get(key);
+      final normalizedKey = key.toString();
+      if (!isEntitlementKey(normalizedKey)) {
+        settingsJson[normalizedKey] = settingsBox.get(key);
+      }
     }
     _addJson(archive, 'settings.json', settingsJson);
     reportProgress();
@@ -565,9 +568,12 @@ class BackupService {
 
   static const _entitlementKeys = {'is_pro', 'is_lifetime', 'pro_expiry'};
 
+  static bool isEntitlementKey(String key) =>
+      _entitlementKeys.contains(key.toLowerCase());
+
   static Map<Object?, Object?> filterRestoredSettings(Map source) => {
         for (final entry in source.entries)
-          if (!_entitlementKeys.contains(entry.key.toString()))
+          if (!isEntitlementKey(entry.key.toString()))
             entry.key: entry.value,
       };
 

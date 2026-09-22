@@ -77,6 +77,21 @@ void main() {
     expect(restored['theme_mode'], 'dark');
   });
 
+  test('filters entitlement keys before backup payload creation', () {
+    expect(BackupService.isEntitlementKey('is_pro'), isTrue);
+    expect(BackupService.isEntitlementKey('IS_LIFETIME'), isTrue);
+    expect(BackupService.isEntitlementKey('theme_mode'), isFalse);
+    expect(
+      BackupService.filterRestoredSettings({
+        'theme_mode': 'dark',
+        'is_pro': true,
+        'is_lifetime': true,
+        'pro_expiry': '2099-01-01T00:00:00Z',
+      }),
+      {'theme_mode': 'dark'},
+    );
+  });
+
   test('restore rejects malformed and duplicate entry payloads', () {
     expect(
         BackupService.validateEntriesPayload([

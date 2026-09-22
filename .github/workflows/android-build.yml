@@ -88,6 +88,11 @@ jobs:
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ADMOB_ANDROID_APP_ID: ${{ secrets.ADMOB_ANDROID_APP_ID }}
+      ADMOB_ANDROID_REWARDED_ID: ${{ secrets.ADMOB_ANDROID_REWARDED_ID }}
+      NABD_PRO_MONTHLY_ID: ${{ vars.NABD_PRO_MONTHLY_ID }}
+      NABD_PRO_YEARLY_ID: ${{ vars.NABD_PRO_YEARLY_ID }}
+      NABD_LIFETIME_ID: ${{ vars.NABD_LIFETIME_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -112,6 +117,15 @@ jobs:
           test -n "$ANDROID_KEYSTORE_PASSWORD"
           test -n "$ANDROID_KEY_PASSWORD"
           test -n "$ANDROID_KEY_ALIAS"
+      - name: Validate monetization configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$ADMOB_ANDROID_APP_ID"
+          test -n "$ADMOB_ANDROID_REWARDED_ID"
+          test -n "$NABD_PRO_MONTHLY_ID"
+          test -n "$NABD_PRO_YEARLY_ID"
+          test -n "$NABD_LIFETIME_ID"
       - name: Configure release signing
         shell: bash
         run: |
@@ -131,9 +145,23 @@ jobs:
             "$(pwd)/android/nabd-release.jks" > android/key.properties
           chmod 600 android/nabd-release.jks android/key.properties
       - name: Build signed release APK
-        run: flutter build apk --release
+        run: >-
+          flutter build apk --release
+          --dart-define=ADMOB_ANDROID_APP_ID=$ADMOB_ANDROID_APP_ID
+          --dart-define=ADMOB_ANDROID_REWARDED_ID=$ADMOB_ANDROID_REWARDED_ID
+          --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
+          --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
+          --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
+          --dart-define=NABD_PRODUCTION_CONFIGURED=true
       - name: Build signed release AAB
-        run: flutter build appbundle --release
+        run: >-
+          flutter build appbundle --release
+          --dart-define=ADMOB_ANDROID_APP_ID=$ADMOB_ANDROID_APP_ID
+          --dart-define=ADMOB_ANDROID_REWARDED_ID=$ADMOB_ANDROID_REWARDED_ID
+          --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
+          --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
+          --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
+          --dart-define=NABD_PRODUCTION_CONFIGURED=true
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:

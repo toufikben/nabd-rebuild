@@ -10,6 +10,13 @@ def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
+def admobAndroidAppId = System.getenv("ADMOB_ANDROID_APP_ID") ?: ""
+def isReleaseTask = gradle.startParameter.taskNames.any {
+    it.toLowerCase().contains("release")
+}
+if (isReleaseTask && admobAndroidAppId.trim().isEmpty()) {
+    throw new GradleException("ADMOB_ANDROID_APP_ID is required for release builds")
+}
 
 android {
     namespace = "com.nabd.journal"
@@ -32,6 +39,11 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders = [
+            admobAppId: admobAndroidAppId.trim().isEmpty()
+                ? "ca-app-pub-3940256099942544~3347511713"
+                : admobAndroidAppId
+        ]
     }
 
     signingConfigs {

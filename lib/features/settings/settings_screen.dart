@@ -4,10 +4,10 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
-import '../../services/database_service.dart';
 import '../../services/biometric_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/privacy_service.dart';
+import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -18,8 +18,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final DatabaseService _db = DatabaseService();
   final PrivacyService _privacy = PrivacyService();
+  final BackupService _backup = BackupService();
   final BiometricService _biometric = BiometricService();
 
   bool _notificationsEnabled = true;
@@ -237,20 +237,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     const names = {
       'ar': 'العربية',
       'en': 'English',
-      'fr': 'Français',
-      'es': 'Español',
-      'de': 'Deutsch',
-      'it': 'Italiano',
-      'pt': 'Português',
-      'ru': 'Русский',
-      'tr': 'Türkçe',
-      'zh': '中文',
-      'ja': '日本語',
-      'ko': '한국어',
-      'hi': 'हिन्दी',
-      'id': 'Bahasa Indonesia',
-      'fa': 'فارسی',
-      'ur': 'اردو',
     };
     return names[code] ?? code;
   }
@@ -389,20 +375,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     const languages = [
       {'code': 'ar', 'name': 'العربية'},
       {'code': 'en', 'name': 'English'},
-      {'code': 'fr', 'name': 'Français'},
-      {'code': 'es', 'name': 'Español'},
-      {'code': 'de', 'name': 'Deutsch'},
-      {'code': 'it', 'name': 'Italiano'},
-      {'code': 'pt', 'name': 'Português'},
-      {'code': 'ru', 'name': 'Русский'},
-      {'code': 'tr', 'name': 'Türkçe'},
-      {'code': 'zh', 'name': '中文'},
-      {'code': 'ja', 'name': '日本語'},
-      {'code': 'ko', 'name': '한국어'},
-      {'code': 'hi', 'name': 'हिन्दी'},
-      {'code': 'id', 'name': 'Bahasa Indonesia'},
-      {'code': 'fa', 'name': 'فارسی'},
-      {'code': 'ur', 'name': 'اردو'},
     ];
 
     final result = await showModalBottomSheet<String>(
@@ -453,17 +425,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _exportData() async {
+    final passwordController = TextEditingController();
     try {
-      final entries = _db.getAllEntries();
-      final json = entries.map((e) => e.toMap()).toList();
-
-      final text = json.toString();
-      await Share.share(text, subject: 'My Journal Export');
+      final password = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Protect backup'),
+          content: TextField(
+            controller: passwordController,
+            obscureText: true,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'Backup password',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(
+                dialogContext,
+                passwordController.text,
+              ),
+              child: const Text('Create backup'),
+            ),
+          ],
+        ),
+      );
+      if (password == null || password.isEmpty) return;
+      final backup = await _backup.createBackup(password: password);
+      await Share.shareXFiles(
+        [XFile(backup.path)],
+        subject: 'Nabd encrypted backup',
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Export failed: $e')));
+            .showSnackBar(const SnackBar(
+              content: Text('Encrypted backup could not be created'),
+            ));
       }
+    } finally {
+      passwordController.dispose();
     }
   }
 

@@ -18,12 +18,11 @@
         android:usesCleartextTraffic="false">
 
         <!-- ═══════════════════════════════════════════════════════════
-             AdMob App ID — يُستبدل من dart-define في CI/CD
-             القيمة الحالية هي Test ID الرسمية من Google
+             AdMob App ID — يُحقن من ADMOB_ANDROID_APP_ID في Release
              ═══════════════════════════════════════════════════════════ -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="${admobAppId}" />
 
         <!-- منع جمع الإعلانات للأطفال (COPPA) -->
         <meta-data
