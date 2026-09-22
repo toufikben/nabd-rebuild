@@ -20,7 +20,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final DatabaseService _db = DatabaseService();
   final PrivacyService _privacy = PrivacyService();
   final BiometricService _biometric = BiometricService();
   final BackupService _backup = BackupService();
@@ -135,24 +134,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _section('Data'),
 
           _tile(
-            icon: Icons.cloud_upload_outlined,
-            title: 'Create Encrypted Backup',
-            subtitle: 'Protect entries and settings with a password',
+            icon: Icons.backup_outlined,
+            title: 'Backup Database',
+            subtitle: 'Save entries and settings in an encrypted .nabd file',
             onTap: _createEncryptedBackup,
           ),
 
           _tile(
-            icon: Icons.cloud_download_outlined,
-            title: 'Restore Encrypted Backup',
-            subtitle: 'Import a password-protected .nabd file',
+            icon: Icons.restore_outlined,
+            title: 'Restore Database',
+            subtitle: 'Import an encrypted .nabd file using its password',
             onTap: _restoreEncryptedBackup,
-          ),
-
-          _tile(
-            icon: Icons.download_outlined,
-            title: 'Export Data (JSON)',
-            subtitle: 'Unencrypted legacy export',
-            onTap: _exportData,
           ),
 
           _tile(
@@ -481,8 +473,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           obscureText: true,
           textInputAction: TextInputAction.done,
           decoration: const InputDecoration(
-            labelText: 'Backup password',
-            hintText: 'Enter a strong password',
+            labelText: 'Database password',
+            hintText: 'Use at least 8 characters',
           ),
           onSubmitted: (value) => Navigator.pop(ctx, value.trim()),
         ),
@@ -561,12 +553,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!mounted || password == null || password.isEmpty) return;
 
     try {
-      final file = await _backup.createBackup(password: password);
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Nabd encrypted backup',
+      final temporaryFile = await _backup.createBackup(password: password);
+      final bytes = await temporaryFile.readAsBytes();
+      final savedPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save encrypted database backup',
+        fileName: temporaryFile.uri.pathSegments.last,
+        type: FileType.custom,
+        allowedExtensions: ['nabd'],
+        bytes: bytes,
       );
-      _showDataMessage('Encrypted backup created successfully');
+      if (savedPath == null || savedPath.isEmpty) {
+        _showDataMessage('Backup canceled');
+      } else {
+        _showDataMessage('Encrypted database backup saved');
+      }
+      if (await temporaryFile.exists()) await temporaryFile.delete();
     } catch (error) {
       _showDataMessage('Backup failed: $error');
     }
@@ -574,11 +575,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _restoreEncryptedBackup() async {
     final picked = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['nabd'],
+      type: FileType.any,
       withData: false,
     );
     if (!mounted || picked == null || picked.files.single.path == null) return;
+
+    final selectedPath = picked.files.single.path!;
+    if (!selectedPath.toLowerCase().endsWith('.nabd')) {
+      _showDataMessage('Please select an encrypted .nabd backup file');
+      return;
+    }
 
     final mode = await _pickRestoreMode();
     if (!mounted || mode == null) return;
@@ -592,7 +598,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!mounted || password == null || password.isEmpty) return;
 
     final result = await _backup.restoreBackup(
-      picked.files.single.path!,
+      selectedPath,
       password: password,
       mode: mode,
     );
@@ -603,21 +609,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     } else {
       _showDataMessage('Restore failed: ${result.error ?? 'Unknown error'}');
-    }
-  }
-
-  Future<void> _exportData() async {
-    try {
-      final entries = _db.getAllEntries();
-      final json = entries.map((e) => e.toMap()).toList();
-
-      final text = json.toString();
-      await Share.share(text, subject: 'My Journal Export');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Export failed: $e')));
-      }
     }
   }
 
