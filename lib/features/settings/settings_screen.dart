@@ -7,7 +7,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
-import '../../services/database_service.dart';
 import '../../services/biometric_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/backup_scheduler_service.dart';

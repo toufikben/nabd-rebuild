@@ -71,7 +71,7 @@ class BackupSchedulerService {
       frequency: frequency,
       existingWorkPolicy: ExistingWorkPolicy.replace,
       constraints: Constraints(
-        networkType: NetworkType.notRequired,
+        networkType: NetworkType.not_required,
         requiresBatteryNotLow: true,
         requiresStorageNotLow: true,
       ),
