@@ -7,10 +7,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
-import '../../app.dart';
 import '../../services/biometric_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/backup_scheduler_service.dart';
+import '../../services/database_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/settings_service.dart';
@@ -42,6 +42,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String? _automaticBackupLastSuccess;
   String? _automaticBackupLastStatus;
   String? _automaticBackupLastError;
+  String? _dataMessage;
 
   @override
   void initState() {
@@ -76,6 +77,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
+          if (_dataMessage != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: ListTile(
+                  leading: const Icon(Icons.check_circle_outline),
+                  title: Text(_dataMessage!),
+                  trailing: IconButton(
+                    tooltip: 'Dismiss',
+                    icon: const Icon(Icons.close),
+                    onPressed: () => setState(() => _dataMessage = null),
+                  ),
+                ),
+              ),
+            ),
           // ─── Appearance ───
           _section('Appearance'),
 
@@ -617,14 +634,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showDataMessage(String message) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final messenger = rootScaffoldMessengerKey.currentState;
-      if (messenger == null || !messenger.mounted) return;
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(message)));
-    });
+    if (!mounted) return;
+    setState(() => _dataMessage = message);
   }
 
   Future<void> _chooseAutomaticBackupDirectory() async {
@@ -773,6 +784,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
     if (!mounted) return;
     if (result.ok) {
+      DatabaseService.notifyDataChanged();
       _showDataMessage(
         'Restore completed: ${result.entriesImported} entries imported',
       );

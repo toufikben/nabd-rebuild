@@ -6,6 +6,7 @@ import 'core/l10n/app_localizations.dart';
 import 'core/router.dart';
 import 'core/theme/app_theme.dart';
 import 'services/biometric_service.dart';
+import 'services/database_service.dart';
 import 'services/settings_service.dart';
 
 final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -66,7 +67,9 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
     final lightTheme = AppTheme.getTheme('light', genderTheme);
     final darkTheme = AppTheme.getTheme('dark', genderTheme);
 
-    return MaterialApp.router(
+    return ValueListenableBuilder<int>(
+      valueListenable: DatabaseService.dataRevision,
+      builder: (context, _, __) => MaterialApp.router(
       title: 'نبض',
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
@@ -81,7 +84,8 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      routerConfig: router,
+        routerConfig: router,
+      ),
     );
   }
 }

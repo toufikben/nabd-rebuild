@@ -6,8 +6,9 @@ import 'package:archive/archive.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'path_provider/path_provider.dart';
 
+import 'database_service.dart';
 import 'encryption_service.dart';
 
 /// BackupService — نسخ احتياطي محلي مع تشفير AES-256-GCM حقيقي.
@@ -459,6 +460,8 @@ class BackupService {
       }
 
       if (await tempRoot.exists()) await tempRoot.delete(recursive: true);
+
+      DatabaseService.notifyDataChanged();
 
       return ImportResult(
         ok: true,
