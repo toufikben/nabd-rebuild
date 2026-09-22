@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../services/database_service.dart';
 import '../../services/biometric_service.dart';
+import '../../services/backup_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/settings_service.dart';
@@ -21,6 +23,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final DatabaseService _db = DatabaseService();
   final PrivacyService _privacy = PrivacyService();
   final BiometricService _biometric = BiometricService();
+  final BackupService _backup = BackupService();
 
   bool _notificationsEnabled = true;
   bool _lockEnabled = false;
@@ -132,9 +135,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _section('Data'),
 
           _tile(
+            icon: Icons.cloud_upload_outlined,
+            title: 'Create Encrypted Backup',
+            subtitle: 'Protect entries and settings with a password',
+            onTap: _createEncryptedBackup,
+          ),
+
+          _tile(
+            icon: Icons.cloud_download_outlined,
+            title: 'Restore Encrypted Backup',
+            subtitle: 'Import a password-protected .nabd file',
+            onTap: _restoreEncryptedBackup,
+          ),
+
+          _tile(
             icon: Icons.download_outlined,
-            title: 'Export Data',
-            subtitle: 'Save all entries as JSON',
+            title: 'Export Data (JSON)',
+            subtitle: 'Unencrypted legacy export',
             onTap: _exportData,
           ),
 
@@ -449,6 +466,143 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         hour: time.hour,
         minute: time.minute,
       );
+    }
+  }
+
+  Future<String?> _askForBackupPassword({required String title}) async {
+    final controller = TextEditingController();
+    final password = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          obscureText: true,
+          textInputAction: TextInputAction.done,
+          decoration: const InputDecoration(
+            labelText: 'Backup password',
+            hintText: 'Enter a strong password',
+          ),
+          onSubmitted: (value) => Navigator.pop(ctx, value.trim()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return password;
+  }
+
+  Future<RestoreMode?> _pickRestoreMode() {
+    return showDialog<RestoreMode>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Restore mode'),
+        content: const Text(
+          'Merge keeps current data and adds the backup. Replace clears current data first.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, RestoreMode.merge),
+            child: const Text('Merge'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, RestoreMode.replace),
+            child: const Text('Replace'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool> _confirmReplaceRestore() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Replace current data?'),
+            content: const Text(
+              'Replace will remove current entries and settings before restoring the backup.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Replace'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  void _showDataMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _createEncryptedBackup() async {
+    final password = await _askForBackupPassword(
+      title: 'Create encrypted backup',
+    );
+    if (!mounted || password == null || password.isEmpty) return;
+
+    try {
+      final file = await _backup.createBackup(password: password);
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Nabd encrypted backup',
+      );
+      _showDataMessage('Encrypted backup created successfully');
+    } catch (error) {
+      _showDataMessage('Backup failed: $error');
+    }
+  }
+
+  Future<void> _restoreEncryptedBackup() async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['nabd'],
+      withData: false,
+    );
+    if (!mounted || picked == null || picked.files.single.path == null) return;
+
+    final mode = await _pickRestoreMode();
+    if (!mounted || mode == null) return;
+    if (mode == RestoreMode.replace && !await _confirmReplaceRestore()) {
+      return;
+    }
+
+    final password = await _askForBackupPassword(
+      title: 'Unlock encrypted backup',
+    );
+    if (!mounted || password == null || password.isEmpty) return;
+
+    final result = await _backup.restoreBackup(
+      picked.files.single.path!,
+      password: password,
+      mode: mode,
+    );
+    if (!mounted) return;
+    if (result.ok) {
+      _showDataMessage(
+        'Restore completed: ${result.entriesImported} entries imported',
+      );
+    } else {
+      _showDataMessage('Restore failed: ${result.error ?? 'Unknown error'}');
     }
   }
 

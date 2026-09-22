@@ -76,7 +76,7 @@ class BackupService {
     for (final key in settingsBox.keys) {
       settingsJson[key.toString()] = settingsBox.get(key);
     }
-    _addJson(archive, 'settings.json', settingsJson);
+    _addJson(archive, 'settings.json', filterRestoredSettings(settingsJson));
     reportProgress();
 
     // 3. Garden
