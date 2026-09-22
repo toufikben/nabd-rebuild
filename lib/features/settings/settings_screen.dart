@@ -10,7 +10,6 @@ import '../../core/theme/gender_themes.dart';
 import '../../services/biometric_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/backup_scheduler_service.dart';
-import '../../services/database_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/settings_service.dart';
@@ -784,7 +783,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
     if (!mounted) return;
     if (result.ok) {
-      DatabaseService.notifyDataChanged();
       _showDataMessage(
         'Restore completed: ${result.entriesImported} entries imported',
       );
