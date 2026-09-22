@@ -35,14 +35,18 @@ class _SplashScreenState extends State<SplashScreen> {
         box.get('splash_sound_enabled', defaultValue: true) as bool;
     final customSound = box.get('splash_sound') as String?;
     final requestedSound =
-        customSound ?? SplashService.defaultSoundFor(_splashId);
+        customSound == null || customSound.startsWith('splash_')
+            ? SplashService.defaultSoundFor(_splashId)
+            : customSound;
     final sound = AppSettings.fallbackSound(requestedSound);
 
     if (soundEnabled && AppSettings.splashSoundEnabled) {
       await _splash.playSplashSound(sound);
     }
 
-    await Future.delayed(const Duration(milliseconds: 3200));
+    // Keep the branded Flutter splash visible long enough for the first frame,
+    // without imposing an unnecessary fixed 3.2 second startup delay.
+    await Future.delayed(const Duration(milliseconds: 1800));
     await _splash.stopSplashSound();
 
     if (!mounted) return;

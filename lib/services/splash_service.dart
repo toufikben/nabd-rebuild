@@ -49,20 +49,7 @@ class SplashService {
 
   /// Sound المرتبط بكل splash.
   static String defaultSoundFor(int splashId) {
-    switch (splashId) {
-      case 1:
-        return 'splash_rain';
-      case 2:
-        return 'splash_flute';
-      case 3:
-        return 'splash_harp';
-      case 4:
-        return 'splash_oud';
-      case 5:
-        return 'splash_bowl';
-      default:
-        return 'splash_rain';
-    }
+    return 'splash_water_drop';
   }
 }
 
@@ -87,35 +74,35 @@ class SplashOption {
       name: 'First Seed',
       description: 'بذرة تسقط وتنبت',
       emoji: '🌱',
-      sounds: ['splash_rain'],
+      sounds: ['splash_water_drop'],
     ),
     SplashOption(
       id: 2,
       name: 'New Dawn',
       description: 'شروق الشمس خلف الجبال',
       emoji: '🌅',
-      sounds: ['splash_flute', 'birds_distant'],
+      sounds: ['splash_water_drop'],
     ),
     SplashOption(
       id: 3,
       name: 'Book to Butterfly',
       description: 'كتاب يتحول إلى فراشات',
       emoji: '🦋',
-      sounds: ['paper_turn', 'splash_harp'],
+      sounds: ['splash_water_drop'],
     ),
     SplashOption(
       id: 4,
       name: 'Candle Light',
       description: 'شمعة تضيء غرفة دافئة',
       emoji: '🕯️',
-      sounds: ['splash_oud', 'whisper_gentle'],
+      sounds: ['splash_water_drop'],
     ),
     SplashOption(
       id: 5,
       name: 'Circle of Life',
       description: 'دائرة ضوء تكشف شجرة',
       emoji: '💫',
-      sounds: ['splash_bowl', 'drums_soft'],
+      sounds: ['splash_water_drop'],
     ),
   ];
 }
