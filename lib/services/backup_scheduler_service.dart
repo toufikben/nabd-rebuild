@@ -7,6 +7,7 @@ import 'package:workmanager/workmanager.dart';
 
 import 'backup_service.dart';
 import 'encryption_service.dart';
+import 'notification_service.dart';
 
 const automaticBackupTask = 'nabd.automatic_database_backup';
 const automaticBackupUniqueName = 'nabd-automatic-database-backup';
@@ -24,7 +25,9 @@ void backupCallbackDispatcher() {
 
     WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
+    Box? settings;
     try {
+      await NotificationService.init();
       await Hive.initFlutter();
       final cipher = HiveAesCipher(await EncryptionService().hiveKeyBytes());
       await Hive.openBox('journal_entries', encryptionCipher: cipher);
@@ -33,11 +36,14 @@ void backupCallbackDispatcher() {
       await Hive.openBox('tags', encryptionCipher: cipher);
       await Hive.openBox('garden', encryptionCipher: cipher);
 
-      final settings = Hive.box('settings');
+      settings = Hive.box('settings');
       final enabled = settings.get('automatic_backup_enabled', defaultValue: false) as bool;
       final directory = settings.get('automatic_backup_directory') as String?;
       final password = await _secureStorage.read(key: automaticBackupPasswordKey);
       if (!enabled || directory == null || directory.isEmpty || password == null || password.isEmpty) {
+        await settings.put('automatic_backup_last_status', 'failed');
+        await settings.put('automatic_backup_last_error', 'Backup settings are incomplete');
+        await NotificationService.showAutomaticBackupFailure();
         return false;
       }
 
@@ -47,8 +53,20 @@ void backupCallbackDispatcher() {
       );
       await settings.put('automatic_backup_last_success', DateTime.now().toIso8601String());
       await settings.put('automatic_backup_last_file', backup.path);
+      await settings.put('automatic_backup_last_status', 'success');
+      await settings.delete('automatic_backup_last_error');
+      await NotificationService.showAutomaticBackupSuccess();
       return true;
-    } catch (_) {
+    } catch (error) {
+      if (settings != null && settings!.isOpen) {
+        await settings!.put('automatic_backup_last_status', 'failed');
+        await settings!.put('automatic_backup_last_error', error.toString());
+      }
+      try {
+        await NotificationService.showAutomaticBackupFailure();
+      } catch (_) {
+        // Keep the worker failure result even if notifications are unavailable.
+      }
       return false;
     } finally {
       await Hive.close();

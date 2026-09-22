@@ -39,6 +39,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _automaticBackupEnabled = false;
   int _automaticBackupFrequencyHours = 24;
   String? _automaticBackupLastSuccess;
+  String? _automaticBackupLastStatus;
+  String? _automaticBackupLastError;
 
   @override
   void initState() {
@@ -57,6 +59,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ) as int;
     _automaticBackupLastSuccess =
         settings.get('automatic_backup_last_success') as String?;
+    _automaticBackupLastStatus =
+        settings.get('automatic_backup_last_status') as String?;
+    _automaticBackupLastError =
+        settings.get('automatic_backup_last_error') as String?;
   }
 
   @override
@@ -203,11 +209,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onTap: _pickAutomaticBackupFrequency,
             ),
 
-          if (_automaticBackupLastSuccess != null)
+          if (_automaticBackupLastStatus != null)
             _tile(
-              icon: Icons.check_circle_outline,
-              title: 'Last Automatic Backup',
-              subtitle: _automaticBackupLastSuccess!,
+              icon: _automaticBackupLastStatus == 'success'
+                  ? Icons.check_circle_outline
+                  : Icons.error_outline,
+              title: _automaticBackupLastStatus == 'success'
+                  ? 'Automatic Backup Successful'
+                  : 'Automatic Backup Failed',
+              subtitle: _automaticBackupLastStatus == 'success'
+                  ? (_automaticBackupLastSuccess ?? 'Completed')
+                  : (_automaticBackupLastError ?? 'Open backup settings to review'),
               onTap: null,
             ),
 
