@@ -617,11 +617,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showDataMessage(String message) {
-    final messenger = rootScaffoldMessengerKey.currentState;
-    if (messenger == null) return;
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final messenger = rootScaffoldMessengerKey.currentState;
+      if (messenger == null || !messenger.mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    });
   }
 
   Future<void> _chooseAutomaticBackupDirectory() async {
@@ -803,8 +806,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (ok == true) {
       await _privacy.deleteEverything();
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('All data deleted')));
+        _showDataMessage('All data deleted');
       }
     }
   }
