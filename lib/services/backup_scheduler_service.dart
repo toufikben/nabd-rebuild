@@ -58,9 +58,10 @@ void backupCallbackDispatcher() {
       await NotificationService.showAutomaticBackupSuccess();
       return true;
     } catch (error) {
-      if (settings != null && settings!.isOpen) {
-        await settings!.put('automatic_backup_last_status', 'failed');
-        await settings!.put('automatic_backup_last_error', error.toString());
+      final currentSettings = settings;
+      if (currentSettings != null && currentSettings.isOpen) {
+        await currentSettings.put('automatic_backup_last_status', 'failed');
+        await currentSettings.put('automatic_backup_last_error', error.toString());
       }
       try {
         await NotificationService.showAutomaticBackupFailure();
