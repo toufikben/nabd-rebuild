@@ -1,9 +1,9 @@
 # خارطة طريق نبض — الحالة الموثقة
 
-**آخر تحديث:** 2026-09-22 بعد إصلاح biometric prompt والتحقق على هاتف فعلي
+**آخر تحديث:** 2026-09-22 بعد إضافة إدارة قاعدة البيانات والنسخ التلقائي المشفر
 **الفرع:** `qa/runtime-emulator`
-**آخر commit:** `cd47f6d` — `fix: restore Android biometric prompt lifecycle`
-**حالة المستودع بعد التحقق:** إصلاح App Lock مدفوع إلى `qa/runtime-emulator`، ونُسخ إلى `main` كـcommit مستقل
+**آخر commit:** `04f2ae0` — `fix: remove backup notification null assertions`
+**حالة المستودع بعد التحقق:** التغييرات مدفوعة إلى `qa/runtime-emulator` فقط؛ Build وAnalyze وTest نجحت على آخر commit
 
 ## الحكم التنفيذي
 
@@ -19,7 +19,7 @@
 | 6 | R-Wellbeing | ✅ منفذة | تشمل Gratitude وWorry وBreathing وSilent وMotivation |
 | 7 | R-Personal | ✅ منفذة | Letters وEchoes وWeekly Pulse وSage مرتبطة بالمسارات وتملك اختبارات منطق وWidget |
 | 8 | R-Settings & Lock | 🟡 منفذة مع Runtime جزئي مثبت | تم التحقق على هاتف فعلي من cold start وظهور شاشة القفل ونجاح البصمة؛ ما زال يلزم اختبار background timeout وfailure/retry وlifecycle الكامل |
-| 9 | R-Data & Security | 🔴 الحاجز الحالي | إغلاق Key Rotation والتصدير غير المشفر واختبارات runtime للترحيل والنسخ |
+| 9 | R-Data & Security | 🟡 متقدمة مع Runtime مطلوب | Backup/Restore مشفر، مجلد افتراضي، جدولة Android، وإشعارات نجاح/فشل مضافة؛ ما زال Key Rotation وruntime الميداني والترحيل |
 | 10 | R-Monetization | 🟡 منفذة جزئيًا | Lifetime يعمل من callback المتجر؛ Monthly/Yearly تحتاج تحقق entitlement خادمي |
 | 11 | R-Polish | ⏳ بعد Security | i18n وRTL وcontrast وWater-drop + echo وApp Icon وSilent rain/storm |
 | 12 | R-Final QA | ⏳ أخيرة | Release signing وruntime matrix وApp Links وBackup/Restore وStore checklist |
@@ -30,8 +30,9 @@
 |---|---|---|
 | تشفير Hive at rest | ✅ مطبق | Migration versioned مع `HiveAesCipher` ومفتاح Secure Storage؛ يحتاج اختبار جهاز فعلي |
 | AES-256-GCM للنصوص | ✅ مطبق | Nonce عشوائي وMAC للتحقق من التلاعب |
-| Backup/Restore مشفر | 🟡 مطبق مع فجوات | النسخة مشفرة ومتحققة، لكن مسار التصدير في Settings يشارك JSON نصيًا غير مشفر |
-| منع entitlement من النسخة | 🟡 جزئي | `restore` يفلتر entitlement، لكن `createBackup` يجمع إعدادات entitlement داخل الأرشيف قبل الفلترة |
+| Backup/Restore مشفر | ✅ مطبق برمجيًا | أزرار Backup Database وRestore Database، Merge/Replace، كلمة مرور، AES-256-GCM، واختبارات الخدمة ناجحة |
+| النسخ التلقائي المجدول | 🟡 مطبق برمجيًا ولم يثبت ميدانيًا | WorkManager يومي/أسبوعي، مجلد افتراضي، كلمة المرور في Secure Storage، وإشعار نجاح/فشل؛ يلزم تشغيل فعلي على الهاتف |
+| منع entitlement من النسخة | ✅ مطبق عند الإنشاء والاستعادة | `createBackup` و`restore` يفلتران مفاتيح entitlement |
 | Key Rotation | 🔴 غير مغلق | `rotateKey()` يحذف المفتاح وينشئ مفتاحًا جديدًا دون إعادة تشفير Hive؛ قد يجعل البيانات غير قابلة للقراءة |
 | Delete All Data | 🟡 مطبق | يحذف الصناديق والوسائط، لكنه يتعمد إبقاء مفتاح التشفير؛ يجب تثبيت قرار دورة حياة المفتاح باختبار وسياسة واضحة |
 | حماية مسارات ZIP | ✅ مطبق | فحص traversal والحجم وعدد الملفات والـschema والـduplicate IDs |
@@ -57,31 +58,31 @@
 
 ## شروط إغلاق Security
 
-لا تُغلق R-Data & Security قبل تنفيذ تدوير مفتاح آمن أو إزالة API الحالي واستبداله بمسار واضح يحافظ على البيانات. يجب أن يصبح Export Data إما نسخة احتياطية مشفرة أو أن يوضح للمستخدم صراحة أنه تصدير نصي غير مشفر مع تأكيد أمني. يجب حذف entitlement من محتوى النسخة عند الإنشاء، لا الاكتفاء بتجاهله عند الاستعادة. بعد ذلك يجب اختبار migration وbackup/restore وdelete-all وkey lifecycle على جهاز أو emulator.
+لا تُغلق R-Data & Security قبل تنفيذ تدوير مفتاح آمن أو إزالة API الحالي واستبداله بمسار واضح يحافظ على البيانات. يجب اختبار Backup/Restore والنسخ التلقائي والإشعارات وDelete All وmigration وkey lifecycle على جهاز فعلي أو emulator. مسار JSON غير المشفر أزيل من واجهة Settings، ولا يُعد Runtime أو الجدولة ناجحين دون تنفيذ فعلي موثق.
 
 ## التحقق الأخير
 
 - `dart format --output=none --set-exit-if-changed lib/app.dart test/app_lock_policy_test.dart`: **PASS**.
-- `flutter analyze`: **PASS — No issues found**.
-- `flutter test`: **PASS — All tests passed** (72 test completions في السجل).
+- `flutter analyze`: **PASS — No issues found** في Build `35720099863`.
+- `flutter test`: **PASS — All tests passed** في Build `35720099863`.
 - `flutter build apk --debug`: **PASS** محليًا باستخدام JDK 17 — `app-debug.apk`.
 - `flutter build apk --release`: **PASS** محليًا باستخدام JDK 17 — `app-release.apk`.
 - `flutter build appbundle --release`: **PASS** محليًا باستخدام JDK 17 — `app-release.aab`.
 - Runtime Emulator: **BLOCKED سابقًا** — لا يوجد `/dev/kvm` محليًا؛ أما App Lock فقد تم التحقق جزئيًا على هاتف فعلي.
-- GitHub Actions على commit `a889014`: **PASS** في run `35501185195`.
+- GitHub Actions Android Build على commit `04f2ae0`: **PASS** في run `35720099863`.
 - `git diff --check`: **PASS**.
 - working tree: **clean** على `qa/runtime-emulator`؛ `main` بقي دون تعديل.
 
 ## الترتيب التنفيذي بعد التدقيق
 
-1. إعادة اختبار App Lock على الهاتف: بصمة خاطئة ثم `Unlock`، ثم background/timeout.
-2. إغلاق R-Data & Security: key rotation، تصدير آمن، entitlement filtering عند الإنشاء، واختبارات runtime.
-3. تنفيذ Runtime backup/restore وmigration وDelete All على الهاتف.
-4. تشغيل Release APK/AAB مع keystore production والتحقق من نتيجة CI الفعلية.
-5. تنفيذ App Links domain verification ونشر `assetlinks.json` ببصمة Release.
-6. إكمال R-Polish، مع التركيز على i18n وRTL وcontrast قبل التجميل الصوتي والبصري.
-7. تنفيذ R-Final QA على جهاز أو emulator، ثم مراجعة الأذونات وAdMob وسياسة الخصوصية ومتطلبات المتجر.
-8. اعتبار Monetization مغلقة فقط بعد وصول entitlement موثوق للاشتراكات الشهرية والسنوية.
+1. تثبيت APK آخر Build على الهاتف وتشغيل Backup Database ثم Restore Database فعليًا.
+2. تفعيل Automatic Database Backup، اختيار Daily، والتحقق من ملف `.nabd` وإشعار النجاح أو الفشل.
+3. تنفيذ Delete All ثم إعادة تشغيل التطبيق، واختبار migration وkey lifecycle.
+4. إغلاق R-Data & Security: key rotation الآمن، ومراجعة أي API تصدير متبقٍ خارج الواجهة.
+5. إعادة اختبار App Lock: بصمة خاطئة ثم Retry، ثم background/timeout.
+6. تشغيل Release APK/AAB مع keystore production والتحقق من نتيجة CI الفعلية.
+7. تنفيذ App Links domain verification ثم R-Polish وR-Final QA.
+8. اعتبار Monetization مغلقة فقط بعد entitlement موثوق للاشتراكات الشهرية والسنوية.
 
 ## مراجع الكود الأساسية
 

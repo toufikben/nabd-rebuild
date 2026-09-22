@@ -2,7 +2,7 @@
 
 **تاريخ التدقيق:** 2026-09-22  
 **الفرع المفحوص:** `qa/runtime-emulator`  
-**آخر SHA:** `cd47f6dbffc5d59cce6253ecd4c21e997e49fb2a`  
+**آخر SHA:** `04f2ae0037a0f176c551c39e54128d76a51eff80`
 **نطاق التدقيق:** بنية التطبيق، الميزات، الأمن، الاختبارات، Runtime QA، إعدادات Android، الأصول، الترجمة، monetization، ومتطلبات المتاجر.
 
 ## الحكم التنفيذي
@@ -16,7 +16,7 @@
 | اكتمال النطاق الوظيفي داخل الكود | 80–90% | معظم الشاشات والخدمات والمسارات الأساسية موجودة |
 | اكتمال الاختبارات المحلية/المنطقية | 65–75% | توجد تغطية جيدة للمنطق والأمن وبعض Widgets، لكن تغطية UI/runtime محدودة |
 | الجاهزية الأمنية للإطلاق | 45–55% | التشفير الأساسي موجود، لكن key rotation والتصدير ودورة entitlement غير مغلقة |
-| جاهزية Android runtime | 60–70% | build/install/launch ثبتت في Runs سابقة، وApp Lock cold start وbiometric prompt نجحا على هاتف فعلي؛ ما زالت مصفوفة runtime غير مكتملة |
+| جاهزية Android runtime | 65–75% | Analyze/Test وDebug APK/AAB نجحت في Build `35720099863`، وApp Lock الأساسي نجح على هاتف فعلي؛ ما زالت مصفوفة Runtime والنسخ التلقائي الميداني غير مكتملة |
 | جاهزية المتجر والإطلاق | 35–45% | توجد أصول وملفات إعداد، لكن signing والمنتجات وAdMob وApp Links والنماذج لم تُثبت إنتاجيًا |
 | الجاهزية الكلية للإطلاق | **حوالي 55–65%** | التطبيق متقدم وظيفيًا، لكنه ليس Release Candidate مغلق المخاطر |
 
@@ -42,7 +42,7 @@
 | R-Wellbeing | منفذة وظيفيًا | Gratitude، Worry، Breathing، Silent، Motivation، Wisdom، Achievements، Challenges | توحيد i18n، تغطية Widgets/runtime، وتحسينات Silent الصوتية |
 | R-Personal | منفذة وظيفيًا | Letters، Echoes، Weekly Pulse، Sage وربطها بالـrouter | توسيع UI/runtime coverage؛ بعض الاختبارات المنطقية موجودة |
 | R-Settings & Lock | جزئية ومثبتة على هاتف فعلي | settings، themes، language، notifications، deletion، App Lock cold start وbiometric prompt | background timeout، failure/retry المنهجي، lifecycle الكامل، ونقص i18n |
-| R-Data & Security | **الحاجز الحالي** | AES-256-GCM للنصوص، Hive encryption، encrypted backup، ZIP/schema/path validation، migration scaffolding | key rotation الآمن، export غير المشفر، entitlement داخل backup، runtime migration/key lifecycle |
+| R-Data & Security | **الحاجز الحالي المتبقي** | AES-256-GCM، Hive encryption، Backup/Restore مشفر، WorkManager للجدولة، مجلد افتراضي وإشعارات الحالة | إثبات هاتف فعلي للنسخ التلقائي، key rotation الآمن، migration وkey lifecycle |
 | R-Monetization | جزئية | IAP products، purchase stream، lifetime callback، Paywall، rewarded ads config | server-side subscription entitlement، real store products، sandbox purchase/restore/failure |
 | R-Polish | غير مغلقة | أساس theme وARB عربي/إنجليزي وأصول موجودة | i18n/RTL/contrast، hardcoded English، app icon verification، water-drop/echo، Silent rain/storm |
 | R-Final QA | غير منفذة بالكامل | Workflow، APK debug artifact، runtime diagnostics | release matrix، App Links، backup/restore، lock، notifications، widget، media، store build |
@@ -89,6 +89,19 @@
 - Basic widget smoke.
 
 السجلات السابقة في `ROADMAP.md` توثق نجاح `flutter analyze` و`flutter test` وdebug/release builds في بيئة Flutter-enabled، لكن Flutter غير مثبت في sandbox الحالي؛ لذلك لم أعد تنفيذ هذه الأوامر محليًا في هذا التدقيق، ولا أستبدل السجل التاريخي بإثبات جديد.
+
+### إدارة قاعدة البيانات والنسخ الاحتياطي
+
+تمت إضافة:
+
+- `Backup Database` لحفظ نسخة `.nabd` مشفرة بكلمة مرور.
+- `Restore Database` مع `Merge` و`Replace` وتأكيد قبل الاستبدال.
+- `Default Backup Folder`.
+- `Automatic Database Backup` يومي أو أسبوعي عبر WorkManager.
+- كلمة مرور النسخ التلقائي محفوظة في Secure Storage.
+- إشعار Android منفصل للنجاح أو الفشل، وحالة آخر تشغيل داخل Settings.
+
+الاختبارات البرمجية وBuild نجحت، لكن التشغيل الدوري الفعلي على هاتف لم يُثبت بعد؛ Android يحدد التوقيت وقد يؤجل المهمة.
 
 ### QA infrastructure
 
@@ -157,6 +170,7 @@ Settings ما زال يملك مسار تصدير JSON نصي غير مشفر. �
 - navigation إلى/من lock دون loop.
 - App Lock-specific Maestro flow.
 - R-Settings & Lock production readiness.
+- Automatic Database Backup execution and success/failure notification on a physical phone.
 
 Run الإصلاح `35713141865` على SHA `cd47f6d` شُغّل للتحقق الآلي من الإصلاح؛ اختبار الهاتف الفعلي هو الدليل الحالي لنجاح App Lock الأساسي.
 
@@ -204,8 +218,8 @@ Run الإصلاح `35713141865` على SHA `cd47f6d` شُغّل للتحقق ا
 
 ### المرحلة 0 — إغلاق وحصر الحالة
 
-**الحالة:** App Lock الأساسي مثبت على هاتف فعلي؛ المصفوفة الكاملة ما زالت قيد الإكمال.  
-**المخرج المطلوب:** اختبار failure/retry وbackground timeout ثم backup/restore وmigration وDelete All.
+**الحالة:** App Lock الأساسي وإدارة النسخ البرمجية مثبتان، مع Runtime ميداني مطلوب.
+**المخرج المطلوب:** تشغيل Backup/Restore والجدولة والإشعارات وDelete All وmigration على الهاتف.
 
 ### المرحلة 1 — Security closure
 
@@ -213,7 +227,7 @@ Run الإصلاح `35713141865` على SHA `cd47f6d` شُغّل للتحقق ا
 **المهام:** key rotation أو إزالة API، تصحيح export، حذف entitlement عند الإنشاء، migration recovery، key lifecycle.  
 **شرط الخروج:** اختبارات منطقية وتكاملية/runtime موثقة.
 
-**الخطوة التالية المباشرة:** تنفيذ backup/restore وDelete All على الهاتف، ثم معالجة key rotation وExport قبل الانتقال إلى Monetization أو Store release.
+**الخطوة التالية المباشرة:** تثبيت APK الأخير على الهاتف، تنفيذ Backup/Restore ثم تفعيل الجدولة والتحقق من ملف `.nabd` وإشعار النجاح أو الفشل.
 
 ### المرحلة 2 — Runtime matrix
 
