@@ -26,6 +26,11 @@ class _LockScreenState extends State<LockScreen> {
   Future<void> _authenticate() async {
     if (_authenticating) return;
     _authenticating = true;
+    if (mounted) {
+      setState(() {
+        _error = null;
+      });
+    }
     final ok = await _bio.authenticate(
       reason: 'Unlock your journal',
     );
