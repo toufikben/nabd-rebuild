@@ -6,7 +6,10 @@ import 'core/l10n/app_localizations.dart';
 import 'core/router.dart';
 import 'core/theme/app_theme.dart';
 import 'services/biometric_service.dart';
+import 'services/database_service.dart';
 import 'services/settings_service.dart';
+
+final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 class NabdApp extends ConsumerStatefulWidget {
   const NabdApp({super.key});
@@ -32,18 +35,27 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      _biometric.markBackgrounded();
-      return;
-    }
-    if (state == AppLifecycleState.resumed) {
-      final shouldLock = _biometric.shouldShowLock();
-      if (shouldLock) {
-        if (router.state.uri.path != '/lock') router.go('/lock');
-      } else {
-        _biometric.clearBackgrounded();
-      }
+    switch (state) {
+      case AppLifecycleState.inactive:
+        // Transient interruptions such as the biometric prompt are not
+        // backgrounding events and must not start the lock timeout.
+        return;
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        _biometric.markBackgrounded();
+        return;
+      case AppLifecycleState.resumed:
+        final shouldLock = _biometric.shouldShowLock();
+        if (!shouldLock) {
+          _biometric.clearBackgrounded();
+          return;
+        }
+        if (router.state.uri.path != '/lock') {
+          router.go('/lock');
+        }
+        return;
+      case AppLifecycleState.detached:
+        return;
     }
   }
 
@@ -55,8 +67,11 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
     final lightTheme = AppTheme.getTheme('light', genderTheme);
     final darkTheme = AppTheme.getTheme('dark', genderTheme);
 
-    return MaterialApp.router(
+    return ValueListenableBuilder<int>(
+      valueListenable: DatabaseService.dataRevision,
+      builder: (context, _, __) => MaterialApp.router(
       title: 'نبض',
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
       darkTheme: darkTheme,
@@ -69,7 +84,8 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      routerConfig: router,
+        routerConfig: router,
+      ),
     );
   }
 }

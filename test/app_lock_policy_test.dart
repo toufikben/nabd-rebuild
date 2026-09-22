@@ -65,6 +65,19 @@ void main() {
       );
     });
 
+    test('repeated background events keep the original background time', () {
+      policy.markColdStartComplete();
+      policy.markBackgrounded();
+      now = now.add(const Duration(minutes: 4));
+      policy.markBackgrounded();
+      now = now.add(const Duration(minutes: 1));
+
+      expect(
+        policy.shouldShowLock(enabled: true, timeoutMinutes: 5),
+        isTrue,
+      );
+    });
+
     test('background at or beyond timeout locks', () {
       policy.markColdStartComplete();
       policy.markBackgrounded();

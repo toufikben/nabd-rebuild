@@ -6,8 +6,9 @@ import 'package:archive/archive.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'path_provider/path_provider.dart';
 
+import 'database_service.dart';
 import 'encryption_service.dart';
 
 /// BackupService — نسخ احتياطي محلي مع تشفير AES-256-GCM حقيقي.
@@ -76,7 +77,7 @@ class BackupService {
     for (final key in settingsBox.keys) {
       settingsJson[key.toString()] = settingsBox.get(key);
     }
-    _addJson(archive, 'settings.json', settingsJson);
+    _addJson(archive, 'settings.json', filterRestoredSettings(settingsJson));
     reportProgress();
 
     // 3. Garden
@@ -163,6 +164,24 @@ class BackupService {
     await backupFile.writeAsBytes(outputBytes);
 
     return backupFile;
+  }
+
+  /// إنشاء نسخة مشفرة وحفظها في مجلد محدد للنسخ التلقائي.
+  Future<File> createBackupAtDirectory({
+    required String password,
+    required String directoryPath,
+  }) async {
+    final temporaryBackup = await createBackup(password: password);
+    final directory = Directory(directoryPath);
+    if (!await directory.exists()) {
+      await directory.create(recursive: true);
+    }
+    final destination = File('${directory.path}/${p.basename(temporaryBackup.path)}');
+    await temporaryBackup.copy(destination.path);
+    if (await temporaryBackup.exists()) {
+      await temporaryBackup.delete();
+    }
+    return destination;
   }
 
   /// استيراد نسخة احتياطية.
@@ -441,6 +460,8 @@ class BackupService {
       }
 
       if (await tempRoot.exists()) await tempRoot.delete(recursive: true);
+
+      DatabaseService.notifyDataChanged();
 
       return ImportResult(
         ok: true,

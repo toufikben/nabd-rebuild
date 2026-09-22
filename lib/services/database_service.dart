@@ -1,41 +1,54 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
 import '../models/journal_entry.dart';
 import '../models/tag.dart';
 
 class DatabaseService {
+  static final ValueNotifier<int> dataRevision = ValueNotifier<int>(0);
+
+  static void notifyDataChanged() {
+    dataRevision.value++;
+  }
+
   Box get entriesBox => Hive.box('journal_entries');
   Box get tagsBox => Hive.box('tags');
+
   Future<void> addEntry(JournalEntry entry, {bool isPro = false}) async {
     if (!isPro && !canCreateFreeEntry()) {
       throw const EntryLimitExceededException();
     }
     await entriesBox.put(entry.id, entry.toMap());
+    notifyDataChanged();
   }
 
   Future<void> updateEntry(JournalEntry entry) async {
     final raw = entriesBox.get(entry.id);
     await entriesBox.put(entry.id, entry.toMap());
-    if (raw is! Map) return;
-    final previous = JournalEntry.fromMap(Map<dynamic, dynamic>.from(raw));
-    await _deleteUnreferencedMedia([
-      ...previous.imagePaths.where((path) => !entry.imagePaths.contains(path)),
-      if (previous.audioPath != null && previous.audioPath != entry.audioPath)
-        previous.audioPath!,
-    ]);
+    if (raw is Map) {
+      final previous = JournalEntry.fromMap(Map<dynamic, dynamic>.from(raw));
+      await _deleteUnreferencedMedia([
+        ...previous.imagePaths.where((path) => !entry.imagePaths.contains(path)),
+        if (previous.audioPath != null && previous.audioPath != entry.audioPath)
+          previous.audioPath!,
+      ]);
+    }
+    notifyDataChanged();
   }
 
   Future<void> deleteEntry(String id) async {
     final raw = entriesBox.get(id);
     await entriesBox.delete(id);
-    if (raw is! Map) return;
-    final removed = JournalEntry.fromMap(Map<dynamic, dynamic>.from(raw));
-    await _deleteUnreferencedMedia([
-      ...removed.imagePaths,
-      if (removed.audioPath != null) removed.audioPath!,
-    ]);
+    if (raw is Map) {
+      final removed = JournalEntry.fromMap(Map<dynamic, dynamic>.from(raw));
+      await _deleteUnreferencedMedia([
+        ...removed.imagePaths,
+        if (removed.audioPath != null) removed.audioPath!,
+      ]);
+    }
+    notifyDataChanged();
   }
 
   Future<void> _deleteUnreferencedMedia(List<String> candidates) async {
@@ -96,12 +109,15 @@ class DatabaseService {
           (e.content.trim().isEmpty
               ? 0
               : e.content.trim().split(RegExp(r'\s+')).length));
-  Future<void> saveTag(Tag tag) => tagsBox.put(tag.id, {
-        'id': tag.id,
-        'name': tag.name,
-        'color': tag.color,
-        'usageCount': tag.usageCount
-      });
+  Future<void> saveTag(Tag tag) async {
+    await tagsBox.put(tag.id, {
+      'id': tag.id,
+      'name': tag.name,
+      'color': tag.color,
+      'usageCount': tag.usageCount
+    });
+    notifyDataChanged();
+  }
 
   Future<void> deleteTag(String tagName, String tagId) async {
     await tagsBox.delete(tagId);
@@ -111,6 +127,7 @@ class DatabaseService {
         tags: entry.tags.where((tag) => tag != tagName).toList(),
       ));
     }
+    notifyDataChanged();
   }
 
   List<Tag> getAllTags() => tagsBox.isEmpty

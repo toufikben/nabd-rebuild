@@ -19,11 +19,7 @@ class AppSettings {
     'oud_soft',
     'paper_turn',
     'rain_soft',
-    'splash_bowl',
-    'splash_flute',
-    'splash_harp',
-    'splash_oud',
-    'splash_rain',
+    'splash_water_drop',
     'tibetan_bowl',
     'wind_gentle',
     'whisper_gentle',
@@ -32,6 +28,6 @@ class AppSettings {
   static bool hasSoundFile(String soundId) => availableSounds.contains(soundId);
 
   static String fallbackSound(String requested) {
-    return hasSoundFile(requested) ? requested : 'rain_soft';
+    return hasSoundFile(requested) ? requested : 'splash_water_drop';
   }
 }

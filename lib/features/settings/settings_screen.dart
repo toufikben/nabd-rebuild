@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
-import '../../services/database_service.dart';
 import '../../services/biometric_service.dart';
+import '../../services/backup_service.dart';
+import '../../services/backup_scheduler_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/settings_service.dart';
@@ -18,21 +22,48 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final DatabaseService _db = DatabaseService();
+  static const _secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
   final PrivacyService _privacy = PrivacyService();
   final BiometricService _biometric = BiometricService();
+  final BackupService _backup = BackupService();
 
   bool _notificationsEnabled = true;
   bool _lockEnabled = false;
   int _lockTimeoutMinutes = 5;
   int _reminderHour = 20;
   int _reminderMinute = 0;
+  String? _automaticBackupDirectory;
+  bool _automaticBackupEnabled = false;
+  int _automaticBackupFrequencyHours = 24;
+  String? _automaticBackupLastSuccess;
+  String? _automaticBackupLastStatus;
+  String? _automaticBackupLastError;
+  String? _dataMessage;
 
   @override
   void initState() {
     super.initState();
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
+    _automaticBackupDirectory = Hive.box('settings').get(
+      'automatic_backup_directory',
+    ) as String?;
+    final settings = Hive.box('settings');
+    _automaticBackupEnabled =
+        settings.get('automatic_backup_enabled', defaultValue: false) as bool;
+    _automaticBackupFrequencyHours = settings.get(
+      'automatic_backup_frequency_hours',
+      defaultValue: 24,
+    ) as int;
+    _automaticBackupLastSuccess =
+        settings.get('automatic_backup_last_success') as String?;
+    _automaticBackupLastStatus =
+        settings.get('automatic_backup_last_status') as String?;
+    _automaticBackupLastError =
+        settings.get('automatic_backup_last_error') as String?;
   }
 
   @override
@@ -45,6 +76,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
+          if (_dataMessage != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: ListTile(
+                  leading: const Icon(Icons.check_circle_outline),
+                  title: Text(_dataMessage!),
+                  trailing: IconButton(
+                    tooltip: 'Dismiss',
+                    icon: const Icon(Icons.close),
+                    onPressed: () => setState(() => _dataMessage = null),
+                  ),
+                ),
+              ),
+            ),
           // ─── Appearance ───
           _section('Appearance'),
 
@@ -132,11 +179,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _section('Data'),
 
           _tile(
-            icon: Icons.download_outlined,
-            title: 'Export Data',
-            subtitle: 'Save all entries as JSON',
-            onTap: _exportData,
+            icon: Icons.backup_outlined,
+            title: 'Backup Database',
+            subtitle: 'Save entries and settings in an encrypted .nabd file',
+            onTap: _createEncryptedBackup,
           ),
+
+          _tile(
+            icon: Icons.restore_outlined,
+            title: 'Restore Database',
+            subtitle: 'Import an encrypted .nabd file using its password',
+            onTap: _restoreEncryptedBackup,
+          ),
+
+          _tile(
+            icon: Icons.folder_open_outlined,
+            title: 'Default Backup Folder',
+            subtitle: _automaticBackupDirectory == null
+                ? 'Choose a folder for automatic backups'
+                : _automaticBackupDirectory!,
+            onTap: _chooseAutomaticBackupDirectory,
+          ),
+
+          SwitchListTile(
+            secondary: const Icon(
+              Icons.schedule_outlined,
+              color: AppColors.primary,
+            ),
+            title: const Text('Automatic Database Backup'),
+            subtitle: Text(
+              _automaticBackupEnabled
+                  ? 'Every ${_automaticBackupFrequencyHours == 24 ? 'day' : 'week'} when the system allows'
+                  : 'Off — enable after choosing a folder and password',
+            ),
+            value: _automaticBackupEnabled,
+            onChanged: _setAutomaticBackupEnabled,
+          ),
+
+          if (_automaticBackupEnabled)
+            _tile(
+              icon: Icons.event_repeat_outlined,
+              title: 'Backup Frequency',
+              subtitle: _automaticBackupFrequencyHours == 24
+                  ? 'Daily'
+                  : 'Weekly',
+              onTap: _pickAutomaticBackupFrequency,
+            ),
+
+          if (_automaticBackupLastStatus != null)
+            _tile(
+              icon: _automaticBackupLastStatus == 'success'
+                  ? Icons.check_circle_outline
+                  : Icons.error_outline,
+              title: _automaticBackupLastStatus == 'success'
+                  ? 'Automatic Backup Successful'
+                  : 'Automatic Backup Failed',
+              subtitle: _automaticBackupLastStatus == 'success'
+                  ? (_automaticBackupLastSuccess ?? 'Completed')
+                  : (_automaticBackupLastError ?? 'Open backup settings to review'),
+              onTap: null,
+            ),
 
           _tile(
             icon: Icons.delete_outline,
@@ -452,18 +554,240 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _exportData() async {
-    try {
-      final entries = _db.getAllEntries();
-      final json = entries.map((e) => e.toMap()).toList();
+  Future<String?> _askForBackupPassword({required String title}) async {
+    final controller = TextEditingController();
+    final password = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          obscureText: true,
+          textInputAction: TextInputAction.done,
+          decoration: const InputDecoration(
+            labelText: 'Database password',
+            hintText: 'Use at least 8 characters',
+          ),
+          onSubmitted: (value) => Navigator.pop(ctx, value.trim()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return password;
+  }
 
-      final text = json.toString();
-      await Share.share(text, subject: 'My Journal Export');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Export failed: $e')));
+  Future<RestoreMode?> _pickRestoreMode() {
+    return showDialog<RestoreMode>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Restore mode'),
+        content: const Text(
+          'Merge keeps current data and adds the backup. Replace clears current data first.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, RestoreMode.merge),
+            child: const Text('Merge'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, RestoreMode.replace),
+            child: const Text('Replace'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool> _confirmReplaceRestore() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Replace current data?'),
+            content: const Text(
+              'Replace will remove current entries and settings before restoring the backup.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Replace'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  void _showDataMessage(String message) {
+    if (!mounted) return;
+    setState(() => _dataMessage = message);
+  }
+
+  Future<void> _chooseAutomaticBackupDirectory() async {
+    final selected = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Choose default backup folder',
+    );
+    if (!mounted || selected == null || selected.isEmpty) return;
+
+    await Hive.box('settings').put('automatic_backup_directory', selected);
+    if (!mounted) return;
+    setState(() => _automaticBackupDirectory = selected);
+    _showDataMessage('Default backup folder saved');
+  }
+
+  Future<void> _setAutomaticBackupEnabled(bool enabled) async {
+    if (!enabled) {
+      await BackupSchedulerService.cancel();
+      await Hive.box('settings').put('automatic_backup_enabled', false);
+      if (!mounted) return;
+      setState(() => _automaticBackupEnabled = false);
+      _showDataMessage('Automatic database backup disabled');
+      return;
+    }
+
+    if (_automaticBackupDirectory == null ||
+        _automaticBackupDirectory!.isEmpty) {
+      _showDataMessage('Choose a Default Backup Folder first');
+      return;
+    }
+
+    final password = await _askForBackupPassword(
+      title: 'Set automatic backup password',
+    );
+    if (!mounted || password == null || password.length < 8) {
+      if (mounted && password != null && password.isNotEmpty) {
+        _showDataMessage('Use a password with at least 8 characters');
       }
+      return;
+    }
+
+    try {
+      await _secureStorage.write(
+        key: automaticBackupPasswordKey,
+        value: password,
+      );
+      await Hive.box('settings').put('automatic_backup_enabled', true);
+      await BackupSchedulerService.schedule(
+        frequency: Duration(hours: _automaticBackupFrequencyHours),
+      );
+      if (!mounted) return;
+      setState(() => _automaticBackupEnabled = true);
+      _showDataMessage('Automatic database backup enabled');
+    } catch (error) {
+      _showDataMessage('Could not schedule automatic backup: $error');
+    }
+  }
+
+  Future<void> _pickAutomaticBackupFrequency() async {
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Backup frequency'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 24),
+            child: const Text('Daily'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 168),
+            child: const Text('Weekly'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || selected == null) return;
+
+    await Hive.box('settings').put(
+      'automatic_backup_frequency_hours',
+      selected,
+    );
+    if (_automaticBackupEnabled) {
+      await BackupSchedulerService.schedule(
+        frequency: Duration(hours: selected),
+      );
+    }
+    if (!mounted) return;
+    setState(() => _automaticBackupFrequencyHours = selected);
+    _showDataMessage('Backup frequency updated');
+  }
+
+  Future<void> _createEncryptedBackup() async {
+    final password = await _askForBackupPassword(
+      title: 'Create encrypted backup',
+    );
+    if (!mounted || password == null || password.isEmpty) return;
+
+    try {
+      final temporaryFile = await _backup.createBackup(password: password);
+      final bytes = await temporaryFile.readAsBytes();
+      final savedPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save encrypted database backup',
+        fileName: temporaryFile.uri.pathSegments.last,
+        type: FileType.custom,
+        allowedExtensions: ['nabd'],
+        bytes: bytes,
+      );
+      if (savedPath == null || savedPath.isEmpty) {
+        _showDataMessage('Backup canceled');
+      } else {
+        _showDataMessage('Encrypted database backup saved');
+      }
+      if (await temporaryFile.exists()) await temporaryFile.delete();
+    } catch (error) {
+      _showDataMessage('Backup failed: $error');
+    }
+  }
+
+  Future<void> _restoreEncryptedBackup() async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      withData: false,
+    );
+    if (!mounted || picked == null || picked.files.single.path == null) return;
+
+    final selectedPath = picked.files.single.path!;
+    if (!selectedPath.toLowerCase().endsWith('.nabd')) {
+      _showDataMessage('Please select an encrypted .nabd backup file');
+      return;
+    }
+
+    final mode = await _pickRestoreMode();
+    if (!mounted || mode == null) return;
+    if (mode == RestoreMode.replace && !await _confirmReplaceRestore()) {
+      return;
+    }
+
+    final password = await _askForBackupPassword(
+      title: 'Unlock encrypted backup',
+    );
+    if (!mounted || password == null || password.isEmpty) return;
+
+    final result = await _backup.restoreBackup(
+      selectedPath,
+      password: password,
+      mode: mode,
+    );
+    if (!mounted) return;
+    if (result.ok) {
+      _showDataMessage(
+        'Restore completed: ${result.entriesImported} entries imported',
+      );
+    } else {
+      _showDataMessage('Restore failed: ${result.error ?? 'Unknown error'}');
     }
   }
 
@@ -492,8 +816,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (ok == true) {
       await _privacy.deleteEverything();
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('All data deleted')));
+        _showDataMessage('All data deleted');
       }
     }
   }

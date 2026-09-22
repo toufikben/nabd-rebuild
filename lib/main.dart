@@ -11,6 +11,7 @@ import 'services/encryption_service.dart';
 import 'services/notification_service.dart';
 import 'services/database_migration_service.dart';
 import 'services/settings_service.dart';
+import 'services/backup_scheduler_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,12 @@ Future<void> main() async {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
+
+  try {
+    await BackupSchedulerService.initialize();
+  } catch (_) {
+    // The app remains usable; automatic backup can be enabled after retrying.
+  }
 
   runApp(const ProviderScope(child: NabdApp()));
 
