@@ -52,6 +52,7 @@ class AppLockPolicy {
 class BiometricService {
   final LocalAuthentication _auth = LocalAuthentication();
   static final AppLockPolicy _policy = AppLockPolicy();
+  String? lastAuthenticationError;
 
   /// هل الجهاز يدعم المصادقة الحيوية؟
   Future<bool> isAvailable() async {
@@ -66,15 +67,18 @@ class BiometricService {
 
   /// عرض نافذة المصادقة.
   Future<bool> authenticate({String reason = 'Unlock your journal'}) async {
+    lastAuthenticationError = null;
     try {
       return await _auth.authenticate(
         localizedReason: reason,
         options: const AuthenticationOptions(
           stickyAuth: true,
           biometricOnly: false,
+          useErrorDialogs: true,
         ),
       );
-    } catch (_) {
+    } catch (error) {
+      lastAuthenticationError = error.toString();
       return false;
     }
   }
