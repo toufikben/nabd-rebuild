@@ -8,6 +8,8 @@ import 'core/theme/app_theme.dart';
 import 'services/biometric_service.dart';
 import 'services/settings_service.dart';
 
+final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 class NabdApp extends ConsumerStatefulWidget {
   const NabdApp({super.key});
 
@@ -66,6 +68,7 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
 
     return MaterialApp.router(
       title: 'نبض',
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
       darkTheme: darkTheme,

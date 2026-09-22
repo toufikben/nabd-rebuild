@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
+import '../../app.dart';
 import '../../services/biometric_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/backup_scheduler_service.dart';
@@ -616,8 +617,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showDataMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
+    final messenger = rootScaffoldMessengerKey.currentState;
+    if (messenger == null) return;
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
   }
