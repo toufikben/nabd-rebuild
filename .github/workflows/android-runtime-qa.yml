@@ -171,6 +171,35 @@ jobs:
             done
           '
 
+          # Do not proceed until emulated FUSE storage is mounted and writable.
+          # This protects install/launch from the Android framework timeout seen
+          # in the previous API 35 run and preserves infrastructure diagnostics.
+          adb shell sm list-volumes all | tee runtime-evidence/storage-volumes-initial.txt
+          adb shell dumpsys mount | tee runtime-evidence/mount-initial.txt
+          adb shell dumpsys media.extractor | tee runtime-evidence/media-extractor-initial.txt
+          adb shell dumpsys activity providers | tee runtime-evidence/providers-initial.txt
+          adb shell mount | tee runtime-evidence/mount-table-initial.txt
+          storage_ready=1
+          timeout 240 bash -c '
+            until adb shell sm list-volumes all | grep -Eq "emulated;0[[:space:]]+mounted" &&
+                  adb shell sh -c "touch /sdcard/.runtime-storage-check && rm -f /sdcard/.runtime-storage-check"; do
+              sleep 5
+            done
+          ' || storage_ready=0
+          adb shell sm list-volumes all | tee runtime-evidence/storage-volumes-before-app.txt
+          adb shell dumpsys mount | tee runtime-evidence/mount-before-app.txt
+          adb shell dumpsys media.extractor | tee runtime-evidence/media-extractor-before-app.txt
+          adb shell dumpsys activity providers | tee runtime-evidence/providers-before-app.txt
+          adb shell mount | tee runtime-evidence/mount-table-before-app.txt
+          if [ "$storage_ready" -ne 0 ]; then
+            echo 'STORAGE_RESULT=0' | tee runtime-evidence/storage-result.txt
+          else
+            echo 'STORAGE_RESULT=1' | tee runtime-evidence/storage-result.txt
+            echo 'Environment failure: emulated storage did not become usable.' \
+              | tee runtime-evidence/storage-failure.txt
+            exit 71
+          fi
+
           adb shell settings put global window_animation_scale 0
           adb shell settings put global transition_animation_scale 0
           adb shell settings put global animator_duration_scale 0
@@ -372,10 +401,11 @@ jobs:
           emulator -list-avds | tee runtime-evidence/emulator-avds-before-runner.txt || true
           emulator -version 2>&1 | tee runtime-evidence/emulator-version.txt || true
           printf '%s\n' \
-            'requested-api-level=35' \
+            'requested-api-level=34' \
             'requested-target=google_apis' \
             'requested-abi=x86_64' \
             'requested-profile=pixel_2' \
+            'requested-gpu=off' \
             | tee runtime-evidence/emulator-requested-config.txt
           sha256sum build/app/outputs/flutter-apk/app-debug.apk \
             | tee runtime-evidence/apk-sha256.txt
@@ -387,7 +417,7 @@ jobs:
       - name: Run emulator smoke test
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_2
@@ -397,7 +427,7 @@ jobs:
           heap-size: 768M
           force-avd-creation: true
           emulator-boot-timeout: 1200
-          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu off -no-snapshot
           disable-spellchecker: true
           enable-hw-keyboard: true
           disable-animations: true
@@ -413,6 +443,11 @@ jobs:
           timeout 20 adb shell dumpsys meminfo "$PACKAGE_NAME" > runtime-evidence/meminfo-failure.txt 2>&1 || true
           timeout 20 adb shell dumpsys activity activities > runtime-evidence/activity-failure.txt 2>&1 || true
           timeout 20 adb shell dumpsys window windows > runtime-evidence/window-failure.txt 2>&1 || true
+          timeout 20 adb shell sm list-volumes all > runtime-evidence/storage-volumes-failure.txt 2>&1 || true
+          timeout 20 adb shell dumpsys mount > runtime-evidence/mount-failure.txt 2>&1 || true
+          timeout 20 adb shell dumpsys media.extractor > runtime-evidence/media-extractor-failure.txt 2>&1 || true
+          timeout 20 adb shell dumpsys activity providers > runtime-evidence/providers-failure.txt 2>&1 || true
+          timeout 20 adb shell mount > runtime-evidence/mount-table-failure.txt 2>&1 || true
           timeout 20 adb shell pidof com.android.systemui > runtime-evidence/systemui-pid-failure.txt 2>&1 || true
           timeout 20 adb shell pidof com.google.android.gms > runtime-evidence/google-play-services-pid-failure.txt 2>&1 || true
           timeout 20 adb exec-out screencap -p > runtime-evidence/failure.png 2>/dev/null || true
