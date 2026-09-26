@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/l10n/app_localizations.dart';
@@ -87,7 +87,7 @@ class _EchoCard extends StatelessWidget {
                     Text(
                       mood?.label(l10n.isArabic ? 'ar' : 'en') ??
                           l10n.unknownMood,
-                      style: const TextStyle(color: AppColors.textTertiary),
+                      style: TextStyle(color: AppColors.textTertiary),
                     ),
                   ],
                 ),

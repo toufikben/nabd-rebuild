@@ -46,7 +46,7 @@ class GenderThemes {
           dark ? AppColors.darkSurfaceAlt : const Color(0xFFF2EFF7),
       surfaceContainerHigh:
           dark ? const Color(0xFF2B2830) : const Color(0xFFEDE9F2),
-      outline: dark ? const Color(0xFF48434D) : AppColors.border,
+      outline: dark ? const Color(0xFF48434D) : const Color(0xFFDAD6E2),
       outlineVariant: dark ? const Color(0xFF35313A) : const Color(0xFFE5E1E9),
     );
 

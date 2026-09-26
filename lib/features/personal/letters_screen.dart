@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -148,12 +148,12 @@ class _LetterCard extends StatelessWidget {
             if (!future && letter.address.isNotEmpty)
               Text(
                 'To: ${letter.address}',
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             if (future && letter.unlockDate != null)
               Text(
                 'Opens: ${_date(letter.unlockDate!)}',
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             const SizedBox(height: 10),
             Text(

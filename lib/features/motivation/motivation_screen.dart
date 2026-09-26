@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../services/motivation_service.dart';
@@ -83,7 +83,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
                   const SizedBox(height: 14),
                   Text(
                     '— ${_quote.$2}',
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ],
               ),

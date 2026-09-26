@@ -1,3 +1,4 @@
+﻿import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -5,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../services/biometric_service.dart';
+import '../../services/encryption_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/backup_service.dart';
@@ -134,8 +136,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _tile(
             icon: Icons.download_outlined,
             title: 'Export Data',
-            subtitle: 'Save all entries as JSON',
+            subtitle: 'Save an encrypted .nabd backup',
             onTap: _exportData,
+          ),
+
+          _tile(
+            icon: Icons.upload_outlined,
+            title: 'Restore Backup',
+            subtitle: 'Import an encrypted .nabd backup',
+            onTap: _restoreData,
+          ),
+
+          _tile(
+            icon: Icons.key_outlined,
+            title: 'Rotate Encryption Key',
+            subtitle: 'Re-encrypt all local data with a new key',
+            onTap: _confirmRotateKey,
           ),
 
           _tile(
@@ -205,7 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       subtitle: Text(subtitle),
       trailing: onTap != null
-          ? const Icon(Icons.chevron_right, color: AppColors.textTertiary)
+          ? Icon(Icons.chevron_right, color: AppColors.textTertiary)
           : null,
       onTap: onTap,
     );
@@ -469,6 +485,105 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     } finally {
       passwordController.dispose();
+    }
+  }
+
+  /// Picks an encrypted `.nabd` file, asks for its password and restores it.
+  Future<void> _restoreData() async {
+    final passwordController = TextEditingController();
+    FilePickerResult? picked;
+    try {
+      picked = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        withData: false,
+      );
+      if (picked == null || !mounted) return;
+      final path = picked.files.single.path;
+      if (path == null) return;
+
+      final password = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Unlock backup'),
+          content: TextField(
+            controller: passwordController,
+            obscureText: true,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Backup password'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, passwordController.text),
+              child: const Text('Restore'),
+            ),
+          ],
+        ),
+      );
+      if (password == null || password.isEmpty || !mounted) return;
+
+      final result = await _backup.restoreBackup(path, password: password);
+      if (!mounted) return;
+      final message = result.ok
+          ? 'Restored ${result.entriesImported} entries '
+              '(${result.imagesRestored} images, ${result.audioRestored} audio)'
+          : 'Restore failed: ${result.error}';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      if (result.ok) setState(() {});
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Restore failed: $e')));
+      }
+    } finally {
+      passwordController.dispose();
+    }
+  }
+
+  /// Rotates the master key after an explicit confirmation.
+  Future<void> _confirmRotateKey() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rotate encryption key?'),
+        content: const Text(
+          'Every entry will be re-encrypted with a new key. '
+          'If this is interrupted the old key is restored automatically.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Rotate'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Rotating encryption key...')),
+    );
+    try {
+      await EncryptionService().rotateKey();
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Encryption key rotated')),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Key rotation failed: $e')),
+      );
     }
   }
 

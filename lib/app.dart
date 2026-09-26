@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/l10n/app_localizations.dart';
 import 'core/router.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'services/biometric_service.dart';
 import 'services/settings_service.dart';
@@ -52,6 +53,16 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final genderTheme = ref.watch(genderThemeProvider);
+
+    // AppColors.textPrimary and friends are static getters, so they have to be
+    // told which brightness is live before any descendant reads them.
+    AppColors.brightness = switch (themeMode) {
+      ThemeMode.dark => Brightness.dark,
+      ThemeMode.light => Brightness.light,
+      ThemeMode.system =>
+        WidgetsBinding.instance.platformDispatcher.platformBrightness,
+    };
+
     final lightTheme = AppTheme.getTheme('light', genderTheme);
     final darkTheme = AppTheme.getTheme('dark', genderTheme);
 

@@ -226,7 +226,7 @@ class GardenScreen extends ConsumerWidget {
           Text(
             label,
             style:
-                const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                TextStyle(fontSize: 10, color: AppColors.textSecondary),
           ),
         ],
       ),

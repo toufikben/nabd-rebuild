@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -158,7 +158,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
                 alignment: Alignment.centerRight,
                 child: Text(
                   'هذا الشهر: ${summary.thisMonthEntries} إدخال',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
             ],
@@ -334,7 +334,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
         ),

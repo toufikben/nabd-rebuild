@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -135,7 +135,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
             const SizedBox(height: 16),
             Text(
               '— ${wisdom.$2}',
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ],
         ),
