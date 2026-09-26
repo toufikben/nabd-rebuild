@@ -28,9 +28,9 @@
 
 | البند | الحالة | التفصيل |
 |---|---|---|
-| أيقونة التطبيق | ✅ موجودة | `assets/icons/app_icon.png` + `app_icon_fg.png` + `ic_launcher_foreground.png`؛ لا عمل مطلوب |
-| شاشة قبل Splash | ✅ مُزالة | `main.dart` كان يفتح 5 صناديق Hive مشفّرة قبل `runApp`، فكانت تشاشة بيضاء. الانتظار الثابت 3200ms أُلغي وصار 900ms كحد أدنى للتنقل |
-| صوت Splash | ✅ موحّد | حُذف `splash_bowl/flute/harp/oud/rain` وخُفّض العدد من 5 عشوائيات إلى `tibetan_bowl` واحد؛ لا يقطع أول إطار |
+| أيقونة التطبيق | ✅ مُصلَحة | ملفات `assets/icons/` كانت موجودة، لكن `mipmap-*/ic_launcher.png` كانت صورًا فارغة (0.4–1.4KB). أُعيد توليدها من `app_icon.png` (1024×1024) بكل الكثافات، مع `ic_launcher_foreground` وadaptive + monochrome icon وخلفية `#0A0D14` |
+| شاشة قبل Splash | ✅ مُزالة | `main.dart` كان يفتح 5 صناديق Hive مشفّرة قبل `runApp`، فكانت تشاشة بيضاء. أُلغي الحجب: الصوت صار `unawaited` مع `timeout` 4 ثوانٍ، والتنقل في مسار مستقل `_routeAway` لا يُحجب أبدًا بالصوت |
+| صوت Splash | ✅ قطرة ماء | `splash_drop.wav` مُركَّب برمجيًا (3.0 ثانية، قطرة + صدى متلاشٍ) بلا أي ترخيص خارجي؛ كل نواتج السبلاش الخمسة تستخدمه. الملفات الخمسة القديمة ما زالت موجودة للمُناخ和其他 |
 | تباين الوضع الليلي | ✅ مُصلَح | `AppColors.text*/surface/background/border` صارت getters حساسة للسطوع، و`NabdApp` يزامن `AppColors.brightness` مع السمة |
 | اختيار مكان حفظ النسخة | ✅ مضاف | Settings → Export Data يختار المسار عبر `FilePicker.saveFile` بدل المشاركة إلى مجلد مؤقت |
 | استرجع مع Merge/Replace | ✅ مضاف | حوار اختيار الوضع؛ `RestoreMode.merge` يحافظ على الحالي، و`replace` يستبدل |

@@ -1,31 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 
-/// SplashService - plays the launch cue.
-///
-/// The previous build rotated through five random splash variants, which made
-/// the launch feel unpredictable. There is now a single signature sound, and
-/// a user override stored under `splash_sound` still wins when present.
+/// SplashService — يدير السبلاش الدوّار + الأصوات.
 class SplashService {
-  /// The one signature cue used unless the user picked another.
-  static const signatureSound = 'tibetan_bowl';
+  /// The signature launch cue: a synthesised water drop with a decaying echo,
+  /// 3.0s long so it lines up with the splash dwell time.
+  static const signatureSound = 'splash_drop';
 
   final AudioPlayer _player = AudioPlayer();
 
-  /// Resolves the cue to play: explicit user choice, else the signature sound.
-  ///
-  /// `requested` is whatever was persisted; unknown ids fall back to the
-  /// signature so a removed asset can never break the launch.
-  static String resolveSound(String? requested) {
-    if (requested == null || requested.isEmpty) return signatureSound;
-    return requested;
-  }
-
-  /// Plays the splash cue. Never throws; a missing asset is only logged.
+  /// يشغّل ملف الصوت المضمّن المرتبط بالـsplash.
   Future<void> playSplashSound(String soundId) async {
     try {
       await _player.setAsset('assets/sounds/$soundId.mp3');
-      await _player.setVolume(0.6);
+      await _player.setVolume(0.65);
       await _player.play();
     } catch (error) {
       debugPrint('Splash sound failed for $soundId: $error');
@@ -43,4 +34,76 @@ class SplashService {
   Future<void> dispose() async {
     await _player.dispose();
   }
+
+  /// يعيد splash التالي (لا يكرر السابق مباشرة).
+  static int getNextSplash() {
+    final box = Hive.box('settings');
+    final last = box.get('last_splash_id', defaultValue: 0) as int;
+
+    int next;
+    do {
+      next = DateTime.now().microsecondsSinceEpoch % _splashCount + 1;
+    } while (next == last && _splashCount > 1);
+
+    unawaited(box.put('last_splash_id', next));
+    return next;
+  }
+
+  /// Every splash variant now shares one cue so the launch is repeatable.
+  /// The splashId is still accepted so callers keep working.
+  static String defaultSoundFor(int splashId) => signatureSound;
+}
+
+class SplashOption {
+  final int id;
+  final String name;
+  final String description;
+  final String emoji;
+  final List<String> sounds;
+
+  const SplashOption({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.emoji,
+    required this.sounds,
+  });
+
+  static const all = [
+    SplashOption(
+      id: 1,
+      name: 'First Seed',
+      description: 'بذرة تسقط وتنبت',
+      emoji: '🌱',
+      sounds: ['splash_rain'],
+    ),
+    SplashOption(
+      id: 2,
+      name: 'New Dawn',
+      description: 'شروق الشمس خلف الجبال',
+      emoji: '🌅',
+      sounds: ['splash_flute', 'birds_distant'],
+    ),
+    SplashOption(
+      id: 3,
+      name: 'Book to Butterfly',
+      description: 'كتاب يتحول إلى فراشات',
+      emoji: '🦋',
+      sounds: ['paper_turn', 'splash_harp'],
+    ),
+    SplashOption(
+      id: 4,
+      name: 'Candle Light',
+      description: 'شمعة تضيء غرفة دافئة',
+      emoji: '🕯️',
+      sounds: ['splash_oud', 'whisper_gentle'],
+    ),
+    SplashOption(
+      id: 5,
+      name: 'Circle of Life',
+      description: 'دائرة ضوء تكشف شجرة',
+      emoji: '💫',
+      sounds: ['splash_bowl', 'drums_soft'],
+    ),
+  ];
 }
