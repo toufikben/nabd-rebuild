@@ -165,7 +165,7 @@ class _LetterCard extends StatelessWidget {
             SizedBox(height: 10),
             Text(
               _date(letter.createdAt),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 color: AppColors.textTertiary,
               ),

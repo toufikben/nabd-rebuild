@@ -124,7 +124,7 @@ class AchievementsScreen extends ConsumerWidget {
                         SizedBox(height: 2),
                         Text(
                           a.description,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary,
                           ),

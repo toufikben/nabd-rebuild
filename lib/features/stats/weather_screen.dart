@@ -142,7 +142,7 @@ class WeatherScreen extends ConsumerWidget {
                 SizedBox(height: 12),
                 Text(
                   monthlyWeather.labelEn,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,

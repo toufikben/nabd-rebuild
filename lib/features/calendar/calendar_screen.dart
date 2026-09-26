@@ -139,7 +139,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   _selectedDay == null
                       ? 'Select a day'
                       : '${_selectedDay!.day}/${_selectedDay!.month}/${_selectedDay!.year}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -148,7 +148,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 const Spacer(),
                 Text(
                   '${selectedEntries.length} ${selectedEntries.length == 1 ? 'entry' : 'entries'}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),

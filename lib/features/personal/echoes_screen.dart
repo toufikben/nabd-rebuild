@@ -102,7 +102,7 @@ class _EchoCard extends StatelessWidget {
             SizedBox(height: 10),
             Text(
               '${l10n.original}: ${_date(record.original.createdAt)}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
@@ -125,7 +125,7 @@ class _EchoCard extends StatelessWidget {
               SizedBox(height: 6),
               Text(
                 '${l10n.resolved}: ${_date(resolution.createdAt)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
                 ),

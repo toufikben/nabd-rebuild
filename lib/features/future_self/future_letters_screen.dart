@@ -330,7 +330,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
               SizedBox(height: 16),
               Text(
                 'Written: ${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   color: AppColors.textTertiary,
                 ),

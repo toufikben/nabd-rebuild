@@ -83,7 +83,7 @@ class _WordCloudScreenState extends ConsumerState<WordCloudScreen> {
         ),
       ),
       body: top.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'Write more entries to see your cloud',
                 style: TextStyle(color: AppColors.textSecondary),

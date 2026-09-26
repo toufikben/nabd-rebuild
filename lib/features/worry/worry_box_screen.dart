@@ -245,7 +245,7 @@ class _WorryCard extends StatelessWidget {
           SizedBox(height: 8),
           Text(
             item.text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 1.5,
               color: AppColors.textPrimary,

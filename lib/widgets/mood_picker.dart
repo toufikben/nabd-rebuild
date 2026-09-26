@@ -67,7 +67,7 @@ class MoodPicker extends StatelessWidget {
           // Title
           Text(
             langCode == 'ar' ? 'كيف تشعر؟' : 'How do you feel?',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -106,7 +106,7 @@ class MoodPicker extends StatelessWidget {
                         ),
                         child: Text(
                           Mood.categoryLabel(cat, langCode),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textTertiary,

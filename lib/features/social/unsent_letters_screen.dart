@@ -303,7 +303,7 @@ class _LetterCard extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onDelete,
-                icon: const Icon(
+                icon: Icon(
                   Icons.close,
                   size: 18,
                   color: AppColors.textTertiary,
@@ -318,7 +318,7 @@ class _LetterCard extends StatelessWidget {
             letter.content,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               height: 1.6,
               color: AppColors.textSecondary,
@@ -327,7 +327,7 @@ class _LetterCard extends StatelessWidget {
           SizedBox(height: 8),
           Text(
             '${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               color: AppColors.textTertiary,
             ),

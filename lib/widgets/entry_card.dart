@@ -62,7 +62,7 @@ class EntryCard extends StatelessWidget {
                             entry.title.isEmpty
                                 ? 'Untitled'
                                 : entry.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
@@ -73,7 +73,7 @@ class EntryCard extends StatelessWidget {
                           SizedBox(height: 2),
                           Text(
                             dateStr,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               color: AppColors.textSecondary,
                             ),
@@ -106,7 +106,7 @@ class EntryCard extends StatelessWidget {
                     entry.content,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
                       height: 1.5,
@@ -128,7 +128,7 @@ class EntryCard extends StatelessWidget {
                         SizedBox(width: 4),
                         Text(
                           '${entry.imagePaths.length}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             color: AppColors.textTertiary,
                           ),

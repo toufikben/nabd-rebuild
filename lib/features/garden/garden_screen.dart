@@ -337,7 +337,7 @@ class GardenScreen extends ConsumerWidget {
               SizedBox(width: 6),
               Text(
                 '${seed.daysCared} days of care',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
                 ),

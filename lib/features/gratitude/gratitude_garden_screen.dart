@@ -266,7 +266,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
             SizedBox(height: 12),
             Text(
               'Planted: ${item.createdAt.day}/${item.createdAt.month}/${item.createdAt.year}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 color: AppColors.textTertiary,
               ),

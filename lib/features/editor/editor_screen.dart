@@ -543,7 +543,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
                   controller: _titleController,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -571,7 +571,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     controller: _contentController,
                     maxLines: null,
                     expands: true,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       height: 1.7,
                       color: AppColors.textPrimary,

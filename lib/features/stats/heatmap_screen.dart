@@ -234,7 +234,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
         children: [
           Text(
             '$_year in review',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -278,7 +278,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
         SizedBox(height: 6),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
@@ -286,7 +286,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
         ),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             color: AppColors.textSecondary,
           ),

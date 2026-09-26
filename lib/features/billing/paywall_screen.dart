@@ -287,7 +287,7 @@ class _StoreUnavailableCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
-      child: const Column(
+      child: Column(
         children: [
           Icon(Icons.store_mall_directory_outlined,
               size: 40, color: AppColors.textTertiary),

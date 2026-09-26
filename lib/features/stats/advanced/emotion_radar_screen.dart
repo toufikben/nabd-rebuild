@@ -77,7 +77,7 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
         ),
       ),
       body: !hasData
-          ? const Center(
+          ? Center(
               child: Text(
                 'Not enough mood data yet',
                 style: TextStyle(color: AppColors.textSecondary),
@@ -231,7 +231,7 @@ class _RadarPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: labels[i],
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
