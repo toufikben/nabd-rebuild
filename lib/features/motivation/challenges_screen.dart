@@ -115,7 +115,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                         style: const TextStyle(fontSize: 26),
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +130,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                                   : AppColors.textPrimary,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             c.description,
                             style: TextStyle(

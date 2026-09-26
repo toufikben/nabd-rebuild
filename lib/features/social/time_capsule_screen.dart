@@ -52,7 +52,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Bury a message for your future self',
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
@@ -128,7 +128,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Unlock after:',
                   style: TextStyle(
                     fontSize: 12,

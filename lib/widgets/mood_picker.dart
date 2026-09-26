@@ -62,7 +62,7 @@ class MoodPicker extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // Title
           Text(
@@ -73,7 +73,7 @@ class MoodPicker extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // Clear option
           if (selectedMoodId != null)
@@ -146,7 +146,7 @@ class MoodPicker extends StatelessWidget {
                                     mood.emoji,
                                     style: const TextStyle(fontSize: 22),
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8),
                                   Text(
                                     mood.label(langCode),
                                     style: TextStyle(

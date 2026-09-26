@@ -114,7 +114,7 @@ class WeatherScreen extends ConsumerWidget {
             weekWeather: weekWeather,
             dayLabels: dayLabels,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
 
           // ─── Monthly average ───
           Container(
@@ -139,7 +139,7 @@ class WeatherScreen extends ConsumerWidget {
                   weather: monthlyWeather,
                   size: 80,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Text(
                   monthlyWeather.labelEn,
                   style: const TextStyle(

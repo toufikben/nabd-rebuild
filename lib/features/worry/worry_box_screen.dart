@@ -165,7 +165,7 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
                         onSubmitted: (_) => _addWorry(),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     IconButton(
                       onPressed: _addWorry,
                       icon: const Icon(Icons.archive_outlined),
@@ -219,7 +219,7 @@ class _WorryCard extends StatelessWidget {
             children: [
               Text(canReview ? '🔓' : '📦',
                   style: const TextStyle(fontSize: 18)),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   canReview
@@ -242,7 +242,7 @@ class _WorryCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             item.text,
             style: const TextStyle(

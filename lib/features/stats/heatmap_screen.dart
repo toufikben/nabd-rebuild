@@ -63,12 +63,12 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
             // ─── Heatmap ───
             _buildHeatmap(entries),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // ─── Legend ───
             _buildLegend(),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // ─── Stats ───
             _buildStats(entries),
@@ -182,7 +182,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
   Widget _buildLegend() {
     return Row(
       children: [
-        const Text(
+        Text(
           'Less',
           style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
         ),
@@ -201,8 +201,8 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
             ),
           );
         }),
-        const SizedBox(width: 6),
-        const Text(
+        SizedBox(width: 6),
+        Text(
           'More',
           style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
         ),
@@ -240,7 +240,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -275,7 +275,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
     return Column(
       children: [
         Icon(icon, color: AppColors.primary, size: 22),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         Text(
           value,
           style: const TextStyle(

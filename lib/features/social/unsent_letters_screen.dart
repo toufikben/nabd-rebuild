@@ -87,7 +87,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Write to someone you can\'t reach',
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
@@ -151,7 +151,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'To whom?',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
@@ -291,7 +291,7 @@ class _LetterCard extends StatelessWidget {
           Row(
             children: [
               const Text('💌', style: TextStyle(fontSize: 20)),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'To: ${letter.to}',
@@ -313,7 +313,7 @@ class _LetterCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             letter.content,
             maxLines: 4,
@@ -324,7 +324,7 @@ class _LetterCard extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
             style: const TextStyle(

@@ -116,7 +116,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       }).toList(),
                     ),
                   ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 // Sort + Favorites
                 Row(
                   children: [
@@ -125,7 +125,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       selected: _favoritesOnly,
                       onSelected: (v) => setState(() => _favoritesOnly = v),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     const Spacer(),
                     DropdownButton<String>(
                       value: _sortBy,
@@ -178,7 +178,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         const SizedBox(height: 16),
                         const Text('No results'),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Try different keywords',
                           style: TextStyle(
                             color: AppColors.textSecondary,

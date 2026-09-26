@@ -442,7 +442,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               // ─── Mood + Tags bar ───
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     // Mood
@@ -471,7 +471,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                               mood?.emoji ?? '😐',
                               style: const TextStyle(fontSize: 18),
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6),
                             Text(
                               mood?.label('en') ?? 'Mood',
                               style: TextStyle(
@@ -484,7 +484,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     // Add tag button
                     IconButton(
                       onPressed: _addTag,
@@ -536,7 +536,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   ),
                 ),
 
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
 
               // ─── Title ───
               Padding(
@@ -561,7 +561,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               ),
 
               // ─── Divider ───
-              const Divider(indent: 16, endIndent: 16),
+              Divider(indent: 16, endIndent: 16),
 
               // ─── Content ───
               Expanded(

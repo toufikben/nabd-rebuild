@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../services/motivation_service.dart';
@@ -80,7 +80,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     '— ${_quote.$2}',
                     style: TextStyle(color: AppColors.textSecondary),
@@ -95,7 +95,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
               label: const Text('اعرض رسالة أخرى'),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'محتوى محلي يساعدك على التوقف لحظة واستعادة اتجاهك.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary),

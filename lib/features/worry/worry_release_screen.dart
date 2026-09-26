@@ -95,7 +95,7 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Write it out. Then let it go.',
             style: TextStyle(
               color: AppColors.textSecondary,

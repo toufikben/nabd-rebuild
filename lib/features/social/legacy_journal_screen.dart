@@ -110,8 +110,8 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
                   '$legacyCount entries selected',
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
-                const SizedBox(height: 12),
-                const Text(
+                SizedBox(height: 12),
+                Text(
                   'Select entries that matter most.\n'
                   'These will be your legacy.',
                   style: TextStyle(

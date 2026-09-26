@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -52,7 +52,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Write a letter to your future self',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
@@ -118,7 +118,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Container(
                 width: 40,
                 height: 4,
@@ -136,7 +136,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'This letter will be locked until you choose',
                 style: TextStyle(color: AppColors.textSecondary),
               ),
@@ -155,7 +155,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Unlock after:',
                 style: TextStyle(
                   fontSize: 12,
@@ -290,7 +290,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                 color: AppColors.primary,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(
               '$days days remaining',
               style: TextStyle(color: AppColors.textSecondary),
@@ -327,7 +327,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                 letter.text,
                 style: const TextStyle(fontSize: 15, height: 1.7),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(
                 'Written: ${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
                 style: const TextStyle(

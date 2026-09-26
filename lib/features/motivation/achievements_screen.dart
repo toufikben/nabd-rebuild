@@ -54,14 +54,14 @@ class AchievementsScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Achievements Unlocked',
                   style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
 
           // Grid of achievements
           ...Achievement.all.map((a) {
@@ -106,7 +106,7 @@ class AchievementsScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +121,7 @@ class AchievementsScreen extends ConsumerWidget {
                                 : AppColors.textTertiary,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(
                           a.description,
                           style: const TextStyle(
@@ -130,7 +130,7 @@ class AchievementsScreen extends ConsumerWidget {
                           ),
                         ),
                         if (!isUnlocked && progress > 0) ...[
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(3),
                             child: LinearProgressIndicator(

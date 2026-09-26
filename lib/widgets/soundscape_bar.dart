@@ -79,7 +79,7 @@ class SoundscapeBar extends ConsumerWidget {
                               option.emoji,
                               style: const TextStyle(fontSize: 14),
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4),
                             Text(
                               option.labelEn,
                               style: TextStyle(
@@ -101,7 +101,7 @@ class SoundscapeBar extends ConsumerWidget {
               ),
             )
           else
-            const Expanded(
+            Expanded(
               child: Text(
                 'Ambient sounds',
                 style: TextStyle(

@@ -45,7 +45,7 @@ class DailyQuoteWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             '"$quote"',
             style: const TextStyle(
@@ -55,7 +55,7 @@ class DailyQuoteWidget extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(
             '— $author',
             style: const TextStyle(

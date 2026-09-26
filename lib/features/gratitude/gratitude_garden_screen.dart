@@ -263,7 +263,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(item.text, style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(
               'Planted: ${item.createdAt.day}/${item.createdAt.month}/${item.createdAt.year}',
               style: const TextStyle(

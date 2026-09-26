@@ -36,7 +36,7 @@ class GardenScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Plant your first seed',
                 style: TextStyle(color: AppColors.textSecondary),
               ),
@@ -124,7 +124,7 @@ class GardenScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // ─── All seeds ───
-          const Text(
+          Text(
             'ALL SEEDS',
             style: TextStyle(
               fontSize: 11,
@@ -214,7 +214,7 @@ class GardenScreen extends ConsumerWidget {
       child: Column(
         children: [
           Icon(icon, color: color, size: 20),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             value,
             style: TextStyle(
@@ -256,7 +256,7 @@ class GardenScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'YOUR MAIN TREE',
             style: TextStyle(
               fontSize: 10,
@@ -297,7 +297,7 @@ class GardenScreen extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  const Text(
+                  Text(
                     'Growth',
                     style:
                         TextStyle(fontSize: 11, color: AppColors.textSecondary),
@@ -332,9 +332,9 @@ class GardenScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.calendar_today,
+              Icon(Icons.calendar_today,
                   size: 14, color: AppColors.textSecondary),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Text(
                 '${seed.daysCared} days of care',
                 style: const TextStyle(

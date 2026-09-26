@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -153,7 +153,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
                 if (day != summary.lastSevenDays.last)
                   const SizedBox(height: 14),
               ],
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
@@ -261,7 +261,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           SizedBox(
             width: 45,
             child: Text(

@@ -156,7 +156,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
 
           // Entries list
           Expanded(
@@ -171,7 +171,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           color: AppColors.textTertiary.withValues(alpha: 0.3),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'No entries for this day',
                           style: TextStyle(color: AppColors.textSecondary),
                         ),

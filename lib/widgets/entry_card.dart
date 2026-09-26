@@ -70,7 +70,7 @@ class EntryCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             dateStr,
                             style: const TextStyle(
@@ -101,7 +101,7 @@ class EntryCard extends StatelessWidget {
 
                 // ─── Content preview ───
                 if (entry.content.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Text(
                     entry.content,
                     maxLines: 2,
@@ -116,7 +116,7 @@ class EntryCard extends StatelessWidget {
 
                 // ─── Media indicators ───
                 if (entry.imagePaths.isNotEmpty || entry.audioPath != null) ...[
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Row(
                     children: [
                       if (entry.imagePaths.isNotEmpty) ...[
@@ -125,7 +125,7 @@ class EntryCard extends StatelessWidget {
                           size: 14,
                           color: AppColors.textTertiary,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4),
                         Text(
                           '${entry.imagePaths.length}',
                           style: const TextStyle(
@@ -136,13 +136,13 @@ class EntryCard extends StatelessWidget {
                         const SizedBox(width: 10),
                       ],
                       if (entry.audioPath != null) ...[
-                        const Icon(
+                        Icon(
                           Icons.mic,
                           size: 14,
                           color: AppColors.textTertiary,
                         ),
                         const SizedBox(width: 4),
-                        const Text(
+                        Text(
                           'Audio',
                           style: TextStyle(
                             fontSize: 11,

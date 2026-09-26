@@ -94,7 +94,7 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
                       size: Size.infinite,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   _buildLegend(scores),
                 ],
               ),
@@ -120,7 +120,7 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
                 shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             Text(
               '${e.key}: $percent%',
               style: const TextStyle(fontSize: 12),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -132,7 +132,7 @@ class _LetterCard extends StatelessWidget {
                   future ? Icons.schedule_rounded : Icons.mail_outline_rounded,
                   color: future ? AppColors.primary : AppColors.secondary,
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     future ? 'Future letter' : 'Unsent letter',
@@ -162,7 +162,7 @@ class _LetterCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(height: 1.55),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               _date(letter.createdAt),
               style: const TextStyle(

@@ -154,7 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       _sessionsCard(context),
                       const SizedBox(height: 10),
                       _silentCompanionCard(context),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
                       Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -170,7 +170,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               entries.isEmpty ? 'No entries yet' : 'No matches',
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8),
                             Text(
                               entries.isEmpty
                                   ? 'Tap + to write your first entry'
@@ -369,7 +369,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 4),
             Text(value,
                 style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Text(label,
                 style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
           ],

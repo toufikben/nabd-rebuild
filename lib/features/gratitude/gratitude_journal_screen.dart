@@ -156,7 +156,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
             ),
             const SizedBox(height: 10),
             if (items.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 22),
                 child: Center(
                   child: Text(

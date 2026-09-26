@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/l10n/app_localizations.dart';
@@ -83,7 +83,7 @@ class _EchoCard extends StatelessWidget {
                   children: [
                     Text(mood?.emoji ?? '❔',
                         style: const TextStyle(fontSize: 20)),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
                       mood?.label(l10n.isArabic ? 'ar' : 'en') ??
                           l10n.unknownMood,
@@ -99,7 +99,7 @@ class _EchoCard extends StatelessWidget {
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               '${l10n.original}: ${_date(record.original.createdAt)}',
               style: const TextStyle(
@@ -122,7 +122,7 @@ class _EchoCard extends StatelessWidget {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               Text(
                 '${l10n.resolved}: ${_date(resolution.createdAt)}',
                 style: const TextStyle(

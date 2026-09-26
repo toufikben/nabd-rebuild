@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -102,7 +102,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    const Text(
+                    Text(
                       'لا يمكن تعديل نص الحكمة. احذفها ثم أنشئ حكمة جديدة إذا رغبت.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: AppColors.textSecondary),
@@ -132,7 +132,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               '— ${wisdom.$2}',
               style: TextStyle(color: AppColors.textSecondary),
@@ -156,7 +156,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'أنشئ حكمة جديدة من البيانات المحلية.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textSecondary),

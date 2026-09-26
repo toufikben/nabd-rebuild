@@ -117,7 +117,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             ],
 
             if (monetization.error != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(
                 monetization.error!,
                 style: const TextStyle(color: AppColors.danger, fontSize: 12),
@@ -125,9 +125,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               ),
             ],
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
-            const Text(
+            Text(
               'سيتم تجديد الاشتراك تلقائياً. يمكنك الإلغاء في أي وقت من إعدادات المتجر.',
               style: TextStyle(
                 color: AppColors.textTertiary,
@@ -163,14 +163,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       child: Row(
         children: [
           Text(emoji, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Text(
               text,
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
           ),
-          const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+          Icon(Icons.check_circle, color: AppColors.success, size: 20),
         ],
       ),
     );
@@ -239,7 +239,7 @@ class _PlanCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                   ],
                   Text(
                     title,
@@ -249,7 +249,7 @@ class _PlanCard extends StatelessWidget {
                       color: highlighted ? Colors.white : null,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: TextStyle(

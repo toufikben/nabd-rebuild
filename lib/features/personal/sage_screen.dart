@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/l10n/app_localizations.dart';
@@ -83,7 +83,7 @@ class _SageScreenState extends State<SageScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text(
                     '— ${_sage.$2}',
                     style: TextStyle(color: AppColors.textSecondary),
@@ -91,7 +91,7 @@ class _SageScreenState extends State<SageScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               l10n.sageLocalNote,
               textAlign: TextAlign.center,
