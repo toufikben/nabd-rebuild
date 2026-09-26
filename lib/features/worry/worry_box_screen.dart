@@ -99,7 +99,7 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
             ),
             Expanded(
               child: worries.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [

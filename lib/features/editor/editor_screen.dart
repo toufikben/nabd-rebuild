@@ -548,7 +548,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Title',
                     border: InputBorder.none,
                     hintStyle: TextStyle(
@@ -576,7 +576,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                       height: 1.7,
                       color: AppColors.textPrimary,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Write your thoughts...',
                       border: InputBorder.none,
                       hintStyle: TextStyle(
