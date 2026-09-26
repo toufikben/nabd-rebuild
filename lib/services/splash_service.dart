@@ -6,6 +6,10 @@ import 'package:just_audio/just_audio.dart';
 
 /// SplashService — يدير السبلاش الدوّار + الأصوات.
 class SplashService {
+  /// Number of distinct splash animations. The sound is shared, but the
+  /// animation still rotates so the launch does not look identical every time.
+  static const _splashCount = 5;
+
   /// The signature launch cue: a synthesised water drop with a decaying echo,
   /// 3.0s long so it lines up with the splash dwell time.
   static const signatureSound = 'splash_drop';
