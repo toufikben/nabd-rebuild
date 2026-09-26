@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
@@ -23,6 +24,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(dataRevisionProvider);
     final selectedEntries = _selectedDay == null
         ? <JournalEntry>[]
         : _db.getEntriesForDate(_selectedDay!);

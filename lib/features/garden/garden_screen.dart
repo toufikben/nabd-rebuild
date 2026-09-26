@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/data_revision.dart';
 import '../../models/seed.dart';
 import '../../services/audio_service.dart';
 import '../../services/garden_service.dart';
@@ -14,6 +15,7 @@ class GardenScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(dataRevisionProvider);
     final state = ref.watch(gardenProvider);
     final garden = ref.read(gardenProvider.notifier);
 

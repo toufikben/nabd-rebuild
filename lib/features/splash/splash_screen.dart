@@ -10,7 +10,8 @@ import '../../core/app_settings.dart';
 import '../../services/splash_service.dart';
 import '../../services/biometric_service.dart';
 
-/// SplashScreen — يعرض splash عشوائي من 5 (لا يكرر السابق).
+/// SplashScreen - the launch screen. It shows immediately and hands over as
+/// soon as the encrypted store is readable.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -19,31 +20,35 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late final int _splashId;
   final SplashService _splash = SplashService();
 
   @override
   void initState() {
     super.initState();
-    _splashId = SplashService.getNextSplash();
     _boot();
   }
 
   Future<void> _boot() async {
+    // Navigate as soon as the data is readable. Waiting on the audio clip made
+    // the launch feel like a blank screen froze before the splash appeared.
+    final minDisplay = Future.delayed(
+      const Duration(milliseconds: 900),
+    );
+    if (!mounted) return;
+    await _routeAfterSplash();
+    await minDisplay;
+  }
+
+  Future<void> _routeAfterSplash() async {
     final box = Hive.box('settings');
     final soundEnabled =
         box.get('splash_sound_enabled', defaultValue: true) as bool;
-    final customSound = box.get('splash_sound') as String?;
-    final requestedSound =
-        customSound ?? SplashService.defaultSoundFor(_splashId);
-    final sound = AppSettings.fallbackSound(requestedSound);
+    final sound = SplashService.resolveSound(box.get('splash_sound') as String?);
 
     if (soundEnabled && AppSettings.splashSoundEnabled) {
-      await _splash.playSplashSound(sound);
+      // Do not block the first frame on audio setup.
+      unawaited(_splash.playSplashSound(sound));
     }
-
-    await Future.delayed(const Duration(milliseconds: 3200));
-    await _splash.stopSplashSound();
 
     if (!mounted) return;
 

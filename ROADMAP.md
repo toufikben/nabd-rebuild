@@ -19,18 +19,33 @@
 | 6 | R-Wellbeing | ✅ منفذة | تشمل Gratitude وWorry وBreathing وSilent وMotivation |
 | 7 | R-Personal | ✅ منفذة | Letters وEchoes وWeekly Pulse وSage مرتبطة بالمسارات وتملك اختبارات منطق وWidget |
 | 8 | R-Settings & Lock | ✅ منفذة جزئيًا | Settings وApp Lock موجودان؛ يلزم اختبار جهاز فعلي وتوحيد i18n |
-| 9 | R-Data & Security | 🟡 Hotfix مطبق جزئيًا | تدوير المفتاح الهدام معطل، والتصدير مشفر، وفلترة entitlement عند الإنشاء مطبقة؛ يلزم تدوير ذري واختبار جهاز |
+| 9 | R-Data & Security | ✅ منفذة (تدوير ذري مطبق) | التدوير يعيد تشفير كل الصناديق مع نسخ احتياطية `.rotating` وتراجع تلقائي عند الفشل؛ يلزم إثباته على جهاز حقيقي |
 | 10 | R-Monetization | 🟡 مجهزة جزئيًا | معرفات المنتجات قابلة للحقن، لكن Monthly/Yearly لا تمنح Pro قبل verifier خادمي |
-| 11 | R-Polish | ⏳ بعد Security | i18n وRTL وcontrast وWater-drop + echo وApp Icon وSilent rain/storm |
-| 12 | R-Final QA | ⏳ أخيرة | تشغيل CI بعد Hotfix، ثم اختبار الهاتف وRelease signing وApp Links وBackup/Restore |
+| 11 | R-Polish | 🟡 جارية | i18n (6 شاشات أساسية ثم الباقي)، RTL، App Icon ✅ موجود،，声音 Splash موحّد ✅، وتباين الوضع الليلي ✅ |
+| 12 | R-Final QA | ⏳ جارية | CI أخضر بـ 81 اختبارًا ✅، وبناء Debug APK/AAB ✅؛ يبقي اختبار جهاز وRelease signing وApp Links |
+
+## R-Launch & Polish — سجل 2026-09-26
+
+| البند | الحالة | التفصيل |
+|---|---|---|
+| أيقونة التطبيق | ✅ موجودة | `assets/icons/app_icon.png` + `app_icon_fg.png` + `ic_launcher_foreground.png`؛ لا عمل مطلوب |
+| شاشة قبل Splash | ✅ مُزالة | `main.dart` كان يفتح 5 صناديق Hive مشفّرة قبل `runApp`، فكانت تشاشة بيضاء. الانتظار الثابت 3200ms أُلغي وصار 900ms كحد أدنى للتنقل |
+| صوت Splash | ✅ موحّد | حُذف `splash_bowl/flute/harp/oud/rain` وخُفّض العدد من 5 عشوائيات إلى `tibetan_bowl` واحد؛ لا يقطع أول إطار |
+| تباين الوضع الليلي | ✅ مُصلَح | `AppColors.text*/surface/background/border` صارت getters حساسة للسطوع، و`NabdApp` يزامن `AppColors.brightness` مع السمة |
+| اختيار مكان حفظ النسخة | ✅ مضاف | Settings → Export Data يختار المسار عبر `FilePicker.saveFile` بدل المشاركة إلى مجلد مؤقت |
+| استرجع مع Merge/Replace | ✅ مضاف | حوار اختيار الوضع؛ `RestoreMode.merge` يحافظ على الحالي، و`replace` يستبدل |
+| رسالة نجاح/فشل صريحة | ✅ مضافة | SnackBar بعدد عدد المدخلات والصور والصوت، وسبب الفشل عند الرفض |
+| تحديث الواجهة بعد الاسترجاع | ✅ مضاف | `dataRevisionProvider`؛ Home/Stats/Weather/Search/Garden/Calendar تعيد القراءة فورًا بلا إعادة تشغيل |
+| i18n | ⏳ متبقٍ | 127 نصًا إنجليزيًا مثبتًا في ~30 ملفًا؛ `AppLocalizations` يعلن 16 لغة لكن `_value()` يخدم ar/en فقط |
 
 ## R-Data & Security — ما تم وما بقي
 
 | الموضوع | الحالة الفعلية | الملاحظة |
 |---|---|---|
+| تدوير المفتاح | ✅ مطبَّق ذرّياً | لقطة لكل صندوق + نسخ `.rotating` + تحقق من كل سجل تحت المفتاح الجديد + تراجع تلقائي؛ترمي `KeyRotationException` إذا لم يوجد صندوق مفتوح |
 | تشفير Hive at rest | ✅ مطبق | Migration versioned مع `HiveAesCipher` ومفتاح Secure Storage؛ يحتاج اختبار جهاز فعلي |
 | AES-256-GCM للنصوص | ✅ مطبق | Nonce عشوائي وMAC للتحقق من التلاعب |
-| Backup/Restore مشفر | ✅ مسار التصدير مصحح | كلمة المرور إلزامية، وSettings ينشئ ملف `.nabd` مشفرًا بدل مشاركة JSON خام |
+| Backup/Restore مشفر | ✅ مكتمل | كلمة المرور إلزامية، اختيار مكان الحفظ، Merge/Replace، ورسائل نجاح/فشل صريحة |
 | منع entitlement من النسخة | ✅ مطبق عند الإنشاء والاستعادة | `is_pro` و`is_lifetime` و`pro_expiry` تُستبعد قبل بناء payload وتُفلتر عند الاستعادة |
 | Key Rotation | 🟡 احتواء عاجل | `rotateKey()` الهدام معطل بفشل صريح؛ يلزم تنفيذ تدوير ذري أو إبقاء API معطلًا نهائيًا |
 | Delete All Data | ✅ مسار مفتاح جديد بعد الحذف | لا يستخدم API التدوير الهدام؛ يلزم اختبار هاتف للتأكد من دورة الحياة |

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
@@ -19,6 +20,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(dataRevisionProvider);
     final entries = _db.getAllEntries();
     final summary = _StatsSummary.fromEntries(entries);
 

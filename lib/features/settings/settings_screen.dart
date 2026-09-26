@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/data_revision.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../services/biometric_service.dart';
@@ -440,8 +445,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  /// Exports an encrypted backup. The user picks where the `.nabd` file goes,
+  /// so a copy survives even if the app is uninstalled.
   Future<void> _exportData() async {
     final passwordController = TextEditingController();
+    final messenger = ScaffoldMessenger.of(context);
+    String? destination;
+    var saved = false;
     try {
       final password = await showDialog<String>(
         context: context,
@@ -451,9 +461,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             controller: passwordController,
             obscureText: true,
             autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'Backup password',
-            ),
+            decoration: const InputDecoration(labelText: 'Backup password'),
           ),
           actions: [
             TextButton(
@@ -461,39 +469,67 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(
-                dialogContext,
-                passwordController.text,
-              ),
-              child: const Text('Create backup'),
+              onPressed: () =>
+                  Navigator.pop(dialogContext, passwordController.text),
+              child: const Text('Continue'),
             ),
           ],
         ),
       );
-      if (password == null || password.isEmpty) return;
+      if (password == null || password.isEmpty || !mounted) return;
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Creating encrypted backup...')),
+      );
       final backup = await _backup.createBackup(password: password);
-      await Share.shareXFiles(
-        [XFile(backup.path)],
-        subject: 'Nabd encrypted backup',
+      if (!mounted) return;
+
+      destination = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save encrypted backup',
+        fileName: p.basename(backup.path),
+        type: FileType.any,
+      );
+      if (destination == null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Backup cancelled, nothing was saved')),
+        );
+        return;
+      }
+
+      final bytes = await File(backup.path).readAsBytes();
+      final target = File(destination);
+      await target.parent.create(recursive: true);
+      await target.writeAsBytes(bytes, flush: true);
+      await backup.delete().catchError((_) => backup);
+
+      saved = true;
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Backup saved: ${p.basename(destination)}'),
+          duration: const Duration(seconds: 5),
+        ),
       );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(
-              content: Text('Encrypted backup could not be created'),
-            ));
-      }
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(content: Text('Backup failed: $e')),
+      );
     } finally {
       passwordController.dispose();
+      if (!saved) {
+        debugPrint('Export did not complete; destination=$destination');
+      }
     }
   }
 
-  /// Picks an encrypted `.nabd` file, asks for its password and restores it.
+  /// Restores an encrypted `.nabd` backup, letting the user merge with the
+  /// current data or replace it wholesale.
   Future<void> _restoreData() async {
     final passwordController = TextEditingController();
-    FilePickerResult? picked;
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      picked = await FilePicker.platform.pickFiles(
+      final picked = await FilePicker.platform.pickFiles(
         type: FileType.any,
         withData: false,
       );
@@ -519,35 +555,91 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             FilledButton(
               onPressed: () =>
                   Navigator.pop(dialogContext, passwordController.text),
-              child: const Text('Restore'),
+              child: const Text('Continue'),
             ),
           ],
         ),
       );
       if (password == null || password.isEmpty || !mounted) return;
 
-      final result = await _backup.restoreBackup(path, password: password);
       if (!mounted) return;
-      final message = result.ok
-          ? 'Restored ${result.entriesImported} entries '
-              '(${result.imagesRestored} images, ${result.audioRestored} audio)'
-          : 'Restore failed: ${result.error}';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-      if (result.ok) setState(() {});
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Restore failed: $e')));
+      final mode = await _askRestoreMode();
+      if (mode == null || !mounted) return;
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Restoring backup...')),
+      );
+      final result = await _backup.restoreBackup(
+        path,
+        password: password,
+        mode: mode,
+      );
+      if (!mounted) return;
+
+      messenger.hideCurrentSnackBar();
+      if (!result.ok) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Restore failed: ${result.error}')),
+        );
+        return;
       }
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            mode == RestoreMode.merge
+                ? 'Merged ${result.entriesImported} entries '
+                    '(${result.imagesRestored} images, '
+                    '${result.audioRestored} audio)'
+                : 'Replaced with ${result.entriesImported} entries '
+                    '(${result.imagesRestored} images, '
+                    '${result.audioRestored} audio)',
+          ),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+      // Data changed underneath every screen, so ask listeners to refetch.
+      ref.read(dataRevisionProvider.notifier).bump();
+    } catch (e) {
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
     } finally {
       passwordController.dispose();
     }
   }
 
-  /// Rotates the master key after an explicit confirmation.
+  Future<RestoreMode?> _askRestoreMode() {
+    return showDialog<RestoreMode>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('How should the backup be applied?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.merge_type),
+              title: const Text('Merge'),
+              subtitle: const Text('Keep current entries and add the backup'),
+              onTap: () => Navigator.pop(ctx, RestoreMode.merge),
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_sweep_outlined),
+              title: const Text('Replace'),
+              subtitle: const Text('Discard current data and use only backup'),
+              onTap: () => Navigator.pop(ctx, RestoreMode.replace),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _confirmRotateKey() async {
     final ok = await showDialog<bool>(
       context: context,
