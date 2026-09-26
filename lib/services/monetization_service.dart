@@ -1,64 +1,265 @@
-import 'dart:async';
+﻿import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
-import '../core/constants.dart' show AppConstants;
+/// The app never derives subscription expiry locally. Subscription entitlement
+/// stays `subscriptionUnverified` until a trusted backend confirms it;
+/// lifetime is granted only after an actual store callback.
+enum EntitlementStatus {
+  unknown,
+  pending,
+  lifetime,
+  subscriptionActive,
+  subscriptionUnverified,
+  expired,
+  error,
+}
 
-// ── Entitlement service ─────────────────────────────────────────────────────
-class EntitlementService {
-  /// Determines entitlement status from a purchase.
-  /// For subscription products, returns [subscriptionUnverified] to indicate
-  /// that server-side verification is needed before granting Pro status.
-  EntitlementStatus statusFor(PurchaseDetails purchase) {
-    if (purchase.status == PurchaseStatus.pending) {
-      return EntitlementStatus.pending;
+/// Result of a server-side entitlement check.
+class VerificationResult {
+  const VerificationResult({
+    required this.status,
+    this.errorMessage,
+    this.expiryDate,
+  });
+
+  final EntitlementStatus status;
+  final String? errorMessage;
+  final DateTime? expiryDate;
+
+  /// Pro is granted only when the backend explicitly reports an active
+  /// subscription or a lifetime entitlement.
+  bool get isPro =>
+      status == EntitlementStatus.subscriptionActive ||
+      status == EntitlementStatus.lifetime;
+
+  factory VerificationResult.fromJson(Map<String, dynamic> json) {
+    final raw = json['status'] as String?;
+    final expiry = json['expiryDate'] == null
+        ? null
+        : DateTime.tryParse(json['expiryDate'] as String);
+    final errorMessage = json['errorMessage'] as String?;
+
+    switch (raw) {
+      case 'lifetime':
+        return VerificationResult(
+          status: EntitlementStatus.lifetime,
+          errorMessage: errorMessage,
+        );
+      case 'active':
+        if (expiry != null && expiry.isBefore(DateTime.now())) {
+          return VerificationResult(
+            status: EntitlementStatus.expired,
+            expiryDate: expiry,
+            errorMessage: errorMessage,
+          );
+        }
+        return VerificationResult(
+          status: EntitlementStatus.subscriptionActive,
+          expiryDate: expiry,
+          errorMessage: errorMessage,
+        );
+      case 'expired':
+        return VerificationResult(
+          status: EntitlementStatus.expired,
+          expiryDate: expiry,
+          errorMessage: errorMessage,
+        );
+      case 'unverified':
+        return VerificationResult(
+          status: EntitlementStatus.subscriptionUnverified,
+          errorMessage: errorMessage,
+        );
+      case 'error':
+        return VerificationResult(
+          status: EntitlementStatus.error,
+          errorMessage: errorMessage,
+        );
+      default:
+        return VerificationResult(
+          status: EntitlementStatus.unknown,
+          errorMessage: errorMessage,
+        );
     }
-    if (purchase.status == PurchaseStatus.error) return EntitlementStatus.error;
-    if (purchase.status != PurchaseStatus.purchased &&
-        purchase.status != PurchaseStatus.restored) {
-      return EntitlementStatus.unknown;
-    }
-    if (purchase.productID == MonetizationService.lifetimeId) {
-      return EntitlementStatus.lifetime;
-    }
-    if (purchase.productID == MonetizationService.proMonthlyId ||
-        purchase.productID == MonetizationService.proYearlyId) {
-      return EntitlementStatus.subscriptionUnverified;
-    }
-    return EntitlementStatus.error;
+  }
+}
+
+/// Trusted backend that validates store purchases.
+class SubscriptionVerificationConfig {
+  const SubscriptionVerificationConfig._();
+
+  static const backendUrl = String.fromEnvironment(
+    'SUBSCRIPTION_VERIFICATION_BACKEND_URL',
+  );
+
+  static bool get isConfigured => backendUrl.trim().isNotEmpty;
+}
+
+/// Asks the trusted backend whether a purchase grants entitlement.
+///
+/// The client never trusts the store payload on its own, and it never invents
+/// an expiry date. When no backend is configured the subscription stays
+/// unverified, so Pro is not granted.
+Future<VerificationResult> verifySubscription({
+  required String purchaseToken,
+  required String productId,
+}) async {
+  final backendUrl = SubscriptionVerificationConfig.backendUrl.trim();
+  if (backendUrl.isEmpty) {
+    return const VerificationResult(
+      status: EntitlementStatus.subscriptionUnverified,
+      errorMessage:
+          'Subscription verification backend is not configured for this build.',
+    );
+  }
+  if (purchaseToken.isEmpty) {
+    return const VerificationResult(
+      status: EntitlementStatus.error,
+      errorMessage: 'Purchase token is empty; verification was not attempted.',
+    );
   }
 
-  /// Performs server-side verification for a subscription purchase.
-  /// Returns a [VerificationResult] with the entitlement status after backend validation.
-  ///
-  /// Throws [FormatException] if the purchase token is invalid.
-  Future<VerificationResult> verifySubscription({
-    required String purchaseToken,
-    required String productId,
-  }) async {
-    // Use the global verification function
-    return await verifySubscription(
+  try {
+    return await _postVerificationRequest(
+      backendUrl: backendUrl,
       purchaseToken: purchaseToken,
       productId: productId,
+    );
+  } on TimeoutException {
+    return const VerificationResult(
+      status: EntitlementStatus.subscriptionUnverified,
+      errorMessage: 'Verification timed out; entitlement was not granted.',
+    );
+  } on SocketException {
+    return const VerificationResult(
+      status: EntitlementStatus.subscriptionUnverified,
+      errorMessage: 'No network connection; entitlement was not granted.',
+    );
+  } on FormatException catch (error) {
+    return VerificationResult(
+      status: EntitlementStatus.error,
+      errorMessage: 'Malformed verification response: ${error.message}',
+    );
+  } on HttpException catch (error) {
+    return VerificationResult(
+      status: EntitlementStatus.error,
+      errorMessage: 'Verification transport error: ${error.message}',
+    );
+  } catch (error) {
+    return VerificationResult(
+      status: EntitlementStatus.error,
+      errorMessage: 'Verification error: $error',
     );
   }
 }
 
-// ── Monetization service ────────────────────────────────────────────────────
+/// Performs the single HTTPS round trip and always releases the socket.
+Future<VerificationResult> _postVerificationRequest({
+  required String backendUrl,
+  required String purchaseToken,
+  required String productId,
+}) async {
+  final client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
+  try {
+    final request = await client
+        .postUrl(Uri.parse(backendUrl))
+        .timeout(const Duration(seconds: 15));
+    request.headers.contentType = ContentType.json;
+    request.write(jsonEncode({
+      'purchaseToken': purchaseToken,
+      'productId': productId,
+      'platform': defaultTargetPlatform.name,
+    }));
+
+    final response = await request.close().timeout(const Duration(seconds: 20));
+    final body = await utf8.decoder.bind(response).join();
+    if (response.statusCode != 200) {
+      return VerificationResult(
+        status: EntitlementStatus.error,
+        errorMessage: 'Verification failed with HTTP ${response.statusCode}.',
+      );
+    }
+
+    final decoded = jsonDecode(body);
+    if (decoded is! Map<String, dynamic>) {
+      return const VerificationResult(
+        status: EntitlementStatus.error,
+        errorMessage: 'Verification response was not a JSON object.',
+      );
+    }
+    return VerificationResult.fromJson(decoded);
+  } finally {
+    client.close(force: true);
+  }
+}
+
+class MonetizationConfig {
+  const MonetizationConfig._();
+
+  static const monthlyId = String.fromEnvironment(
+    'NABD_PRO_MONTHLY_ID',
+    defaultValue: 'nabd_pro_monthly',
+  );
+  static const yearlyId = String.fromEnvironment(
+    'NABD_PRO_YEARLY_ID',
+    defaultValue: 'nabd_pro_yearly',
+  );
+  static const lifetimeId = String.fromEnvironment(
+    'NABD_LIFETIME_ID',
+    defaultValue: 'nabd_lifetime',
+  );
+  static const productionConfigured = bool.fromEnvironment(
+    'NABD_PRODUCTION_CONFIGURED',
+    defaultValue: false,
+  );
+
+  static Set<String> get productIds => {monthlyId, yearlyId, lifetimeId};
+
+  static bool get isReady =>
+      monthlyId.isNotEmpty && yearlyId.isNotEmpty && lifetimeId.isNotEmpty;
+}
+
+class EntitlementService {
+  const EntitlementService();
+
+  /// Maps a store callback to an entitlement status. Subscription products are
+  /// never marked Pro here; they must pass [verifySubscription] first.
+  EntitlementStatus statusFor(PurchaseDetails purchase) {
+    if (purchase.status == PurchaseStatus.pending) {
+      return EntitlementStatus.pending;
+    }
+    if (purchase.status == PurchaseStatus.error) {
+      return EntitlementStatus.error;
+    }
+    if (purchase.status != PurchaseStatus.purchased &&
+        purchase.status != PurchaseStatus.restored) {
+      return EntitlementStatus.unknown;
+    }
+    if (purchase.productID == MonetizationConfig.lifetimeId) {
+      return EntitlementStatus.lifetime;
+    }
+    if (MonetizationConfig.productIds.contains(purchase.productID)) {
+      return EntitlementStatus.subscriptionUnverified;
+    }
+    return EntitlementStatus.error;
+  }
+}
+
 class MonetizationService extends StateNotifier<MonetizationState> {
   MonetizationService() : super(const MonetizationState()) {
     _init();
   }
 
-  static final _iap = InAppPurchase.instance;
+  static final InAppPurchase _iap = InAppPurchase.instance;
   static const String proMonthlyId = MonetizationConfig.monthlyId;
   static const String proYearlyId = MonetizationConfig.yearlyId;
   static const String lifetimeId = MonetizationConfig.lifetimeId;
-  static const Set<String> productIds = {proMonthlyId, proYearlyId, lifetimeId};
 
-  final _entitlements = EntitlementService();
+  final EntitlementService _entitlements = const EntitlementService();
   StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
 
   Future<void> _init() async {
@@ -81,7 +282,8 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   Future<void> _loadProducts() async {
     try {
-      final response = await _iap.queryProductDetails(productIds);
+      final response =
+          await _iap.queryProductDetails(MonetizationConfig.productIds);
       if (!mounted) return;
       state = state.copyWith(
         products: response.productDetails,
@@ -90,7 +292,9 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     } catch (error) {
       if (!mounted) return;
       state = state.copyWith(
-          error: '$error', entitlementStatus: EntitlementStatus.error);
+        error: '$error',
+        entitlementStatus: EntitlementStatus.error,
+      );
     }
   }
 
@@ -102,40 +306,47 @@ class MonetizationService extends StateNotifier<MonetizationState> {
       );
       return;
     }
-    if (!productIds.contains(product.id)) {
+    if (!MonetizationConfig.productIds.contains(product.id)) {
       state = state.copyWith(
-          error: 'Unknown product', entitlementStatus: EntitlementStatus.error);
+        error: 'Unknown product',
+        entitlementStatus: EntitlementStatus.error,
+      );
       return;
     }
     state = state.copyWith(
-        purchasing: true,
-        error: null,
-        entitlementStatus: EntitlementStatus.pending);
+      purchasing: true,
+      error: null,
+      entitlementStatus: EntitlementStatus.pending,
+    );
     try {
       await _iap.buyNonConsumable(
-          purchaseParam: PurchaseParam(productDetails: product));
+        purchaseParam: PurchaseParam(productDetails: product),
+      );
     } catch (error) {
       if (!mounted) return;
       state = state.copyWith(
-          purchasing: false,
-          error: '$error',
-          entitlementStatus: EntitlementStatus.error);
+        purchasing: false,
+        error: '$error',
+        entitlementStatus: EntitlementStatus.error,
+      );
     }
   }
 
   Future<void> restorePurchases() async {
     state = state.copyWith(
-        restoring: true,
-        error: null,
-        entitlementStatus: EntitlementStatus.pending);
+      restoring: true,
+      error: null,
+      entitlementStatus: EntitlementStatus.pending,
+    );
     try {
       await _iap.restorePurchases();
     } catch (error) {
       if (!mounted) return;
       state = state.copyWith(
-          restoring: false,
-          error: '$error',
-          entitlementStatus: EntitlementStatus.error);
+        restoring: false,
+        error: '$error',
+        entitlementStatus: EntitlementStatus.error,
+      );
     }
   }
 
@@ -150,10 +361,10 @@ class MonetizationService extends StateNotifier<MonetizationState> {
           purchasing: false,
           restoring: false,
           entitlementStatus: status,
+          error: null,
         );
       } else if (status == EntitlementStatus.subscriptionUnverified) {
-        // Attempt server-side verification for subscription products
-        _handleSubscriptionVerification(purchase);
+        unawaited(_verifySubscriptionPurchase(purchase));
       } else {
         state = state.copyWith(
           purchasing: false,
@@ -170,47 +381,31 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     }
   }
 
-  /// Handles server-side verification for a subscription purchase.
-  /// Updates the UI state based on the verification result.
-  Future<void> _handleSubscriptionVerification(PurchaseDetails purchase) async {
-    // If backend is not configured, show message and keep status as unverified
-    if (!isVerificationBackendConfigured) {
-      state = state.copyWith(
-        purchasing: false,
-        restoring: false,
-        entitlementStatus: EntitlementStatus.subscriptionUnverified,
-        error: 'Subscription verification backend not configured. '
-            'Configure SUBSCRIPTION_VERIFICATION_BACKEND_URL to enable',
-      );
-      return;
-    }
-
-    // Perform server verification
-    final verificationResult = await verifySubscription(
-      purchaseToken: purchase.purchaseToken ?? '',
-      productId: purchase.productID,
-    );
-
-    // Update state based on verification result
+  /// Sends the purchase to the trusted backend and applies the verdict.
+  Future<void> _verifySubscriptionPurchase(PurchaseDetails purchase) async {
     state = state.copyWith(
       purchasing: false,
       restoring: false,
-      entitlementStatus: verificationResult.status,
-      isPro: verificationResult.isPro,
-      error: verificationResult.errorMessage,
+      entitlementStatus: EntitlementStatus.pending,
+      error: null,
     );
 
-    // If verification granted Pro, also mark as lifetime for this session
-    if (verificationResult.status == EntitlementStatus.lifetime ||
-        (verificationResult.status == EntitlementStatus.subscriptionUnverified &&
-            verificationResult.isPro)) {
-      // Grant Pro access for this session
-      // Note: In a full implementation, the server would also set the expiry date
-      // and the app would need to validate the subscription status on subsequent launches
-    }
+    final result = await verifySubscription(
+      purchaseToken: purchase.verificationData ?? '',
+      productId: purchase.productID,
+    );
+    if (!mounted) return;
+
+    state = state.copyWith(
+      isPro: result.isPro,
+      isLifetime: result.status == EntitlementStatus.lifetime,
+      proExpiry: result.expiryDate,
+      entitlementStatus: result.status,
+      error: result.isPro ? null : result.errorMessage,
+    );
   }
 
-  bool get isProActive => state.isLifetime;
+  bool get isProActive => state.isPro;
 
   bool canWriteEntry({required int currentMonthEntries}) =>
       isProActive || currentMonthEntries < 7;
@@ -219,8 +414,9 @@ class MonetizationService extends StateNotifier<MonetizationState> {
       isProActive ? -1 : (7 - currentMonthEntries).clamp(0, 7);
 
   String priceFor(String productId) {
-    final matches = state.products.where((item) => item.id == productId);
-    if (matches.isNotEmpty) return matches.first.price;
+    for (final item in state.products) {
+      if (item.id == productId) return item.price;
+    }
     return '';
   }
 
@@ -232,16 +428,6 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 }
 
 class MonetizationState {
-  final bool storeAvailable;
-  final bool isPro;
-  final bool isLifetime;
-  final DateTime? proExpiry;
-  final bool purchasing;
-  final bool restoring;
-  final List<ProductDetails> products;
-  final String? error;
-  final EntitlementStatus entitlementStatus;
-
   const MonetizationState({
     this.storeAvailable = false,
     this.isPro = false,
@@ -253,6 +439,16 @@ class MonetizationState {
     this.error,
     this.entitlementStatus = EntitlementStatus.unknown,
   });
+
+  final bool storeAvailable;
+  final bool isPro;
+  final bool isLifetime;
+  final DateTime? proExpiry;
+  final bool purchasing;
+  final bool restoring;
+  final List<ProductDetails> products;
+  final String? error;
+  final EntitlementStatus entitlementStatus;
 
   MonetizationState copyWith({
     bool? storeAvailable,
