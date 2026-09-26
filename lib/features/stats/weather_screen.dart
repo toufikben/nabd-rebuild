@@ -7,6 +7,7 @@ import '../../models/mood.dart';
 import '../../models/mood_weather.dart';
 import '../../services/database_service.dart';
 import '../../widgets/weather_widget.dart';
+import '../../core/l10n/app_localizations.dart';
 
 /// WeatherScreen — عرض الطقس المزاجي.
 class WeatherScreen extends ConsumerWidget {
@@ -39,7 +40,7 @@ class WeatherScreen extends ConsumerWidget {
         weekWeather.add(MoodWeather.fromMoodValue(avg.toDouble()));
       }
 
-      dayLabels.add(_dayLabel(day.weekday));
+      dayLabels.add(_dayLabel(day.weekday, context));
     }
 
     // Today's weather
@@ -63,7 +64,7 @@ class WeatherScreen extends ConsumerWidget {
     final monthlyWeather = _calculateMonthlyWeather(entries);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mood Weather')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).moodWeather)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -80,8 +81,8 @@ class WeatherScreen extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                const Text(
-                  'TODAY',
+                Text(
+                  AppLocalizations.of(context).today,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 11,
@@ -124,8 +125,8 @@ class WeatherScreen extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                const Text(
-                  'THIS MONTH',
+                Text(
+                  AppLocalizations.of(context).thisMonth,
                   style: TextStyle(
                     color: AppColors.textTertiary,
                     fontSize: 11,
@@ -167,8 +168,31 @@ class WeatherScreen extends ConsumerWidget {
     return MoodWeather.fromMoodValue(avg.toDouble());
   }
 
-  String _dayLabel(int weekday) {
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return labels[(weekday - 1) % 7];
+  String _dayLabel(int weekday, BuildContext context) {
+    final locale = AppLocalizations.of(context).locale;
+    // Use ARB files based on locale
+    if (locale.languageCode == 'ar') {
+      const arLabels = [
+        'الأحد',
+        'الإثنين',
+        'الثلاثاء',
+        'الأربعاء',
+        'الخميس',
+        'الجمعة',
+        'السبت',
+      ];
+      return arLabels[(weekday - 1) % 7];
+    } else {
+      const enLabels = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ];
+      return enLabels[(weekday - 1) % 7];
+    }
   }
 }

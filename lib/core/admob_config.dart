@@ -6,13 +6,21 @@ import 'package:flutter/foundation.dart';
 ///   • Debug → Test IDs (آمنة دائماً)
 ///   • Release → إنتاجية عبر --dart-define
 ///
-/// للبناء الإنتاجي:
-///   flutter build appbundle --release \
-///     --dart-define=ADMOB_ANDROID_APP_ID=ca-app-pub-...~... \
-///     --dart-define=ADMOB_ANDROID_REWARDED_ID=ca-app-pub-.../... \
-///     --dart-define=ADMOB_IOS_REWARDED_ID=ca-app-pub-.../...
+/// ⚠️ ملاحظات هامة للبناء الإنتاجي:
+///   1. يوضع الـ IDs عبر أدوات CI أو سطر الأوامر:
+///      flutter build appbundle --release \
+///        --dart-define=ADMOB_ANDROID_APP_ID=ca-app-pub-XXX~YYY \
+///        --dart-define=ADMOB_ANDROID_REWARDED_ID=ca-app-pub-XXX/ZZZ \
+///        --dart-define=ADMOB_IOS_REWARDED_ID=ca-app-pub-AAA/BBB
+///   2. الـ dart-define لا يعالج native files تلقائياً، لذا يجب:
+///      • إضافة الـ App ID إلى AndroidManifest.xml يدوياً أو عبر Gradle
+///      • إضافة CFBundleAdMobAppID إلى Info.plist يدوياً
+///   3. بعض الموارد الأصلية مفقودة وتؤثر على الإعلانات:
+///      - Android: `@xml/shortcuts`، `@xml/file_paths`
+///      - iOS: entries في Podfile/Entitlements
 ///
-/// ⚠️ AdMob IDs ليست أسراراً — تظهر في التطبيق النهائي بطبيعتها.
+/// Announcements:
+///   • AdMob IDs ليست أسراراً — تظهر في التطبيق النهائي بطبيعتها.
 ///    الحماية الحقيقية: عدم وضع Server Keys أو Verification Secrets في الكود.
 class AdMobConfig {
   // ═══════════════════════════════════════════════════════════════

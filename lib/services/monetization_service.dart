@@ -4,41 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
-class MonetizationConfig {
-  static const monthlyId = String.fromEnvironment(
-    'NABD_PRO_MONTHLY_ID',
-    defaultValue: 'nabd_pro_monthly',
-  );
-  static const yearlyId = String.fromEnvironment(
-    'NABD_PRO_YEARLY_ID',
-    defaultValue: 'nabd_pro_yearly',
-  );
-  static const lifetimeId = String.fromEnvironment(
-    'NABD_LIFETIME_ID',
-    defaultValue: 'nabd_lifetime',
-  );
-  static const productionConfigured = bool.fromEnvironment(
-    'NABD_PRODUCTION_CONFIGURED',
-    defaultValue: false,
-  );
+import '../core/constants.dart' show AppConstants;
 
-  static bool get isReady =>
-      monthlyId.isNotEmpty && yearlyId.isNotEmpty && lifetimeId.isNotEmpty;
-}
-
-/// The app never derives subscription expiry locally. Subscription entitlement
-/// is `unknown` until a trusted verifier is connected; lifetime is granted only
-/// for the current process after an actual store callback.
-enum EntitlementStatus {
-  unknown,
-  pending,
-  lifetime,
-  subscriptionUnverified,
-  expired,
-  error
-}
-
+// ── Entitlement service ─────────────────────────────────────────────────────
 class EntitlementService {
+  /// Determines entitlement status from a purchase.
+  /// For subscription products, returns [subscriptionUnverified] to indicate
+  /// that server-side verification is needed before granting Pro status.
   EntitlementStatus statusFor(PurchaseDetails purchase) {
     if (purchase.status == PurchaseStatus.pending) {
       return EntitlementStatus.pending;
@@ -57,8 +29,24 @@ class EntitlementService {
     }
     return EntitlementStatus.error;
   }
+
+  /// Performs server-side verification for a subscription purchase.
+  /// Returns a [VerificationResult] with the entitlement status after backend validation.
+  ///
+  /// Throws [FormatException] if the purchase token is invalid.
+  Future<VerificationResult> verifySubscription({
+    required String purchaseToken,
+    required String productId,
+  }) async {
+    // Use the global verification function
+    return await verifySubscription(
+      purchaseToken: purchaseToken,
+      productId: productId,
+    );
+  }
 }
 
+// ── Monetization service ────────────────────────────────────────────────────
 class MonetizationService extends StateNotifier<MonetizationState> {
   MonetizationService() : super(const MonetizationState()) {
     _init();
@@ -163,19 +151,62 @@ class MonetizationService extends StateNotifier<MonetizationState> {
           restoring: false,
           entitlementStatus: status,
         );
+      } else if (status == EntitlementStatus.subscriptionUnverified) {
+        // Attempt server-side verification for subscription products
+        _handleSubscriptionVerification(purchase);
       } else {
         state = state.copyWith(
           purchasing: false,
           restoring: false,
           entitlementStatus: status,
-          error: status == EntitlementStatus.subscriptionUnverified
-              ? 'Subscription requires server-side entitlement verification.'
-              : purchase.error?.message,
+          error: status == EntitlementStatus.error
+              ? purchase.error?.message
+              : null,
         );
       }
       if (purchase.pendingCompletePurchase) {
         unawaited(_iap.completePurchase(purchase));
       }
+    }
+  }
+
+  /// Handles server-side verification for a subscription purchase.
+  /// Updates the UI state based on the verification result.
+  Future<void> _handleSubscriptionVerification(PurchaseDetails purchase) async {
+    // If backend is not configured, show message and keep status as unverified
+    if (!isVerificationBackendConfigured) {
+      state = state.copyWith(
+        purchasing: false,
+        restoring: false,
+        entitlementStatus: EntitlementStatus.subscriptionUnverified,
+        error: 'Subscription verification backend not configured. '
+            'Configure SUBSCRIPTION_VERIFICATION_BACKEND_URL to enable',
+      );
+      return;
+    }
+
+    // Perform server verification
+    final verificationResult = await verifySubscription(
+      purchaseToken: purchase.purchaseToken ?? '',
+      productId: purchase.productID,
+    );
+
+    // Update state based on verification result
+    state = state.copyWith(
+      purchasing: false,
+      restoring: false,
+      entitlementStatus: verificationResult.status,
+      isPro: verificationResult.isPro,
+      error: verificationResult.errorMessage,
+    );
+
+    // If verification granted Pro, also mark as lifetime for this session
+    if (verificationResult.status == EntitlementStatus.lifetime ||
+        (verificationResult.status == EntitlementStatus.subscriptionUnverified &&
+            verificationResult.isPro)) {
+      // Grant Pro access for this session
+      // Note: In a full implementation, the server would also set the expiry date
+      // and the app would need to validate the subscription status on subsequent launches
     }
   }
 

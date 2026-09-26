@@ -49,6 +49,25 @@ class AppLocalizations {
   String get refresh => _value('refresh', 'Refresh', 'تحديث');
   String get unknownMood =>
       _value('unknownMood', 'Unknown mood', 'مزاج غير معروف');
+  String get moodWeather => _value('mood_weather', 'Mood Weather', 'طقس المزاج');
+  String get today => _value('today', 'TODAY', 'اليوم');
+  String get thisMonth => _value('this_month', 'THIS MONTH', 'هذا الشهر');
+  String get sunEn => 'Sun';
+  String get sunAr => 'مشمس';
+  String get monEn => 'Mon';
+  String get monAr => 'الإثنين';
+  String get tueEn => 'Tue';
+  String get tueAr => 'الثلاثاء';
+  String get wedEn => 'Wed';
+  String get wedAr => 'الأربعاء';
+  String get thuEn => 'Thu';
+  String get thuAr => 'الخميس';
+  String get friEn => 'Fri';
+  String get friAr => 'الجمعة';
+  String get satEn => 'Sat';
+  String get satAr => 'السبت';
+  String get sunAbbrEn => 'Sun';
+  String get sunAbbrAr => 'مشمس';
   String _value(String key, String english, String arabic) =>
       isArabic ? arabic : english;
 }
