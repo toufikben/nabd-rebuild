@@ -6,19 +6,17 @@ void main() {
   group('key rotation contract', () {
     test('refuses to rotate when no encrypted box is open', () async {
       // Rotation must never fall back to "delete everything and hope".
-      // With nothing staged it has to fail loudly instead.
+      // With nothing staged it has to fail loudly instead. The exact type
+      // also proves this is no longer the old UnsupportedError stub.
       await expectLater(
         EncryptionService().rotateKey(),
-        throwsA(isA<KeyRotationException>()),
-      );
-    });
-
-    test('no longer advertises rotation as unsupported', () {
-      // The old implementation threw UnsupportedError, which is what this
-      // guard is protecting against regressing back to.
-      expect(
-        () => EncryptionService().rotateKey(),
-        isNot(throwsA(isA<UnsupportedError>())),
+        throwsA(
+          isA<KeyRotationException>().having(
+            (error) => error.message,
+            'message',
+            contains('nothing to rotate'),
+          ),
+        ),
       );
     });
   });
