@@ -390,8 +390,20 @@ class MonetizationService extends StateNotifier<MonetizationState> {
       error: null,
     );
 
+    final serverToken = purchase.verificationData.serverVerificationData;
+    if (serverToken == null || serverToken.isEmpty) {
+      if (!mounted) return;
+      state = state.copyWith(
+        purchasing: false,
+        restoring: false,
+        entitlementStatus: EntitlementStatus.subscriptionUnverified,
+        error: 'The store did not return a server verification token.',
+      );
+      return;
+    }
+
     final result = await verifySubscription(
-      purchaseToken: purchase.verificationData,
+      purchaseToken: serverToken,
       productId: purchase.productID,
     );
     if (!mounted) return;
