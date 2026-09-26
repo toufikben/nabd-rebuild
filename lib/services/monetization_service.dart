@@ -391,7 +391,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     );
 
     final serverToken = purchase.verificationData.serverVerificationData;
-    if (serverToken == null || serverToken.isEmpty) {
+    if (serverToken.isEmpty) {
       if (!mounted) return;
       state = state.copyWith(
         purchasing: false,
