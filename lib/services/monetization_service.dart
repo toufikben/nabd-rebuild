@@ -391,7 +391,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     );
 
     final result = await verifySubscription(
-      purchaseToken: purchase.verificationData ?? '',
+      purchaseToken: purchase.verificationData,
       productId: purchase.productID,
     );
     if (!mounted) return;

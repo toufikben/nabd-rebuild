@@ -194,17 +194,19 @@ class EncryptionService {
       final box = Hive.box<dynamic>(name);
       snapshot[name] = {for (final key in box.keys) key: box.get(key)};
 
-      final boxFile = File(box.path);
+      final boxPath = box.path;
+      if (boxPath == null) continue;
+      final boxFile = File(boxPath);
       if (!boxFile.existsSync()) continue;
 
-      final backup = File('${box.path}.rotating');
+      final backup = File('$boxPath.rotating');
       if (backup.existsSync()) backup.deleteSync();
       boxFile.copySync(backup.path);
       stagedBackups.add(backup);
 
-      final lockFile = File('${box.path}.lock');
+      final lockFile = File('$boxPath.lock');
       if (lockFile.existsSync()) {
-        final lockBackup = File('${box.path}.lock.rotating');
+        final lockBackup = File('$boxPath.lock.rotating');
         if (lockBackup.existsSync()) lockBackup.deleteSync();
         lockFile.copySync(lockBackup.path);
         stagedBackups.add(lockBackup);
