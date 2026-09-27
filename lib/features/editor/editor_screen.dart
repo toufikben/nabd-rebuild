@@ -660,7 +660,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                           size: 20,
                         ),
                         const SizedBox(width: 10),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             l10n.t('editor.audio.attached'),
                             style: TextStyle(

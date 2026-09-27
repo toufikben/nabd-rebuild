@@ -5,7 +5,6 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/l10n/app_localizations.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -65,7 +64,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 });
               },
               calendarFormat: CalendarFormat.month,
-              availableCalendarFormats: const {
+              availableCalendarFormats: {
                 CalendarFormat.month: l10n.t('calendar.month'),
               },
               headerStyle: const HeaderStyle(
@@ -188,7 +187,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             if (mounted) setState(() {});
                           },
                           icon: const Icon(Icons.add),
-                          label: const Text(l10n.t('calendar.addEntry')),
+                          label: Text(l10n.t('calendar.addEntry')),
                         ),
                       ],
                     ),

@@ -101,7 +101,7 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: l10n.t('tags.name')),
+          decoration: InputDecoration(hintText: l10n.t('tags.name')),
         ),
         actions: [
           TextButton(
@@ -132,7 +132,7 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Delete #${tag.name}?'),
-        content: const Text(l10n.t('tags.delete.body')),
+        content: Text(l10n.t('tags.delete.body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),

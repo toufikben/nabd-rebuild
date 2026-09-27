@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/l10n/app_localizations.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -19,6 +18,12 @@ class SearchScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
+
+  // Sort keys are stable identifiers; only their labels are localized.
+  static const String _sortNewest = 'newest';
+  static const String _sortOldest = 'oldest';
+  static const String _sortLongest = 'longest';
+  static const String _sortMood = 'mood';
   late AppLocalizations l10n;
   final DatabaseService _db = DatabaseService();
   final TextEditingController _controller = TextEditingController();
@@ -27,7 +32,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   String? _selectedMood;
   List<String> _selectedTags = [];
   bool _favoritesOnly = false;
-  String _sortBy = l10n.t('search.sort.newest');
+  String _sortBy = _sortNewest;
 
   @override
   void dispose() {
@@ -145,7 +150,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             value: l10n.t('search.sort.longest'), child: Text('Longest')),
                         DropdownMenuItem(value: l10n.t('search.sort.mood'), child: Text('By Mood')),
                       ],
-                      onChanged: (v) => setState(() => _sortBy = v ?? l10n.t('search.sort.newest')),
+                      onChanged: (v) => setState(() => _sortBy = v ?? _sortNewest),
                     ),
                   ],
                 ),
@@ -272,13 +277,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     // Sort
     switch (_sortBy) {
-      case l10n.t('search.sort.oldest'):
+      case _sortOldest:
         results.sort((a, b) => a.createdAt.compareTo(b.createdAt));
         break;
-      case l10n.t('search.sort.longest'):
+      case _sortLongest:
         results.sort((a, b) => b.content.length.compareTo(a.content.length));
         break;
-      case l10n.t('search.sort.mood'):
+      case _sortMood:
         results.sort((a, b) {
           final ma = Mood.getById(a.mood)?.value ?? 5;
           final mb = Mood.getById(b.mood)?.value ?? 5;
