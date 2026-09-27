@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/l10n/app_localizations.dart';
 import '../../core/data_revision.dart';
 import '../../models/seed.dart';
 import '../../services/audio_service.dart';
@@ -48,7 +47,7 @@ class GardenScreen extends ConsumerWidget {
               FilledButton.icon(
                 onPressed: () => context.push('/seed-selection'),
                 icon: const Icon(Icons.add),
-                label: const Text(AppLocalizations.of(context).t('garden.plant')),
+                label: Text(AppLocalizations.of(context).t('garden.plant')),
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(

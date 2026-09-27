@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/database_service.dart';
 

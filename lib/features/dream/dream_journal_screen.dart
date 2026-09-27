@@ -128,7 +128,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     AppLocalizations.of(context).t('dream.record'),
                     style: TextStyle(
                       color: Colors.white,

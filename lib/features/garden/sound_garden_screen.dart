@@ -111,7 +111,7 @@ class _SoundGardenScreenState extends State<SoundGardenScreen> {
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              const Text(
+              Text(
                 AppLocalizations.of(context).t('garden.sounds.subtitle'),
                 style: TextStyle(color: Colors.white70, height: 1.5),
               ),

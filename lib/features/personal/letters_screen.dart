@@ -58,7 +58,7 @@ class _LettersScreenState extends State<LettersScreen> {
       builder:
           (context) => AlertDialog(
             title: Text(AppLocalizations.of(context).t('letters.delete.title')),
-            content: const Text(AppLocalizations.of(context).t('letters.delete.body')),
+            content: Text(AppLocalizations.of(context).t('letters.delete.body')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -227,7 +227,7 @@ class _LetterComposerState extends State<_LetterComposer> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               AppLocalizations.of(context).t('letters.write'),
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),

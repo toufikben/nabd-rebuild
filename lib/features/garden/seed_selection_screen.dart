@@ -153,7 +153,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               AppLocalizations.of(context).t('garden.seedSelection.hint'),
               style: TextStyle(color: Colors.white60, fontSize: 13),
             ),
