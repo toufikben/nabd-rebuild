@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -27,6 +28,7 @@ class EditorScreen extends ConsumerStatefulWidget {
 }
 
 class _EditorScreenState extends ConsumerState<EditorScreen> {
+  late AppLocalizations l10n;
   final DatabaseService _db = DatabaseService();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
@@ -125,7 +127,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     if (_titleController.text.trim().isEmpty &&
         _contentController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cannot save empty entry')),
+        SnackBar(content: Text(l10n.t('editor.empty'))),
       );
       return;
     }
@@ -176,7 +178,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         setState(() {});
         if (closeAfterSave) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Entry saved')),
+            SnackBar(content: Text(l10n.t('editor.saved'))),
           );
           context.pop();
         }
@@ -213,28 +215,28 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Unsaved changes'),
-        content: const Text('Save this entry before leaving?'),
+        title: Text(l10n.t('editor.unsaved.title')),
+        content: Text(l10n.t('editor.unsaved.body')),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, 'discard'),
+            onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.discard')),
             child: const Text('Discard'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, 'cancel'),
+            onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.cancel')),
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, 'save'),
+            onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.save')),
             child: const Text('Save'),
           ),
         ],
       ),
     );
     if (!mounted) return;
-    if (action == 'save') {
+    if (action == l10n.t('editor.unsaved.save')) {
       await _saveEntry();
-    } else if (action == 'discard') {
+    } else if (action == l10n.t('editor.unsaved.discard')) {
       if (_isNewEntry && _existing != null) {
         await _db.deleteEntry(_existing!.id);
       }
@@ -331,7 +333,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     if (!await _recorder.hasPermission()) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microphone permission denied')),
+          SnackBar(content: Text(l10n.t('editor.audio.denied'))),
         );
       }
       return;
@@ -364,10 +366,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final tag = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Add tag'),
+        title: Text(l10n.t('editor.tag.add')),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: 'Tag name'),
+          decoration: InputDecoration(hintText: l10n.t('editor.tag.name')),
           autofocus: true,
         ),
         actions: [
@@ -391,6 +393,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     final mood = _moodId == null ? null : Mood.getById(_moodId!);
 
     return PopScope<void>(
@@ -400,12 +403,12 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_existing == null ? 'New Entry' : 'Edit Entry'),
+          title: Text(_existing == null ? l10n.t('editor.title.new') : l10n.t('editor.title.edit')),
           actions: [
             if (_existing != null)
               IconButton(
                 tooltip:
-                    _existing!.isFavorite ? 'Remove favorite' : 'Add favorite',
+                    _existing!.isFavorite ? l10n.t('editor.favorite.remove') : l10n.t('editor.favorite.add'),
                 icon: Icon(_existing!.isFavorite
                     ? Icons.favorite
                     : Icons.favorite_border),
@@ -413,7 +416,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               ),
             if (_existing != null)
               IconButton(
-                tooltip: _existing!.isPinned ? 'Unpin' : 'Pin',
+                tooltip: _existing!.isPinned ? l10n.t('editor.pin.unpin') : 'Pin',
                 icon: Icon(_existing!.isPinned
                     ? Icons.push_pin
                     : Icons.push_pin_outlined),
@@ -473,7 +476,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                             ),
                             SizedBox(width: 6),
                             Text(
-                              mood?.label('en') ?? 'Mood',
+                              mood?.label('en') ?? l10n.t('editor.mood'),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -489,7 +492,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     IconButton(
                       onPressed: _addTag,
                       icon: const Icon(Icons.label_outline, size: 20),
-                      tooltip: 'Add tag',
+                      tooltip: l10n.t('editor.tag.add'),
                     ),
                     const Spacer(),
                     // Audio recorder
@@ -499,13 +502,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                         _isRecording ? Icons.stop_circle : Icons.mic,
                         color: _isRecording ? AppColors.danger : null,
                       ),
-                      tooltip: _isRecording ? 'Stop recording' : 'Record audio',
+                      tooltip: _isRecording ? l10n.t('editor.audio.stop') : l10n.t('editor.audio.record'),
                     ),
                     // Image picker
                     IconButton(
                       onPressed: _pickImages,
                       icon: const Icon(Icons.image_outlined),
-                      tooltip: 'Add images',
+                      tooltip: l10n.t('editor.images.add'),
                     ),
                   ],
                 ),
@@ -549,7 +552,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     color: AppColors.textPrimary,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Title',
+                    hintText: l10n.t('editor.title.hint'),
                     border: InputBorder.none,
                     hintStyle: TextStyle(
                       fontSize: 24,
@@ -577,7 +580,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                       color: AppColors.textPrimary,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Write your thoughts...',
+                      hintText: l10n.t('editor.body.hint'),
                       border: InputBorder.none,
                       hintStyle: TextStyle(
                         color: AppColors.textTertiary,
@@ -659,7 +662,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Text(
-                            'Audio recording attached',
+                            l10n.t('editor.audio.attached'),
                             style: TextStyle(
                               fontSize: 13,
                               color: AppColors.primary,
@@ -689,8 +692,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete entry?'),
-        content: const Text('This action cannot be undone.'),
+        title: Text(l10n.t('editor.delete.title')),
+        content: Text(l10n.t('editor.delete.body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -699,7 +702,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Delete'),
+            child: Text(l10n.t('editor.delete.action')),
           ),
         ],
       ),

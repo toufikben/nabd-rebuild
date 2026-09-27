@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/biometric_service.dart';
 
@@ -13,6 +14,7 @@ class LockScreen extends StatefulWidget {
 }
 
 class _LockScreenState extends State<LockScreen> {
+  late AppLocalizations l10n;
   final BiometricService _bio = BiometricService();
   String? _error;
   bool _authenticating = false;
@@ -44,13 +46,14 @@ class _LockScreenState extends State<LockScreen> {
     } else {
       setState(() {
         _authenticating = false;
-        _error = 'Authentication failed';
+        _error = l10n.t('lock.failed');
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -107,7 +110,7 @@ class _LockScreenState extends State<LockScreen> {
                 FilledButton.icon(
                   onPressed: _authenticate,
                   icon: const Icon(Icons.fingerprint),
-                  label: const Text('Unlock'),
+                  label: Text(l10n.t('lock.action')),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: AppColors.primary,

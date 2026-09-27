@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../services/audio_service.dart';
 
 class SilentCompanionScreen extends StatefulWidget {
@@ -12,6 +13,7 @@ class SilentCompanionScreen extends StatefulWidget {
 }
 
 class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
+  late AppLocalizations l10n;
   final AudioService _audioService = AudioService.instance;
 
   Future<void> _handleMainAction(AmbientPlaybackState state) async {
@@ -45,36 +47,37 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
     setState(() {});
   }
 
-  String _statusText(AmbientPlaybackState state) {
+  String _statusText(AmbientPlaybackState state, AppLocalizations l10n) {
     if (state.source == AmbientSource.session) {
-      return 'A session is currently playing.';
+      return l10n.t('silent.sessionActive');
     }
     if (state.source == AmbientSource.garden) {
-      return 'Garden ambience is currently active.';
+      return l10n.t('silent.gardenActive');
     }
     switch (state.status) {
       case AmbientPlaybackStatus.loading:
-        return 'Loading rain...';
+        return l10n.t('silent.loading');
       case AmbientPlaybackStatus.error:
-        return state.errorMessage ?? 'Unable to load rain audio.';
+        return state.errorMessage ?? l10n.t('silent.loadFailed');
       case AmbientPlaybackStatus.playing:
-        return 'Rain is playing';
+        return l10n.t('silent.playing');
       case AmbientPlaybackStatus.ready:
       case AmbientPlaybackStatus.paused:
-        return 'Tap to begin';
+        return l10n.t('silent.tapToBegin');
       case AmbientPlaybackStatus.idle:
-        return 'Tap to begin';
+        return l10n.t('silent.tapToBegin');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Silent Companion'),
+        title: Text(l10n.t('silent.title')),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -158,7 +161,7 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _statusText(state),
+                        _statusText(state, l10n),
                         textAlign: TextAlign.center,
                         style: textTheme.bodyMedium?.copyWith(
                           color: hasError ? colors.error : colors.onSurfaceVariant,

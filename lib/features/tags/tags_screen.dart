@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/tag.dart';
 import '../../services/database_service.dart';
@@ -13,15 +14,17 @@ class TagsScreen extends ConsumerStatefulWidget {
 }
 
 class _TagsScreenState extends ConsumerState<TagsScreen> {
+  late AppLocalizations l10n;
   final DatabaseService _db = DatabaseService();
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     final tags = _db.getAllTags();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tags'),
+        title: Text(l10n.t('tags.title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -40,12 +43,12 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
                     color: AppColors.textTertiary.withValues(alpha: 0.3),
                   ),
                   const SizedBox(height: 16),
-                  const Text('No tags yet'),
+                  Text(l10n.t('tags.empty')),
                   const SizedBox(height: 12),
                   FilledButton.icon(
                     onPressed: () => _showAddDialog(),
                     icon: const Icon(Icons.add),
-                    label: const Text('Create tag'),
+                    label: Text(l10n.t('tags.create')),
                   ),
                 ],
               ),
@@ -94,20 +97,20 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('New Tag'),
+        title: Text(l10n.t('tags.newTitle')),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Tag name'),
+          decoration: const InputDecoration(hintText: l10n.t('tags.name')),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(l10n.t('dialog.cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Create'),
+            child: Text(l10n.t('tags.action.create')),
           ),
         ],
       ),
@@ -129,16 +132,16 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Delete #${tag.name}?'),
-        content: const Text('Tag will be removed from all entries.'),
+        content: const Text(l10n.t('tags.delete.body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.t('dialog.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Delete'),
+            child: Text(l10n.t('tags.delete.action')),
           ),
         ],
       ),

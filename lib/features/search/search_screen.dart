@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -17,6 +19,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
+  late AppLocalizations l10n;
   final DatabaseService _db = DatabaseService();
   final TextEditingController _controller = TextEditingController();
 
@@ -24,7 +27,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   String? _selectedMood;
   List<String> _selectedTags = [];
   bool _favoritesOnly = false;
-  String _sortBy = 'newest';
+  String _sortBy = l10n.t('search.sort.newest');
 
   @override
   void dispose() {
@@ -34,6 +37,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     ref.watch(dataRevisionProvider);
     final results = _performSearch();
 
@@ -43,7 +47,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           controller: _controller,
           autofocus: true,
           decoration: const InputDecoration(
-            hintText: 'Search entries...',
+            hintText: l10n.t('search.hint'),
             border: InputBorder.none,
           ),
           onChanged: (v) => setState(() => _query = v),
@@ -134,14 +138,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       underline: const SizedBox(),
                       items: const [
                         DropdownMenuItem(
-                            value: 'newest', child: Text('Newest')),
+                            value: l10n.t('search.sort.newest'), child: Text('Newest')),
                         DropdownMenuItem(
-                            value: 'oldest', child: Text('Oldest')),
+                            value: l10n.t('search.sort.oldest'), child: Text('Oldest')),
                         DropdownMenuItem(
-                            value: 'longest', child: Text('Longest')),
-                        DropdownMenuItem(value: 'mood', child: Text('By Mood')),
+                            value: l10n.t('search.sort.longest'), child: Text('Longest')),
+                        DropdownMenuItem(value: l10n.t('search.sort.mood'), child: Text('By Mood')),
                       ],
-                      onChanged: (v) => setState(() => _sortBy = v ?? 'newest'),
+                      onChanged: (v) => setState(() => _sortBy = v ?? l10n.t('search.sort.newest')),
                     ),
                   ],
                 ),
@@ -155,7 +159,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             child: Row(
               children: [
                 Text(
-                  '${results.length} ${results.length == 1 ? 'result' : 'results'}',
+                  '${results.length} ${results.length == 1 ? l10n.t('search.result.one') : l10n.t('search.result.many')}',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -178,7 +182,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           color: AppColors.textTertiary.withValues(alpha: 0.3),
                         ),
                         const SizedBox(height: 16),
-                        const Text('No results'),
+                        Text(l10n.t('search.empty.title')),
                         const SizedBox(height: 8),
                         Text(
                           'Try different keywords',
@@ -268,13 +272,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     // Sort
     switch (_sortBy) {
-      case 'oldest':
+      case l10n.t('search.sort.oldest'):
         results.sort((a, b) => a.createdAt.compareTo(b.createdAt));
         break;
-      case 'longest':
+      case l10n.t('search.sort.longest'):
         results.sort((a, b) => b.content.length.compareTo(a.content.length));
         break;
-      case 'mood':
+      case l10n.t('search.sort.mood'):
         results.sort((a, b) {
           final ma = Mood.getById(a.mood)?.value ?? 5;
           final mb = Mood.getById(b.mood)?.value ?? 5;

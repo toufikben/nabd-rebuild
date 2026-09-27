@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -18,12 +20,14 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
+  late AppLocalizations l10n;
   final DatabaseService _db = DatabaseService();
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     ref.watch(dataRevisionProvider);
     final selectedEntries = _selectedDay == null
         ? <JournalEntry>[]
@@ -31,7 +35,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar'),
+        title: Text(l10n.t('calendar.title')),
       ),
       body: Column(
         children: [
@@ -62,7 +66,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               },
               calendarFormat: CalendarFormat.month,
               availableCalendarFormats: const {
-                CalendarFormat.month: 'Month',
+                CalendarFormat.month: l10n.t('calendar.month'),
               },
               headerStyle: const HeaderStyle(
                 formatButtonVisible: false,
@@ -149,7 +153,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
                 const Spacer(),
                 Text(
-                  '${selectedEntries.length} ${selectedEntries.length == 1 ? 'entry' : 'entries'}',
+                  '${selectedEntries.length} ${selectedEntries.length == 1 ? l10n.t('calendar.entry.one') : l10n.t('calendar.entry.many')}',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -184,7 +188,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             if (mounted) setState(() {});
                           },
                           icon: const Icon(Icons.add),
-                          label: const Text('Add entry'),
+                          label: const Text(l10n.t('calendar.addEntry')),
                         ),
                       ],
                     ),
