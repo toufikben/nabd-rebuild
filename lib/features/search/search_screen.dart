@@ -51,7 +51,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         title: TextField(
           controller: _controller,
           autofocus: true,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: l10n.t('search.hint'),
             border: InputBorder.none,
           ),
@@ -141,14 +141,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     DropdownButton<String>(
                       value: _sortBy,
                       underline: const SizedBox(),
-                      items: const [
+                      items: [
                         DropdownMenuItem(
-                            value: l10n.t('search.sort.newest'), child: Text('Newest')),
+                          value: _sortNewest,
+                          child: Text(l10n.t('search.sort.newest')),
+                        ),
                         DropdownMenuItem(
-                            value: l10n.t('search.sort.oldest'), child: Text('Oldest')),
+                          value: _sortOldest,
+                          child: Text(l10n.t('search.sort.oldest')),
+                        ),
                         DropdownMenuItem(
-                            value: l10n.t('search.sort.longest'), child: Text('Longest')),
-                        DropdownMenuItem(value: l10n.t('search.sort.mood'), child: Text('By Mood')),
+                          value: _sortLongest,
+                          child: Text(l10n.t('search.sort.longest')),
+                        ),
+                        DropdownMenuItem(
+                          value: _sortMood,
+                          child: Text(l10n.t('search.sort.mood')),
+                        ),
                       ],
                       onChanged: (v) => setState(() => _sortBy = v ?? _sortNewest),
                     ),
