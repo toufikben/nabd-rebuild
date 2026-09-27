@@ -65,7 +65,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                         ?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     AppLocalizations.of(context).t('paywall.tagline'),
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
