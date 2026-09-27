@@ -60,8 +60,12 @@ void main() {
       await tester.pump();
 
       // Reference the table rather than a literal so a translation change
-      // cannot silently break this assertion.
-      expect(find.text(S.ar['hub.feature.echoes.title']), findsOneWidget);
+      // cannot silently break this assertion. The bang is safe because
+      // i18n_test.dart fails the build when a key is missing from either table.
+      expect(
+        find.text(S.ar['hub.feature.echoes.title']!),
+        findsOneWidget,
+      );
       expect(
         find.text(
           'تظهر الأصداء عندما يتبع مزاج صعب مدخلة إيجابية بعد 3 إلى 90 يومًا.',
