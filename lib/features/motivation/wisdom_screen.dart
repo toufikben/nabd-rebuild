@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/motivation_service.dart';
 
@@ -14,6 +15,7 @@ class WisdomScreen extends StatefulWidget {
 }
 
 class _WisdomScreenState extends State<WisdomScreen> {
+  late AppLocalizations l10n;
   static const _wisdomStorageKey = 'wisdom_state';
 
   final Box _settings = Hive.box('settings');
@@ -67,6 +69,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -172,3 +175,4 @@ class _WisdomScreenState extends State<WisdomScreen> {
     );
   }
 }
+

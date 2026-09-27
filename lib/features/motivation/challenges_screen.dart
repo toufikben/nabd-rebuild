@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// ChallengesScreen — تحديات أسبوعية/شهرية.
@@ -12,6 +13,7 @@ class ChallengesScreen extends StatefulWidget {
 }
 
 class _ChallengesScreenState extends State<ChallengesScreen> {
+  late AppLocalizations l10n;
   final Box _box = Hive.box('settings');
 
   static const _challenges = [
@@ -25,15 +27,15 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
     ),
     _Challenge(
       id: 'mood_check',
-      title: 'Mood Tracker',
+      title: l10n.t('challenges.moodTracker'),
       titleAr: 'متتبع المزاج',
-      description: 'Log your mood every day',
+      description: l10n.t('challenges.moodTrackerHint'),
       emoji: '😊',
       days: 14,
     ),
     _Challenge(
       id: 'long_writing',
-      title: 'Deep Dive',
+      title: l10n.t('challenges.deepDive'),
       titleAr: 'غوص عميق',
       description: 'Write 500+ words daily',
       emoji: '✍️',
@@ -41,17 +43,17 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
     ),
     _Challenge(
       id: 'dream_journal',
-      title: 'Dream Catcher',
+      title: l10n.t('challenges.dreamCatcher'),
       titleAr: 'صائد الأحلام',
-      description: 'Record your dreams every morning',
+      description: l10n.t('challenges.dreamCatcherHint'),
       emoji: '🌙',
       days: 14,
     ),
     _Challenge(
       id: 'breathing',
-      title: 'Mindful Start',
+      title: l10n.t('challenges.mindfulStart'),
       titleAr: 'بداية واعية',
-      description: 'Start each entry with breathing',
+      description: l10n.t('challenges.mindfulStartHint'),
       emoji: '🧘',
       days: 30,
     ),
@@ -75,8 +77,9 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Challenges')),
+      appBar: AppBar(title: Text(l10n.t('challenges.title'))),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _challenges.length,
@@ -175,7 +178,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                       ? OutlinedButton.icon(
                           onPressed: () => _toggleJoin(c.id),
                           icon: const Icon(Icons.check),
-                          label: const Text('Joined'),
+                          label: const Text(l10n.t('challenges.state.joined')),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white),
@@ -186,7 +189,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.primary,
                           ),
-                          child: const Text('Join Challenge'),
+                          child: const Text(l10n.t('challenges.action.join')),
                         ),
                 ),
               ],
@@ -215,3 +218,4 @@ class _Challenge {
     required this.days,
   });
 }
+

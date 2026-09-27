@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 class AppShell extends StatelessWidget {
@@ -22,22 +23,22 @@ class AppShell extends StatelessWidget {
           NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),
-            label: 'Journal',
+            label: AppLocalizations.of(context).t('nav.journal'),
           ),
           NavigationDestination(
             icon: Icon(Icons.self_improvement_outlined),
             selectedIcon: Icon(Icons.self_improvement),
-            label: 'Sessions',
+            label: AppLocalizations.of(context).t('nav.sessions'),
           ),
           NavigationDestination(
             icon: Icon(Icons.park_outlined),
             selectedIcon: Icon(Icons.park),
-            label: 'Garden',
+            label: AppLocalizations.of(context).t('nav.garden'),
           ),
           NavigationDestination(
             icon: Icon(Icons.insights_outlined),
             selectedIcon: Icon(Icons.insights),
-            label: 'Stats',
+            label: AppLocalizations.of(context).t('nav.stats'),
           ),
         ],
       ),

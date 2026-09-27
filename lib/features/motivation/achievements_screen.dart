@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/database_service.dart';
 import '../../services/motivation_service.dart';
@@ -28,7 +29,7 @@ class AchievementsScreen extends ConsumerWidget {
     };
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Achievements')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).t('achievements.title'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -55,7 +56,7 @@ class AchievementsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Achievements Unlocked',
+                  AppLocalizations.of(context).t('achievements.unlocked'),
                   style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],

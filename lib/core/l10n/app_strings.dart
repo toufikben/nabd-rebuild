@@ -187,6 +187,52 @@ class S {
     'dialog.delete.body': 'سيؤدي هذا إلى إزالة كل المدخلات نهائياً. لا يمكن التراجع.',
     'dialog.delete.done': 'تم حذف كل البيانات',
 
+    // ── Navigation shell ───────────────────────────────────────────────
+    'nav.journal': 'المذكرة',
+    'nav.sessions': 'الجلسات',
+    'nav.garden': 'الحديقة',
+    'nav.stats': 'الإحصائيات',
+
+    // ── Session runner ─────────────────────────────────────────────────
+    'session.premium.title': 'جلسة مميزة',
+    'session.premium.body': 'هذه الجلسة متاحة مع الاشتراك المميز.',
+    'session.back': 'العودة إلى الجلسات',
+    'session.state.running': 'قيد التشغيل',
+    'session.state.success': 'اكتملت',
+
+    // ── Breathing ──────────────────────────────────────────────────────
+    'breathing.title': 'تنفّس مع الدائرة',
+    'breathing.in': 'شهيق',
+    'breathing.out': 'زفير',
+
+    // ── Wisdom ─────────────────────────────────────────────────────────
+    'wisdom.title': 'الحكمة',
+
+    // ── Achievements ───────────────────────────────────────────────────
+    'achievements.title': 'الإنجازات',
+    'achievements.unlocked': 'الإنجازات المفتوحة',
+    'achievements.metric.entries': 'مدخلات',
+    'achievements.metric.streak': 'أيام متتالية',
+    'achievements.metric.words': 'كلمة',
+    'achievements.metric.moods': 'مشاعر',
+    'achievements.metric.gratitude': 'امتنان',
+
+    // ── Challenges ─────────────────────────────────────────────────────
+    'challenges.title': 'التحديات',
+    'challenges.action.join': 'انضم للتحدي',
+    'challenges.state.joined': 'منضم',
+    'challenges.moodTracker': 'متتبع المزاج',
+    'challenges.moodTrackerHint': 'سجّل مزاجك كل يوم',
+    'challenges.deepDive': 'الغوص العميق',
+    'challenges.deepDiveHint': 'اكتب بعمق كل يوم',
+    'challenges.dreamCatcher': 'صائد الأحلام',
+    'challenges.dreamCatcherHint': 'سجّل أحلامك كل صباح',
+    'challenges.mindfulStart': 'بداية واعية',
+    'challenges.mindfulStartHint': 'ابدأ كل مدخل بتنفس',
+
+    // ── Daily quote ────────────────────────────────────────────────────
+    'quote.title': 'اقتباس اليوم',
+
     // ── Editor ─────────────────────────────────────────────────────────
     'editor.title.new': 'مدخل جديد',
     'editor.title.edit': 'تعديل المدخل',
@@ -523,6 +569,52 @@ class S {
     'silent.playing': 'Rain is playing',
     'silent.sessionActive': 'A session is currently playing.',
     'silent.gardenActive': 'Garden ambience is currently active.',
+
+    // ── Navigation shell ───────────────────────────────────────────────
+    'nav.journal': 'Journal',
+    'nav.sessions': 'Sessions',
+    'nav.garden': 'Garden',
+    'nav.stats': 'Stats',
+
+    // ── Session runner ─────────────────────────────────────────────────
+    'session.premium.title': 'Premium Session',
+    'session.premium.body': 'This session is available with Premium.',
+    'session.back': 'Back to Sessions',
+    'session.state.running': 'Running',
+    'session.state.success': 'Completed',
+
+    // ── Breathing ──────────────────────────────────────────────────────
+    'breathing.title': 'Breathe with the circle',
+    'breathing.in': 'Breathe in',
+    'breathing.out': 'Breathe out',
+
+    // ── Wisdom ─────────────────────────────────────────────────────────
+    'wisdom.title': 'Wisdom',
+
+    // ── Achievements ───────────────────────────────────────────────────
+    'achievements.title': 'Achievements',
+    'achievements.unlocked': 'Achievements Unlocked',
+    'achievements.metric.entries': 'entries',
+    'achievements.metric.streak': 'streak',
+    'achievements.metric.words': 'words',
+    'achievements.metric.moods': 'moods',
+    'achievements.metric.gratitude': 'gratitude',
+
+    // ── Challenges ─────────────────────────────────────────────────────
+    'challenges.title': 'Challenges',
+    'challenges.action.join': 'Join Challenge',
+    'challenges.state.joined': 'Joined',
+    'challenges.moodTracker': 'Mood Tracker',
+    'challenges.moodTrackerHint': 'Log your mood every day',
+    'challenges.deepDive': 'Deep Dive',
+    'challenges.deepDiveHint': 'Write deeply every day',
+    'challenges.dreamCatcher': 'Dream Catcher',
+    'challenges.dreamCatcherHint': 'Record your dreams every morning',
+    'challenges.mindfulStart': 'Mindful Start',
+    'challenges.mindfulStartHint': 'Start each entry with breathing',
+
+    // ── Daily quote ────────────────────────────────────────────────────
+    'quote.title': 'Quote of the Day',
     'dialog.delete.done': 'All data deleted',
   };
 

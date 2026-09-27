@@ -16,6 +16,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 
@@ -53,6 +54,7 @@ class SessionRunnerScreen extends StatefulWidget {
 }
 
 class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
+  late AppLocalizations l10n;
   Session? _session;
   BreathingEngine? _engine;
 
@@ -222,6 +224,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     if (_invalid) {
       return _buildInvalid(context);
     }
@@ -439,7 +442,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Premium Session',
+                l10n.t('session.premium.title'),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
@@ -448,7 +451,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'This session is available with Premium.',
+                l10n.t('session.premium.body'),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
@@ -457,7 +460,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _onExit,
-                child: const Text('Back to Sessions'),
+                child: const Text(l10n.t('session.back')),
               ),
             ],
           ),
@@ -466,3 +469,4 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
     );
   }
 }
+

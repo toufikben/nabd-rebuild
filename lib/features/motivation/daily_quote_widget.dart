@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/motivation_service.dart';
 
@@ -35,7 +36,7 @@ class DailyQuoteWidget extends StatelessWidget {
                   color: AppColors.primary, size: 24),
               SizedBox(width: 8),
               Text(
-                'Quote of the Day',
+                AppLocalizations.of(context).t('quote.title'),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,

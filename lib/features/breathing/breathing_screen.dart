@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// BreathingScreen — تمرين تنفس قبل الكتابة.
@@ -13,6 +14,7 @@ class BreathingScreen extends StatefulWidget {
 }
 
 class _BreathingScreenState extends State<BreathingScreen>
+  late AppLocalizations l10n;
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   int _cycleCount = 0;
@@ -64,6 +66,7 @@ class _BreathingScreenState extends State<BreathingScreen>
 
   @override
   Widget build(BuildContext context) {
+    l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFF0A0D14),
       body: Center(
@@ -71,7 +74,7 @@ class _BreathingScreenState extends State<BreathingScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Breathe with the circle',
+              l10n.t('breathing.title'),
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
@@ -152,8 +155,9 @@ class _BreathingScreenState extends State<BreathingScreen>
   }
 
   String _getPhaseLabel() {
-    if (_controller.status == AnimationStatus.forward) return 'Breathe in';
-    if (_controller.status == AnimationStatus.reverse) return 'Breathe out';
+    if (_controller.status == AnimationStatus.forward) return l10n.t('breathing.in');
+    if (_controller.status == AnimationStatus.reverse) return l10n.t('breathing.out');
     return 'Hold';
   }
 }
+
