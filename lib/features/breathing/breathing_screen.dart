@@ -14,8 +14,8 @@ class BreathingScreen extends StatefulWidget {
 }
 
 class _BreathingScreenState extends State<BreathingScreen>
-  late AppLocalizations l10n;
     with SingleTickerProviderStateMixin {
+  late AppLocalizations l10n;
   late AnimationController _controller;
   int _cycleCount = 0;
   static const _totalCycles = 4;
