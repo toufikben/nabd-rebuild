@@ -19,7 +19,7 @@ class AppShell extends StatelessWidget {
         onDestinationSelected: (int index) {
           navigationShell.goBranch(index);
         },
-        destinations: const <NavigationDestination>[
+        destinations: <NavigationDestination>[
           NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),

@@ -460,7 +460,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _onExit,
-                child: const Text(l10n.t('session.back')),
+                child: Text(l10n.t('session.back')),
               ),
             ],
           ),

@@ -30,7 +30,7 @@ class DailyQuoteWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.format_quote,
                   color: AppColors.primary, size: 24),
