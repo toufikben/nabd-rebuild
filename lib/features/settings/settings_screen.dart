@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/data_revision.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../services/biometric_service.dart';
@@ -65,45 +66,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final genderTheme = ref.watch(genderThemeProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l10n.t('settings.title'))),
       body: ListView(
         children: [
           // ─── Appearance ───
-          _section('Appearance'),
+          _section(l10n.t('settings.section.appearance')),
 
           // Theme
           _tile(
             icon: Icons.brightness_6,
-            title: 'Theme',
-            subtitle: _themeName(themeMode),
-            onTap: () => _pickTheme(themeMode),
+            title: l10n.t('settings.theme'),
+            subtitle: _themeName(themeMode, l10n),
+            onTap: () => _pickTheme(themeMode, l10n),
           ),
 
           // Gender Theme
           _tile(
             icon: Icons.person_outline,
-            title: 'Theme Style',
-            subtitle: _genderThemeName(genderTheme),
-            onTap: () => _pickGenderTheme(genderTheme),
+            title: l10n.t('settings.themeStyle'),
+            subtitle: _genderThemeName(genderTheme, l10n),
+            onTap: () => _pickGenderTheme(genderTheme, l10n),
           ),
 
           // Language
           _tile(
             icon: Icons.language,
-            title: 'Language',
+            title: l10n.t('settings.language'),
             subtitle: _languageName(locale.languageCode),
             onTap: () => _pickLanguage(locale.languageCode),
           ),
 
           // ─── Lock ───
-          _section('Lock'),
+          _section(l10n.t('settings.section.lock')),
 
           SwitchListTile(
             secondary: const Icon(Icons.lock_outline, color: AppColors.primary),
-            title: const Text('App Lock'),
-            subtitle: const Text('Require authentication when returning later'),
+            title: Text(l10n.t('settings.lock.appLock')),
+            subtitle: Text(l10n.t('settings.lock.appLockHint')),
             value: _lockEnabled,
             onChanged: (value) async {
               await _biometric.setLockEnabled(value);
@@ -115,21 +117,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           if (_lockEnabled)
             _tile(
               icon: Icons.timer_outlined,
-              title: 'Lock after background',
-              subtitle: _lockTimeoutLabel(_lockTimeoutMinutes),
-              onTap: _pickLockTimeout,
+              title: l10n.t('settings.lock.timeout'),
+              subtitle: _lockTimeoutLabel(_lockTimeoutMinutes, l10n),
+              onTap: _pickLockTimeout(l10n),
             ),
 
           // ─── Notifications ───
-          _section('Notifications'),
+          _section(l10n.t('settings.section.notifications')),
 
           SwitchListTile(
             secondary: const Icon(
               Icons.notifications_outlined,
               color: AppColors.primary,
             ),
-            title: const Text('Daily Reminder'),
-            subtitle: const Text('Get reminded to write'),
+            title: Text(l10n.t('settings.notify.daily')),
+            subtitle: Text(l10n.t('settings.notify.dailyHint')),
             value: _notificationsEnabled,
             onChanged: (v) {
               setState(() => _notificationsEnabled = v);
@@ -147,59 +149,59 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           if (_notificationsEnabled)
             _tile(
               icon: Icons.access_time,
-              title: 'Reminder Time',
+              title: l10n.t('settings.notify.time'),
               subtitle:
                   '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
               onTap: _pickReminderTime,
             ),
 
           // ─── Data ───
-          _section('Data'),
+          _section(l10n.t('settings.section.data')),
 
           _tile(
             icon: Icons.download_outlined,
-            title: 'Export Data',
-            subtitle: 'Save an encrypted .nabd backup',
+            title: l10n.t('settings.data.export'),
+            subtitle: l10n.t('settings.data.exportHint'),
             onTap: _exportData,
           ),
 
           _tile(
             icon: Icons.upload_outlined,
-            title: 'Restore Backup',
-            subtitle: 'Import an encrypted .nabd backup',
+            title: l10n.t('settings.data.restore'),
+            subtitle: l10n.t('settings.data.restoreHint'),
             onTap: _restoreData,
           ),
 
           _tile(
             icon: Icons.key_outlined,
-            title: 'Rotate Encryption Key',
-            subtitle: 'Re-encrypt all local data with a new key',
+            title: l10n.t('settings.data.rotateKey'),
+            subtitle: l10n.t('settings.data.rotateKeyHint'),
             onTap: _confirmRotateKey,
           ),
 
           _tile(
             icon: Icons.delete_outline,
-            title: 'Delete All Data',
-            subtitle: 'Remove all entries',
+            title: l10n.t('settings.data.deleteAll'),
+            subtitle: l10n.t('settings.data.deleteAllHint'),
             danger: true,
             onTap: _confirmDeleteAll,
           ),
 
           // ─── About ───
-          _section('About'),
+          _section(l10n.t('settings.section.about')),
 
           _tile(
             icon: Icons.share_outlined,
-            title: 'Share App',
-            subtitle: 'Tell your friends',
+            title: l10n.t('settings.about.share'),
+            subtitle: l10n.t('settings.about.shareHint'),
             onTap: () {
-              Share.share('Check out My Journal — a private journaling app!');
+              Share.share(l10n.t('settings.about.shareBody'));
             },
           ),
 
           _tile(
             icon: Icons.info_outline,
-            title: 'Version',
+            title: l10n.t('settings.about.version'),
             subtitle: '1.0.0',
             onTap: null,
           ),
@@ -250,25 +252,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  String _themeName(ThemeMode mode) {
+  String _themeName(ThemeMode mode, AppLocalizations l10n) {
     switch (mode) {
       case ThemeMode.light:
-        return 'Light';
+        return l10n.t('settings.theme.light');
       case ThemeMode.dark:
-        return 'Dark';
+        return l10n.t('settings.theme.dark');
       default:
-        return 'System';
+        return l10n.t('settings.theme.system');
     }
   }
 
-  String _genderThemeName(GenderTheme theme) {
+  String _genderThemeName(GenderTheme theme, AppLocalizations l10n) {
     switch (theme) {
       case GenderTheme.feminine:
-        return 'Feminine';
+        return l10n.t('settings.themeStyle.feminine');
       case GenderTheme.masculine:
-        return 'Masculine';
+        return l10n.t('settings.themeStyle.masculine');
       default:
-        return 'Neutral';
+        return l10n.t('settings.themeStyle.neutral');
     }
   }
 
@@ -280,22 +282,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return names[code] ?? code;
   }
 
-  String _lockTimeoutLabel(int minutes) {
+  String _lockTimeoutLabel(int minutes, AppLocalizations l10n) {
     switch (minutes) {
       case 1:
-        return '1 minute';
+        return l10n.t('settings.lock.1m');
       case 5:
-        return '5 minutes';
+        return l10n.t('settings.lock.5m');
       case 15:
-        return '15 minutes';
+        return l10n.t('settings.lock.15m');
       case 30:
-        return '30 minutes';
+        return l10n.t('settings.lock.30m');
       default:
-        return 'Never';
+        return l10n.t('settings.lock.never');
     }
   }
 
-  Future<void> _pickLockTimeout() async {
+  Future<void> _pickLockTimeout(AppLocalizations l10n) async {
     const options = <int>[1, 5, 15, 30, 0];
     final result = await showModalBottomSheet<int>(
       context: context,
@@ -306,7 +308,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             for (final minutes in options)
               ListTile(
                 leading: const Icon(Icons.timer_outlined),
-                title: Text(_lockTimeoutLabel(minutes)),
+                title: Text(_lockTimeoutLabel(minutes, l10n)),
                 trailing: _lockTimeoutMinutes == minutes
                     ? const Icon(Icons.check, color: AppColors.success)
                     : null,
@@ -322,7 +324,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (mounted) setState(() => _lockTimeoutMinutes = result);
   }
 
-  Future<void> _pickTheme(ThemeMode current) async {
+  Future<void> _pickTheme(ThemeMode current, AppLocalizations l10n) async {
     final result = await showModalBottomSheet<String>(
       context: context,
       builder: (_) => Column(
@@ -330,7 +332,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         children: [
           ListTile(
             leading: const Icon(Icons.brightness_auto),
-            title: const Text('System'),
+            title: Text(l10n.t('settings.theme.system')),
             trailing: current == ThemeMode.system
                 ? const Icon(Icons.check, color: AppColors.success)
                 : null,
@@ -338,7 +340,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.light_mode),
-            title: const Text('Light'),
+            title: Text(l10n.t('settings.theme.light')),
             trailing: current == ThemeMode.light
                 ? const Icon(Icons.check, color: AppColors.success)
                 : null,
@@ -346,7 +348,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.dark_mode),
-            title: const Text('Dark'),
+            title: Text(l10n.t('settings.theme.dark')),
             trailing: current == ThemeMode.dark
                 ? const Icon(Icons.check, color: AppColors.success)
                 : null,
@@ -362,7 +364,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _pickGenderTheme(GenderTheme current) async {
+  Future<void> _pickGenderTheme(GenderTheme current, AppLocalizations l10n) async {
     final result = await showModalBottomSheet<String>(
       context: context,
       builder: (_) => Column(
@@ -370,7 +372,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         children: [
           ListTile(
             leading: const Icon(Icons.person_outline),
-            title: const Text('Neutral'),
+            title: Text(l10n.t('settings.themeStyle.neutral')),
             trailing: current == GenderTheme.neutral
                 ? const Icon(Icons.check, color: AppColors.success)
                 : null,
@@ -381,8 +383,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Icons.favorite,
               color: AppColors.femininePrimary,
             ),
-            title: const Text('Feminine'),
-            subtitle: const Text('Softer, pink palette'),
+            title: Text(l10n.t('settings.themeStyle.feminine')),
+            subtitle: Text(l10n.t('settings.themeStyle.feminineHint')),
             trailing: current == GenderTheme.feminine
                 ? const Icon(Icons.check, color: AppColors.success)
                 : null,
@@ -393,8 +395,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Icons.shield,
               color: AppColors.masculinePrimary,
             ),
-            title: const Text('Masculine'),
-            subtitle: const Text('Bold, dark palette'),
+            title: Text(l10n.t('settings.themeStyle.masculine')),
+            subtitle: Text(l10n.t('settings.themeStyle.masculineHint')),
             trailing: current == GenderTheme.masculine
                 ? const Icon(Icons.check, color: AppColors.success)
                 : null,
@@ -469,28 +471,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final passwordController = _exportPasswordController;
     passwordController.clear();
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
     String? destination;
     var saved = false;
     try {
       final password = await showDialog<String>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Protect backup'),
+          title: Text(l10n.t('dialog.export.title')),
           content: TextField(
             controller: passwordController,
             obscureText: true,
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'Backup password'),
+            decoration: InputDecoration(labelText: l10n.t('dialog.export.password')),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
+              child: Text(l10n.t('dialog.cancel')),
             ),
             FilledButton(
               onPressed: () =>
                   Navigator.pop(dialogContext, passwordController.text),
-              child: const Text('Continue'),
+              child: Text(l10n.t('dialog.continue')),
             ),
           ],
         ),
@@ -498,7 +501,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (password == null || password.isEmpty || !mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text('Creating encrypted backup...')),
+        SnackBar(content: Text(l10n.t('dialog.save.creating'))),
       );
       final backup = await _backup.createBackup(password: password);
       if (!mounted) return;
@@ -508,7 +511,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // temp file straight after the save.
       final bytes = await File(backup.path).readAsBytes();
       destination = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save encrypted backup',
+        dialogTitle: l10n.t('dialog.save.title'),
         fileName: p.basename(backup.path),
         type: FileType.any,
         bytes: bytes,
@@ -516,7 +519,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (destination == null) {
         await backup.delete().catchError((_) => backup);
         messenger.showSnackBar(
-          const SnackBar(content: Text('Backup cancelled, nothing was saved')),
+          SnackBar(content: Text(l10n.t('dialog.save.cancelled'))),
         );
         return;
       }
@@ -535,14 +538,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Backup saved: ${p.basename(destination)}'),
+          content: Text('l10n.t('dialog.save.done') + ': '${p.basename(destination)}'),
           duration: const Duration(seconds: 5),
         ),
       );
     } catch (e) {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
-        SnackBar(content: Text('Backup failed: $e')),
+        SnackBar(content: Text('l10n.t('dialog.save.failed') + ': '$e')),
       );
       if (!saved) {
         debugPrint('Export did not complete; destination=$destination');
@@ -556,6 +559,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final passwordController = _restorePasswordController;
     passwordController.clear();
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
     try {
       final picked = await FilePicker.platform.pickFiles(
         type: FileType.any,
@@ -568,22 +572,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final password = await showDialog<String>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Unlock backup'),
+          title: Text(l10n.t('dialog.restore.title')),
           content: TextField(
             controller: passwordController,
             obscureText: true,
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'Backup password'),
+            decoration: InputDecoration(labelText: l10n.t('dialog.export.password')),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
+              child: Text(l10n.t('dialog.cancel')),
             ),
             FilledButton(
               onPressed: () =>
                   Navigator.pop(dialogContext, passwordController.text),
-              child: const Text('Continue'),
+              child: Text(l10n.t('dialog.continue')),
             ),
           ],
         ),
@@ -595,7 +599,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mode == null || !mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text('Restoring backup...')),
+        SnackBar(content: Text(l10n.t('dialog.restore.restoring'))),
       );
       final result = await _backup.restoreBackup(
         path,
@@ -607,7 +611,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.hideCurrentSnackBar();
       if (!result.ok) {
         messenger.showSnackBar(
-          SnackBar(content: Text('Restore failed: ${result.error}')),
+          SnackBar(content: Text('l10n.t('dialog.restore.failed') + ': '${result.error}')),
         );
         return;
       }
@@ -630,7 +634,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.read(dataRevisionProvider.notifier).bump();
     } catch (e) {
       messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('l10n.t('dialog.restore.failed') + ': '$e')));
     }
   }
 
@@ -638,20 +642,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return showDialog<RestoreMode>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('How should the backup be applied?'),
+        title: Text(l10n.t('dialog.mode.title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.merge_type),
-              title: const Text('Merge'),
-              subtitle: const Text('Keep current entries and add the backup'),
+              title: Text(l10n.t('dialog.mode.merge')),
+              subtitle: Text(l10n.t('dialog.mode.mergeHint')),
               onTap: () => Navigator.pop(ctx, RestoreMode.merge),
             ),
             ListTile(
               leading: const Icon(Icons.delete_sweep_outlined),
-              title: const Text('Replace'),
-              subtitle: const Text('Discard current data and use only backup'),
+              title: Text(l10n.t('dialog.mode.replace')),
+              subtitle: Text(l10n.t('dialog.mode.replaceHint')),
               onTap: () => Navigator.pop(ctx, RestoreMode.replace),
             ),
           ],
@@ -659,7 +663,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(l10n.t('dialog.cancel')),
           ),
         ],
       ),
@@ -670,7 +674,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Rotate encryption key?'),
+        title: Text(l10n.t('dialog.rotate.title')),
         content: const Text(
           'Every entry will be re-encrypted with a new key. '
           'If this is interrupted the old key is restored automatically.',
@@ -678,11 +682,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.t('dialog.cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Rotate'),
+            child: Text(l10n.t('dialog.rotate')),
           ),
         ],
       ),
@@ -691,16 +695,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(
-      const SnackBar(content: Text('Rotating encryption key...')),
+      SnackBar(content: Text(l10n.t('dialog.rotate.running'))),
     );
     try {
       await EncryptionService().rotateKey();
       messenger.showSnackBar(
-        const SnackBar(content: Text('Encryption key rotated')),
+        SnackBar(content: Text(l10n.t('dialog.rotate.done'))),
       );
     } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Key rotation failed: $e')),
+        SnackBar(content: Text('l10n.t('dialog.rotate.failed') + ': '$e')),
       );
     }
   }
@@ -709,19 +713,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete all data?'),
+        title: Text(l10n.t('dialog.delete.title')),
         content: const Text(
           'This will permanently remove ALL entries. This cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.t('dialog.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Delete All'),
+            child: Text(l10n.t('settings.data.deleteAll')),
           ),
         ],
       ),
@@ -731,7 +735,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await _privacy.deleteEverything();
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('All data deleted')));
+            .showSnackBar(SnackBar(content: Text(l10n.t('dialog.delete.done'))));
       }
     }
   }

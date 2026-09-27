@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_strings.dart';
+
 class AppLocalizations {
   final Locale locale;
   const AppLocalizations(this.locale);
@@ -7,26 +9,24 @@ class AppLocalizations {
   static const supportedLocales = [
     Locale('ar'),
     Locale('en'),
-    Locale('fr'),
-    Locale('es'),
-    Locale('de'),
-    Locale('it'),
-    Locale('pt'),
-    Locale('ru'),
-    Locale('tr'),
-    Locale('zh'),
-    Locale('ja'),
-    Locale('ko'),
-    Locale('hi'),
-    Locale('id'),
-    Locale('fa'),
-    Locale('ur')
   ];
   static AppLocalizations of(BuildContext context) =>
       Localizations.of<AppLocalizations>(context, AppLocalizations)!;
-  String text(String key) => key;
+
+  /// Looks a key up in the central table, falling back to English and then to
+  /// the key itself so a missing translation is visible rather than blank.
+  String t(String key) {
+    if (locale.languageCode == 'ar') {
+      return S.ar[key] ?? S.en[key] ?? key;
+    }
+    return S.en[key] ?? S.ar[key] ?? key;
+  }
+
+  /// Back-compat shim for the older inline pair style.
+  String text(String key) => t(key);
+
   bool get isArabic => locale.languageCode == 'ar';
-  String get echoes => _value('echoes', 'Echoes', 'أصداء');
+  String get echoes => t('hub.feature.echoes.title');
   String get resolvedEcho =>
       _value('resolvedEcho', 'Resolved echo', 'صدى تم تجاوزه');
   String get awaitingEcho => _value(
@@ -39,9 +39,8 @@ class AppLocalizations {
       'echoesEmpty',
       'Echoes appear when a difficult mood has a later positive entry 3–90 days afterward.',
       'تظهر الأصداء عندما يتبع مزاج صعب مدخلة إيجابية بعد 3 إلى 90 يومًا.');
-  String get sage => _value('sage', 'Sage', 'الحكيم');
-  String get quietThought =>
-      _value('quietThought', 'A quiet thought', 'فكرة هادئة');
+  String get sage => t('hub.feature.sage.title');
+  String get quietThought => _value('quietThought', 'A quiet thought', 'فكرة هادئة');
   String get sageLocalNote => _value(
       'sageLocalNote',
       'Sage uses the app’s local library. It changes only when you press Refresh.',
@@ -49,25 +48,9 @@ class AppLocalizations {
   String get refresh => _value('refresh', 'Refresh', 'تحديث');
   String get unknownMood =>
       _value('unknownMood', 'Unknown mood', 'مزاج غير معروف');
-  String get moodWeather => _value('mood_weather', 'Mood Weather', 'طقس المزاج');
+  String get moodWeather => t('hub.feature.weather.title');
   String get today => _value('today', 'TODAY', 'اليوم');
   String get thisMonth => _value('this_month', 'THIS MONTH', 'هذا الشهر');
-  String get sunEn => 'Sun';
-  String get sunAr => 'مشمس';
-  String get monEn => 'Mon';
-  String get monAr => 'الإثنين';
-  String get tueEn => 'Tue';
-  String get tueAr => 'الثلاثاء';
-  String get wedEn => 'Wed';
-  String get wedAr => 'الأربعاء';
-  String get thuEn => 'Thu';
-  String get thuAr => 'الخميس';
-  String get friEn => 'Fri';
-  String get friAr => 'الجمعة';
-  String get satEn => 'Sat';
-  String get satAr => 'السبت';
-  String get sunAbbrEn => 'Sun';
-  String get sunAbbrAr => 'مشمس';
   String _value(String key, String english, String arabic) =>
       isArabic ? arabic : english;
 }

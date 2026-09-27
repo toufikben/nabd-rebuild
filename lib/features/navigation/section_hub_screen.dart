@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_localizations.dart';
+
 enum NabdSection { writing, journey, analytics }
 
 class SectionHubScreen extends StatelessWidget {
@@ -9,7 +11,7 @@ class SectionHubScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = _config(section);
+    final c = _config(section, AppLocalizations.of(context));
     return Scaffold(
       appBar: AppBar(title: Text(c.title)),
       body: LayoutBuilder(
@@ -117,189 +119,190 @@ class SectionHubScreen extends StatelessWidget {
     );
   }
 
-  _Config _config(NabdSection s) {
+  _Config _config(NabdSection s, AppLocalizations l10n) {
+    String t(String key) => l10n.t(key);
     switch (s) {
       case NabdSection.writing:
-        return const _Config(
-          'Writing',
-          'Everything you need to capture your thoughts.',
+        return _Config(
+          t('hub.writing.title'),
+          t('hub.writing.subtitle'),
           Icons.edit_note_rounded,
           [
             _Feature(
-              'New Entry',
-              'Write something new',
+              t('hub.feature.editor.title'),
+              t('hub.feature.editor.subtitle'),
               Icons.add_circle_outline_rounded,
               '/editor',
             ),
             _Feature(
-              'Search',
-              'Find an old entry',
+              t('hub.feature.search.title'),
+              t('hub.feature.search.subtitle'),
               Icons.search_rounded,
               '/search',
             ),
             _Feature(
-              'Calendar',
-              'Browse by date',
+              t('hub.feature.calendar.title'),
+              t('hub.feature.calendar.subtitle'),
               Icons.calendar_month_rounded,
               '/calendar',
             ),
             _Feature(
-              'Dream Journal',
-              'Record your dreams',
+              t('hub.feature.dream.title'),
+              t('hub.feature.dream.subtitle'),
               Icons.nightlight_round,
               '/dream-journal',
             ),
             _Feature(
-              'Gratitude Journal',
-              'Keep the good moments',
+              t('hub.feature.gratitudeJournal.title'),
+              t('hub.feature.gratitudeJournal.subtitle'),
               Icons.favorite_rounded,
               '/gratitude-journal',
             ),
             _Feature(
-              'Worry Box',
-              'Put worries somewhere safe',
+              t('hub.feature.worryBox.title'),
+              t('hub.feature.worryBox.subtitle'),
               Icons.inventory_2_outlined,
               '/worry-box',
             ),
             _Feature(
-              'Letters',
-              'Future and unsent letters in one place',
+              t('hub.feature.letters.title'),
+              t('hub.feature.letters.subtitle'),
               Icons.mark_email_unread_outlined,
               '/letters',
             ),
             _Feature(
-              'Legacy Journal',
-              'Preserve your story',
+              t('hub.feature.legacy.title'),
+              t('hub.feature.legacy.subtitle'),
               Icons.auto_stories_rounded,
               '/legacy-journal',
             ),
             _Feature(
-              'Time Capsule',
-              'Save memories for later',
+              t('hub.feature.timeCapsule.title'),
+              t('hub.feature.timeCapsule.subtitle'),
               Icons.schedule_rounded,
               '/time-capsule',
             ),
           ],
         );
       case NabdSection.journey:
-        return const _Config(
-          'My Journey',
-          'Small practices that help you move forward.',
+        return _Config(
+          t('hub.journey.title'),
+          t('hub.journey.subtitle'),
           Icons.spa_rounded,
           [
             _Feature(
-              'Garden',
-              'Grow your personal garden',
+              t('hub.feature.garden.title'),
+              t('hub.feature.garden.subtitle'),
               Icons.local_florist_rounded,
               '/garden',
             ),
             _Feature(
-              'Gratitude Garden',
-              'Grow gratitude',
+              t('hub.feature.gratitudeGarden.title'),
+              t('hub.feature.gratitudeGarden.subtitle'),
               Icons.eco_rounded,
               '/gratitude-garden',
             ),
             _Feature(
-              'Breathing',
-              'Take a mindful pause',
+              t('hub.feature.breathing.title'),
+              t('hub.feature.breathing.subtitle'),
               Icons.air_rounded,
               '/breathing',
             ),
             _Feature(
-              'Worry Release',
-              'Let thoughts go',
+              t('hub.feature.worryRelease.title'),
+              t('hub.feature.worryRelease.subtitle'),
               Icons.self_improvement_rounded,
               '/worry-release',
             ),
             _Feature(
-              'Motivation',
-              'رسالة تساعدك على التقدم',
+              t('hub.feature.motivation.title'),
+              t('hub.feature.motivation.subtitle'),
               Icons.auto_awesome_rounded,
               '/motivation',
             ),
             _Feature(
-              'Wisdom',
-              'حكمة من بيانات التطبيق',
+              t('hub.feature.wisdom.title'),
+              t('hub.feature.wisdom.subtitle'),
               Icons.lightbulb_outline_rounded,
               '/wisdom',
             ),
             _Feature(
-              'Sage',
-              'A local thought, when you ask for one',
+              t('hub.feature.sage.title'),
+              t('hub.feature.sage.subtitle'),
               Icons.auto_awesome_rounded,
               '/sage',
             ),
             _Feature(
-              'Challenges',
-              'Build positive habits',
+              t('hub.feature.challenges.title'),
+              t('hub.feature.challenges.subtitle'),
               Icons.flag_rounded,
               '/challenges',
             ),
             _Feature(
-              'Achievements',
-              'See your progress',
+              t('hub.feature.achievements.title'),
+              t('hub.feature.achievements.subtitle'),
               Icons.emoji_events_rounded,
               '/achievements',
             ),
           ],
         );
       case NabdSection.analytics:
-        return const _Config(
-          'Insights',
-          'Understand your journal and your patterns.',
+        return _Config(
+          t('hub.analytics.title'),
+          t('hub.analytics.subtitle'),
           Icons.insights_rounded,
           [
             _Feature(
-              'Statistics',
-              'Your journal numbers',
+              t('hub.feature.stats.title'),
+              t('hub.feature.stats.subtitle'),
               Icons.bar_chart_rounded,
               '/stats',
             ),
             _Feature(
-              'Heatmap',
-              'Your writing activity',
+              t('hub.feature.heatmap.title'),
+              t('hub.feature.heatmap.subtitle'),
               Icons.grid_view_rounded,
               '/heatmap',
             ),
             _Feature(
-              'Mood Weather',
-              'Your emotional climate',
+              t('hub.feature.weather.title'),
+              t('hub.feature.weather.subtitle'),
               Icons.cloud_rounded,
               '/weather',
             ),
             _Feature(
-              'Word Cloud',
-              'Words that appear most',
+              t('hub.feature.wordCloud.title'),
+              t('hub.feature.wordCloud.subtitle'),
               Icons.cloud_queue_rounded,
               '/word-cloud',
             ),
             _Feature(
-              'Emotion Radar',
-              'Explore emotional patterns',
+              t('hub.feature.emotionRadar.title'),
+              t('hub.feature.emotionRadar.subtitle'),
               Icons.radar_rounded,
               '/emotion-radar',
             ),
             _Feature(
-              'Year Review',
-              'Look back at your year',
+              t('hub.feature.yearReview.title'),
+              t('hub.feature.yearReview.subtitle'),
               Icons.calendar_view_month_rounded,
               '/year-review',
             ),
             _Feature(
-              'Tags',
-              'Organize your entries',
+              t('hub.feature.tags.title'),
+              t('hub.feature.tags.subtitle'),
               Icons.sell_outlined,
               '/tags',
             ),
             _Feature(
-              'Echoes',
-              'See later positive responses',
+              t('hub.feature.echoes.title'),
+              t('hub.feature.echoes.subtitle'),
               Icons.wb_sunny_outlined,
               '/echoes',
             ),
             _Feature(
-              'Weekly Pulse',
-              'A Sunday snapshot of your week',
+              t('hub.feature.weeklyPulse.title'),
+              t('hub.feature.weeklyPulse.subtitle'),
               Icons.calendar_today_outlined,
               '/weekly-pulse',
             ),

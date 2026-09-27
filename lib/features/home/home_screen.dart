@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/data_revision.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -22,6 +23,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Refetch when a restore replaces the underlying boxes.
     ref.watch(dataRevisionProvider);
     final entries = _db.getAllEntries();
@@ -29,41 +31,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Journal'),
+        title: Text(l10n.t('home.title')),
         actions: [
           PopupMenuButton<String>(
-            tooltip: 'Explore features',
+            tooltip: l10n.t('home.exploreTooltip'),
             onSelected: (route) => context.push(route),
             itemBuilder: (_) => const [
-              PopupMenuItem(value: '/search', child: Text('Search')),
-              PopupMenuItem(value: '/stats', child: Text('Statistics')),
-              PopupMenuItem(value: '/heatmap', child: Text('Heatmap')),
-              PopupMenuItem(value: '/weather', child: Text('Mood weather')),
-              PopupMenuItem(value: '/word-cloud', child: Text('Word cloud')),
+              PopupMenuItem(value: '/search', child: Text(l10n.t('menu.search'))),
+              PopupMenuItem(value: '/stats', child: Text(l10n.t('menu.stats'))),
+              PopupMenuItem(value: '/heatmap', child: Text(l10n.t('menu.heatmap'))),
+              PopupMenuItem(value: '/weather', child: Text(l10n.t('menu.weather'))),
+              PopupMenuItem(value: '/word-cloud', child: Text(l10n.t('menu.wordCloud'))),
               PopupMenuItem(
-                  value: '/emotion-radar', child: Text('Emotion radar')),
-              PopupMenuItem(value: '/year-review', child: Text('Year review')),
-              PopupMenuItem(value: '/garden', child: Text('Garden')),
-              PopupMenuItem(value: '/worry-box', child: Text('Worry box')),
+                  value: '/emotion-radar', child: Text(l10n.t('menu.emotionRadar'))),
+              PopupMenuItem(value: '/year-review', child: Text(l10n.t('menu.yearReview'))),
+              PopupMenuItem(value: '/garden', child: Text(l10n.t('menu.garden'))),
+              PopupMenuItem(value: '/worry-box', child: Text(l10n.t('menu.worryBox'))),
               PopupMenuItem(
-                  value: '/worry-release', child: Text('Worry release')),
-              PopupMenuItem(value: '/breathing', child: Text('Breathing')),
+                  value: '/worry-release', child: Text(l10n.t('menu.worryRelease'))),
+              PopupMenuItem(value: '/breathing', child: Text(l10n.t('menu.breathing'))),
               PopupMenuItem(
-                  value: '/gratitude-garden', child: Text('Gratitude garden')),
+                  value: '/gratitude-garden', child: Text(l10n.t('menu.gratitudeGarden'))),
               PopupMenuItem(
                   value: '/gratitude-journal',
-                  child: Text('Gratitude journal')),
+                  child: Text(l10n.t('menu.gratitudeJournal'))),
               PopupMenuItem(
-                  value: '/future-letters', child: Text('Future letters')),
+                  value: '/future-letters', child: Text(l10n.t('menu.futureLetters'))),
               PopupMenuItem(
-                  value: '/unsent-letters', child: Text('Unsent letters')),
+                  value: '/unsent-letters', child: Text(l10n.t('menu.unsentLetters'))),
               PopupMenuItem(
-                  value: '/legacy-journal', child: Text('Legacy journal')),
+                  value: '/legacy-journal', child: Text(l10n.t('menu.legacyJournal'))),
               PopupMenuItem(
-                  value: '/time-capsule', child: Text('Time capsule')),
+                  value: '/time-capsule', child: Text(l10n.t('menu.timeCapsule'))),
               PopupMenuItem(
-                  value: '/achievements', child: Text('Achievements')),
-              PopupMenuItem(value: '/challenges', child: Text('Challenges')),
+                  value: '/achievements', child: Text(l10n.t('menu.achievements'))),
+              PopupMenuItem(value: '/challenges', child: Text(l10n.t('menu.challenges'))),
             ],
           ),
           IconButton(
@@ -89,7 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search entries...',
+                hintText: l10n.t('home.searchHint'),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -114,7 +116,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: FilterChip(
-                      label: const Text('All'),
+                      label: Text(l10n.t('home.filter.all')),
                       selected: _selectedMood == null,
                       onSelected: (_) => setState(() => _selectedMood = null),
                     ),
@@ -138,12 +140,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                _statCard(Icons.book, '${_db.getEntryCount()}', 'Entries'),
+                _statCard(Icons.book, '${_db.getEntryCount()}', l10n.t('home.stat.entries')),
                 const SizedBox(width: 12),
-                _statCard(Icons.text_fields, '${_db.getWordCount()}', 'Words'),
+                _statCard(Icons.text_fields, '${_db.getWordCount()}', l10n.t('home.stat.words')),
                 const SizedBox(width: 12),
                 _statCard(Icons.local_fire_department, '${_calculateStreak()}',
-                    'Streak'),
+                    l10n.t('home.stat.streak')),
               ],
             ),
           ),
@@ -170,14 +172,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              entries.isEmpty ? 'No entries yet' : 'No matches',
+                              entries.isEmpty ? l10n.t('home.empty.noEntries') : l10n.t('home.empty.noMatches'),
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             SizedBox(height: 8),
                             Text(
                               entries.isEmpty
-                                  ? 'Tap + to write your first entry'
-                                  : 'Try another search or mood filter',
+                                  ? l10n.t('home.empty.hintNew')
+                                  : l10n.t('home.empty.hintFilter'),
                               style: TextStyle(
                                 color: AppColors.textSecondary,
                               ),
@@ -213,7 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (mounted) setState(() {});
         },
         icon: const Icon(Icons.add),
-        label: const Text('New Entry'),
+        label: Text(l10n.t('home.action.newEntry')),
       ),
     );
   }
@@ -237,7 +239,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Sessions',
+                      l10n.t('home.sessions.title'),
                       style: TextStyle(
                         color: colors.onPrimaryContainer,
                         fontSize: 17,
@@ -246,7 +248,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Take a mindful pause',
+                      l10n.t('home.sessions.subtitle'),
                       style: TextStyle(
                         color: colors.onPrimaryContainer.withValues(alpha: 0.8),
                         fontSize: 12,
@@ -286,7 +288,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Silent Companion',
+                      l10n.t('home.silent.title'),
                       style: TextStyle(
                         color: colors.onSecondaryContainer,
                         fontSize: 17,
@@ -295,7 +297,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Just rain. No words.',
+                      l10n.t('home.silent.subtitle'),
                       style: TextStyle(
                         color:
                             colors.onSecondaryContainer.withValues(alpha: 0.8),
