@@ -15,6 +15,10 @@ void main() {
       .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.dart'))
+      // generated output is not a hand-written call site
+      .where((f) => !f.path.contains('${Platform.pathSeparator}l10n${
+          Platform.pathSeparator}generated${
+          Platform.pathSeparator}'))
       .toList();
 
   test('no const expression wraps a localizer lookup', () {
