@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nabd/core/l10n/app_localizations.dart';
+import 'package:nabd/core/l10n/app_strings.dart';
 import 'package:nabd/features/personal/echoes_screen.dart';
 import 'package:nabd/features/personal/sage_screen.dart';
 import 'package:nabd/models/journal_entry.dart';
@@ -58,7 +59,9 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('أصداء'), findsOneWidget);
+      // Reference the table rather than a literal so a translation change
+      // cannot silently break this assertion.
+      expect(find.text(S.ar['hub.feature.echoes.title']), findsOneWidget);
       expect(
         find.text(
           'تظهر الأصداء عندما يتبع مزاج صعب مدخلة إيجابية بعد 3 إلى 90 يومًا.',
