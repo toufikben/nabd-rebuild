@@ -28,11 +28,11 @@
 
 | البند | الحالة | التفصيل |
 |---|---|---|
-| أيقونة التطبيق | ✅ مُصلَحة | ملفات `assets/icons/` كانت موجودة، لكن `mipmap-*/ic_launcher.png` كانت صورًا فارغة (0.4–1.4KB). أُعيد توليدها من `app_icon.png` (1024×1024) بكل الكثافات، مع `ic_launcher_foreground` وadaptive + monochrome icon وخلفية `#0A0D14` |
-| شاشة قبل Splash | ✅ مُزالة | `main.dart` كان يفتح 5 صناديق Hive مشفّرة قبل `runApp`، فكانت تشاشة بيضاء. أُلغي الحجب: الصوت صار `unawaited` مع `timeout` 4 ثوانٍ، والتنقل في مسار مستقل `_routeAway` لا يُحجب أبدًا بالصوت |
-| صوت Splash | ✅ قطرة ماء | `splash_drop.wav` مُركَّب برمجيًا (3.0 ثانية، قطرة + صدى متلاشٍ) بلا أي ترخيص خارجي؛ كل نواتج السبلاش الخمسة تستخدمه. الملفات الخمسة القديمة ما زالت موجودة للمُناخ和其他 |
+| أيقونة التطبيق | ✅ مُصلَحة (جولة ثانية) | `mipmap-*/ic_launcher_foreground.png` كانت 72dp بدل 108dp، فكان المشغّل يصغّرها داخل مساحةAdaptive. أُعيدت على 108dp لكل كثافة مع وضع الشعار داخل منطقة الأمان 66dp، مع adaptive + monochrome وخلفية `#0A0D14` |
+| صوت Splash | ✅ قطرة ماء (جولة ثانية) | `splash_drop.wav`: حقل `RIFF size` في الترويسة كان 61476 بدل 264636، فكان ExoPlayer يرفض الملف بصمت. صُحّح الترويسة، والملف الآن 3.0 ثانية · 44.1kHz · ذروة 27200/32767 |
+| شاشة قبل Splash | ✅ مُزالة | `main.dart` كان يفتح 5 صناديق Hive مشفّرة قبل `runApp`، فكانت تشاشة بيضاء. الصوت صار `unawaited` مع `timeout` 4 ثوانٍ، والتنقل في مسار مستقل `_routeAway` لا يُحجب أبدًا بالصوت |
 | تباين الوضع الليلي | ✅ مُصلَح | `AppColors.text*/surface/background/border` صارت getters حساسة للسطوع، و`NabdApp` يزامن `AppColors.brightness` مع السمة |
-| اختيار مكان حفظ النسخة | ✅ مضاف | Settings → Export Data يختار المسار عبر `FilePicker.saveFile` بدل المشاركة إلى مجلد مؤقت |
+| اختيار مكان حفظ النسخة | ✅ مضاف ومُصلَح | Settings → Export Data يختار المسار عبر `FilePicker.saveFile` بدل المشاركة إلى مجلد مؤقت. على أندرويد/iOS يجب تمرير `bytes:` وإلا يفشل بـ `Invalid argument: bytes are required on Android and iOS`، فصارت البايتات تُقرأ قبل النداء |
 | استرجع مع Merge/Replace | ✅ مضاف | حوار اختيار الوضع؛ `RestoreMode.merge` يحافظ على الحالي، و`replace` يستبدل |
 | رسالة نجاح/فشل صريحة | ✅ مضافة | SnackBar بعدد عدد المدخلات والصور والصوت، وسبب الفشل عند الرفض |
 | تحديث الواجهة بعد الاسترجاع | ✅ مضاف | `dataRevisionProvider`؛ Home/Stats/Weather/Search/Garden/Calendar تعيد القراءة فورًا بلا إعادة تشغيل |

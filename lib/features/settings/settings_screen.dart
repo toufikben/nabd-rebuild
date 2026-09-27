@@ -483,22 +483,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final backup = await _backup.createBackup(password: password);
       if (!mounted) return;
 
+      // On Android and iOS the picker cannot hand back a writable path, so it
+      // requires the bytes up front. Reading them here also lets us drop the
+      // temp file straight after the save.
+      final bytes = await File(backup.path).readAsBytes();
       destination = await FilePicker.platform.saveFile(
         dialogTitle: 'Save encrypted backup',
         fileName: p.basename(backup.path),
         type: FileType.any,
+        bytes: bytes,
       );
       if (destination == null) {
+        await backup.delete().catchError((_) => backup);
         messenger.showSnackBar(
           const SnackBar(content: Text('Backup cancelled, nothing was saved')),
         );
         return;
       }
 
-      final bytes = await File(backup.path).readAsBytes();
-      final target = File(destination);
-      await target.parent.create(recursive: true);
-      await target.writeAsBytes(bytes, flush: true);
+      // Desktop and web return a path, so finish the write ourselves there.
+      if (!kIsWeb && destination.isNotEmpty) {
+        final target = File(destination);
+        if (!await target.exists()) {
+          await target.parent.create(recursive: true);
+          await target.writeAsBytes(bytes, flush: true);
+        }
+      }
       await backup.delete().catchError((_) => backup);
 
       saved = true;
