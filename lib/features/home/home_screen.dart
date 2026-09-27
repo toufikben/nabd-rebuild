@@ -36,7 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           PopupMenuButton<String>(
             tooltip: l10n.t('home.exploreTooltip'),
             onSelected: (route) => context.push(route),
-            itemBuilder: (_) => const [
+            itemBuilder: (_) => [
               PopupMenuItem(value: '/search', child: Text(l10n.t('menu.search'))),
               PopupMenuItem(value: '/stats', child: Text(l10n.t('menu.stats'))),
               PopupMenuItem(value: '/heatmap', child: Text(l10n.t('menu.heatmap'))),
@@ -156,9 +156,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ? ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
-                      _sessionsCard(context),
+                      _sessionsCard(context, l10n),
                       const SizedBox(height: 10),
-                      _silentCompanionCard(context),
+                      _silentCompanionCard(context, l10n),
                       SizedBox(height: 24),
                       Center(
                         child: Column(
@@ -194,8 +194,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     itemCount: filtered.length + 2,
                     separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (_, i) {
-                      if (i == 0) return _sessionsCard(context);
-                      if (i == 1) return _silentCompanionCard(context);
+                      if (i == 0) return _sessionsCard(context, l10n);
+                      if (i == 1) return _silentCompanionCard(context, l10n);
                       final entry = filtered[i - 2];
                       return EntryCard(
                         entry: entry,
@@ -220,7 +220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _sessionsCard(BuildContext context) {
+  Widget _sessionsCard(BuildContext context, AppLocalizations l10n) {
     final colors = Theme.of(context).colorScheme;
 
     return Card(
@@ -266,7 +266,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _silentCompanionCard(BuildContext context) {
+  Widget _silentCompanionCard(BuildContext context, AppLocalizations l10n) {
     final colors = Theme.of(context).colorScheme;
 
     return Card(
