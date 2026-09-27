@@ -176,7 +176,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.key_outlined,
             title: l10n.t('settings.data.rotateKey'),
             subtitle: l10n.t('settings.data.rotateKeyHint'),
-            onTap: _confirmRotateKey,
+            onTap: () => _confirmRotateKey(l10n),
           ),
 
           _tile(
@@ -184,7 +184,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l10n.t('settings.data.deleteAll'),
             subtitle: l10n.t('settings.data.deleteAllHint'),
             danger: true,
-            onTap: _confirmDeleteAll,
+            onTap: () => _confirmDeleteAll(l10n),
           ),
 
           // ─── About ───
@@ -538,14 +538,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
         SnackBar(
-          content: Text(l10n.t('dialog.save.done') + ': ' + p.basename(destination)),
+          content: Text('${l10n.t('dialog.save.done')}: ${p.basename(destination)}'),
           duration: const Duration(seconds: 5),
         ),
       );
     } catch (e) {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.t('dialog.save.failed') + ': ' + $e)),
+        SnackBar(content: Text('${l10n.t('dialog.save.failed')}: $e')),
       );
       if (!saved) {
         debugPrint('Export did not complete; destination=$destination');
@@ -595,7 +595,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (password == null || password.isEmpty || !mounted) return;
 
       if (!mounted) return;
-      final mode = await _askRestoreMode();
+      final mode = await _askRestoreMode(l10n);
       if (mode == null || !mounted) return;
 
       messenger.showSnackBar(
@@ -611,7 +611,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.hideCurrentSnackBar();
       if (!result.ok) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.t('dialog.restore.failed') + ': ' + (result.error ?? ''))),
+          SnackBar(content: Text('${l10n.t('dialog.restore.failed')}: ${result.error ?? ''}')),
         );
         return;
       }
@@ -636,11 +636,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.read(dataRevisionProvider.notifier).bump();
     } catch (e) {
       messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(SnackBar(content: Text(l10n.t('dialog.restore.failed') + ': ' + $e)));
+      messenger.showSnackBar(SnackBar(content: Text('${l10n.t('dialog.restore.failed')}: $e')));
     }
   }
 
-  Future<RestoreMode?> _askRestoreMode() {
+  Future<RestoreMode?> _askRestoreMode(AppLocalizations l10n) {
     return showDialog<RestoreMode>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -672,7 +672,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _confirmRotateKey() async {
+  Future<void> _confirmRotateKey(AppLocalizations l10n) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -706,12 +706,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.t('dialog.rotate.failed') + ': ' + $e)),
+        SnackBar(content: Text('${l10n.t('dialog.rotate.failed')}: $e')),
       );
     }
   }
 
-  Future<void> _confirmDeleteAll() async {
+  Future<void> _confirmDeleteAll(AppLocalizations l10n) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
