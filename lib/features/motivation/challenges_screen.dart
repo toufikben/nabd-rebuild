@@ -173,7 +173,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                       ? OutlinedButton.icon(
                           onPressed: () => _toggleJoin(c.id),
                           icon: const Icon(Icons.check),
-                          label: const Text(l10n.t('challenges.state.joined')),
+                          label: Text(l10n.t('challenges.state.joined')),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white),
@@ -184,7 +184,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.primary,
                           ),
-                          child: const Text(l10n.t('challenges.action.join')),
+                          child: Text(l10n.t('challenges.action.join')),
                         ),
                 ),
               ],
