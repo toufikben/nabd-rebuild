@@ -119,7 +119,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.timer_outlined,
               title: l10n.t('settings.lock.timeout'),
               subtitle: _lockTimeoutLabel(_lockTimeoutMinutes, l10n),
-              onTap: _pickLockTimeout(l10n),
+              onTap: () => _pickLockTimeout(l10n),
             ),
 
           // ─── Notifications ───
@@ -538,14 +538,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
         SnackBar(
-          content: Text('l10n.t('dialog.save.done') + ': '${p.basename(destination)}'),
+          content: Text(l10n.t('dialog.save.done') + ': ' + p.basename(destination)),
           duration: const Duration(seconds: 5),
         ),
       );
     } catch (e) {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
-        SnackBar(content: Text('l10n.t('dialog.save.failed') + ': '$e')),
+        SnackBar(content: Text(l10n.t('dialog.save.failed') + ': ' + $e)),
       );
       if (!saved) {
         debugPrint('Export did not complete; destination=$destination');
@@ -611,7 +611,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.hideCurrentSnackBar();
       if (!result.ok) {
         messenger.showSnackBar(
-          SnackBar(content: Text('l10n.t('dialog.restore.failed') + ': '${result.error}')),
+          SnackBar(content: Text(l10n.t('dialog.restore.failed') + ': ' + (result.error ?? ''))),
         );
         return;
       }
@@ -620,12 +620,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         SnackBar(
           content: Text(
             mode == RestoreMode.merge
-                ? 'Merged ${result.entriesImported} entries '
-                    '(${result.imagesRestored} images, '
-                    '${result.audioRestored} audio)'
-                : 'Replaced with ${result.entriesImported} entries '
-                    '(${result.imagesRestored} images, '
-                    '${result.audioRestored} audio)',
+                ? '${l10n.t('dialog.restore.merged')} ${result.entriesImported}'
+                    ' ${l10n.t('dialog.restore.unit')} '
+                    '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
+                    '${result.audioRestored} ${l10n.t('dialog.restore.audio')})'
+                : '${l10n.t('dialog.restore.replaced')} ${result.entriesImported}'
+                    ' ${l10n.t('dialog.restore.unit')} '
+                    '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
+                    '${result.audioRestored} ${l10n.t('dialog.restore.audio')})',
           ),
           duration: const Duration(seconds: 5),
         ),
@@ -634,7 +636,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.read(dataRevisionProvider.notifier).bump();
     } catch (e) {
       messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(SnackBar(content: Text('l10n.t('dialog.restore.failed') + ': '$e')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.t('dialog.restore.failed') + ': ' + $e)));
     }
   }
 
@@ -704,7 +706,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('l10n.t('dialog.rotate.failed') + ': '$e')),
+        SnackBar(content: Text(l10n.t('dialog.rotate.failed') + ': ' + $e)),
       );
     }
   }
