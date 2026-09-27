@@ -29,6 +29,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final BackupService _backup = BackupService();
   final BiometricService _biometric = BiometricService();
 
+  // These must outlive the dialog that borrows them. `showDialog` returns as
+  // soon as the route starts closing, so disposing a controller in a `finally`
+  // tears down the EditableText/Focus structure while the exit animation is
+  // still mounted. That trips `_dependents.isEmpty` and paints a red screen.
+  // Owning them as State fields means disposal only happens in dispose(),
+  // which the framework guarantees runs after teardown.
+  final TextEditingController _exportPasswordController =
+      TextEditingController();
+  final TextEditingController _restorePasswordController =
+      TextEditingController();
+
   bool _notificationsEnabled = true;
   bool _lockEnabled = false;
   int _lockTimeoutMinutes = 5;
@@ -40,6 +51,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     super.initState();
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
+  }
+
+  @override
+  void dispose() {
+    _exportPasswordController.dispose();
+    _restorePasswordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -448,7 +466,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Exports an encrypted backup. The user picks where the `.nabd` file goes,
   /// so a copy survives even if the app is uninstalled.
   Future<void> _exportData() async {
-    final passwordController = TextEditingController();
+    final passwordController = _exportPasswordController;
+    passwordController.clear();
     final messenger = ScaffoldMessenger.of(context);
     String? destination;
     var saved = false;
@@ -525,8 +544,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       messenger.showSnackBar(
         SnackBar(content: Text('Backup failed: $e')),
       );
-    } finally {
-      passwordController.dispose();
       if (!saved) {
         debugPrint('Export did not complete; destination=$destination');
       }
@@ -536,7 +553,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Restores an encrypted `.nabd` backup, letting the user merge with the
   /// current data or replace it wholesale.
   Future<void> _restoreData() async {
-    final passwordController = TextEditingController();
+    final passwordController = _restorePasswordController;
+    passwordController.clear();
     final messenger = ScaffoldMessenger.of(context);
     try {
       final picked = await FilePicker.platform.pickFiles(
@@ -613,8 +631,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
-    } finally {
-      passwordController.dispose();
     }
   }
 

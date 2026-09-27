@@ -20,7 +20,7 @@ class SplashService {
   Future<void> playSplashSound(String soundId) async {
     try {
       await _player.setAsset('assets/sounds/$soundId.mp3');
-      await _player.setVolume(0.65);
+      await _player.setVolume(0.9);
       await _player.play();
     } catch (error) {
       debugPrint('Splash sound failed for $soundId: $error');
