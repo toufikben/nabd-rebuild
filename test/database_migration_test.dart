@@ -39,7 +39,9 @@ void main() {
     final directory = await Directory.systemTemp.createTemp('nabd_migration');
     addTearDown(() async {
       await Hive.close();
-      await directory.delete(recursive: true);
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+      }
     });
     await _initHive(directory);
 
@@ -64,7 +66,9 @@ void main() {
     final directory = await Directory.systemTemp.createTemp('nabd_recovery');
     addTearDown(() async {
       await Hive.close();
-      await directory.delete(recursive: true);
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+      }
     });
     await _initHive(directory);
 
@@ -90,7 +94,9 @@ void main() {
     final directory = await Directory.systemTemp.createTemp('nabd_corrupt');
     addTearDown(() async {
       await Hive.close();
-      await directory.delete(recursive: true);
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+      }
     });
     await _initHive(directory);
 
