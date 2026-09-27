@@ -16,48 +16,43 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
   late AppLocalizations l10n;
   final Box _box = Hive.box('settings');
 
-  static const _challenges = [
-    _Challenge(
-      id: 'gratitude_7',
-      title: '7 Days of Gratitude',
-      titleAr: '7 أيام من الامتنان',
-      description: 'Write 3 gratitude items daily for a week',
-      emoji: '🙏',
-      days: 7,
-    ),
-    _Challenge(
-      id: 'mood_check',
-      title: l10n.t('challenges.moodTracker'),
-      titleAr: 'متتبع المزاج',
-      description: l10n.t('challenges.moodTrackerHint'),
-      emoji: '😊',
-      days: 14,
-    ),
-    _Challenge(
-      id: 'long_writing',
-      title: l10n.t('challenges.deepDive'),
-      titleAr: 'غوص عميق',
-      description: 'Write 500+ words daily',
-      emoji: '✍️',
-      days: 7,
-    ),
-    _Challenge(
-      id: 'dream_journal',
-      title: l10n.t('challenges.dreamCatcher'),
-      titleAr: 'صائد الأحلام',
-      description: l10n.t('challenges.dreamCatcherHint'),
-      emoji: '🌙',
-      days: 14,
-    ),
-    _Challenge(
-      id: 'breathing',
-      title: l10n.t('challenges.mindfulStart'),
-      titleAr: 'بداية واعية',
-      description: l10n.t('challenges.mindfulStartHint'),
-      emoji: '🧘',
-      days: 30,
-    ),
-  ];
+  List<_Challenge> _catalog() => [
+        _Challenge(
+          id: 'gratitude_7',
+          title: l10n.t('challenges.gratitude7'),
+          description: l10n.t('challenges.gratitude7Hint'),
+          emoji: l10n.t('challenges.gratitude7.emoji'),
+          days: 7,
+        ),
+        _Challenge(
+          id: 'mood_check',
+          title: l10n.t('challenges.moodTracker'),
+          description: l10n.t('challenges.moodTrackerHint'),
+          emoji: l10n.t('challenges.moodTracker.emoji'),
+          days: 14,
+        ),
+        _Challenge(
+          id: 'long_writing',
+          title: l10n.t('challenges.deepDive'),
+          description: l10n.t('challenges.longWritingHint'),
+          emoji: l10n.t('challenges.deepDive.emoji'),
+          days: 7,
+        ),
+        _Challenge(
+          id: 'dream_journal',
+          title: l10n.t('challenges.dreamCatcher'),
+          description: l10n.t('challenges.dreamCatcherHint'),
+          emoji: l10n.t('challenges.dreamCatcher.emoji'),
+          days: 14,
+        ),
+        _Challenge(
+          id: 'breathing',
+          title: l10n.t('challenges.mindfulStart'),
+          description: l10n.t('challenges.mindfulStartHint'),
+          emoji: l10n.t('challenges.mindfulStart.emoji'),
+          days: 30,
+        ),
+      ];
 
   Set<String> get _joined => Set.from(
         (_box.get('joined_challenges', defaultValue: <dynamic>[]) as List)
@@ -82,9 +77,9 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
       appBar: AppBar(title: Text(l10n.t('challenges.title'))),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _challenges.length,
+        itemCount: _catalog().length,
         itemBuilder: (_, i) {
-          final c = _challenges[i];
+          final c = _catalog()[i];
           final joined = _joined.contains(c.id);
 
           return Container(
@@ -204,7 +199,6 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
 class _Challenge {
   final String id;
   final String title;
-  final String titleAr;
   final String description;
   final String emoji;
   final int days;
@@ -212,7 +206,6 @@ class _Challenge {
   const _Challenge({
     required this.id,
     required this.title,
-    required this.titleAr,
     required this.description,
     required this.emoji,
     required this.days,

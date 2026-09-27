@@ -73,7 +73,7 @@ class _BreathingScreenState extends State<BreathingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               l10n.t('breathing.title'),
               style: TextStyle(
                 color: Colors.white70,

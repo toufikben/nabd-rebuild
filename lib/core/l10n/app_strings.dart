@@ -187,6 +187,16 @@ class S {
     'dialog.delete.body': 'سيؤدي هذا إلى إزالة كل المدخلات نهائياً. لا يمكن التراجع.',
     'dialog.delete.done': 'تم حذف كل البيانات',
 
+
+    'challenges.gratitude7': '7 Days of Gratitude',
+    'challenges.gratitude7Hint': 'Write 3 gratitude items daily for a week',
+    'challenges.longWritingHint': 'Write 500+ words daily',
+    'challenges.gratitude7.emoji': '🙏',
+    'challenges.moodTracker.emoji': '🎭',
+    'challenges.deepDive.emoji': '🌊',
+    'challenges.dreamCatcher.emoji': '💭',
+    'challenges.mindfulStart.emoji': '🧘',
+
     // ── Navigation shell ───────────────────────────────────────────────
     'nav.journal': 'المذكرة',
     'nav.sessions': 'الجلسات',
@@ -615,6 +625,15 @@ class S {
 
     // ── Daily quote ────────────────────────────────────────────────────
     'quote.title': 'Quote of the Day',
+
+    'challenges.gratitude7': '7 Days of Gratitude',
+    'challenges.gratitude7Hint': 'Write 3 gratitude items daily for a week',
+    'challenges.longWritingHint': 'Write 500+ words daily',
+    'challenges.gratitude7.emoji': 'ðŸ™',
+    'challenges.moodTracker.emoji': 'ðŸŽ­',
+    'challenges.deepDive.emoji': 'ðŸŒŠ',
+    'challenges.dreamCatcher.emoji': 'ðŸ’­',
+    'challenges.mindfulStart.emoji': 'ðŸ§˜',
     'dialog.delete.done': 'All data deleted',
   };
 
