@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/r_personal_service.dart';
 
@@ -30,13 +31,13 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
   Widget build(BuildContext context) {
     if (_now.weekday != DateTime.sunday) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Weekly Pulse')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).t('weekly.title'))),
         body: const _NextSundayState(),
       );
     }
     final pulse = _pulse;
     return Scaffold(
-      appBar: AppBar(title: const Text('Weekly Pulse')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).t('weekly.title'))),
       body:
           pulse == null
               ? const Center(child: CircularProgressIndicator())

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/monetization_service.dart';
 
@@ -20,7 +21,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Upgrade to Pro'),
+        title: Text(AppLocalizations.of(context).t('paywall.title')),
         actions: [
           TextButton(
             onPressed: monetization.restoring
@@ -32,7 +33,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Restore'),
+                : Text(AppLocalizations.of(context).t('paywall.restore')),
           ),
         ],
       ),
@@ -65,7 +66,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'افتح كل الميزات',
+                    AppLocalizations.of(context).t('paywall.tagline'),
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
@@ -92,26 +93,26 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               const Center(child: CircularProgressIndicator())
             else ...[
               _PlanCard(
-                title: 'Monthly',
+                title: AppLocalizations.of(context).t('paywall.monthly'),
                 price: service.priceFor(MonetizationService.proMonthlyId),
-                subtitle: 'يُجدّد شهرياً',
+                subtitle: AppLocalizations.of(context).t('paywall.monthlySub'),
                 onTap: () => _buy(MonetizationService.proMonthlyId),
               ),
               const SizedBox(height: 12),
               _PlanCard(
-                title: 'Yearly',
+                title: AppLocalizations.of(context).t('paywall.yearly'),
                 price: service.priceFor(MonetizationService.proYearlyId),
-                subtitle: 'وفّر 50%',
-                badge: 'الأكثر توفيراً',
+                subtitle: AppLocalizations.of(context).t('paywall.yearlySub'),
+                badge: AppLocalizations.of(context).t('paywall.bestValue'),
                 highlighted: true,
                 onTap: () => _buy(MonetizationService.proYearlyId),
               ),
               const SizedBox(height: 12),
               _PlanCard(
-                title: 'Lifetime',
+                title: AppLocalizations.of(context).t('paywall.lifetime'),
                 price: service.priceFor(MonetizationService.lifetimeId),
-                subtitle: 'دفعة واحدة، للأبد',
-                badge: '⭐ الأفضل',
+                subtitle: AppLocalizations.of(context).t('paywall.lifetimeSub'),
+                badge: AppLocalizations.of(context).t('paywall.best'),
                 onTap: () => _buy(MonetizationService.lifetimeId),
               ),
             ],
@@ -128,7 +129,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             SizedBox(height: 24),
 
             Text(
-              'سيتم تجديد الاشتراك تلقائياً. يمكنك الإلغاء في أي وقت من إعدادات المتجر.',
+              AppLocalizations.of(context).t('paywall.renewNote'),
               style: TextStyle(
                 color: AppColors.textTertiary,
                 fontSize: 11,
@@ -293,12 +294,12 @@ class _StoreUnavailableCard extends StatelessWidget {
               size: 40, color: AppColors.textTertiary),
           SizedBox(height: 12),
           Text(
-            'متجر التطبيقات غير متاح',
+            AppLocalizations.of(context).t('paywall.unavailable'),
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 8),
           Text(
-            'حاول لاحقاً أو تحقق من اتصالك بالإنترنت',
+            AppLocalizations.of(context).t('paywall.unavailableHint'),
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             textAlign: TextAlign.center,
           ),

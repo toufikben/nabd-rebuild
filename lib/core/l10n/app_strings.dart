@@ -187,6 +187,32 @@ class S {
     'dialog.delete.body': 'سيؤدي هذا إلى إزالة كل المدخلات نهائياً. لا يمكن التراجع.',
     'dialog.delete.done': 'تم حذف كل البيانات',
 
+    // ── Paywall ────────────────────────────────────────────────────────
+    'paywall.title': 'الترقية إلى Pro',
+    'paywall.restore': 'استرجاع',
+    'paywall.monthly': 'شهري',
+    'paywall.yearly': 'سنوي',
+    'paywall.lifetime': 'مدى الحياة',
+    'paywall.monthlySub': 'يتجدد شهرياً',
+    'paywall.yearlySub': 'وفّر 50%',
+    'paywall.lifetimeSub': 'دفعة واحدة، للأبد',
+    'paywall.bestValue': 'الأكثر توفيراً',
+    'paywall.best': '⭐ الأفضل',
+    'paywall.tagline': 'افتح كل الميزات',
+    'paywall.renewNote': 'سيتم تجديد الاشتراك تلقائياً. يمكنك الإلغاء في أي وقت من إعدادات المتجر.',
+    'paywall.unavailable': 'متجر التطبيقات غير متاح',
+    'paywall.unavailableHint': 'حاول لاحقاً أو تحقق من اتصالك بالإنترنت',
+
+    // ── Weekly pulse ───────────────────────────────────────────────────
+    'weekly.title': 'نبض الأسبوع',
+    'weekly.yourWeek': 'أسبوعك',
+    'weekly.entries': 'مدخلات',
+    'weekly.positive': 'إيجابي',
+    'weekly.negative': 'سلبي',
+    'weekly.avgMood': 'متوسط درجة المزاج',
+    'weekly.nextOn': 'يصل نبضك القادم يوم الأحد.',
+    'weekly.tooEarly': 'لا يُنشأ نبض جديد قبل يوم الأحد.',
+
     // ── Analytics extras ───────────────────────────────────────────────
     'heatmap.title': 'خريطة النشاط',
     'heatmap.activeDays': 'أيام نشطة',
@@ -901,6 +927,34 @@ class S {
     'gratitudeGarden.empty': 'Your garden is empty',
     'gratitudeGarden.prompt': 'I am grateful for',
     'gratitudeGarden.item': 'Gratitude',
+
+    // ── Paywall ────────────────────────────────────────────────────────
+    'paywall.title': 'Upgrade to Pro',
+    'paywall.restore': 'Restore',
+    'paywall.monthly': 'Monthly',
+    'paywall.yearly': 'Yearly',
+    'paywall.lifetime': 'Lifetime',
+    'paywall.monthlySub': 'Renews monthly',
+    'paywall.yearlySub': 'Save 50%',
+    'paywall.lifetimeSub': 'One payment, forever',
+    'paywall.bestValue': 'Best value',
+    'paywall.best': '⭐ Best',
+    'paywall.tagline': 'Unlock every feature',
+    'paywall.renewNote':
+        'The subscription renews automatically. You can cancel anytime from the store settings.',
+    'paywall.unavailable': 'The store is not available',
+    'paywall.unavailableHint':
+        'Try again later or check your connection',
+
+    // ── Weekly pulse ───────────────────────────────────────────────────
+    'weekly.title': 'Weekly Pulse',
+    'weekly.yourWeek': 'Your week',
+    'weekly.entries': 'Entries',
+    'weekly.positive': 'Positive',
+    'weekly.negative': 'Negative',
+    'weekly.avgMood': 'Average mood score',
+    'weekly.nextOn': 'Your next Pulse arrives on Sunday.',
+    'weekly.tooEarly': 'No new Pulse is created before Sunday.',
     'dialog.delete.done': 'All data deleted',
   };
 
