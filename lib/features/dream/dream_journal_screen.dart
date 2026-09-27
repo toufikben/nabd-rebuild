@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// DreamJournalScreen — مذكرة أحلام بألوان حالمة.
@@ -62,7 +63,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dream Journal'),
+        title: Text(AppLocalizations.of(context).t('dream.title')),
         backgroundColor: const Color(0xFF1A1F3A),
       ),
       body: Container(
@@ -128,7 +129,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Record a dream',
+                    AppLocalizations.of(context).t('dream.record'),
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -155,7 +156,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                     maxLines: 4,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: 'Describe your dream...',
+                      hintText: AppLocalizations.of(context).t('dream.hint'),
                       hintStyle: const TextStyle(color: Colors.white38),
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.1),
@@ -177,7 +178,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                       ),
                       const SizedBox(width: 8),
                       ChoiceChip(
-                        label: const Text('Nightmare'),
+                        label: Text(AppLocalizations.of(context).t('dream.nightmare')),
                         selected: _isNightmare,
                         onSelected: (v) => setState(() => _isNightmare = v),
                       ),
@@ -212,7 +213,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                     child: FilledButton.icon(
                       onPressed: _saveDream,
                       icon: const Icon(Icons.nightlight_round),
-                      label: const Text('Save Dream'),
+                      label: Text(AppLocalizations.of(context).t('dream.save')),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 14),

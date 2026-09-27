@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// WorryReleaseScreen — اكتب همّك، أطلقه.
@@ -59,7 +60,7 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
           ? null
           : const Color(0xFF0A0D14), // Dark for releasing
       appBar: AppBar(
-        title: const Text('Release a Worry'),
+        title: Text(AppLocalizations.of(context).t('worryRelease.title')),
         backgroundColor: _stage == 0 ? null : Colors.transparent,
       ),
       body: AnimatedSwitcher(
@@ -127,7 +128,7 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
           CheckboxListTile(
             value: _saveBeforeRelease,
             onChanged: (v) => setState(() => _saveBeforeRelease = v ?? false),
-            title: const Text('Save a copy to my journal'),
+            title: Text(AppLocalizations.of(context).t('worryRelease.saveCopy')),
             contentPadding: EdgeInsets.zero,
             controlAffinity: ListTileControlAffinity.leading,
           ),
@@ -137,7 +138,7 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
             child: FilledButton.icon(
               onPressed: _controller.text.trim().isEmpty ? null : _release,
               icon: const Icon(Icons.air),
-              label: const Text('Release It'),
+              label: Text(AppLocalizations.of(context).t('worryRelease.action')),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(vertical: 18),

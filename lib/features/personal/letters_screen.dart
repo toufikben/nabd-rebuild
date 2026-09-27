@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/r_personal_service.dart';
 
@@ -56,16 +57,16 @@ class _LettersScreenState extends State<LettersScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Delete letter?'),
-            content: const Text('This removes the letter from local storage.'),
+            title: Text(AppLocalizations.of(context).t('letters.delete.title')),
+            content: const Text(AppLocalizations.of(context).t('letters.delete.body')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).t('dialog.cancel')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Delete'),
+                child: Text(AppLocalizations.of(context).t('dialog.delete.action')),
               ),
             ],
           ),
@@ -80,7 +81,7 @@ class _LettersScreenState extends State<LettersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Letters'),
+        title: Text(AppLocalizations.of(context).t('letters.title')),
         actions: [
           IconButton(
             onPressed: _createLetter,
@@ -91,7 +92,7 @@ class _LettersScreenState extends State<LettersScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createLetter,
         icon: const Icon(Icons.edit_rounded),
-        label: const Text('New letter'),
+        label: Text(AppLocalizations.of(context).t('letters.new')),
       ),
       body:
           _letters.isEmpty
@@ -227,7 +228,7 @@ class _LetterComposerState extends State<_LetterComposer> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Write a letter',
+              AppLocalizations.of(context).t('letters.write'),
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 14),

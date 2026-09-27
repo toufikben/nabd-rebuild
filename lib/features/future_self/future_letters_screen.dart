@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// FutureLettersScreen — رسائل لمستقبلك.
@@ -32,7 +33,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Letters to Future Me'),
+        title: Text(AppLocalizations.of(context).t('letters.toFuture')),
       ),
       body: Column(
         children: [
@@ -53,14 +54,14 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Write a letter to your future self',
+                      AppLocalizations.of(context).t('letters.toFuture'),
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 24),
                     FilledButton.icon(
                       onPressed: () => _composeLetter(),
                       icon: const Icon(Icons.edit),
-                      label: const Text('Write first letter'),
+                      label: Text(AppLocalizations.of(context).t('letters.writeFirst')),
                     ),
                   ],
                 ),
@@ -91,7 +92,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
           : FloatingActionButton.extended(
               onPressed: () => _composeLetter(),
               icon: const Icon(Icons.edit),
-              label: const Text('New Letter'),
+              label: Text(AppLocalizations.of(context).t('letters.new')),
             ),
     );
   }
@@ -137,7 +138,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'This letter will be locked until you choose',
+                AppLocalizations.of(context).t('letters.lockNote'),
                 style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 20),
@@ -147,7 +148,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                   controller: controller,
                   maxLines: 8,
                   decoration: InputDecoration(
-                    hintText: 'Dear future me...',
+                    hintText: AppLocalizations.of(context).t('letters.hint'),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -211,7 +212,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                       if (ctx.mounted) Navigator.pop(ctx, true);
                     },
                     icon: const Icon(Icons.lock),
-                    label: const Text('Lock Letter'),
+                    label: Text(AppLocalizations.of(context).t('letters.lock')),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -315,7 +316,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
           children: [
             const Text('💌', style: TextStyle(fontSize: 24)),
             const SizedBox(width: 8),
-            const Text('From your past self'),
+            Text(AppLocalizations.of(context).t('letters.from')),
           ],
         ),
         content: SingleChildScrollView(

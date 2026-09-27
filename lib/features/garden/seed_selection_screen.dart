@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/seed.dart';
 import '../../services/garden_service.dart';
@@ -153,7 +154,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Pick the feeling you want to nurture most',
+              AppLocalizations.of(context).t('garden.seedSelection.hint'),
               style: TextStyle(color: Colors.white60, fontSize: 13),
             ),
             const SizedBox(height: 24),

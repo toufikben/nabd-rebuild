@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../services/database_service.dart';
 
@@ -61,7 +62,7 @@ class _WordCloudScreenState extends ConsumerState<WordCloudScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Word Cloud'),
+        title: Text(AppLocalizations.of(context).t('hub.feature.wordCloud.title')),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: SingleChildScrollView(

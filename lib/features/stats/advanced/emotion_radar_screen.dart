@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../services/database_service.dart';
 
@@ -55,7 +56,7 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Emotion Radar'),
+        title: Text(AppLocalizations.of(context).t('hub.feature.emotionRadar.title')),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: SingleChildScrollView(

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../services/audio_service.dart';
 
 class SoundGardenScreen extends StatefulWidget {
@@ -83,7 +84,7 @@ class _SoundGardenScreenState extends State<SoundGardenScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sound Garden'),
+        title: Text(AppLocalizations.of(context).t('garden.sounds.title')),
         actions: [
           ValueListenableBuilder<Map<String, SoundGardenPlaybackState>>(
             valueListenable: _audio.soundGardenState,
@@ -111,7 +112,7 @@ class _SoundGardenScreenState extends State<SoundGardenScreen> {
             padding: const EdgeInsets.all(20),
             children: [
               const Text(
-                'Mix up to four sounds to create your own calm space.',
+                AppLocalizations.of(context).t('garden.sounds.subtitle'),
                 style: TextStyle(color: Colors.white70, height: 1.5),
               ),
               const SizedBox(height: 20),
@@ -129,9 +130,9 @@ class _SoundGardenScreenState extends State<SoundGardenScreen> {
                         Text(track.emoji, style: const TextStyle(fontSize: 26)),
                     title: Text(track.name),
                     subtitle: isLoading
-                        ? const Text('Loading...')
+                        ? Text(AppLocalizations.of(context).t('garden.sounds.loading'))
                         : playback?.status == SoundGardenPlaybackStatus.error
-                            ? const Text('Unable to play this sound')
+                            ? Text(AppLocalizations.of(context).t('garden.sounds.failed'))
                             : null,
                     trailing: IconButton(
                       tooltip: isPlaying

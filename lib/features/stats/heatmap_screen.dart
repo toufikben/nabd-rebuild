@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -24,7 +25,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Activity Heatmap'),
+        title: Text(AppLocalizations.of(context).t('heatmap.title')),
         actions: [
           // Year picker
           DropdownButton<int>(
@@ -46,7 +47,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
             Row(
               children: [
                 ChoiceChip(
-                  label: const Text('Entries'),
+                  label: Text(AppLocalizations.of(context).t('home.stat.entries')),
                   selected: _mode == 'count',
                   onSelected: (_) => setState(() => _mode = 'count'),
                 ),

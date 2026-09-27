@@ -3,7 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../core/data_revision.dart';
 import '../../models/seed.dart';
 import '../../services/audio_service.dart';
@@ -21,7 +23,7 @@ class GardenScreen extends ConsumerWidget {
 
     if (state.seeds.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Your Garden')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).t('garden.title'))),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -46,13 +48,13 @@ class GardenScreen extends ConsumerWidget {
               FilledButton.icon(
                 onPressed: () => context.push('/seed-selection'),
                 icon: const Icon(Icons.add),
-                label: const Text('Plant a seed'),
+                label: const Text(AppLocalizations.of(context).t('garden.plant')),
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: () => context.push('/sound-garden'),
                 icon: const Icon(Icons.library_music_outlined),
-                label: const Text('Open Sound Garden'),
+                label: Text(AppLocalizations.of(context).t('garden.soundGarden')),
               ),
             ],
           ),
@@ -65,12 +67,12 @@ class GardenScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your Garden'),
+        title: Text(AppLocalizations.of(context).t('garden.title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             onPressed: () => context.push('/seed-selection'),
-            tooltip: 'Plant new seed',
+            tooltip: AppLocalizations.of(context).t('garden.plantNew'),
           ),
         ],
       ),
@@ -84,7 +86,7 @@ class GardenScreen extends ConsumerWidget {
             child: OutlinedButton.icon(
               onPressed: () => context.push('/sound-garden'),
               icon: const Icon(Icons.library_music_outlined),
-              label: const Text('Open Sound Garden'),
+              label: Text(AppLocalizations.of(context).t('garden.soundGarden')),
             ),
           ),
           const SizedBox(height: 20),
@@ -163,12 +165,12 @@ class GardenScreen extends ConsumerWidget {
         return Card(
           child: ListTile(
             leading: Icon(Icons.nature, color: colors.primary),
-            title: const Text('Garden ambience'),
+            title: Text(AppLocalizations.of(context).t('garden.ambience')),
             subtitle: Text(
               hasError
-                  ? 'Unable to load garden audio. Tap to retry.'
+                  ? AppLocalizations.of(context).t('garden.ambienceFailed')
                   : anotherAmbientIsActive
-                      ? 'Another ambience is currently active.'
+                      ? AppLocalizations.of(context).t('garden.ambienceBusy')
                       : isLoading
                           ? 'Loading garden ambience...'
                           : isPlaying

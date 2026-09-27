@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// TimeCapsuleScreen — كبسولة زمنية تُفتح بعد سنوات.
@@ -29,7 +30,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Time Capsules'),
+        title: Text(AppLocalizations.of(context).t('capsule.title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -60,7 +61,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                   FilledButton.icon(
                     onPressed: _composeCapsule,
                     icon: const Icon(Icons.add),
-                    label: const Text('Create capsule'),
+                    label: Text(AppLocalizations.of(context).t('capsule.create')),
                   ),
                 ],
               ),
@@ -166,7 +167,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                       if (ctx.mounted) Navigator.pop(ctx);
                     },
                     icon: const Icon(Icons.lock),
-                    label: const Text('Bury Capsule'),
+                    label: Text(AppLocalizations.of(context).t('capsule.bury')),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),

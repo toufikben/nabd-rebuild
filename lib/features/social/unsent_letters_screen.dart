@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// UnsentLettersScreen — رسائل لن تُرسل أبدًا.
@@ -33,7 +34,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Unsent Letters'),
+        title: Text(AppLocalizations.of(context).t('unsent.title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -95,7 +96,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
                         FilledButton.icon(
                           onPressed: () => _composeLetter(),
                           icon: const Icon(Icons.edit),
-                          label: const Text('Write first letter'),
+                          label: Text(AppLocalizations.of(context).t('unsent.write')),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF9C27B0),
                           ),
@@ -191,7 +192,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
                     if (ctx.mounted) Navigator.pop(ctx, true);
                   },
                   icon: const Icon(Icons.lock_outline),
-                  label: const Text('Keep it unsent'),
+                  label: Text(AppLocalizations.of(context).t('unsent.keep')),
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF9C27B0),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -232,7 +233,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Let it go?'),
+        title: Text(AppLocalizations.of(context).t('unsent.release.title')),
         content: const Text(
           'This letter will be released. You cannot get it back.',
         ),

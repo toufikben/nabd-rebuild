@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// GratitudeGardenScreen — كل امتنان يزرع زهرة.
@@ -64,7 +65,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gratitude Garden'),
+        title: Text(AppLocalizations.of(context).t('gratitudeGarden.title')),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -255,7 +256,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
             Text(_flowerFor(item.flowerIndex),
                 style: const TextStyle(fontSize: 24)),
             const SizedBox(width: 10),
-            const Text('Gratitude'),
+            Text(AppLocalizations.of(context).t('gratitudeGarden.item')),
           ],
         ),
         content: Column(
