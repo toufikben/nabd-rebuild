@@ -16,12 +16,17 @@ class SplashService {
   /// animation still rotates so the launch is not identical every time.
   static const _splashCount = 5;
 
-  /// The signature launch cue: a synthesised water drop with a decaying echo
-  /// over a soft bowl resonance, 3.0s long to match the splash dwell time.
-  static const signatureSound = 'splash_drop';
+  /// The signature launch cue: a water drop with a slap-back echo, two low
+  /// heartbeats, and a soft bell arpeggio — 3.2s, so it ends with the splash.
+  static const signatureSound = 'splash_nabd';
 
-  /// Preferred cue first, then a proven MP3 so the launch is never silent.
-  static const _candidates = <String>['splash_drop', 'tibetan_bowl'];
+  /// Preferred cue first, then the older drop and a proven MP3 so the launch is
+  /// never silent.
+  static const _candidates = <String>[
+    'splash_nabd',
+    'splash_drop',
+    'tibetan_bowl',
+  ];
 
   final AudioPlayer _player = AudioPlayer();
 

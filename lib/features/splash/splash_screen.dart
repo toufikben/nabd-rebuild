@@ -52,8 +52,8 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     }
 
-    // Dwell matches the 3.0s cue length.
-    await Future.delayed(const Duration(milliseconds: 3000));
+    // Dwell matches the 3.2s cue, so the bell finishes instead of being cut.
+    await Future.delayed(const Duration(milliseconds: 3200));
     unawaited(_splash.stopSplashSound());
 
     if (!mounted) return;
