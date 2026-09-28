@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/mood.dart';
 import '../../../services/database_service.dart';
@@ -22,15 +23,10 @@ class _YearReviewScreenState extends ConsumerState<YearReviewScreen> {
   int _currentSlide = 0;
   final PageController _controller = PageController();
 
-  late List<_YearSlide> _slides;
+  List<_YearSlide> _slides = const [];
 
-  @override
-  void initState() {
-    super.initState();
-    _slides = _buildSlides();
-  }
-
-  List<_YearSlide> _buildSlides() {
+  List<_YearSlide> _buildSlides(AppLocalizations l10n) {
+    String t(String key) => l10n.t(key);
     final year = DateTime.now().year;
     final entries = _db.getAllEntries()
         .where((e) => e.createdAt.year == year)
@@ -39,8 +35,8 @@ class _YearReviewScreenState extends ConsumerState<YearReviewScreen> {
     if (entries.isEmpty) {
       return [
         _YearSlide(
-          title: 'Your Year',
-          subtitle: 'No entries in $year yet',
+          title: t('year.empty'),
+          subtitle: '${t('year.emptySub')} ($year)',
           background: [AppColors.textTertiary, AppColors.textSecondary],
           emoji: '📅',
         ),
@@ -80,49 +76,49 @@ class _YearReviewScreenState extends ConsumerState<YearReviewScreen> {
 
     return [
       _YearSlide(
-        title: 'Your Year in Writing',
+        title: t('year.title'),
         subtitle: '$year',
         background: [const Color(0xFF6C5CE7), const Color(0xFF8B7BFF)],
         emoji: '✨',
       ),
       _YearSlide(
-        title: 'You wrote',
-        subtitle: '${entries.length} entries',
-        detail: 'across $writingDays days',
+        title: t('year.wrote'),
+        subtitle: '${entries.length} ${t('year.entries')}',
+        detail: '${t('year.across')} $writingDays ${t('year.daysUnit')}',
         background: [const Color(0xFF00D2A8), const Color(0xFF00897B)],
         emoji: '📝',
       ),
       _YearSlide(
-        title: 'Words written',
-        subtitle: '$totalWords words',
-        detail: 'That\'s about ${(totalWords / 250).round()} pages',
+        title: t('year.words'),
+        subtitle: '$totalWords ${t('year.wordsUnit')}',
+        detail: '${t('year.pages')}: ${(totalWords / 250).round()}',
         background: [const Color(0xFFFFB74D), const Color(0xFFFB8C00)],
         emoji: '✍️',
       ),
       if (topMood != null)
         _YearSlide(
-          title: 'Your dominant mood',
-          subtitle: topMood.labelEn,
-          detail: '${moodCounts[topMood.id]} times',
+          title: t('year.mood'),
+          subtitle: topMood.label(l10n.locale.languageCode),
+          detail: '${moodCounts[topMood.id]} ${t('year.times')}',
           background: [topMood.color, topMood.color.withValues(alpha: 0.6)],
           emoji: topMood.emoji,
         ),
       _YearSlide(
-        title: 'Overall sentiment',
+        title: t('year.sentiment'),
         subtitle: avgSentiment > 0.2
-            ? 'Positive 📈'
+            ? '${t('year.positive')} 📈'
             : avgSentiment < -0.2
-                ? 'Challenging 📉'
-                : 'Balanced ⚖️',
-        detail: 'Keep growing!',
+                ? '${t('year.negative')} 📉'
+                : '${t('year.balanced')} ⚖️',
+        detail: t('year.keep'),
         background: avgSentiment > 0
             ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]
             : [const Color(0xFF5C6BC0), const Color(0xFF303F9F)],
         emoji: '💫',
       ),
       _YearSlide(
-        title: 'Here\'s to next year',
-        subtitle: 'Keep writing, keep growing',
+        title: t('year.next'),
+        subtitle: t('year.nextSub'),
         background: [AppColors.primary, AppColors.primaryGlow],
         emoji: '🌱',
         isLast: true,
@@ -138,6 +134,9 @@ class _YearReviewScreenState extends ConsumerState<YearReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Rebuilt every frame on purpose: the copy follows the app locale and the
+    // entries the user has written since the screen was opened.
+    _slides = _buildSlides(AppLocalizations.of(context));
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(

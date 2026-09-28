@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../core/l10n/app_localizations.dart';
 import '../core/theme/app_colors.dart';
 import '../services/garden_service.dart';
 
@@ -66,7 +67,7 @@ class GardenWateringDialog extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '+${result.growthAdded} growth',
+                  '+${result.growthAdded} ${AppLocalizations.of(context).t('garden.watering.growth')}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -96,26 +97,29 @@ class GardenWateringDialog extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.emoji_events,
                       color: Colors.white,
                       size: 32,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
-                      'Congratulations!',
-                      style: TextStyle(
+                      AppLocalizations.of(context).t('garden.watering.congrats'),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Your tree reached full bloom',
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      AppLocalizations.of(context).t('garden.watering.bloom'),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],

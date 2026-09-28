@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/l10n/app_localizations.dart';
 import '../core/theme/app_colors.dart';
 import '../services/soundscape_service.dart';
 
@@ -81,7 +82,9 @@ class SoundscapeBar extends ConsumerWidget {
                             ),
                             SizedBox(width: 4),
                             Text(
-                              option.labelEn,
+                              option.labelFor(
+                                AppLocalizations.of(context).isArabic,
+                              ),
                               style: TextStyle(
                                 fontSize: 11,
                                 color: selected
@@ -103,7 +106,7 @@ class SoundscapeBar extends ConsumerWidget {
           else
             Expanded(
               child: Text(
-                'Ambient sounds',
+                AppLocalizations.of(context).t('soundscape.label'),
                 style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,

@@ -54,7 +54,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Bury a message for your future self',
+                    AppLocalizations.of(context).t('capsule.subtitle'),
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 24),
@@ -111,7 +111,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                 TextField(
                   controller: titleController,
                   decoration: InputDecoration(
-                    hintText: 'Capsule title',
+                    hintText: AppLocalizations.of(context).t('capsule.nameLabel'),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -122,7 +122,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                   controller: contentController,
                   maxLines: 6,
                   decoration: InputDecoration(
-                    hintText: 'Message to future you...',
+                    hintText: AppLocalizations.of(context).t('capsule.messageHint'),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -223,14 +223,14 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('🔒 Capsule Locked'),
+          title: Text(AppLocalizations.of(context).t('capsule.locked')),
           content: Text(
-            'Unlocks on ${capsule.unlockAt.day}/${capsule.unlockAt.month}/${capsule.unlockAt.year}\n\n$days days remaining',
+            '${AppLocalizations.of(context).t('capsule.unlocksOn')} ${capsule.unlockAt.day}/${capsule.unlockAt.month}/${capsule.unlockAt.year}\n\n$days ${AppLocalizations.of(context).t('capsule.daysLeft')}',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('OK'),
+              child: Text(AppLocalizations.of(ctx).t('dialog.ok')),
             ),
           ],
         ),
@@ -241,14 +241,14 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(capsule.title.isEmpty ? 'Time Capsule' : capsule.title),
+        title: Text(capsule.title.isEmpty ? AppLocalizations.of(context).t('capsule.untitled') : capsule.title),
         content: SingleChildScrollView(
           child: Text(capsule.content),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(ctx).t('dialog.close')),
           ),
         ],
       ),

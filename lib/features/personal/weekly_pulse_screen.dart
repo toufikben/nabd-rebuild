@@ -29,15 +29,16 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_now.weekday != DateTime.sunday) {
       return Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context).t('weekly.title'))),
+        appBar: AppBar(title: Text(l10n.t('weekly.title'))),
         body: const _NextSundayState(),
       );
     }
     final pulse = _pulse;
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context).t('weekly.title'))),
+      appBar: AppBar(title: Text(l10n.t('weekly.title'))),
       body:
           pulse == null
               ? const Center(child: CircularProgressIndicator())
@@ -47,19 +48,19 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   Text(
-                    'Your week',
+                    l10n.t('weekly.yourWeek'),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text('A stable snapshot saved for this Sunday.'),
+                  Text(l10n.t('weekly.snapshot')),
                   const SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
                         child: _Metric(
-                          label: 'Entries',
+                          label: l10n.t('weekly.entries'),
                           value: '${pulse.entryCount}',
                           icon: Icons.menu_book_outlined,
                         ),
@@ -67,7 +68,7 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: _Metric(
-                          label: 'Words',
+                          label: l10n.t('weekly.words'),
                           value: '${pulse.wordCount}',
                           icon: Icons.edit_note_outlined,
                         ),
@@ -79,7 +80,7 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
                     children: [
                       Expanded(
                         child: _Metric(
-                          label: 'Positive',
+                          label: l10n.t('weekly.positive'),
                           value: '${pulse.positiveCount}',
                           icon: Icons.wb_sunny_outlined,
                           color: AppColors.success,
@@ -88,7 +89,7 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: _Metric(
-                          label: 'Negative',
+                          label: l10n.t('weekly.negative'),
                           value: '${pulse.negativeCount}',
                           icon: Icons.cloud_outlined,
                           color: AppColors.warning,
@@ -98,7 +99,7 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
                   ),
                   const SizedBox(height: 10),
                   _Metric(
-                    label: 'Average mood score',
+                    label: l10n.t('weekly.avgMood'),
                     value: pulse.averageMood.toStringAsFixed(1),
                     icon: Icons.insights_outlined,
                   ),

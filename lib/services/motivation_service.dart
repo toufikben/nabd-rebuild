@@ -109,8 +109,12 @@ class Achievement {
   final String titleEn;
   final String titleAr;
   final String description;
+  final String descriptionAr;
   final int requirement;
   final String requirementType;
+
+  String titleFor(bool arabic) => arabic ? titleAr : titleEn;
+  String descriptionFor(bool arabic) => arabic ? descriptionAr : description;
 
   const Achievement({
     required this.id,
@@ -118,6 +122,7 @@ class Achievement {
     required this.titleEn,
     required this.titleAr,
     required this.description,
+    required this.descriptionAr,
     required this.requirement,
     required this.requirementType,
   });
@@ -129,6 +134,7 @@ class Achievement {
       titleEn: 'First Seed',
       titleAr: 'أول بذرة',
       description: 'Write your first entry',
+      descriptionAr: 'اكتب أول مدخلة',
       requirement: 1,
       requirementType: 'entries',
     ),
@@ -138,6 +144,7 @@ class Achievement {
       titleEn: 'Growing',
       titleAr: 'تنمو',
       description: 'Write 7 entries',
+      descriptionAr: 'اكتب 7 مدخلات',
       requirement: 7,
       requirementType: 'entries',
     ),
@@ -147,6 +154,7 @@ class Achievement {
       titleEn: 'Strong Writer',
       titleAr: 'كاتب قوي',
       description: 'Write 30 entries',
+      descriptionAr: 'اكتب 30 مدخلة',
       requirement: 30,
       requirementType: 'entries',
     ),
@@ -156,6 +164,7 @@ class Achievement {
       titleEn: 'On Fire',
       titleAr: 'ملتهب',
       description: '3-day streak',
+      descriptionAr: '٣ أيام متتالية',
       requirement: 3,
       requirementType: 'streak',
     ),
@@ -165,6 +174,7 @@ class Achievement {
       titleEn: 'Week Warrior',
       titleAr: 'محارب الأسبوع',
       description: '7-day streak',
+      descriptionAr: '٧ أيام متتالية',
       requirement: 7,
       requirementType: 'streak',
     ),
@@ -174,6 +184,7 @@ class Achievement {
       titleEn: 'Month Master',
       titleAr: 'سيد الشهر',
       description: '30-day streak',
+      descriptionAr: '٣٠ يوماً متتالية',
       requirement: 30,
       requirementType: 'streak',
     ),
@@ -183,6 +194,7 @@ class Achievement {
       titleEn: 'Storyteller',
       titleAr: 'راوي',
       description: 'Write 1,000 words',
+      descriptionAr: 'اكتب ١٠٠٠ كلمة',
       requirement: 1000,
       requirementType: 'words',
     ),
@@ -192,6 +204,7 @@ class Achievement {
       titleEn: 'Author',
       titleAr: 'مؤلف',
       description: 'Write 10,000 words',
+      descriptionAr: 'اكتب ١٠٠٠٠ كلمة',
       requirement: 10000,
       requirementType: 'words',
     ),
@@ -201,6 +214,7 @@ class Achievement {
       titleEn: 'Emotional Rainbow',
       titleAr: 'قوس قزح عاطفي',
       description: 'Use 10 different moods',
+      descriptionAr: 'استعمل ١٠ مزاجات مختلفة',
       requirement: 10,
       requirementType: 'moods',
     ),
@@ -210,6 +224,7 @@ class Achievement {
       titleEn: 'Grateful Heart',
       titleAr: 'قلب ممتن',
       description: '7 days of gratitude',
+      descriptionAr: '٧ أيام من الامتنان',
       requirement: 7,
       requirementType: 'gratitude',
     ),

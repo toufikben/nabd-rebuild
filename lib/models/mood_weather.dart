@@ -31,6 +31,8 @@ class MoodWeather {
     required this.icon,
   });
 
+  String labelFor(bool arabic) => arabic ? labelAr : labelEn;
+
   /// تحويل المزاج إلى طقس.
   static MoodWeather fromMoodValue(double avgValue) {
     if (avgValue >= 9) return _sunny;

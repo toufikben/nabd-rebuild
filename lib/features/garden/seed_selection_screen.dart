@@ -199,7 +199,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            seed.nameAr,
+                            seed.nameFor(AppLocalizations.of(context).isArabic),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -208,7 +208,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            seed.description,
+                            seed.descriptionFor(AppLocalizations.of(context).isArabic),
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 10,
@@ -242,8 +242,8 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                   ),
                   child: Text(
                     _selectedSeed == null
-                        ? 'Select a seed'
-                        : 'Plant ${_selectedSeed!.nameAr}',
+                        ? AppLocalizations.of(context).t('garden.seedSelection.select')
+                        : AppLocalizations.of(context).t('garden.seedSelection.action'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -311,7 +311,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
               ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
               const SizedBox(height: 24),
               Text(
-                'A ${_selectedSeed!.nameAr} seed',
+                _selectedSeed!.nameFor(AppLocalizations.of(context).isArabic),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,

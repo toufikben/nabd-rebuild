@@ -233,16 +233,16 @@ class _LetterComposerState extends State<_LetterComposer> {
             ),
             const SizedBox(height: 14),
             SegmentedButton<PersonalLetterKind>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: PersonalLetterKind.unsent,
-                  label: Text('Unsent'),
-                  icon: Icon(Icons.lock_outline_rounded),
+                  label: Text(AppLocalizations.of(context).t('letters.tabUnsent')),
+                  icon: const Icon(Icons.lock_outline_rounded),
                 ),
                 ButtonSegment(
                   value: PersonalLetterKind.future,
-                  label: Text('Future'),
-                  icon: Icon(Icons.schedule_rounded),
+                  label: Text(AppLocalizations.of(context).t('letters.tabFuture')),
+                  icon: const Icon(Icons.schedule_rounded),
                 ),
               ],
               selected: {_kind},
@@ -270,14 +270,14 @@ class _LetterComposerState extends State<_LetterComposer> {
                   if (date != null) setState(() => _unlockDate = date);
                 },
                 icon: const Icon(Icons.calendar_month_rounded),
-                label: const Text('Choose date'),
+                label: Text(AppLocalizations.of(context).t('letters.chooseDate')),
               ),
             ],
             TextField(
               controller: _content,
               maxLines: 8,
-              decoration: const InputDecoration(
-                hintText: 'Write what you want to keep...',
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context).t('letters.bodyHint'),
               ),
             ),
             const SizedBox(height: 16),
@@ -295,7 +295,7 @@ class _LetterComposerState extends State<_LetterComposer> {
                       ),
                     ),
                 icon: const Icon(Icons.save_outlined),
-                label: const Text('Save locally'),
+                label: Text(AppLocalizations.of(context).t('letters.saveLocal')),
               ),
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/database_service.dart';
 
@@ -67,13 +68,13 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Legacy Journal'),
+        title: Text(AppLocalizations.of(context).t('legacy.title')),
         actions: [
           if (legacyCount > 0)
             IconButton(
               icon: const Icon(Icons.ios_share),
               onPressed: _exportLegacy,
-              tooltip: 'Export legacy',
+              tooltip: AppLocalizations.of(context).t('legacy.export'),
             ),
         ],
       ),
@@ -97,9 +98,9 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
                   size: 36,
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'Legacy Journal',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context).t('legacy.heading'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -128,8 +129,10 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
           // Entries list
           Expanded(
             child: entries.isEmpty
-                ? const Center(
-                    child: Text('No entries yet'),
+                ? Center(
+                    child: Text(
+                      AppLocalizations.of(context).t('legacy.empty'),
+                    ),
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),

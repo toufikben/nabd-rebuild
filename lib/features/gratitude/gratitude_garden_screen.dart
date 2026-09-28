@@ -115,24 +115,25 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
                 borderRadius: BorderRadius.circular(24),
               ),
               child: items.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('🌱', style: TextStyle(fontSize: 60)),
-                          SizedBox(height: 12),
+                          const Text('🌱', style: TextStyle(fontSize: 60)),
+                          const SizedBox(height: 12),
                           Text(
-                            'Your garden is empty',
-                            style: TextStyle(
+                            AppLocalizations.of(context)
+                                .t('gratitudeGarden.empty'),
+                            style: const TextStyle(
                               fontSize: 16,
                               color: Colors.black54,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          SizedBox(height: 6),
+                          const SizedBox(height: 6),
                           Text(
-                            'Add something you\'re grateful for',
-                            style: TextStyle(color: Colors.black38),
+                            AppLocalizations.of(context).t('gratitudeGarden.add'),
+                            style: const TextStyle(color: Colors.black38),
                           ),
                         ],
                       ),
@@ -198,7 +199,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
                     child: TextField(
                       controller: _controller,
                       decoration: InputDecoration(
-                        hintText: 'I\'m grateful for...',
+                        hintText: AppLocalizations.of(context).t('gratitudeGarden.hint'),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
@@ -277,7 +278,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(ctx).t('dialog.close')),
           ),
         ],
       ),

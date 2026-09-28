@@ -160,7 +160,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
               TextField(
                 controller: toController,
                 decoration: InputDecoration(
-                  hintText: 'To: someone I miss...',
+                  hintText: AppLocalizations.of(context).t('unsent.toHint'),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -171,7 +171,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
                 controller: contentController,
                 maxLines: 10,
                 decoration: InputDecoration(
-                  hintText: 'Dear..., I wanted to tell you...',
+                  hintText: AppLocalizations.of(context).t('unsent.hint'),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -234,18 +234,16 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(AppLocalizations.of(context).t('unsent.release.title')),
-        content: const Text(
-          'This letter will be released. You cannot get it back.',
-        ),
+        content: Text(AppLocalizations.of(context).t('unsent.release.body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Keep'),
+            child: Text(AppLocalizations.of(ctx).t('unsent.keep')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Release'),
+            child: Text(AppLocalizations.of(ctx).t('unsent.release.action')),
           ),
         ],
       ),

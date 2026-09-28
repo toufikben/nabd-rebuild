@@ -139,6 +139,8 @@ class SoundscapeOption {
     required this.labelAr,
   });
 
+  String labelFor(bool arabic) => arabic ? labelAr : labelEn;
+
   static const all = [
     SoundscapeOption(id: 'rain', emoji: '🌧️', labelEn: 'Rain', labelAr: 'مطر'),
     SoundscapeOption(

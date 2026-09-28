@@ -281,7 +281,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('This letter will unlock on:'),
+            Text(AppLocalizations.of(context).t('futureLetters.unlockOn')),
             const SizedBox(height: 12),
             Text(
               '${letter.unlockDate.day}/${letter.unlockDate.month}/${letter.unlockDate.year}',
@@ -301,7 +301,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK'),
+            child: Text(AppLocalizations.of(ctx).t('dialog.ok')),
           ),
         ],
       ),
@@ -342,7 +342,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(ctx).t('dialog.close')),
           ),
         ],
       ),

@@ -115,10 +115,10 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
                 controller: _controller,
                 maxLines: null,
                 expands: true,
-                decoration: const InputDecoration(
-                  hintText: 'I\'m worried about...',
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context).t('worryRelease.hint'),
                   border: InputBorder.none,
-                  hintStyle: TextStyle(fontSize: 16),
+                  hintStyle: const TextStyle(fontSize: 16),
                 ),
                 style: const TextStyle(fontSize: 16, height: 1.7),
               ),
@@ -266,7 +266,7 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Text('Done'),
+              child: Text(AppLocalizations.of(context).t('dialog.done')),
             ).animate().fadeIn(delay: 800.ms),
           ],
         ),

@@ -355,7 +355,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final moodId = await MoodPicker.show(
       context,
       currentMoodId: _moodId,
-      langCode: 'en',
+      langCode: l10n.locale.languageCode,
       moods: Mood.journalMoods,
     );
     if (mounted) setState(() => _moodId = moodId);

@@ -278,7 +278,7 @@ class GardenScreen extends ConsumerWidget {
 
           const SizedBox(height: 12),
           Text(
-            s.nameAr,
+            s.nameFor(AppLocalizations.of(context).isArabic),
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -422,7 +422,7 @@ class GardenScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        s.nameAr,
+                        s.nameFor(AppLocalizations.of(context).isArabic),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(

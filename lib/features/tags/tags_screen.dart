@@ -131,7 +131,7 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Delete #${tag.name}?'),
+        title: Text('#${tag.name}'),
         content: Text(l10n.t('tags.delete.body')),
         actions: [
           TextButton(

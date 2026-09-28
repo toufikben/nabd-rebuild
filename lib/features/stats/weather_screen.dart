@@ -99,7 +99,9 @@ class WeatherScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  todayWeather.labelEn,
+                  todayWeather.labelFor(
+                    AppLocalizations.of(context).isArabic,
+                  ),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -143,7 +145,9 @@ class WeatherScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  monthlyWeather.labelEn,
+                  monthlyWeather.labelFor(
+                    AppLocalizations.of(context).isArabic,
+                  ),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,

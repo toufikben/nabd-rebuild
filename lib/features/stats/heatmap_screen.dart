@@ -53,7 +53,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
                 ),
                 const SizedBox(width: 8),
                 ChoiceChip(
-                  label: const Text('Mood'),
+                  label: Text(AppLocalizations.of(context).t('heatmap.mood')),
                   selected: _mode == 'mood',
                   onSelected: (_) => setState(() => _mode = 'mood'),
                 ),

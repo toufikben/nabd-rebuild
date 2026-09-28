@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../core/l10n/app_localizations.dart';
 import '../models/mood_weather.dart';
 
 /// WeatherWidget — عرض الطقس المزاجي.
@@ -80,13 +81,13 @@ class WeatherForecastCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.cloud_outlined, size: 18, color: Colors.blueGrey),
-              SizedBox(width: 8),
+              const Icon(Icons.cloud_outlined, size: 18, color: Colors.blueGrey),
+              const SizedBox(width: 8),
               Text(
-                'Mood Weather · 7 days',
-                style: TextStyle(
+                AppLocalizations.of(context).t('weather.week7'),
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),

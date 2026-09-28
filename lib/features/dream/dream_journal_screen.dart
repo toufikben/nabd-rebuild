@@ -91,17 +91,17 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                 ),
               )
             else
-              const Expanded(
+              Expanded(
                 flex: 2,
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('🌙', style: TextStyle(fontSize: 80)),
-                      SizedBox(height: 16),
+                      const Text('🌙', style: TextStyle(fontSize: 80)),
+                      const SizedBox(height: 16),
                       Text(
-                        'No dreams recorded',
-                        style: TextStyle(
+                        AppLocalizations.of(context).t('dream.empty'),
+                        style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 16,
                         ),
@@ -140,7 +140,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                     controller: _titleController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: 'Dream title (optional)',
+                      hintText: AppLocalizations.of(context).t('dream.titleHint'),
                       hintStyle: const TextStyle(color: Colors.white38),
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.1),
@@ -172,7 +172,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                   Row(
                     children: [
                       ChoiceChip(
-                        label: const Text('Lucid'),
+                        label: Text(AppLocalizations.of(context).t('dream.lucid')),
                         selected: _isLucid,
                         onSelected: (v) => setState(() => _isLucid = v),
                       ),
@@ -183,9 +183,12 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                         onSelected: (v) => setState(() => _isNightmare = v),
                       ),
                       const Spacer(),
-                      const Text(
-                        'Clarity',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      Text(
+                        AppLocalizations.of(context).t('dream.clarity'),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       ...List.generate(5, (i) {

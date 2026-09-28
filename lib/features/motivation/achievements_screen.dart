@@ -113,7 +113,7 @@ class AchievementsScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          a.titleEn,
+                          a.titleFor(AppLocalizations.of(context).isArabic),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -124,7 +124,7 @@ class AchievementsScreen extends ConsumerWidget {
                         ),
                         SizedBox(height: 2),
                         Text(
-                          a.description,
+                          a.descriptionFor(AppLocalizations.of(context).isArabic),
                           style: TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary,
