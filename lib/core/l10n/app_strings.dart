@@ -153,11 +153,17 @@ class S {
     'settings.about.version': 'الإصدار',
     'settings.about.shareBody': 'جرّب «مذكرتي» — تطبيق يوميات خاص كلياً.',
 
+    // ── Shared entry labels ────────────────────────────────────────────
+    'entry.untitled': 'بلا عنوان',
+    'entry.audio': 'صوت',
+    'common.error': 'خطأ',
+
     // ── Dialogs ───────────────────────────────────────────────────────
     'dialog.cancel': 'إلغاء',
     'dialog.continue': 'متابعة',
     'dialog.restore': 'استرجاع',
     'dialog.rotate': 'تدوير',
+    'dialog.add': 'إضافة',
     'dialog.export.title': 'حماية النسخة',
     'dialog.export.password': 'كلمة مرور النسخة',
     'dialog.save.title': 'حفظ النسخة المشفرة',
@@ -186,6 +192,7 @@ class S {
     'dialog.delete.title': 'حذف كل البيانات؟',
     'dialog.delete.body': 'سيؤدي هذا إلى إزالة كل المدخلات نهائياً. لا يمكن التراجع.',
     'dialog.delete.done': 'تم حذف كل البيانات',
+    'dialog.delete.action': 'حذف',
 
     // ── Paywall ────────────────────────────────────────────────────────
     'paywall.title': 'الترقية إلى Pro',
@@ -202,6 +209,17 @@ class S {
     'paywall.renewNote': 'سيتم تجديد الاشتراك تلقائياً. يمكنك الإلغاء في أي وقت من إعدادات المتجر.',
     'paywall.unavailable': 'متجر التطبيقات غير متاح',
     'paywall.unavailableHint': 'حاول لاحقاً أو تحقق من اتصالك بالإنترنت',
+    'paywall.loading': 'جارٍ تحميل الباقات…',
+    'paywall.loadFailed': 'تعذّر تحميل الباقات',
+    'paywall.retry': 'إعادة المحاولة',
+    'paywall.brand': 'نبض Pro',
+    'paywall.f1': 'مدخلات غير محدودة',
+    'paywall.f2': '10 بذور في الحديقة',
+    'paywall.f3': 'قفل بيومتري',
+    'paywall.f4': 'كل الإحصائيات المتقدمة',
+    'paywall.f5': 'رسائل المستقبل والكبسولات',
+    'paywall.f6': 'تصدير PDF + JSON',
+    'paywall.f7': 'بدون إعلانات',
 
     // ── Weekly pulse ───────────────────────────────────────────────────
     'weekly.title': 'نبض الأسبوع',
@@ -624,11 +642,17 @@ class S {
     'settings.about.version': 'Version',
     'settings.about.shareBody': 'Check out Nabd - a private journaling app!',
 
+    // ── Shared entry labels ────────────────────────────────────────────
+    'entry.untitled': 'Untitled',
+    'entry.audio': 'Audio',
+    'common.error': 'Error',
+
     // ── Dialogs ───────────────────────────────────────────────────────
     'dialog.cancel': 'Cancel',
     'dialog.continue': 'Continue',
     'dialog.restore': 'Restore',
     'dialog.rotate': 'Rotate',
+    'dialog.add': 'Add',
     'dialog.export.title': 'Protect backup',
     'dialog.export.password': 'Backup password',
     'dialog.save.title': 'Save encrypted backup',
@@ -787,11 +811,11 @@ class S {
     'challenges.gratitude7': '7 Days of Gratitude',
     'challenges.gratitude7Hint': 'Write 3 gratitude items daily for a week',
     'challenges.longWritingHint': 'Write 500+ words daily',
-    'challenges.gratitude7.emoji': 'ðŸ™',
-    'challenges.moodTracker.emoji': 'ðŸŽ­',
-    'challenges.deepDive.emoji': 'ðŸŒŠ',
-    'challenges.dreamCatcher.emoji': 'ðŸ’­',
-    'challenges.mindfulStart.emoji': 'ðŸ§˜',
+    'challenges.gratitude7.emoji': '🙏',
+    'challenges.moodTracker.emoji': '🎭',
+    'challenges.deepDive.emoji': '🌊',
+    'challenges.dreamCatcher.emoji': '💭',
+    'challenges.mindfulStart.emoji': '🧘',
 
     // ── Garden ─────────────────────────────────────────────────────────
     'garden.title': 'Your Garden',
@@ -945,6 +969,17 @@ class S {
     'paywall.unavailable': 'The store is not available',
     'paywall.unavailableHint':
         'Try again later or check your connection',
+    'paywall.loading': 'Loading plans…',
+    'paywall.loadFailed': 'The plans could not be loaded',
+    'paywall.retry': 'Try again',
+    'paywall.brand': 'Nabd Pro',
+    'paywall.f1': 'Unlimited entries',
+    'paywall.f2': '10 seeds in the garden',
+    'paywall.f3': 'Biometric lock',
+    'paywall.f4': 'Every advanced statistic',
+    'paywall.f5': 'Future letters and time capsules',
+    'paywall.f6': 'PDF + JSON export',
+    'paywall.f7': 'No ads',
 
     // ── Weekly pulse ───────────────────────────────────────────────────
     'weekly.title': 'Weekly Pulse',
@@ -956,6 +991,7 @@ class S {
     'weekly.nextOn': 'Your next Pulse arrives on Sunday.',
     'weekly.tooEarly': 'No new Pulse is created before Sunday.',
     'dialog.delete.done': 'All data deleted',
+    'dialog.delete.action': 'Delete',
   };
 
   /// Every key known to the table, used by the parity test.

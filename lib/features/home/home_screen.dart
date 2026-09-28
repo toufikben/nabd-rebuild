@@ -37,6 +37,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             tooltip: l10n.t('home.exploreTooltip'),
             onSelected: (route) => context.push(route),
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: '/writing',
+                child: _sectionRow(
+                  Icons.edit_note_rounded,
+                  l10n.t('hub.writing.title'),
+                ),
+              ),
+              PopupMenuItem(
+                value: '/journey',
+                child: _sectionRow(
+                  Icons.spa_rounded,
+                  l10n.t('hub.journey.title'),
+                ),
+              ),
+              PopupMenuItem(
+                value: '/analytics',
+                child: _sectionRow(
+                  Icons.insights_rounded,
+                  l10n.t('hub.analytics.title'),
+                ),
+              ),
               PopupMenuItem(value: '/search', child: Text(l10n.t('menu.search'))),
               PopupMenuItem(value: '/stats', child: Text(l10n.t('menu.stats'))),
               PopupMenuItem(value: '/heatmap', child: Text(l10n.t('menu.heatmap'))),
@@ -154,7 +175,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Expanded(
             child: filtered.isEmpty
                 ? ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 112),
                     children: [
                       _sessionsCard(context, l10n),
                       const SizedBox(height: 10),
@@ -190,7 +211,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   )
                 : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 112),
                     itemCount: filtered.length + 2,
                     separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (_, i) {
@@ -217,6 +238,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         icon: const Icon(Icons.add),
         label: Text(l10n.t('home.action.newEntry')),
       ),
+    );
+  }
+
+  Widget _sectionRow(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: AppColors.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
     );
   }
 

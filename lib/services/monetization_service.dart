@@ -282,21 +282,30 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   Future<void> _loadProducts() async {
     try {
-      final response =
-          await _iap.queryProductDetails(MonetizationConfig.productIds);
+      final response = await _iap
+          .queryProductDetails(MonetizationConfig.productIds)
+          .timeout(const Duration(seconds: 20));
       if (!mounted) return;
       state = state.copyWith(
         products: response.productDetails,
+        productsLoaded: true,
         error: response.error?.message,
       );
     } catch (error) {
       if (!mounted) return;
       state = state.copyWith(
-        error: '$error',
+        productsLoaded: true,
+        error: error is TimeoutException
+            ? 'The store did not answer in time.'
+            : '$error',
         entitlementStatus: EntitlementStatus.error,
       );
     }
   }
+
+  /// Re-runs the store lookup so the paywall can offer a retry instead of an
+  /// endless spinner when the catalog came back empty.
+  Future<void> retryLoadProducts() => _loadProducts();
 
   Future<void> buy(ProductDetails product) async {
     if (kReleaseMode && !MonetizationConfig.productionConfigured) {
@@ -442,6 +451,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 class MonetizationState {
   const MonetizationState({
     this.storeAvailable = false,
+    this.productsLoaded = false,
     this.isPro = false,
     this.isLifetime = false,
     this.proExpiry,
@@ -453,6 +463,7 @@ class MonetizationState {
   });
 
   final bool storeAvailable;
+  final bool productsLoaded;
   final bool isPro;
   final bool isLifetime;
   final DateTime? proExpiry;
@@ -464,6 +475,7 @@ class MonetizationState {
 
   MonetizationState copyWith({
     bool? storeAvailable,
+    bool? productsLoaded,
     bool? isPro,
     bool? isLifetime,
     DateTime? proExpiry,
@@ -475,6 +487,7 @@ class MonetizationState {
   }) =>
       MonetizationState(
         storeAvailable: storeAvailable ?? this.storeAvailable,
+        productsLoaded: productsLoaded ?? this.productsLoaded,
         isPro: isPro ?? this.isPro,
         isLifetime: isLifetime ?? this.isLifetime,
         proExpiry: proExpiry ?? this.proExpiry,

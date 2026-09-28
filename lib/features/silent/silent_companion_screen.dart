@@ -110,7 +110,7 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'Just be here.',
+                        l10n.t('silent.tagline'),
                         textAlign: TextAlign.center,
                         style: textTheme.headlineSmall?.copyWith(
                           color: colors.onSurface,
@@ -119,7 +119,7 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'No words. No tasks. Only rain.',
+                        l10n.t('silent.body'),
                         textAlign: TextAlign.center,
                         style: textTheme.bodyLarge?.copyWith(
                           color: colors.onSurfaceVariant,

@@ -135,7 +135,11 @@ class AudioService {
         await player.dispose();
         return false;
       }
-      await player.play();
+      _startLoopedPlayback(
+        player,
+        (error) =>
+            _reportSoundGardenError(id, ownerId, generation, player, error),
+      );
       if (!_soundGardenRequestIsCurrent(id, ownerId, generation, player)) {
         await player.stop();
         await player.dispose();
@@ -150,19 +154,40 @@ class AudioService {
       );
       return true;
     } catch (error) {
-      if (_soundGardenRequestIsCurrent(id, ownerId, generation, player)) {
-        _setSoundGardenState(
-          id,
-          SoundGardenPlaybackState(
-            ownerId: ownerId,
-            status: SoundGardenPlaybackStatus.error,
-            errorMessage: 'Unable to play sound: $error',
-          ),
-        );
-      }
+      _reportSoundGardenError(id, ownerId, generation, player, error);
       await player.dispose();
       return false;
     }
+  }
+
+  /// just_audio only completes the [AudioPlayer.play] future when playback
+  /// reaches the end, and a looped track never ends. Awaiting it would pin the
+  /// track in `loading` while audio is already audible.
+  void _startLoopedPlayback(
+    just_audio.AudioPlayer player,
+    void Function(Object error) onError,
+  ) {
+    unawaited(player.play().catchError((Object error) {
+      onError(error);
+    }));
+  }
+
+  void _reportSoundGardenError(
+    String id,
+    String ownerId,
+    int generation,
+    just_audio.AudioPlayer player,
+    Object error,
+  ) {
+    if (!_soundGardenRequestIsCurrent(id, ownerId, generation, player)) return;
+    _setSoundGardenState(
+      id,
+      SoundGardenPlaybackState(
+        ownerId: ownerId,
+        status: SoundGardenPlaybackStatus.error,
+        errorMessage: 'Unable to play sound: $error',
+      ),
+    );
   }
 
   Future<void> stopSoundGardenTrack({
@@ -275,7 +300,11 @@ class AudioService {
     if (!isReady || _disposed) return false;
 
     try {
-      await _ambientPlayer.play();
+      _startLoopedPlayback(_ambientPlayer, (error) {
+        if (generation == _ambientGeneration) {
+          _setAmbientError(source, 'Unable to play ambient audio: $error');
+        }
+      });
       if (!_disposed && generation == _ambientGeneration) {
         ambientState.value = AmbientPlaybackState(
           source: source,
@@ -322,7 +351,9 @@ class AudioService {
     }
 
     try {
-      await _ambientPlayer.play();
+      _startLoopedPlayback(_ambientPlayer, (error) {
+        _setAmbientError(current.source, 'Unable to resume audio: $error');
+      });
       if (!_disposed) {
         ambientState.value = AmbientPlaybackState(
           source: current.source,

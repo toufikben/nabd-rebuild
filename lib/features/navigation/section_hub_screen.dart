@@ -72,7 +72,7 @@ class SectionHubScreen extends StatelessWidget {
                   return Card(
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
-                      onTap: () => context.push(f.route),
+                      onTap: () => _open(context, f.route),
                       child: Padding(
                         padding: const EdgeInsets.all(15),
                         child: Column(
@@ -117,6 +117,23 @@ class SectionHubScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  static const _shellRoutes = <String>{
+    '/journal',
+    '/sessions',
+    '/garden',
+    '/stats',
+  };
+
+  void _open(BuildContext context, String route) {
+    // Shell branches must be switched with go(); pushing one stacks a second
+    // copy of the scaffold and its bottom navigation bar.
+    if (_shellRoutes.contains(route)) {
+      context.go(route);
+      return;
+    }
+    context.push(route);
   }
 
   _Config _config(NabdSection s, AppLocalizations l10n) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../core/l10n/app_localizations.dart';
 import '../core/theme/app_colors.dart';
 import '../models/journal_entry.dart';
 import '../models/mood.dart';
@@ -18,8 +19,11 @@ class EntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final mood = Mood.getById(entry.mood);
-    final dateStr = DateFormat.yMMMd().add_jm().format(entry.createdAt);
+    final dateStr = DateFormat.yMMMd(l10n.locale.languageCode)
+        .add_jm()
+        .format(entry.createdAt);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -60,7 +64,7 @@ class EntryCard extends StatelessWidget {
                         children: [
                           Text(
                             entry.title.isEmpty
-                                ? 'Untitled'
+                                ? l10n.t('entry.untitled')
                                 : entry.title,
                             style: TextStyle(
                               fontSize: 16,
@@ -143,7 +147,7 @@ class EntryCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Audio',
+                          l10n.t('entry.audio'),
                           style: TextStyle(
                             fontSize: 11,
                             color: AppColors.textTertiary,

@@ -186,7 +186,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('${l10n.t('common.error')}: $e')),
         );
       }
     } finally {
@@ -220,15 +220,15 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.discard')),
-            child: const Text('Discard'),
+            child: Text(l10n.t('editor.unsaved.discard')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.cancel')),
-            child: const Text('Cancel'),
+            child: Text(l10n.t('editor.unsaved.cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.save')),
-            child: const Text('Save'),
+            child: Text(l10n.t('editor.unsaved.save')),
           ),
         ],
       ),
@@ -362,29 +362,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   }
 
   Future<void> _addTag() async {
-    final controller = TextEditingController();
     final tag = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.t('editor.tag.add')),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(hintText: l10n.t('editor.tag.name')),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Add'),
-          ),
-        ],
-      ),
+      builder: (_) => const _AddTagDialog(),
     );
-    controller.dispose();
 
     if (mounted && tag != null && tag.isNotEmpty && !_tags.contains(tag)) {
       setState(() => _tags = [..._tags, tag]);
@@ -697,7 +678,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.t('dialog.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -712,5 +693,47 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       await _db.deleteEntry(_existing!.id);
       if (mounted) context.pop();
     }
+  }
+}
+
+/// Owns its [TextEditingController] so the controller is only released once the
+/// dialog route has finished animating out and its `TextField` is unmounted.
+class _AddTagDialog extends StatefulWidget {
+  const _AddTagDialog();
+
+  @override
+  State<_AddTagDialog> createState() => _AddTagDialogState();
+}
+
+class _AddTagDialogState extends State<_AddTagDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(l10n.t('editor.tag.add')),
+      content: TextField(
+        controller: _controller,
+        decoration: InputDecoration(hintText: l10n.t('editor.tag.name')),
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.t('dialog.cancel')),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
+          child: Text(l10n.t('dialog.add')),
+        ),
+      ],
+    );
   }
 }

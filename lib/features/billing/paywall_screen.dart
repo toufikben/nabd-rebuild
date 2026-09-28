@@ -58,7 +58,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                       size: 64, color: Colors.white),
                   const SizedBox(height: 12),
                   Text(
-                    'نبض Pro',
+                    AppLocalizations.of(context).t('paywall.brand'),
                     style: Theme.of(context)
                         .textTheme
                         .displayLarge
@@ -76,21 +76,39 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             const SizedBox(height: 24),
 
             // Features
-            _featureRow('📝', 'مدخلات غير محدودة'),
-            _featureRow('🌱', '10 بذور في الحديقة'),
-            _featureRow('🔒', 'قفل بيومتري'),
-            _featureRow('📊', 'كل الإحصائيات المتقدمة'),
-            _featureRow('💌', 'رسائل المستقبل والكبسولات'),
-            _featureRow('📤', 'تصدير PDF + JSON'),
-            _featureRow('🚫', 'بدون إعلانات'),
+            _featureRow('📝', AppLocalizations.of(context).t('paywall.f1')),
+            _featureRow('🌱', AppLocalizations.of(context).t('paywall.f2')),
+            _featureRow('🔒', AppLocalizations.of(context).t('paywall.f3')),
+            _featureRow('📊', AppLocalizations.of(context).t('paywall.f4')),
+            _featureRow('💌', AppLocalizations.of(context).t('paywall.f5')),
+            _featureRow('📤', AppLocalizations.of(context).t('paywall.f6')),
+            _featureRow('🚫', AppLocalizations.of(context).t('paywall.f7')),
 
             const SizedBox(height: 32),
 
             // Plans
             if (!monetization.storeAvailable)
               const _StoreUnavailableCard()
+            else if (!monetization.productsLoaded)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                child: Column(
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppLocalizations.of(context).t('paywall.loading'),
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              )
             else if (monetization.products.isEmpty)
-              const Center(child: CircularProgressIndicator())
+              _LoadFailedCard(
+                message: monetization.error ??
+                    AppLocalizations.of(context).t('paywall.loadFailed'),
+                onRetry: () => service.retryLoadProducts(),
+              )
             else ...[
               _PlanCard(
                 title: AppLocalizations.of(context).t('paywall.monthly'),
@@ -152,7 +170,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+          content: Text(
+            '${AppLocalizations.of(context).t('common.error')}: $e',
+          ),
+        ),
         );
       }
     }
@@ -271,6 +293,51 @@ class _PlanCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _LoadFailedCard extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _LoadFailedCard({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.wifi_off_rounded, size: 40, color: AppColors.textTertiary),
+          const SizedBox(height: 12),
+          Text(
+            AppLocalizations.of(context).t('paywall.loadFailed'),
+            style: const TextStyle(fontWeight: FontWeight.w600),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: Text(AppLocalizations.of(context).t('paywall.retry')),
+          ),
+        ],
       ),
     );
   }

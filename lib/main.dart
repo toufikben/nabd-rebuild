@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'app.dart';
 import 'services/encryption_service.dart';
@@ -14,6 +15,9 @@ import 'services/settings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Arabic month and weekday names are loaded lazily by intl; without this the
+  // calendar and entry dates silently fall back to English.
+  await initializeDateFormatting('ar');
   Object? storageError;
   try {
     await Hive.initFlutter();

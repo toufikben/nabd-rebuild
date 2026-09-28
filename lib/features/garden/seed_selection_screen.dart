@@ -366,7 +366,11 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
       if (mounted) {
         setState(() => _isPlanting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+          content: Text(
+            '${AppLocalizations.of(context).t('common.error')}: $e',
+          ),
+        ),
         );
       }
     }

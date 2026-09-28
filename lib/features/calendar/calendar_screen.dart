@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/l10n/app_localizations.dart';
@@ -52,6 +53,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ],
             ),
             child: TableCalendar<JournalEntry>(
+              locale: l10n.locale.languageCode,
               firstDay: DateTime(2020),
               lastDay: DateTime.now().add(const Duration(days: 365)),
               focusedDay: _focusedDay,
@@ -142,8 +144,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               children: [
                 Text(
                   _selectedDay == null
-                      ? 'Select a day'
-                      : '${_selectedDay!.day}/${_selectedDay!.month}/${_selectedDay!.year}',
+                      ? l10n.t('calendar.selectDay')
+                      : DateFormat.yMMMd(l10n.locale.languageCode)
+                          .format(_selectedDay!),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
