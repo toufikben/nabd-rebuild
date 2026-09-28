@@ -63,8 +63,8 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
     if (!mounted) return;
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم حفظ امتنانك'),
+      SnackBar(
+        content: Text(AppLocalizations.of(context).t('gratitudeJournal.saved')),
         backgroundColor: AppColors.success,
       ),
     );
@@ -91,94 +91,93 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
   @override
   Widget build(BuildContext context) {
     final items = _items;
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('مذكرة الامتنان'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.check),
-              tooltip: 'حفظ',
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.t('hub.feature.gratitudeJournal.title')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check),
+            tooltip: l10n.t('gratitudeJournal.saveTooltip'),
+            onPressed: _save,
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF48FB1), Color(0xFFEC407A)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                Text('🙏', style: TextStyle(fontSize: 50)),
+                SizedBox(height: 12),
+                Text(
+                  l10n.t('gratitudeJournal.threeThings'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          ...List.generate(3, (index) => _input(index)),
+          const SizedBox(height: 4),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
               onPressed: _save,
-            ),
-          ],
-        ),
-        body: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF48FB1), Color(0xFFEC407A)],
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                children: [
-                  Text('🙏', style: TextStyle(fontSize: 50)),
-                  SizedBox(height: 12),
-                  Text(
-                    AppLocalizations.of(context).t('gratitudeJournal.threeThings'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            ...List.generate(3, (index) => _input(index)),
-            const SizedBox(height: 4),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _save,
-                icon: const Icon(Icons.save_outlined),
-                label: const Text('حفظ امتنان اليوم'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+              icon: const Icon(Icons.save_outlined),
+              label: Text(l10n.t('gratitudeJournal.save')),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
-            const SizedBox(height: 28),
-            Text(
-              AppLocalizations.of(context).t('gratitudeJournal.previous'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-            ),
-            const SizedBox(height: 10),
-            if (items.isEmpty)
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 22),
-                child: Center(
-                  child: Text(
-                    AppLocalizations.of(context).t('gratitudeJournal.empty'),
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
+          ),
+          const SizedBox(height: 28),
+          Text(
+            l10n.t('gratitudeJournal.previous'),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
                 ),
-              )
-            else
-              ...items.map((item) => _itemCard(item)),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          if (items.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 22),
+              child: Center(
+                child: Text(
+                  l10n.t('gratitudeJournal.empty'),
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+            )
+          else
+            ...items.map((item) => _itemCard(item)),
+        ],
       ),
     );
   }
 
   Widget _input(int index) {
-    const hints = [
-      'شخص أقدّره...',
-      'لحظة جعلتني أبتسم...',
-      'شيء صغير لكنه مهم...'
+    final l10n = AppLocalizations.of(context);
+    final hints = [
+      l10n.t('gratitudeJournal.hintPerson'),
+      l10n.t('gratitudeJournal.hintMoment'),
+      l10n.t('gratitudeJournal.hintSmall'),
     ];
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -226,7 +225,8 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
         subtitle: Text(_formatDate(item.date)),
         trailing: IconButton(
           onPressed: () => _delete(item),
-          tooltip: 'حذف',
+          tooltip:
+              AppLocalizations.of(context).t('gratitudeJournal.deleteTooltip'),
           icon: const Icon(Icons.delete_outline),
         ),
       ),

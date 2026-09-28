@@ -277,7 +277,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('🔒 Letter Locked'),
+        title: Text(AppLocalizations.of(context).t('futureLetters.lockedTitle')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

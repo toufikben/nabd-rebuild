@@ -67,7 +67,9 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text(d == 365 ? 'Year' : '$d Days'),
+                    label: Text(d == 365
+                        ? AppLocalizations.of(context).t('stats.range.year')
+                        : '$d ${AppLocalizations.of(context).t('stats.range.days')}'),
                     selected: _period == d,
                     onSelected: (_) => setState(() => _period = d),
                   ),
@@ -91,19 +93,22 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
                   AspectRatio(
                     aspectRatio: 1,
                     child: CustomPaint(
-                      painter: _RadarPainter(scores),
+                      painter: _RadarPainter(scores, [
+                        for (final key in scores.keys)
+                          AppLocalizations.of(context).t(_labelKey(key)),
+                      ]),
                       size: Size.infinite,
                     ),
                   ),
                   SizedBox(height: 24),
-                  _buildLegend(scores),
+                  _buildLegend(context, scores),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildLegend(Map<String, double> scores) {
+  Widget _buildLegend(BuildContext context, Map<String, double> scores) {
     return Wrap(
       spacing: 16,
       runSpacing: 10,
@@ -123,7 +128,7 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
             ),
             SizedBox(width: 6),
             Text(
-              '${e.key}: $percent%',
+              '${AppLocalizations.of(context).t(_labelKey(e.key))}: $percent%',
               style: const TextStyle(fontSize: 12),
             ),
           ],
@@ -131,6 +136,11 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
       }).toList(),
     );
   }
+
+  /// The dimension keys are internal identifiers and colour selectors, so they
+  /// stay English; only what reaches the screen goes through the table.
+  String _labelKey(String dimension) =>
+      'emotionRadar.${dimension.toLowerCase()}';
 
   Color _colorFor(String label) {
     switch (label) {
@@ -154,7 +164,8 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
 
 class _RadarPainter extends CustomPainter {
   final Map<String, double> scores;
-  _RadarPainter(this.scores);
+  final List<String> axisLabels;
+  _RadarPainter(this.scores, this.axisLabels);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -231,7 +242,7 @@ class _RadarPainter extends CustomPainter {
 
       final tp = TextPainter(
         text: TextSpan(
-          text: labels[i],
+          text: axisLabels[i],
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 12,

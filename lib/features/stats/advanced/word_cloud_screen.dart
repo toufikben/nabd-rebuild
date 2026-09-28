@@ -73,7 +73,9 @@ class _WordCloudScreenState extends ConsumerState<WordCloudScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text(d == 365 ? '1 Year' : '$d Days'),
+                    label: Text(d == 365
+                        ? AppLocalizations.of(context).t('stats.range.year')
+                        : '$d ${AppLocalizations.of(context).t('stats.range.days')}'),
                     selected: _period == d,
                     onSelected: (_) => setState(() => _period = d),
                   ),

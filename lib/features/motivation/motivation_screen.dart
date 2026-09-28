@@ -12,97 +12,93 @@ class MotivationScreen extends StatefulWidget {
 }
 
 class _MotivationScreenState extends State<MotivationScreen> {
-  late (String, String) _quote;
+  (String, String)? _quote;
 
-  @override
-  void initState() {
-    super.initState();
-    _quote = MotivationService.getTodayQuoteArabic();
-  }
+  bool get _isArabic => AppLocalizations.of(context).isArabic;
 
-  void _refresh() {
-    setState(() => _quote = MotivationService.getRandomQuoteArabic());
-  }
+  void _refresh() => setState(
+        () => _quote = MotivationService.getRandomQuoteFor(_isArabic),
+      );
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('تحفيز'),
-          actions: [
-            IconButton(
-              onPressed: _refresh,
-              tooltip: 'حكمة أخرى',
-              icon: const Icon(Icons.refresh),
-            ),
-          ],
-        ),
-        body: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary.withValues(alpha: 0.22),
-                    AppColors.primaryGlow.withValues(alpha: 0.08),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.auto_awesome, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text(
-                        AppLocalizations.of(context).t('motivation.todayMessage'),
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    '«${_quote.$1}»',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      height: 1.65,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 14),
-                  Text(
-                    '— ${_quote.$2}',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
+    final l10n = AppLocalizations.of(context);
+    _quote ??= MotivationService.getTodayQuoteFor(_isArabic);
+    final quote = _quote!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.t('hub.feature.motivation.title')),
+        actions: [
+          IconButton(
+            onPressed: _refresh,
+            tooltip: l10n.t('motivation.another'),
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.22),
+                  AppColors.primaryGlow.withValues(alpha: 0.08),
                 ],
               ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
             ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: _refresh,
-              icon: const Icon(Icons.refresh),
-              label: const Text('اعرض رسالة أخرى'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text(
+                      l10n.t('motivation.todayMessage'),
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '«${quote.$1}»',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    height: 1.65,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 14),
+                Text(
+                  '— ${quote.$2}',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context).t('motivation.localNote'),
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            onPressed: _refresh,
+            icon: const Icon(Icons.refresh),
+            label: Text(l10n.t('motivation.another')),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.t('motivation.localNote'),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ],
       ),
     );
   }

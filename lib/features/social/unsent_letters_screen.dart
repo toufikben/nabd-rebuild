@@ -209,8 +209,8 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
     if (saved == true && mounted) {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('💌 Letter kept in your heart'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).t('unsentLetters.kept')),
           backgroundColor: Color(0xFF9C27B0),
         ),
       );

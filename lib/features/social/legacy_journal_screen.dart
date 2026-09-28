@@ -57,7 +57,7 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
 
     await Share.share(
       buffer.toString(),
-      subject: 'My Legacy Journal',
+      subject: AppLocalizations.of(context).t('legacy.title'),
     );
   }
 

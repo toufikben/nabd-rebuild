@@ -88,9 +88,9 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'What\'s weighing on you?',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).t('worryRelease.heading'),
+            style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
             ),

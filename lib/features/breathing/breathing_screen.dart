@@ -157,7 +157,7 @@ class _BreathingScreenState extends State<BreathingScreen>
   String _getPhaseLabel() {
     if (_controller.status == AnimationStatus.forward) return l10n.t('breathing.in');
     if (_controller.status == AnimationStatus.reverse) return l10n.t('breathing.out');
-    return 'Hold';
+    return l10n.t('breathing.hold');
   }
 }
 

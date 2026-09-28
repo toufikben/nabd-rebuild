@@ -20,6 +20,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
 
   final Box _settings = Hive.box('settings');
   (String, String)? _wisdom;
+  bool _pendingDefault = false;
 
   @override
   void initState() {
@@ -35,19 +36,19 @@ class _WisdomScreenState extends State<WisdomScreen> {
         author.isNotEmpty) {
       _wisdom = (quote, author);
     } else {
-      _wisdom = MotivationService.getTodayQuoteArabic();
-      _persistWisdom(_wisdom, deleted: false);
+      _pendingDefault = true;
     }
   }
 
   void _createWisdom() {
-    final wisdom = MotivationService.getRandomQuoteArabic();
+    final wisdom = MotivationService.getRandomQuoteFor(l10n.isArabic);
     setState(() => _wisdom = wisdom);
     _persistWisdom(wisdom, deleted: false);
   }
 
   void _changeWisdom() {
-    final wisdom = MotivationService.getRandomQuoteArabic();
+    final wisdom = MotivationService.getRandomQuoteFor(l10n.isArabic,
+        excludingQuote: _wisdom?.$1);
     setState(() => _wisdom = wisdom);
     _persistWisdom(wisdom, deleted: false);
   }
@@ -70,49 +71,51 @@ class _WisdomScreenState extends State<WisdomScreen> {
   @override
   Widget build(BuildContext context) {
     l10n = AppLocalizations.of(context);
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('حكمة')),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: _wisdom == null
-              ? _emptyState()
-              : ListView(
-                  children: [
-                    _wisdomCard(context),
-                    const SizedBox(height: 18),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _changeWisdom,
-                            icon: const Icon(Icons.swap_horiz),
-                            label: const Text('حكمة أخرى'),
-                          ),
+    if (_pendingDefault) {
+      _pendingDefault = false;
+      _wisdom = MotivationService.getTodayQuoteFor(l10n.isArabic);
+      _persistWisdom(_wisdom, deleted: false);
+    }
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.t('wisdom.title'))),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: _wisdom == null
+            ? _emptyState()
+            : ListView(
+                children: [
+                  _wisdomCard(context),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _changeWisdom,
+                          icon: const Icon(Icons.swap_horiz),
+                          label: Text(l10n.t('wisdom.another')),
                         ),
-                        const SizedBox(width: 10),
-                        IconButton(
-                          onPressed: _deleteWisdom,
-                          tooltip: 'حذف الحكمة',
-                          icon: const Icon(Icons.delete_outline),
-                          style: IconButton.styleFrom(
-                            foregroundColor: AppColors.danger,
-                            backgroundColor:
-                                AppColors.danger.withValues(alpha: 0.1),
-                          ),
+                      ),
+                      const SizedBox(width: 10),
+                      IconButton(
+                        onPressed: _deleteWisdom,
+                        tooltip: l10n.t('wisdom.deleteTooltip'),
+                        icon: const Icon(Icons.delete_outline),
+                        style: IconButton.styleFrom(
+                          foregroundColor: AppColors.danger,
+                          backgroundColor:
+                              AppColors.danger.withValues(alpha: 0.1),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      AppLocalizations.of(context).t('wisdom.readonlyNote'),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  ],
-                ),
-        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    l10n.t('wisdom.readonlyNote'),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -168,11 +171,10 @@ class _WisdomScreenState extends State<WisdomScreen> {
           FilledButton.icon(
             onPressed: _createWisdom,
             icon: const Icon(Icons.add),
-            label: const Text('إنشاء حكمة'),
+            label: Text(l10n.t('wisdom.generate')),
           ),
         ],
       ),
     );
   }
 }
-

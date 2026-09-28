@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/app_localizations.dart';
+
 class RunnerControls extends StatelessWidget {
   const RunnerControls({
     super.key,
@@ -14,18 +16,19 @@ class RunnerControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         _ControlButton(
           icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-          label: isPaused ? 'استمرار' : 'إيقاف',
+          label: l10n.t(isPaused ? 'runner.resume' : 'runner.pause'),
           onTap: onPauseToggle,
         ),
         const SizedBox(width: 36),
         _ControlButton(
           icon: Icons.close_rounded,
-          label: 'إنهاء',
+          label: l10n.t('runner.finish'),
           onTap: onStop,
         ),
       ],

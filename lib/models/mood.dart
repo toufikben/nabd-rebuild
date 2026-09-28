@@ -20,6 +20,8 @@ class Mood {
     required this.category,
   });
 
+  String labelFor(bool arabic) => arabic ? labelAr : labelEn;
+
   /// 20 مشاعر مصنّفة.
   static const List<Mood> all = [
     // ─── 😊 إيجابية ───

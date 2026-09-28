@@ -1,7 +1,9 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
@@ -24,35 +26,33 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     final entries = _db.getAllEntries();
     final summary = _StatsSummary.fromEntries(entries);
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('الإحصائيات')),
-        body: RefreshIndicator(
-          onRefresh: () async => setState(() {}),
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-            children: [
-              _buildOverview(context, summary),
-              const SizedBox(height: 24),
-              _buildTimeline(context, summary),
-              const SizedBox(height: 24),
-              _buildMoodDistribution(context, summary),
-              const SizedBox(height: 24),
-              _buildWordCloud(context, summary),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(title: Text(AppLocalizations.of(context).t('nav.stats'))),
+      body: RefreshIndicator(
+        onRefresh: () async => setState(() {}),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+          children: [
+            _buildOverview(context, summary),
+            const SizedBox(height: 24),
+            _buildTimeline(context, summary),
+            const SizedBox(height: 24),
+            _buildMoodDistribution(context, summary),
+            const SizedBox(height: 24),
+            _buildWordCloud(context, summary),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildOverview(BuildContext context, _StatsSummary summary) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('نظرة عامة'),
+        _sectionTitle(l10n.t('stats.overview')),
         const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 2,
@@ -65,37 +65,37 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
             _statCard(
               icon: Icons.menu_book_outlined,
               value: '${summary.totalEntries}',
-              label: 'إجمالي الإدخالات',
+              label: l10n.t('stats.totalEntries'),
               color: AppColors.primary,
             ),
             _statCard(
               icon: Icons.calendar_month_outlined,
               value: '${summary.activeDays}',
-              label: 'أيام الكتابة',
+              label: l10n.t('stats.writingDays'),
               color: AppColors.success,
             ),
             _statCard(
               icon: Icons.local_fire_department_outlined,
               value: '${summary.currentStreak}',
-              label: 'التتابع الحالي',
+              label: l10n.t('stats.currentStreak'),
               color: AppColors.warning,
             ),
             _statCard(
               icon: Icons.emoji_events_outlined,
               value: '${summary.longestStreak}',
-              label: 'أطول تتابع',
+              label: l10n.t('stats.longestStreak'),
               color: AppColors.danger,
             ),
             _statCard(
               icon: Icons.self_improvement_outlined,
               value: '${summary.completedSessions}',
-              label: 'جلسات مكتملة',
+              label: l10n.t('stats.completedSessions'),
               color: const Color(0xFF26A69A),
             ),
             _statCard(
               icon: Icons.text_fields_outlined,
               value: '${summary.totalWords}',
-              label: 'إجمالي الكلمات',
+              label: l10n.t('stats.totalWords'),
               color: const Color(0xFF7E57C2),
             ),
           ],
@@ -105,6 +105,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
   }
 
   Widget _buildTimeline(BuildContext context, _StatsSummary summary) {
+    final l10n = AppLocalizations.of(context);
+    final weekdayFormat =
+        DateFormat.EEEE(Localizations.localeOf(context).toString());
     final maxCount = summary.lastSevenDays
         .map((day) => day.count)
         .fold<int>(0, (max, count) => count > max ? count : max);
@@ -112,7 +115,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('ملخص آخر 7 أيام'),
+        _sectionTitle(l10n.t('stats.weekSummary')),
         const SizedBox(height: 12),
         _panel(
           context,
@@ -124,7 +127,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
                     SizedBox(
                       width: 72,
                       child: Text(
-                        day.label,
+                        weekdayFormat.format(DateTime(2024, 1, day.weekday)),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -157,9 +160,12 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
               ],
               SizedBox(height: 14),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: Text(
-                  'هذا الشهر: ${summary.thisMonthEntries} إدخال',
+                  l10n.t('stats.monthSummary').replaceAll(
+                        '{n}',
+                        '${summary.thisMonthEntries}',
+                      ),
                   style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
@@ -177,10 +183,10 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('توزيع المشاعر'),
+        _sectionTitle(AppLocalizations.of(context).t('stats.moodDistribution')),
         const SizedBox(height: 12),
         if (summary.totalMoodEntries == 0)
-          _emptyPanel(context, 'لا توجد مشاعر مسجلة بعد')
+          _emptyPanel(context, AppLocalizations.of(context).t('stats.noMoods'))
         else
           _panel(
             context,
@@ -197,14 +203,14 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
   }
 
   Widget _buildWordCloud(BuildContext context, _StatsSummary summary) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('أكثر الكلمات استخدامًا'),
+        _sectionTitle(l10n.t('stats.topWords')),
         const SizedBox(height: 12),
         summary.topWords.isEmpty
-            ? _emptyPanel(
-                context, 'اكتب في Journal لعرض الكلمات الأكثر تكرارًا')
+            ? _emptyPanel(context, l10n.t('stats.topWordsEmpty'))
             : _panel(
                 context,
                 child: Wrap(
@@ -250,7 +256,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
           ),
           SizedBox(
             width: 64,
-            child: Text(mood.labelAr),
+            child: Text(mood.labelFor(AppLocalizations.of(context).isArabic)),
           ),
           Expanded(
             child: ClipRRect(
@@ -398,7 +404,7 @@ class _StatsSummary {
     final lastSevenDays = List.generate(7, (index) {
       final date = today.subtract(Duration(days: 6 - index));
       return _DaySummary(
-        label: _arabicDayLabel(date.weekday),
+        weekday: date.weekday,
         count: dateCounts[date] ?? 0,
       );
     });
@@ -523,26 +529,13 @@ class _StatsSummary {
 
   static DateTime _dateOnly(DateTime date) =>
       DateTime(date.year, date.month, date.day);
-
-  static String _arabicDayLabel(int weekday) {
-    const labels = [
-      'الاثنين',
-      'الثلاثاء',
-      'الأربعاء',
-      'الخميس',
-      'الجمعة',
-      'السبت',
-      'الأحد'
-    ];
-    return labels[weekday - 1];
-  }
 }
 
 class _DaySummary {
-  final String label;
+  final int weekday;
   final int count;
 
-  const _DaySummary({required this.label, required this.count});
+  const _DaySummary({required this.weekday, required this.count});
 }
 
 class _WordSummary {

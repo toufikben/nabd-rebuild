@@ -45,8 +45,9 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('🌻 A new flower grew in your garden!'),
+        SnackBar(
+          content:
+              Text(AppLocalizations.of(context).t('gratitudeGarden.grew')),
           backgroundColor: AppColors.success,
         ),
       );

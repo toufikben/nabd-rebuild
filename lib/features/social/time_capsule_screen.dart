@@ -141,15 +141,20 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                 Wrap(
                   spacing: 8,
                   children: [
-                    _chip('1 Month', 30, selectedDuration,
+                    _chip(AppLocalizations.of(context), 'letters.dur1m', 30,
+                        selectedDuration,
                         (d) => setModalState(() => selectedDuration = d)),
-                    _chip('6 Months', 180, selectedDuration,
+                    _chip(AppLocalizations.of(context), 'letters.dur6m', 180,
+                        selectedDuration,
                         (d) => setModalState(() => selectedDuration = d)),
-                    _chip('1 Year', 365, selectedDuration,
+                    _chip(AppLocalizations.of(context), 'letters.dur1y', 365,
+                        selectedDuration,
                         (d) => setModalState(() => selectedDuration = d)),
-                    _chip('5 Years', 1825, selectedDuration,
+                    _chip(AppLocalizations.of(context), 'letters.dur5y', 1825,
+                        selectedDuration,
                         (d) => setModalState(() => selectedDuration = d)),
-                    _chip('10 Years', 3650, selectedDuration,
+                    _chip(AppLocalizations.of(context), 'letters.dur10y', 3650,
+                        selectedDuration,
                         (d) => setModalState(() => selectedDuration = d)),
                   ],
                 ),
@@ -187,13 +192,14 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
   }
 
   Widget _chip(
-    String label,
+    AppLocalizations l10n,
+    String labelKey,
     int days,
     Duration selected,
     ValueChanged<Duration> onSelected,
   ) {
     return ChoiceChip(
-      label: Text(label),
+      label: Text(l10n.t(labelKey)),
       selected: selected.inDays == days,
       onSelected: (_) => onSelected(Duration(days: days)),
     );
@@ -300,7 +306,9 @@ class _CapsuleCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    capsule.title.isEmpty ? 'Untitled Capsule' : capsule.title,
+                    capsule.title.isEmpty
+                        ? AppLocalizations.of(context).t('capsule.untitled')
+                        : capsule.title,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -310,8 +318,8 @@ class _CapsuleCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     unlocked
-                        ? 'Tap to open!'
-                        : 'Unlocks ${capsule.unlockAt.day}/${capsule.unlockAt.month}/${capsule.unlockAt.year}',
+                        ? AppLocalizations.of(context).t('capsule.tapToOpen')
+                        : '${AppLocalizations.of(context).t('capsule.unlocksOn')} ${capsule.unlockAt.day}/${capsule.unlockAt.month}/${capsule.unlockAt.year}',
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 12,

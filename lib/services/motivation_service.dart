@@ -72,34 +72,40 @@ class MotivationService {
     ('كن لطيفًا مع نفسك؛ فأنت ابن هذا الكون.', 'ديسيديراتا'),
   ];
 
-  /// اقتباس اليوم (ثابت خلال اليوم).
-  static (String, String) getTodayQuote() {
+  /// مكتبة الاقتباسات حسب اللغة.
+  static List<(String, String)> _library(bool arabic) =>
+      arabic ? _arabicQuotes : _quotes;
+
+  /// اقتباس اليوم (ثابت خلال اليوم) حسب لغة الواجهة.
+  static (String, String) getTodayQuoteFor(bool arabic) {
+    final list = _library(arabic);
     final day = DateTime.now().difference(DateTime(2025)).inDays;
-    return _quotes[day % _quotes.length];
+    return list[day % list.length];
   }
 
-  /// اقتباس عشوائي.
-  static (String, String) getRandomQuote() {
-    final idx = DateTime.now().microsecondsSinceEpoch % _quotes.length;
-    return _quotes[idx];
-  }
-
-  static (String, String) getTodayQuoteArabic() {
-    final day = DateTime.now().difference(DateTime(2025)).inDays;
-    return _arabicQuotes[day % _arabicQuotes.length];
-  }
-
-  static (String, String) getRandomQuoteArabic({String? excludingQuote}) {
-    final start = DateTime.now().microsecondsSinceEpoch % _arabicQuotes.length;
-    if (excludingQuote == null || _arabicQuotes.length < 2) {
-      return _arabicQuotes[start];
+  /// اقتباس عشوائي حسب لغة الواجهة، مع استبعاد الاقتباس المعروض إن طُلب.
+  static (String, String) getRandomQuoteFor(bool arabic,
+      {String? excludingQuote}) {
+    final list = _library(arabic);
+    final start = DateTime.now().microsecondsSinceEpoch % list.length;
+    if (excludingQuote == null || list.length < 2) {
+      return list[start];
     }
-    for (var offset = 0; offset < _arabicQuotes.length; offset++) {
-      final candidate = _arabicQuotes[(start + offset) % _arabicQuotes.length];
+    for (var offset = 0; offset < list.length; offset++) {
+      final candidate = list[(start + offset) % list.length];
       if (candidate.$1 != excludingQuote) return candidate;
     }
-    return _arabicQuotes[start];
+    return list[start];
   }
+
+  static (String, String) getTodayQuote() => getTodayQuoteFor(false);
+
+  static (String, String) getRandomQuote() => getRandomQuoteFor(false);
+
+  static (String, String) getTodayQuoteArabic() => getTodayQuoteFor(true);
+
+  static (String, String) getRandomQuoteArabic({String? excludingQuote}) =>
+      getRandomQuoteFor(true, excludingQuote: excludingQuote);
 }
 
 /// Achievement — إنجاز يفتحه المستخدم.

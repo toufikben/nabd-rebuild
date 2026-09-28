@@ -72,7 +72,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
             SizedBox(height: 24),
 
             // ─── Stats ───
-            _buildStats(entries),
+            _buildStats(context, entries),
           ],
         ),
       ),
@@ -211,7 +211,8 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
     );
   }
 
-  Widget _buildStats(List<JournalEntry> entries) {
+  Widget _buildStats(BuildContext context, List<JournalEntry> entries) {
+    final l10n = AppLocalizations.of(context);
     final yearEntries =
         entries.where((e) => e.createdAt.year == _year).toList();
 
@@ -234,7 +235,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$_year in review',
+            l10n.t('heatmap.yearReview').replaceAll('{y}', '$_year'),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -248,21 +249,21 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
                 child: _statItem(
                   Icons.edit,
                   '${yearEntries.length}',
-                  'Entries',
+                  l10n.t('home.stat.entries'),
                 ),
               ),
               Expanded(
                 child: _statItem(
                   Icons.calendar_today,
                   '$totalDays',
-                  'Active days',
+                  l10n.t('heatmap.activeDays'),
                 ),
               ),
               Expanded(
                 child: _statItem(
                   Icons.text_fields,
                   '$totalWords',
-                  'Words',
+                  l10n.t('home.stat.words'),
                 ),
               ),
             ],

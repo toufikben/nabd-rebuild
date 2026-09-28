@@ -147,6 +147,7 @@ class GardenScreen extends ConsumerWidget {
 
   Widget _buildGardenAudioControl(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final audio = AudioService.instance;
 
     return ValueListenableBuilder<AmbientPlaybackState>(
@@ -166,21 +167,22 @@ class GardenScreen extends ConsumerWidget {
         return Card(
           child: ListTile(
             leading: Icon(Icons.nature, color: colors.primary),
-            title: Text(AppLocalizations.of(context).t('garden.ambience')),
+            title: Text(l10n.t('garden.ambience')),
             subtitle: Text(
               hasError
-                  ? AppLocalizations.of(context).t('garden.ambienceFailed')
+                  ? l10n.t('garden.ambienceFailed')
                   : anotherAmbientIsActive
-                      ? AppLocalizations.of(context).t('garden.ambienceBusy')
+                      ? l10n.t('garden.ambienceBusy')
                       : isLoading
-                          ? 'Loading garden ambience...'
+                          ? l10n.t('garden.ambienceLoading')
                           : isPlaying
-                              ? 'Birds are playing'
-                              : 'Tap to play birds',
+                              ? l10n.t('garden.ambiencePlaying')
+                              : l10n.t('garden.ambienceIdle'),
             ),
             trailing: IconButton(
-              tooltip:
-                  isPlaying ? 'Stop garden ambience' : 'Play garden ambience',
+              tooltip: isPlaying
+                  ? l10n.t('garden.ambienceStop')
+                  : l10n.t('garden.ambiencePlay'),
               onPressed: anotherAmbientIsActive || isLoading
                   ? null
                   : () async {
@@ -288,7 +290,7 @@ class GardenScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            _stageName(stage),
+            _stageName(AppLocalizations.of(context), stage),
             style: TextStyle(
               fontSize: 13,
               color: s.colors.last,
@@ -341,7 +343,7 @@ class GardenScreen extends ConsumerWidget {
                   size: 14, color: AppColors.textSecondary),
               SizedBox(width: 6),
               Text(
-                '${seed.daysCared} days of care',
+                '${seed.daysCared} ${AppLocalizations.of(context).t('garden.daysOfCare')}',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -486,20 +488,20 @@ class GardenScreen extends ConsumerWidget {
     );
   }
 
-  String _stageName(int stage) {
+  String _stageName(AppLocalizations l10n, int stage) {
     switch (stage) {
       case 0:
-        return 'Seed';
+        return l10n.t('garden.stage.seed');
       case 1:
-        return 'Sprout';
+        return l10n.t('garden.stage.sprout');
       case 2:
-        return 'Sapling';
+        return l10n.t('garden.stage.sapling');
       case 3:
-        return 'Young Tree';
+        return l10n.t('garden.stage.youngTree');
       case 4:
-        return 'Strong Tree';
+        return l10n.t('garden.stage.strongTree');
       default:
-        return 'Full Bloom 🌸';
+        return l10n.t('garden.stage.fullBloom');
     }
   }
 }

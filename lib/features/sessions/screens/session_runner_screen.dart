@@ -272,7 +272,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
           ? null
           : IconButton(
               icon: const Icon(Icons.close_rounded),
-              tooltip: 'إنهاء',
+              tooltip: l10n.t('runner.finish'),
               onPressed: _onExit,
             ),
       title: Text(
@@ -308,7 +308,10 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
               ),
               child: Center(
                 child: Text(
-                  'الدورة ${state.cycleNumber} من ${state.totalCycles}',
+                  AppLocalizations.of(context)
+                      .t('runner.cycle')
+                      .replaceAll('{c}', '${state.cycleNumber}')
+                      .replaceAll('{t}', '${state.totalCycles}'),
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     letterSpacing: 0.5,
@@ -377,7 +380,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          tooltip: 'رجوع',
+          tooltip: AppLocalizations.of(context).t('common.back'),
           onPressed: _onExit,
         ),
       ),
@@ -404,7 +407,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _onExit,
-                child: const Text('رجوع'),
+                child: Text(AppLocalizations.of(context).t('common.back')),
               ),
             ],
           ),

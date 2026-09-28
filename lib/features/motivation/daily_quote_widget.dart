@@ -10,7 +10,8 @@ class DailyQuoteWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (quote, author) = MotivationService.getTodayQuote();
+    final (quote, author) = MotivationService.getTodayQuoteFor(
+        AppLocalizations.of(context).isArabic);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -32,8 +33,7 @@ class DailyQuoteWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.format_quote,
-                  color: AppColors.primary, size: 24),
+              Icon(Icons.format_quote, color: AppColors.primary, size: 24),
               SizedBox(width: 8),
               Text(
                 AppLocalizations.of(context).t('quote.title'),

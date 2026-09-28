@@ -43,8 +43,8 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
     _controller.clear();
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم حفظ القلق. يمكنك مراجعته غدًا.'),
+      SnackBar(
+        content: Text(AppLocalizations.of(context).t('worryBox.savedNote')),
         backgroundColor: AppColors.success,
       ),
     );
@@ -67,122 +67,120 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final worries = _worries;
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('صندوق القلق')),
-        body: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.t('hub.feature.worryBox.title'))),
+      body: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.t('worryBox.hint'),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: worries.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('📦', style: TextStyle(fontSize: 80)),
+                        SizedBox(height: 16),
+                        Text(
+                          l10n.t('worryBox.empty'),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          l10n.t('worryBox.emptyGood'),
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: worries.length,
+                    itemBuilder: (_, index) => _WorryCard(
+                      item: worries[index],
+                      onRemove: () => _removeWorry(worries[index]),
+                    ),
+                  ),
+          ),
+          Container(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
+            ),
+            child: SafeArea(
+              top: false,
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: AppColors.primary, size: 20),
-                  SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      AppLocalizations.of(context).t('worryBox.hint'),
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 12,
-                        height: 1.5,
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: l10n.t('worryBox.fieldHint'),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
+                      onSubmitted: (_) => _addWorry(),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  IconButton(
+                    onPressed: _addWorry,
+                    icon: const Icon(Icons.archive_outlined),
+                    tooltip: l10n.t('worryBox.save'),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.all(14),
                     ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: worries.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('📦', style: TextStyle(fontSize: 80)),
-                          SizedBox(height: 16),
-                          Text(
-                            AppLocalizations.of(context).t('worryBox.empty'),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            AppLocalizations.of(context).t('worryBox.emptyGood'),
-                            style: TextStyle(color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: worries.length,
-                      itemBuilder: (_, index) => _WorryCard(
-                        item: worries[index],
-                        onRemove: () => _removeWorry(worries[index]),
-                      ),
-                    ),
-            ),
-            Container(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 12,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          hintText: 'ما الذي يقلقك؟',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                        ),
-                        onSubmitted: (_) => _addWorry(),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    IconButton(
-                      onPressed: _addWorry,
-                      icon: const Icon(Icons.archive_outlined),
-                      tooltip: 'حفظ القلق',
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(14),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -236,7 +234,7 @@ class _WorryCard extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onRemove,
-                tooltip: 'حذف',
+                tooltip: AppLocalizations.of(context).t('worryBox.deleteTooltip'),
                 icon: const Icon(Icons.delete_outline, size: 18),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
