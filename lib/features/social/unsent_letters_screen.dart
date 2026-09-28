@@ -52,16 +52,15 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
               color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.info_outline,
+                const Icon(Icons.info_outline,
                     color: Color(0xFF9C27B0), size: 20),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Letters you write but never send. '
-                    'A powerful way to process emotions.',
-                    style: TextStyle(
+                    AppLocalizations.of(context).t('unsent.explainer'),
+                    style: const TextStyle(
                       color: Color(0xFF9C27B0),
                       fontSize: 12,
                       height: 1.5,
@@ -89,7 +88,7 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Write to someone you can\'t reach',
+                          AppLocalizations.of(context).t('unsent.emptyHint'),
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 24),

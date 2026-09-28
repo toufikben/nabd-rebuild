@@ -100,13 +100,15 @@
 
 | البند | الحالة | التفصيل |
 |---|---|---|
-| جدول النصوص المركزي | ✅ | `lib/core/l10n/app_strings.dart` يحمل 486 مفتاحًا لكل لغة |
+| جدول النصوص المركزي | ✅ | `lib/core/l10n/app_strings.dart` يحمل 520 مفتاحًا لكل لغة |
 | لغات معلنة | ✅ | `ar` و `en` فقط. كانت 16 لغة تُعلن بلا ترجمة، والـ fallback للإنجليزية |
 | تغطية الشاشات | ✅ | كل شاشات `lib/features` و`lib/widgets` تمر عبر `AppLocalizations.of(context).t(...)` |
 | اختبار التكافؤ | ✅ | `test/i18n_test.dart` يفشل البناء عند نقص مفتاح في أي لغة أو قيمة فارغة |
 | اختبار نظافة المصدر | ✅ | `test/i18n_source_hygiene_test.dart` يمنع `const` حول استدعاء المترجم، أو استدعاء بلا استيراد، أو BOM |
 | التواريخ والتقويم | ✅ | `initializeDateFormatting('ar')` في `main()`، و`locale` يمر لـ `TableCalendar` وبطاقات المدخل |
-| متبقٍ | ⏳ | جُمل داخل طبقة الخدمات (`local_ai_service`، `garden_service`)، نص تصدير `legacy_journal_screen`، نص إقلاع `StorageFailureApp`، تلميحات `sound_garden_screen`، و`'Pin'` في `editor_screen.dart:400` |
+| نصوص طبقة الخدمات | ✅ | رسائل سقي الحديقة صارت مفاتيح (`garden.water.*`) تُترجم عند العرض؛ و`AIPattern` في `local_ai_service` غير مستهلك من أي شاشة |
+| أسماء الوسوم الافتراضية | ✅ | الوسوم المُزرّعة تُخزَّن بأسمائها اللاتينية (لأنها قيمة تصفية)، والعرض يمر عبر `localizedTagName` في `lib/models/tag.dart` |
+| متبقٍ | ⏳ | رأس ملف التصدير في `legacy_journal_screen` (تنسيق ملف لا واجهة)، ونص إقلاع `StorageFailureApp` لأنه يُرسم قبل تهيئة اللغات |
 
 ### أخطاء صُحّحت أثناء التنفيذ
 
@@ -117,3 +119,7 @@
 | حقول `titleAr` داخل النماذج | Challenges وSeeds وAchievements كانت تحمل العربية داخل النموذج بدل الجدول؛ صارت `nameFor` و`descriptionFor` |
 | تعطّل عند الإلغاء في المحرر | `TextEditingController` كان يُتلف في `finally` قبل اكتمال تفكيك الحوار؛ نُقلت الحيازة إلى `_AddTagDialog` |
 | تاريخ إنجليزي داخل الواجهة العربية | `DateFormat` و`TableCalendar` بلا `initializeDateFormatting('ar')` |
+| بطاقات الأصوات بالإنجليزية | `SoundTrack.name` نص حرفي داخل الشاشة؛ صار `nameKey` يمر عبر الجدول |
+| ثلاثة قيم إنجليزية داخل خريطة التحديات العربية | نُقلت القيم الإنجليزية إلى `S.ar` بالخطأ أثناء التوليد |
+| وسوم افتراضية بالإنجليزية في `/search` و`/tags` و`/editor` | `Tag.defaultTags` تُخزَّن كما تُصفّى؛ أُضيف `tryT` + `localizedTagName` للعرض فقط |
+| تراكب النصوص في `/garden` و`/seed-selection` و`/future-letters` و`/unsent-letters` وحوار تدوير المفتاح | جُمل نصية مكتوبة مباشرة داخل الشاشات بدل الجدول |

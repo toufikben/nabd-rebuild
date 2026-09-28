@@ -677,10 +677,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.t('dialog.rotate.title')),
-        content: const Text(
-          'Every entry will be re-encrypted with a new key. '
-          'If this is interrupted the old key is restored automatically.',
-        ),
+        content: Text(l10n.t('dialog.rotate.body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),

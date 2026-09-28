@@ -98,10 +98,9 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                 textAlign: TextAlign.center,
               ).animate().fadeIn(delay: 400.ms),
               const SizedBox(height: 16),
-              const Text(
-                'Every journal entry helps your seed grow.\n'
-                'Positive feelings make it bloom.',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).t('garden.seedHelp'),
+                style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 15,
                   height: 1.6,
@@ -319,9 +318,9 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Write in your journal every day.\nYour seed will grow with every word.',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).t('garden.seedGrowHint'),
+                style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 15,
                   height: 1.6,

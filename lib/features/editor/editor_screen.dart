@@ -12,6 +12,7 @@ import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
+import '../../models/tag.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
 import '../../services/motivation_service.dart';
@@ -504,7 +505,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     runSpacing: 6,
                     children: _tags.map((tag) {
                       return Chip(
-                        label: Text('#$tag'),
+                        label: Text('#${localizedTagName(l10n, tag)}'),
                         deleteIcon: const Icon(Icons.close, size: 14),
                         onDeleted: () {
                           setState(() => _tags.remove(tag));

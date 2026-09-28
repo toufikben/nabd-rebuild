@@ -25,6 +25,10 @@ class AppLocalizations {
   /// Back-compat shim for the older inline pair style.
   String text(String key) => t(key);
 
+  /// Looks a key up without falling back, so callers can tell a translation from
+  /// a miss. Needed for values that come from stored data rather than the table.
+  String? tryT(String key) => (isArabic ? S.ar : S.en)[key];
+
   bool get isArabic => locale.languageCode == 'ar';
   String get echoes => t('hub.feature.echoes.title');
   String get resolvedEcho =>

@@ -80,7 +80,7 @@ class GardenWateringDialog extends StatelessWidget {
 
             // Message
             Text(
-              result.message,
+              AppLocalizations.of(context).t(result.messageKey),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 15,

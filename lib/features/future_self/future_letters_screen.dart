@@ -232,7 +232,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Letter locked until ${unlockDate.day}/${unlockDate.month}/${unlockDate.year}',
+            '${AppLocalizations.of(context).t('future.lockedUntil')} ${unlockDate.day}/${unlockDate.month}/${unlockDate.year}',
           ),
           backgroundColor: AppColors.success,
         ),
@@ -293,7 +293,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
             ),
             SizedBox(height: 12),
             Text(
-              '$days days remaining',
+              '$days ${AppLocalizations.of(context).t('future.daysRemaining')}',
               style: TextStyle(color: AppColors.textSecondary),
             ),
           ],

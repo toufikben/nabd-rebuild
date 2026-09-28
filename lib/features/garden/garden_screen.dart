@@ -96,7 +96,7 @@ class GardenScreen extends ConsumerWidget {
                 child: _statCard(
                   icon: Icons.spa,
                   value: '${stats.totalSeeds}',
-                  label: 'Seeds',
+                  label: AppLocalizations.of(context).t('garden.stat.seeds'),
                   color: AppColors.success,
                 ),
               ),
@@ -105,7 +105,8 @@ class GardenScreen extends ConsumerWidget {
                 child: _statCard(
                   icon: Icons.emoji_events,
                   value: '${stats.completedSeeds}',
-                  label: 'Completed',
+                  label: AppLocalizations.of(context)
+                      .t('garden.stat.completed'),
                   color: AppColors.warning,
                 ),
               ),
@@ -114,7 +115,8 @@ class GardenScreen extends ConsumerWidget {
                 child: _statCard(
                   icon: Icons.trending_up,
                   value: '${stats.averageGrowth.round()}%',
-                  label: 'Avg Growth',
+                  label: AppLocalizations.of(context)
+                      .t('garden.stat.avgGrowth'),
                   color: AppColors.primary,
                 ),
               ),

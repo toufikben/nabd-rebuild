@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
+import '../../models/tag.dart';
 import '../../services/database_service.dart';
 import '../../widgets/entry_card.dart';
 
@@ -84,7 +85,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         child: Row(
                           children: [
                             _filterChip(
-                              label: 'All',
+                              label: l10n.t('common.all'),
                               selected: _selectedMood == null,
                               onTap: () => setState(() => _selectedMood = null),
                             ),
@@ -111,7 +112,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         return Padding(
                           padding: const EdgeInsets.only(right: 6),
                           child: FilterChip(
-                            label: Text('#${tag.name}'),
+                            label: Text(
+                                '#${localizedTagName(l10n, tag.name)}'),
                             selected: selected,
                             onSelected: (value) => setState(() {
                               if (value) {

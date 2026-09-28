@@ -84,7 +84,7 @@ class GardenService extends StateNotifier<GardenState> {
     if (state.seeds.isEmpty) {
       return const WateringResult(
         ok: false,
-        message: 'Plant a seed first',
+        messageKey: 'garden.water.noSeed',
       );
     }
 
@@ -93,7 +93,7 @@ class GardenService extends StateNotifier<GardenState> {
     if (target == null) {
       return const WateringResult(
         ok: false,
-        message: 'No seeds to water',
+        messageKey: 'garden.water.noTargets',
       );
     }
 
@@ -102,24 +102,24 @@ class GardenService extends StateNotifier<GardenState> {
     final wordCount = entry.content.split(RegExp(r'\s+')).length;
 
     int growth;
-    String message;
+    String messageKey;
 
     if (sentiment > 0.3) {
       // Positive entry
       growth = 5;
-      message = 'Your seed is growing beautifully! 🌱';
+      messageKey = 'garden.water.growing';
     } else if (sentiment > 0.1) {
       // Slightly positive
       growth = 3;
-      message = 'Your seed got a gentle shower 💧';
+      messageKey = 'garden.water.gentle';
     } else if (sentiment > -0.1) {
       // Neutral
       growth = 2;
-      message = 'Your seed received a light drizzle 🌦️';
+      messageKey = 'garden.water.drizzle';
     } else {
       // Negative
       growth = 0;
-      message = 'Your seed needs love. Try writing 3 beautiful things 💗';
+      messageKey = 'garden.water.needsLove';
     }
 
     // Bonus for longer entries
@@ -147,7 +147,7 @@ class GardenService extends StateNotifier<GardenState> {
 
     return WateringResult(
       ok: true,
-      message: message,
+      messageKey: messageKey,
       growthAdded: growth,
       isComplete: isNowComplete && !wasComplete,
       seed: updated,
@@ -225,14 +225,14 @@ class GardenState {
 
 class WateringResult {
   final bool ok;
-  final String message;
+  final String messageKey;
   final int growthAdded;
   final bool isComplete;
   final PlantedSeed? seed;
 
   const WateringResult({
     required this.ok,
-    required this.message,
+    required this.messageKey,
     this.growthAdded = 0,
     this.isComplete = false,
     this.seed,

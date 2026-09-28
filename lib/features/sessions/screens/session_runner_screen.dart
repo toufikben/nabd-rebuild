@@ -425,7 +425,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          tooltip: 'Back',
+          tooltip: AppLocalizations.of(context).t('common.back'),
           onPressed: _onExit,
         ),
       ),

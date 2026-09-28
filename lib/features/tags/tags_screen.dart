@@ -78,8 +78,9 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
                         size: 18,
                       ),
                     ),
-                    title: Text('#${tag.name}'),
-                    subtitle: Text('${tag.usageCount} entries'),
+                    title: Text('#${localizedTagName(l10n, tag.name)}'),
+                    subtitle:
+                        Text('${tag.usageCount} ${l10n.t('tags.entriesUnit')}'),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
                       color: AppColors.danger,
@@ -131,7 +132,7 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('#${tag.name}'),
+        title: Text('#${localizedTagName(l10n, tag.name)}'),
         content: Text(l10n.t('tags.delete.body')),
         actions: [
           TextButton(

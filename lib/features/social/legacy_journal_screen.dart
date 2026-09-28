@@ -108,13 +108,12 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '$legacyCount entries selected',
+                  '$legacyCount ${AppLocalizations.of(context).t('legacy.selectedUnit')}',
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'Select entries that matter most.\n'
-                  'These will be your legacy.',
+                  AppLocalizations.of(context).t('legacy.selectHint'),
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -177,7 +176,8 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
                           ),
                           title: Text(
                             entry.title.isEmpty
-                                ? 'Untitled'
+                                ? AppLocalizations.of(context)
+                                    .t('legacy.untitled')
                                 : entry.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
