@@ -24,6 +24,7 @@ class AppSettings {
     'rain_soft.mp3',
     'silent_river_water.mp3',
     'splash_bowl.mp3',
+    'splash_dawn.wav',
     'splash_drop.wav',
     'splash_nabd.wav',
     'splash_flute.mp3',

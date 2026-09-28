@@ -16,14 +16,16 @@ class SplashService {
   /// animation still rotates so the launch is not identical every time.
   static const _splashCount = 5;
 
-  /// The signature launch cue: a water drop with a slap-back echo, two low
-  /// heartbeats, and a soft bell arpeggio — 3.2s, so it ends with the splash.
-  static const signatureSound = 'splash_nabd';
+  /// The signature launch cue: a water drop with two slap-backs, then four
+  /// rising songbird notes (about 600 Hz up to 1.5 kHz) over a breath of
+  /// outdoor air — 1.1s, so it finishes inside the splash rather than trailing it.
+  static const signatureSound = 'splash_dawn';
 
   /// Preferred cue first, then the older drop and a proven MP3 so the launch is
-  /// never silent.
+  /// never silent. The rejected `splash_nabd` is deliberately not a fallback:
+  /// a failing dawn should go to the drop, not back to the bell.
   static const _candidates = <String>[
-    'splash_nabd',
+    'splash_dawn',
     'splash_drop',
     'tibetan_bowl',
   ];
