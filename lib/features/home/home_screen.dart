@@ -265,7 +265,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       clipBehavior: Clip.antiAlias,
       color: colors.primaryContainer,
       child: InkWell(
-        onTap: () => context.push('/sessions'),
+        onTap: () => context.go('/sessions'),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
