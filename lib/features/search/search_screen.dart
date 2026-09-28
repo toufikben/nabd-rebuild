@@ -199,7 +199,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         Text(l10n.t('search.empty.title')),
                         const SizedBox(height: 8),
                         Text(
-                          'Try different keywords',
+                          AppLocalizations.of(context).t('search.empty.hint'),
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,

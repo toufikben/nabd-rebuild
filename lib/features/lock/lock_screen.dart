@@ -83,18 +83,18 @@ class _LockScreenState extends State<LockScreen> {
                   ),
                 ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
                 const SizedBox(height: 24),
-                const Text(
-                  'Journal Locked',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context).t('lock.title'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Authenticate to continue',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                Text(
+                  AppLocalizations.of(context).t('lock.subtitle'),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
                 const SizedBox(height: 48),
                 if (_error != null) ...[

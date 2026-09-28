@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../services/motivation_service.dart';
+import '../../core/l10n/app_localizations.dart';
 
 class MotivationScreen extends StatefulWidget {
   const MotivationScreen({super.key});
@@ -58,13 +59,13 @@ class _MotivationScreenState extends State<MotivationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.auto_awesome, color: AppColors.primary),
                       SizedBox(width: 8),
                       Text(
-                        'رسالة اليوم',
-                        style: TextStyle(
+                        AppLocalizations.of(context).t('motivation.todayMessage'),
+                        style: const TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w800,
                         ),
@@ -96,7 +97,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'محتوى محلي يساعدك على التوقف لحظة واستعادة اتجاهك.',
+              AppLocalizations.of(context).t('motivation.localNote'),
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary),
             ),

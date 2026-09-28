@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/sessions_data.dart';
 import '../models/session.dart';
 import '../widgets/session_card.dart';
+import '../../../core/l10n/app_localizations.dart';
 
 class SessionsHubScreen extends StatelessWidget {
   const SessionsHubScreen({super.key});
@@ -24,7 +25,7 @@ class SessionsHubScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'السلاسل',
+          AppLocalizations.of(context).t('sessions.title'),
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w700,
             color: theme.colorScheme.onSurface,
@@ -40,7 +41,7 @@ class SessionsHubScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'كيف تشعر الآن؟',
+                  AppLocalizations.of(context).t('sessions.howDoYouFeel'),
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: theme.colorScheme.onSurface,
@@ -48,7 +49,7 @@ class SessionsHubScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'اختر ما تشعر به، وسنبدأ معًا',
+                  AppLocalizations.of(context).t('sessions.chooseFeeling'),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

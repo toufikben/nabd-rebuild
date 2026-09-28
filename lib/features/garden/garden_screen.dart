@@ -31,16 +31,16 @@ class GardenScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               const Text('🌱', style: TextStyle(fontSize: 80)),
               const SizedBox(height: 20),
-              const Text(
-                'No seeds yet',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).t('garden.empty'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
-                'Plant your first seed',
+                AppLocalizations.of(context).t('garden.emptyHint'),
                 style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
@@ -128,7 +128,7 @@ class GardenScreen extends ConsumerWidget {
 
           // ─── All seeds ───
           Text(
-            'ALL SEEDS',
+            AppLocalizations.of(context).t('garden.allSeeds'),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -260,7 +260,7 @@ class GardenScreen extends ConsumerWidget {
       child: Column(
         children: [
           Text(
-            'YOUR MAIN TREE',
+            AppLocalizations.of(context).t('garden.mainTree'),
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
@@ -301,7 +301,7 @@ class GardenScreen extends ConsumerWidget {
               Row(
                 children: [
                   Text(
-                    'Growth',
+                    AppLocalizations.of(context).t('garden.growth'),
                     style:
                         TextStyle(fontSize: 11, color: AppColors.textSecondary),
                   ),
@@ -359,14 +359,14 @@ class GardenScreen extends ConsumerWidget {
                 color: AppColors.warning.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.emoji_events, size: 16, color: AppColors.warning),
                   SizedBox(width: 6),
                   Text(
-                    'Full bloom! 🌸',
-                    style: TextStyle(
+                    AppLocalizations.of(context).t('garden.fullBloom'),
+                    style: const TextStyle(
                       color: AppColors.warning,
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
@@ -442,9 +442,9 @@ class GardenScreen extends ConsumerWidget {
                           color: Colors.blue.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
-                          '💧 Needs water',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context).t('garden.needsWater'),
+                          style: const TextStyle(
                             fontSize: 9,
                             color: Colors.blue,
                             fontWeight: FontWeight.w600,

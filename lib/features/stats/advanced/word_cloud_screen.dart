@@ -86,7 +86,7 @@ class _WordCloudScreenState extends ConsumerState<WordCloudScreen> {
       body: top.isEmpty
           ? Center(
               child: Text(
-                'Write more entries to see your cloud',
+                AppLocalizations.of(context).t('wordCloud.empty'),
                 style: TextStyle(color: AppColors.textSecondary),
               ),
             )

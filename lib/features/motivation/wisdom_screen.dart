@@ -106,7 +106,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'لا يمكن تعديل نص الحكمة. احذفها ثم أنشئ حكمة جديدة إذا رغبت.',
+                      AppLocalizations.of(context).t('wisdom.readonlyNote'),
                       textAlign: TextAlign.center,
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
@@ -154,13 +154,13 @@ class _WisdomScreenState extends State<WisdomScreen> {
           const Icon(Icons.lightbulb_outline,
               size: 64, color: AppColors.primary),
           const SizedBox(height: 16),
-          const Text(
-            'لا توجد حكمة معروضة',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          Text(
+            AppLocalizations.of(context).t('wisdom.empty'),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            'أنشئ حكمة جديدة من البيانات المحلية.',
+            AppLocalizations.of(context).t('wisdom.createHint'),
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textSecondary),
           ),

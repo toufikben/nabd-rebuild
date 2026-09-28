@@ -142,9 +142,9 @@ class GardenWateringDialog extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                child: Text(
+                  AppLocalizations.of(context).t('dialog.continue'),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
             ),

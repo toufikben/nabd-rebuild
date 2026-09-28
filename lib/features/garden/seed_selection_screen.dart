@@ -88,9 +88,9 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                   .scale(duration: 800.ms, curve: Curves.easeOutBack)
                   .fadeIn(),
               const SizedBox(height: 40),
-              const Text(
-                'Plant your first seed',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).t('garden.emptyHint'),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -120,9 +120,9 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    'Choose a Seed',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  child: Text(
+                    AppLocalizations.of(context).t('garden.seedSelection.title'),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.3),
@@ -144,9 +144,9 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
         child: Column(
           children: [
             const SizedBox(height: 24),
-            const Text(
-              'Choose what you want to grow',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).t('garden.seedSelection.subtitle'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -277,9 +277,9 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                 style: const TextStyle(fontSize: 120),
               ).animate().scale(duration: 1500.ms).fadeIn(),
               const SizedBox(height: 20),
-              const Text(
-                'Planting...',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+              Text(
+                AppLocalizations.of(context).t('garden.seedSelection.planting'),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ).animate().fadeIn(delay: 500.ms),
             ],
           ),
@@ -340,9 +340,9 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    'Plant Now',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  child: Text(
+                    AppLocalizations.of(context).t('garden.seedSelection.action'),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

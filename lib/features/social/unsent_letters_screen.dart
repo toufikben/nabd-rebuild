@@ -80,9 +80,9 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
                       children: [
                         const Text('💌', style: TextStyle(fontSize: 80)),
                         const SizedBox(height: 16),
-                        const Text(
-                          'No unsent letters',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context).t('unsent.empty'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
@@ -147,13 +147,13 @@ class _UnsentLettersScreenState extends State<UnsentLettersScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Write an unsent letter',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              Text(
+                AppLocalizations.of(context).t('unsent.write'),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               Text(
-                'To whom?',
+                AppLocalizations.of(context).t('unsent.toWhom'),
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
               const SizedBox(height: 8),

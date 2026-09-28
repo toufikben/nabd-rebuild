@@ -45,9 +45,9 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                 children: [
                   const Text('⏳', style: TextStyle(fontSize: 80)),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No time capsules',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context).t('capsule.empty'),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -103,9 +103,9 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Create Time Capsule',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                Text(
+                  AppLocalizations.of(context).t('capsule.newTitle'),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -130,7 +130,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Unlock after:',
+                  AppLocalizations.of(context).t('common.unlockAfter'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

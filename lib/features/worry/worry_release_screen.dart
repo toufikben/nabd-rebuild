@@ -97,7 +97,7 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Write it out. Then let it go.',
+            AppLocalizations.of(context).t('worryRelease.subtitle'),
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 15,
@@ -235,18 +235,18 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
               ),
             ).animate().scale(curve: Curves.easeOutBack),
             const SizedBox(height: 32),
-            const Text(
-              'Released',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).t('worryRelease.released'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 32,
                 fontWeight: FontWeight.w700,
               ),
             ).animate().fadeIn(delay: 400.ms),
             const SizedBox(height: 12),
-            const Text(
-              'You let it go. That took courage.',
-              style: TextStyle(color: Colors.white70, fontSize: 15),
+            Text(
+              AppLocalizations.of(context).t('worryRelease.done'),
+              style: const TextStyle(color: Colors.white70, fontSize: 15),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 600.ms),
             const SizedBox(height: 48),

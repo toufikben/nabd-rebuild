@@ -180,7 +180,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No entries for this day',
+                          AppLocalizations.of(context).t('calendar.empty'),
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 12),

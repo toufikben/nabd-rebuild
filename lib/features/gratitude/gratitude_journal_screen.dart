@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_localizations.dart';
 
 class GratitudeJournalScreen extends StatefulWidget {
   const GratitudeJournalScreen({super.key});
@@ -114,13 +115,13 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   Text('🙏', style: TextStyle(fontSize: 50)),
                   SizedBox(height: 12),
                   Text(
-                    'ثلاثة أشياء تشعر بالامتنان لوجودها اليوم',
-                    style: TextStyle(
+                    AppLocalizations.of(context).t('gratitudeJournal.threeThings'),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -149,7 +150,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
             ),
             const SizedBox(height: 28),
             Text(
-              'الإدخالات السابقة',
+              AppLocalizations.of(context).t('gratitudeJournal.previous'),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -160,7 +161,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
                 padding: EdgeInsets.symmetric(vertical: 22),
                 child: Center(
                   child: Text(
-                    'لا توجد إدخالات امتنان بعد',
+                    AppLocalizations.of(context).t('gratitudeJournal.empty'),
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),

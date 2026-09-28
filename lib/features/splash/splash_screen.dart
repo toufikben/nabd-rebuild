@@ -9,6 +9,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../core/app_settings.dart';
 import '../../services/splash_service.dart';
 import '../../services/biometric_service.dart';
+import '../../core/l10n/app_localizations.dart';
 
 /// SplashScreen — يعرض splash عشوائي من 5 (لا يكرر السابق).
 class SplashScreen extends StatefulWidget {
@@ -363,9 +364,9 @@ class _SplashScreenState extends State<SplashScreen> {
           ],
         ).animate().fadeIn(delay: 1800.ms),
         const SizedBox(height: 8),
-        const Text(
-          'نبض — Private Journal',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context).t('app.tagline'),
+          style: const TextStyle(
             color: Colors.white60,
             fontSize: 13,
             letterSpacing: 1,

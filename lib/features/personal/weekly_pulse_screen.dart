@@ -142,26 +142,26 @@ class _Metric extends StatelessWidget {
 class _NextSundayState extends StatelessWidget {
   const _NextSundayState();
   @override
-  Widget build(BuildContext context) => const Center(
+  Widget build(BuildContext context) => Center(
     child: Padding(
-      padding: EdgeInsets.all(32),
+      padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.calendar_today_outlined,
             size: 52,
             color: AppColors.primary,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
-            'Your next Pulse arrives on Sunday.',
+            AppLocalizations.of(context).t('weekly.nextOn'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'No new Pulse is created before Sunday.',
+            AppLocalizations.of(context).t('weekly.tooEarly'),
             textAlign: TextAlign.center,
           ),
         ],
@@ -173,11 +173,11 @@ class _NextSundayState extends StatelessWidget {
 class _InsufficientState extends StatelessWidget {
   const _InsufficientState();
   @override
-  Widget build(BuildContext context) => const Center(
+  Widget build(BuildContext context) => Center(
     child: Padding(
-      padding: EdgeInsets.all(32),
+      padding: const EdgeInsets.all(32),
       child: Text(
-        'There is not enough Journal data for this week yet. Your Pulse will remain empty until you have entries.',
+        AppLocalizations.of(context).t('weekly.insufficient'),
         textAlign: TextAlign.center,
       ),
     ),

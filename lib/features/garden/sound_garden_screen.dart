@@ -168,12 +168,12 @@ class _SoundGardenScreenState extends State<SoundGardenScreen> {
                 );
               }),
               if (active >= AudioService.maxSoundGardenTracks)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 12),
                   child: Text(
-                    'Four sounds are already playing. Stop one before adding another.',
+                    AppLocalizations.of(context).t('garden.sounds.limit'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white60),
+                    style: const TextStyle(color: Colors.white60),
                   ),
                 ),
             ],

@@ -354,7 +354,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'أحسنت',
+            AppLocalizations.of(context).t('sessions.wellDone'),
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w700,
               color: theme.colorScheme.onSurface,
@@ -394,7 +394,7 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'الجلسة غير متاحة',
+                AppLocalizations.of(context).t('sessions.unavailable'),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,

@@ -80,7 +80,7 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
       body: !hasData
           ? Center(
               child: Text(
-                'Not enough mood data yet',
+                AppLocalizations.of(context).t('emotionRadar.empty'),
                 style: TextStyle(color: AppColors.textSecondary),
               ),
             )

@@ -45,9 +45,9 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                   children: [
                     const Text('💌', style: TextStyle(fontSize: 80)),
                     const SizedBox(height: 20),
-                    const Text(
-                      'No letters yet',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context).t('futureLetters.empty'),
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                       ),
@@ -129,9 +129,9 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Write to Future You',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).t('letters.toFuture'),
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                 ),
@@ -157,7 +157,7 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Unlock after:',
+                AppLocalizations.of(context).t('common.unlockAfter'),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -171,25 +171,25 @@ class _FutureLettersScreenState extends State<FutureLettersScreen> {
                 child: Row(
                   children: [
                     _durationChip(
-                      '1 Month',
+                      AppLocalizations.of(context).t('letters.dur1m'),
                       Duration(days: 30),
                       unlockDate,
                       (d) => setModalState(() => unlockDate = d),
                     ),
                     _durationChip(
-                      '6 Months',
+                      AppLocalizations.of(context).t('letters.dur6m'),
                       Duration(days: 180),
                       unlockDate,
                       (d) => setModalState(() => unlockDate = d),
                     ),
                     _durationChip(
-                      '1 Year',
+                      AppLocalizations.of(context).t('letters.dur1y'),
                       Duration(days: 365),
                       unlockDate,
                       (d) => setModalState(() => unlockDate = d),
                     ),
                     _durationChip(
-                      '5 Years',
+                      AppLocalizations.of(context).t('letters.dur5y'),
                       Duration(days: 1825),
                       unlockDate,
                       (d) => setModalState(() => unlockDate = d),

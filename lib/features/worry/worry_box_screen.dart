@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_localizations.dart';
 
 class WorryBoxScreen extends StatefulWidget {
   const WorryBoxScreen({super.key});
@@ -80,14 +81,14 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.info_outline, color: AppColors.primary, size: 20),
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'ضع ما يقلقك هنا. راجعه غدًا؛ غالبًا سيبدو أصغر.',
-                      style: TextStyle(
+                      AppLocalizations.of(context).t('worryBox.hint'),
+                      style: const TextStyle(
                         color: AppColors.primary,
                         fontSize: 12,
                         height: 1.5,
@@ -106,7 +107,7 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
                           Text('📦', style: TextStyle(fontSize: 80)),
                           SizedBox(height: 16),
                           Text(
-                            'صندوق القلق فارغ',
+                            AppLocalizations.of(context).t('worryBox.empty'),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -115,7 +116,7 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
                           ),
                           SizedBox(height: 6),
                           Text(
-                            'وهذا أمر جيد ✨',
+                            AppLocalizations.of(context).t('worryBox.emptyGood'),
                             style: TextStyle(color: AppColors.textSecondary),
                           ),
                         ],

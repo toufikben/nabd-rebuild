@@ -313,17 +313,17 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.mail_outline_rounded, size: 56, color: AppColors.primary),
-          SizedBox(height: 16),
+        children: [
+          const Icon(Icons.mail_outline_rounded, size: 56, color: AppColors.primary),
+          const SizedBox(height: 16),
           Text(
-            'Your letters stay on this device.',
+            AppLocalizations.of(context).t('letters.privacyNote'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'Write to your future self or keep words safely unsent.',
+            AppLocalizations.of(context).t('letters.subtitle'),
             textAlign: TextAlign.center,
           ),
         ],

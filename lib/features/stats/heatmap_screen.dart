@@ -184,7 +184,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
     return Row(
       children: [
         Text(
-          'Less',
+          AppLocalizations.of(context).t('heatmap.less'),
           style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
         ),
         const SizedBox(width: 6),
@@ -204,7 +204,7 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
         }),
         SizedBox(width: 6),
         Text(
-          'More',
+          AppLocalizations.of(context).t('heatmap.more'),
           style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
         ),
       ],

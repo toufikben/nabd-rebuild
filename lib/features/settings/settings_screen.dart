@@ -716,9 +716,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.t('dialog.delete.title')),
-        content: const Text(
-          'This will permanently remove ALL entries. This cannot be undone.',
-        ),
+        content: Text(l10n.t('dialog.delete.body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
