@@ -177,10 +177,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ? ListView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 112),
                     children: [
-                      _sessionsCard(context, l10n),
-                      const SizedBox(height: 10),
-                      _silentCompanionCard(context, l10n),
-                      SizedBox(height: 24),
+                      // The empty message leads: the extended FAB sits over the
+                      // bottom of this list and would cover it otherwise.
                       Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -208,6 +206,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      _sessionsCard(context, l10n),
+                      const SizedBox(height: 10),
+                      _silentCompanionCard(context, l10n),
                     ],
                   )
                 : ListView.separated(

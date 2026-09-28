@@ -397,7 +397,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               ),
             if (_existing != null)
               IconButton(
-                tooltip: _existing!.isPinned ? l10n.t('editor.pin.unpin') : 'Pin',
+                tooltip: _existing!.isPinned ? l10n.t('editor.pin.unpin') : l10n.t('editor.pin'),
                 icon: Icon(_existing!.isPinned
                     ? Icons.push_pin
                     : Icons.push_pin_outlined),

@@ -151,7 +151,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              '${c.days} days',
+                              '${c.days} ${l10n.t('challenges.days')}',
                               style: TextStyle(
                                 fontSize: 10,
                                 color: joined

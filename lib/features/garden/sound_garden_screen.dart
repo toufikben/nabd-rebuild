@@ -14,52 +14,52 @@ class SoundGardenScreen extends StatefulWidget {
 
 class _SoundGardenScreenState extends State<SoundGardenScreen> {
   static const _tracks =
-      <({String id, String name, String emoji, String asset})>[
+      <({String id, String nameKey, String emoji, String asset})>[
     (
       id: 'rain',
-      name: 'Soft rain',
+      nameKey: 'garden.sounds.rain',
       emoji: '🌧️',
       asset: 'assets/sounds/rain_soft.mp3',
     ),
     (
       id: 'ocean',
-      name: 'Ocean',
+      nameKey: 'garden.sounds.ocean',
       emoji: '🌊',
       asset: 'assets/sounds/ocean_soft.mp3',
     ),
     (
       id: 'wind',
-      name: 'Gentle wind',
+      nameKey: 'garden.sounds.wind',
       emoji: '🍃',
       asset: 'assets/sounds/wind_gentle.mp3',
     ),
     (
       id: 'fireplace',
-      name: 'Fireplace',
+      nameKey: 'garden.sounds.fireplace',
       emoji: '🔥',
       asset: 'assets/sounds/fireplace_crackle.mp3',
     ),
     (
       id: 'cafe',
-      name: 'Cafe',
+      nameKey: 'garden.sounds.cafe',
       emoji: '☕',
       asset: 'assets/sounds/cafe_ambience.mp3',
     ),
     (
       id: 'birds',
-      name: 'Distant birds',
+      nameKey: 'garden.sounds.birds',
       emoji: '🐦',
       asset: 'assets/sounds/birds_distant.mp3',
     ),
     (
       id: 'harp',
-      name: 'Soft harp',
+      nameKey: 'garden.sounds.harp',
       emoji: '🎵',
       asset: 'assets/sounds/harp_soft.mp3',
     ),
     (
       id: 'oud',
-      name: 'Soft oud',
+      nameKey: 'garden.sounds.oud',
       emoji: '🎶',
       asset: 'assets/sounds/oud_soft.mp3',
     ),
@@ -82,6 +82,7 @@ class _SoundGardenScreenState extends State<SoundGardenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).t('garden.sounds.title')),
@@ -128,7 +129,7 @@ class _SoundGardenScreenState extends State<SoundGardenScreen> {
                   child: ListTile(
                     leading:
                         Text(track.emoji, style: const TextStyle(fontSize: 26)),
-                    title: Text(track.name),
+                    title: Text(l10n.t(track.nameKey)),
                     subtitle: isLoading
                         ? Text(AppLocalizations.of(context).t('garden.sounds.loading'))
                         : playback?.status == SoundGardenPlaybackStatus.error
@@ -136,8 +137,8 @@ class _SoundGardenScreenState extends State<SoundGardenScreen> {
                             : null,
                     trailing: IconButton(
                       tooltip: isPlaying
-                          ? 'Stop ${track.name}'
-                          : 'Play ${track.name}',
+                          ? l10n.t('common.stop')
+                          : l10n.t('common.play'),
                       onPressed: isLoading || limitReached
                           ? null
                           : () async {

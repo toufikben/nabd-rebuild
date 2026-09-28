@@ -222,6 +222,8 @@ class S {
 
     // ── Dialogs ───────────────────────────────────────────────────────
     'dialog.cancel': 'إلغاء',
+    'common.play': 'تشغيل',
+    'common.stop': 'إيقاف',
     'dialog.continue': 'متابعة',
     'dialog.restore': 'استرجاع',
     'dialog.rotate': 'تدوير',
@@ -425,13 +427,16 @@ class S {
     'garden.sounds.wind': 'رياح لطيفة',
     'garden.sounds.fireplace': 'مدفأة',
     'garden.sounds.birds': 'طيور بعيدة',
-    'garden.sounds.harp': 'عود هادئ',
-    'garden.sounds.oud': 'ناي هادئ',
+    'garden.sounds.harp': 'قيثارة هادئة',
+    'garden.sounds.ocean': 'محيط',
+    'garden.sounds.cafe': 'مقهى',
+    'garden.sounds.oud': 'عود هادئ',
 
 
-    'challenges.gratitude7': '7 Days of Gratitude',
-    'challenges.gratitude7Hint': 'Write 3 gratitude items daily for a week',
-    'challenges.longWritingHint': 'Write 500+ words daily',
+    'challenges.gratitude7': '٧ أيام من الامتنان',
+    'challenges.gratitude7Hint': 'اكتب ٣ أشياء امتنان كل يوم لمدة أسبوع',
+    'challenges.longWritingHint': 'اكتب ٥٠٠ كلمة أو أكثر يوميًا',
+    'challenges.days': 'أيام',
     'challenges.gratitude7.emoji': '🙏',
     'challenges.moodTracker.emoji': '🎭',
     'challenges.deepDive.emoji': '🌊',
@@ -501,6 +506,7 @@ class S {
     'editor.delete.action': 'حذف',
     'editor.favorite.add': 'إضافة للمفضلة',
     'editor.favorite.remove': 'إزالة من المفضلة',
+    'editor.pin': 'تثبيت',
     'editor.pin.unpin': 'إلغاء التثبيت',
     'editor.mood': 'المزاج',
     'editor.tag.add': 'إضافة وسم',
@@ -776,6 +782,8 @@ class S {
 
     // ── Dialogs ───────────────────────────────────────────────────────
     'dialog.cancel': 'Cancel',
+    'common.play': 'Play',
+    'common.stop': 'Stop',
     'dialog.continue': 'Continue',
     'dialog.restore': 'Restore',
     'dialog.rotate': 'Rotate',
@@ -828,6 +836,7 @@ class S {
     'editor.delete.action': 'Delete',
     'editor.favorite.add': 'Add favorite',
     'editor.favorite.remove': 'Remove favorite',
+    'editor.pin': 'Pin',
     'editor.pin.unpin': 'Unpin',
     'editor.mood': 'Mood',
     'editor.tag.add': 'Add tag',
@@ -938,6 +947,7 @@ class S {
     'challenges.gratitude7': '7 Days of Gratitude',
     'challenges.gratitude7Hint': 'Write 3 gratitude items daily for a week',
     'challenges.longWritingHint': 'Write 500+ words daily',
+    'challenges.days': 'days',
     'challenges.gratitude7.emoji': '🙏',
     'challenges.moodTracker.emoji': '🎭',
     'challenges.deepDive.emoji': '🌊',
@@ -978,6 +988,8 @@ class S {
     'garden.sounds.fireplace': 'Fireplace',
     'garden.sounds.birds': 'Distant birds',
     'garden.sounds.harp': 'Soft harp',
+    'garden.sounds.ocean': 'Ocean',
+    'garden.sounds.cafe': 'Cafe',
     'garden.sounds.oud': 'Soft oud',
 
     // ── Analytics extras ───────────────────────────────────────────────
