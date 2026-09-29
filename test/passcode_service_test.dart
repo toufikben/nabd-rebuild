@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nabd/services/encryption_service.dart';
 import 'package:nabd/services/passcode_service.dart';
@@ -24,10 +25,10 @@ class _MemoryStore implements PasscodeStore {
   }
 }
 
-/// Stands in for PBKDF2: deterministic, instant, and still impossible to
-/// reverse into the pin, which is all the service relies on.
+/// Stands in for PBKDF2: deterministic and instant, but one-way like the real
+/// thing, so the "the pin is never stored readably" assertion stays meaningful.
 Future<Uint8List> _derive(String pin, Uint8List salt) async {
-  return Uint8List.fromList(utf8.encode('$pin@${salt.join(',')}'));
+  return Hmac(sha256, salt).convert(utf8.encode(pin)).bytes;
 }
 
 void main() {
