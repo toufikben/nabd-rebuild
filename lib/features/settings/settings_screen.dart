@@ -11,9 +11,11 @@ import '../../core/data_revision.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
+import '../../features/lock/passcode_setup_sheet.dart';
 import '../../services/biometric_service.dart';
 import '../../services/encryption_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/passcode_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
@@ -46,12 +48,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _lockTimeoutMinutes = 5;
   int _reminderHour = 20;
   int _reminderMinute = 0;
+  bool _hasPasscode = false;
+  bool _biometricsAvailable = false;
 
   @override
   void initState() {
     super.initState();
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
+    _loadLockState();
+  }
+
+  /// The passcode lives in the OS keystore and biometric support is a platform
+  /// question, so neither can be read synchronously the way the Hive flags can.
+  Future<void> _loadLockState() async {
+    final hasPasscode = await PasscodeService.secure().hasPasscode();
+    final available = await _biometric.isAvailable();
+    if (!mounted) return;
+    setState(() {
+      _hasPasscode = hasPasscode;
+      _biometricsAvailable = available;
+    });
   }
 
   @override
@@ -107,20 +124,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: Text(l10n.t('settings.lock.appLock')),
             subtitle: Text(l10n.t('settings.lock.appLockHint')),
             value: _lockEnabled,
-            onChanged: (value) async {
-              await _biometric.setLockEnabled(value);
-              if (!mounted) return;
-              setState(() => _lockEnabled = value);
-            },
+            onChanged: (value) => _setLockEnabled(value, l10n),
           ),
 
-          if (_lockEnabled)
+          if (_lockEnabled) ...[
             _tile(
               icon: Icons.timer_outlined,
               title: l10n.t('settings.lock.timeout'),
               subtitle: _lockTimeoutLabel(_lockTimeoutMinutes, l10n),
               onTap: () => _pickLockTimeout(l10n),
             ),
+            _tile(
+              icon: Icons.numbers,
+              title: l10n.t('settings.lock.passcode'),
+              subtitle: _hasPasscode
+                  ? l10n.t('settings.lock.passcodeSet')
+                  : l10n.t('settings.lock.passcodeUnset'),
+              onTap: _changePasscode,
+            ),
+            if (_hasPasscode)
+              _tile(
+                icon: Icons.lock_open_outlined,
+                title: l10n.t('settings.lock.removeTitle'),
+                subtitle: _lockRemovalNote(l10n),
+                onTap: () => _removePasscode(l10n),
+                danger: true,
+              ),
+          ],
 
           // ─── Notifications ───
           _section(l10n.t('settings.section.notifications')),
@@ -295,6 +325,90 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       default:
         return l10n.t('settings.lock.never');
     }
+  }
+
+  /// The lock may only be switched on once there is a way in that does not
+  /// depend on biometrics. Before the passcode existed, a phone with no
+  /// enrolled fingerprint accepted this switch and then refused to open.
+  Future<void> _setLockEnabled(bool value, AppLocalizations l10n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final needsPasscode = l10n.t('settings.lock.needsPasscode');
+    if (!value) {
+      await _biometric.setLockEnabled(false);
+      if (!mounted) return;
+      setState(() => _lockEnabled = false);
+      return;
+    }
+
+    if (!_hasPasscode) {
+      final saved = await _openPasscodeSetup();
+      if (!saved) {
+        messenger.showSnackBar(SnackBar(content: Text(needsPasscode)));
+        return;
+      }
+      setState(() => _hasPasscode = true);
+    }
+
+    await _biometric.setLockEnabled(true);
+    if (!mounted) return;
+    setState(() => _lockEnabled = true);
+  }
+
+  Future<bool> _openPasscodeSetup() async {
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (_) => const PasscodeSetupSheet(),
+    );
+    return saved ?? false;
+  }
+
+  Future<void> _changePasscode() async {
+    final saved = await _openPasscodeSetup();
+    if (!saved || !mounted) return;
+    setState(() => _hasPasscode = true);
+  }
+
+  String _lockRemovalNote(AppLocalizations l10n) {
+    if (!_biometricsAvailable) {
+      return l10n.t('settings.lock.removeBlocked');
+    }
+    return l10n.t('settings.lock.removeBody');
+  }
+
+  Future<void> _removePasscode(AppLocalizations l10n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (_lockEnabled && !_biometricsAvailable) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.lock.removeBlocked'))),
+      );
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.t('settings.lock.removeTitle')),
+        content: Text(l10n.t('settings.lock.removeBody')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.t('dialog.done')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await PasscodeService.secure().removePasscode();
+    if (!mounted) return;
+    setState(() => _hasPasscode = false);
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.t('settings.lock.removed'))),
+    );
   }
 
   Future<void> _pickLockTimeout(AppLocalizations l10n) async {

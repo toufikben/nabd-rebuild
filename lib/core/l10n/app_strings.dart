@@ -137,6 +137,23 @@ class S {
     'settings.lock.15m': '15 دقيقة',
     'settings.lock.30m': '30 دقيقة',
     'settings.lock.never': 'أبداً',
+    'settings.lock.passcode': 'رمز الدخول',
+    'settings.lock.passcodeSet': 'تم ضبطه',
+    'settings.lock.passcodeUnset': 'لم يُضبط بعد',
+    'settings.lock.needsPasscode': 'اضبط رمز الدخول أولاً',
+    'settings.lock.setupTitle': 'اختر رمزاً من 4 إلى 6 أرقام',
+    'settings.lock.confirmTitle': 'أدخل الرمز مرة أخرى',
+    'settings.lock.mismatch': 'الرمزان غير متطابقين، حاول مجدداً',
+    'settings.lock.invalidLength': 'يجب أن يكون الرمز من 4 إلى 6 أرقام',
+    'settings.lock.saved': 'تم حفظ رمز الدخول',
+    'settings.lock.removed': 'تم حذف رمز الدخول',
+    'settings.lock.warnBody':
+        'احتفظ برمزك: إن نسيته ولم يتوفر قفل الهاتف، يلزم إعادة تثبيت التطبيق وتُفقد البيانات.',
+    'settings.lock.removeTitle': 'حذف رمز الدخول؟',
+    'settings.lock.removeBody':
+        'يبقى القفل بالبصمة وحدها، وقد لا تستطيع الدخول إن توقفت.',
+    'settings.lock.removeBlocked':
+        'لا يمكن حذف الرمز ما دام القفل يعمل بالبصمة وحدها',
     'settings.notify.daily': 'تذكير يومي',
     'settings.notify.dailyHint': 'ذكّرني بالكتابة',
     'settings.notify.time': 'وقت التذكير',
@@ -591,10 +608,16 @@ class S {
 
     // ── Lock ───────────────────────────────────────────────────────────
     'lock.title': 'المذكرة مقفلة',
-    'lock.subtitle': 'Ù‚Ù… للمتابعة',
+    'lock.subtitle': 'استخدم البصمة أو الرمز للمتابعة',
     'lock.prompt': 'أدخل رمز التحقق للمتابعة',
     'lock.action': 'فتح',
     'lock.failed': 'فشل التحقق',
+    'lock.recover': 'تحقّق بهاتفك لتعيين رمز جديد',
+    'lock.pin.wrong': 'الرمز غير صحيح',
+    'lock.pin.biometric': 'استخدم البصمة',
+    'lock.pin.setup': 'أنشئ رمز دخول',
+    'lock.pin.cooldown': 'حاول بعد {n} ثانية',
+    'lock.pin.forgot': 'نسيت الرمز؟',
 
     // ── Silent companion ───────────────────────────────────────────────
     'silent.title': 'الرفيق الصامت',
@@ -805,6 +828,23 @@ class S {
     'settings.lock.15m': '15 minutes',
     'settings.lock.30m': '30 minutes',
     'settings.lock.never': 'Never',
+    'settings.lock.passcode': 'Passcode',
+    'settings.lock.passcodeSet': 'Set',
+    'settings.lock.passcodeUnset': 'Not set yet',
+    'settings.lock.needsPasscode': 'Set a passcode first',
+    'settings.lock.setupTitle': 'Choose a 4 to 6 digit passcode',
+    'settings.lock.confirmTitle': 'Enter the passcode again',
+    'settings.lock.mismatch': 'The two entries did not match',
+    'settings.lock.invalidLength': 'Use 4 to 6 digits',
+    'settings.lock.saved': 'Passcode saved',
+    'settings.lock.removed': 'Passcode removed',
+    'settings.lock.warnBody':
+        'Keep this code. If you forget it and no device lock is available, the app must be reinstalled and your journal is lost.',
+    'settings.lock.removeTitle': 'Remove the passcode?',
+    'settings.lock.removeBody':
+        'The lock would then depend on biometrics alone.',
+    'settings.lock.removeBlocked':
+        'Keep the passcode while the lock has only biometrics to fall back on',
     'settings.notify.daily': 'Daily Reminder',
     'settings.notify.dailyHint': 'Get reminded to write',
     'settings.notify.time': 'Reminder Time',
@@ -1030,10 +1070,16 @@ class S {
 
     // ── Lock ───────────────────────────────────────────────────────────
     'lock.title': 'Journal Locked',
-    'lock.subtitle': 'Authenticate to continue',
+    'lock.subtitle': 'Unlock with your passcode or biometrics',
     'lock.prompt': 'Enter your passcode to continue',
     'lock.action': 'Unlock',
     'lock.failed': 'Authentication failed',
+    'lock.recover': 'Verify your device to set a new passcode',
+    'lock.pin.wrong': 'Wrong passcode',
+    'lock.pin.biometric': 'Use fingerprint',
+    'lock.pin.setup': 'Create a passcode',
+    'lock.pin.cooldown': 'Try again in {n} seconds',
+    'lock.pin.forgot': 'Forgot the passcode?',
 
     // ── Silent companion ───────────────────────────────────────────────
     'silent.title': 'Silent Companion',
