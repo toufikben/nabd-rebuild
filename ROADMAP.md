@@ -76,7 +76,7 @@
 | `flutter test` | ✅ 154 اختبارًا | `🎉 154 tests passed.` في نفس التشغيل |
 | بناء Debug APK/AAB | ✅ ناجح | الـ artifact باسم `nabd-debug-apk` (23,403,627 بايت) حُمِّل وثُبِّت على الهاتف |
 | بناء Release الموقّع | ⏳ `skipped` بشكل مقصود | أسرار ومتغيرات التوقيع غير موجودة في المستودع، ولا يُسمح بإضافتها من هنا |
-| اختبار الهاتف | 🟡 بدأ | التطبيق مثبَّت على Realme RMX3910 (`IR7X5DJ7KZGEHMS8`, Android 16)؛ جولة الشاشات باللقطات لم تُوثَّق بعد |
+| اختبار الهاتف | 🟡 بدأ | Realme RMX3910 (`IR7X5DJ7KZGEHMS8`, Android 16، لغة النظام `en-DZ` فالواجهة الإنجليزية صحيحة). ثبت على الجهاز: الإقلاع الأول ← البذرة ← الرئيسية، الإعدادات، بوابة الرمز عند تفعيل القفل، إنشاء الرمز على مرحلتين، الإقلاع البارد ← البصمة ← اللوحة، «Wrong passcode»، والفتح بالرمز الصحيح. لم يُفحص بعد: الأحلام، الجلسات، الإنجازات، جولة العربية |
 | AdMob Android | ✅ جاهز | بعد إضافة `ADMOB_ANDROID_APP_ID` و `ADMOB_ANDROID_REWARDED_ID` |
 | Google Play products | 🟡 جاهزة للحقن فقط | عبر `NABD_PRO_MONTHLY_ID` و `NABD_PRO_YEARLY_ID` و `NABD_LIFETIME_ID`، لكن verifier الاشتراكات غير موجود |
 
@@ -96,7 +96,8 @@
 | المظهر | `dark: true` لشاشة القفل على التدرّج الداكن، و `dark: false` لورقة الإعدادات الفاتحة |
 | الاختبارات | `test/passcode_pad_test.dart` — سبع حالات Widget، وكلها تحتاج `await tester.pump()` بعد `pumpWidget` لأن `AppLocalizations.delegate` يستغرق إطارًا ليُحلّ وإلا وجدت كل الـ finders شجرة فارغة (commit `ee51f7f`) |
 | CI | التشغيل `36538021011` أخضر بـ 134 اختبارًا |
-| غير مثبت | نافذة المصادقة الحيوية نفسها: لا يملك أي CI runner بصمة، فتحتاج جولة الهاتف |
+| غير مثبت | ظهور نص الانتظار «Try again in N seconds» على اللوحة (قاعدة 5 محاولات ↔ 30 ثانية مثبتة في CI عبر `test/passcode_attempts_test.dart`) |
+| عيب كشفه الجهاز | ورقة `PasscodeSetupSheet` تفيض خارج الشاشة: `showModalBottomSheet` يُنادى بلا `isScrollControlled` في `settings_screen.dart` فيحصر ارتفاع الورقة في 9/16 الشاشة، ويُقصص الصف الأخير من اللوحة («BOTTOM OVERFLOWED BY 46 PIXELS»). شاشة القفل الكاملة لا تتأثر لأنها داخل `SingleChildScrollView` |
 
 ### ثلاثة عيوب من تدقيق الجهاز — صُحّحت
 
