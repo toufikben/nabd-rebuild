@@ -665,6 +665,16 @@ class S {
     'futureLetters.lockedTitle': '🔒 الرسالة مقفلة',
     'gratitudeGarden.grew': '🌻 نبتت زهرة جديدة في حديقتك!',
     'unsentLetters.kept': '💌 بقيت الرسالة في قلبك',
+    'worryBox.reviewTime': 'حان وقت المراجعة',
+    'worryBox.dayLeft': 'متبقٍ يوم واحد',
+    'worryBox.daysLeft': 'متبقٍ {n} أيام',
+    'letters.futureSelf': 'نفسي المستقبلية',
+    'futureLetters.lockedShort': 'رسالة مقفلة',
+    'futureLetters.readShort': 'اقرأ الرسالة',
+    'futureLetters.unlocks': 'تُفتح: {d}',
+    'futureLetters.written': 'كُتبت: {d}',
+    'letters.kindFuture': 'رسالة إلى المستقبل',
+    'letters.kindUnsent': 'رسالة لم تُرسل',
   };
 
   static const Map<String, String> en = <String, String>{
@@ -1329,6 +1339,16 @@ class S {
     'futureLetters.lockedTitle': '🔒 Letter Locked',
     'gratitudeGarden.grew': '🌻 A new flower grew in your garden!',
     'unsentLetters.kept': '💌 Letter kept in your heart',
+    'worryBox.reviewTime': 'Review time',
+    'worryBox.dayLeft': '1 day left',
+    'worryBox.daysLeft': '{n} days left',
+    'letters.futureSelf': 'My future self',
+    'futureLetters.lockedShort': 'Locked letter',
+    'futureLetters.readShort': 'Read letter',
+    'futureLetters.unlocks': 'Unlocks: {d}',
+    'futureLetters.written': 'Written: {d}',
+    'letters.kindFuture': 'Future letter',
+    'letters.kindUnsent': 'Unsent letter',
   };
 
   /// Every key known to the table, used by the parity test.

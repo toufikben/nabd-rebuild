@@ -399,7 +399,9 @@ class _LetterCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    locked ? 'Locked Letter' : 'Read Letter',
+                    AppLocalizations.of(context).t(locked
+                        ? 'futureLetters.lockedShort'
+                        : 'futureLetters.readShort'),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -408,9 +410,16 @@ class _LetterCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    locked
-                        ? 'Unlocks: ${letter.unlockDate.day}/${letter.unlockDate.month}/${letter.unlockDate.year}'
-                        : 'Written: ${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
+                    AppLocalizations.of(context)
+                        .t(locked
+                            ? 'futureLetters.unlocks'
+                            : 'futureLetters.written')
+                        .replaceAll(
+                          '{d}',
+                          locked
+                              ? '${letter.unlockDate.day}/${letter.unlockDate.month}/${letter.unlockDate.year}'
+                              : '${letter.createdAt.day}/${letter.createdAt.month}/${letter.createdAt.year}',
+                        ),
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 12,

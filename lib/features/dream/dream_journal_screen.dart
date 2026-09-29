@@ -261,7 +261,9 @@ class _DreamCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  dream.title.isEmpty ? 'Untitled Dream' : dream.title,
+                  dream.title.isEmpty
+                      ? AppLocalizations.of(context).t('dream.untitled')
+                      : dream.title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,

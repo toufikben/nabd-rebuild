@@ -39,6 +39,14 @@ final _constKeyword = RegExp(r'\bconst\s+');
 final _opensTextPosition = RegExp(
     r'(?:Text|SelectableText)\($|(?:label|title|hintText|helperText|tooltip|semanticLabel|message|body|content|subject)\s*:$');
 
+/// A literal sitting in a ternary branch. The shape every earlier pass missed,
+/// because the line neither starts with a quote nor opens a `Text(`.
+final _ternaryBranch = RegExp(r"(?:^|[^=!<>a-zA-Z_])[?:]\s*'([^']*)'");
+
+/// A condition that picks a string by language: `isArabic ? 'عربي' : 'english'`.
+/// That is the fix, so its branches must not be reported as defects.
+final _langSwitch = RegExp(r'\b(?:isArabic|langCode|languageCode|locale)\b');
+
 /// Lines that hardcode a user-visible English or Arabic literal in this file's
 /// own scope.
 List<String> hardcodedSentences(Iterable<String> lines) {
@@ -56,6 +64,7 @@ List<String> hardcodedSentences(Iterable<String> lines) {
         .trim();
 
     var flagged = false;
+    var branchHit = false;
     if (pending && text.startsWith("'")) {
       final stripped = line.replaceAll(_interpolation, ' ');
       if (_arabic.hasMatch(stripped) || _sentence.hasMatch(stripped)) {
@@ -64,6 +73,31 @@ List<String> hardcodedSentences(Iterable<String> lines) {
         continue;
       }
     }
+    // Only a line that really branches counts: a `:` with no `?` is a map entry,
+    // and a condition that already picks by language is the fix, not the defect.
+    final branchAt = line.indexOf('?');
+    final isBranch = branchAt >= 0 || line.startsWith(':');
+    final pickedByLanguage =
+        branchAt >= 0 && _langSwitch.hasMatch(line.substring(0, branchAt));
+    if (isBranch && !pickedByLanguage) {
+      final tail = branchAt >= 0 ? line.substring(branchAt) : line;
+      for (final match in _ternaryBranch.allMatches(tail)) {
+        final raw = match.group(1)!;
+        final stripped = raw.replaceAll(_interpolation, ' ');
+        if (_arabic.hasMatch(stripped) ||
+            _sentence.hasMatch(stripped) ||
+            _twoWords.hasMatch(stripped) ||
+            (_interpolation.hasMatch(raw) &&
+                !raw.contains('://') &&
+                _anyWord.hasMatch(stripped))) {
+          found.add('${i + 1}: $text');
+          pending = false;
+          branchHit = true;
+          break;
+        }
+      }
+    }
+    if (branchHit) continue;
     for (final match in _textPosition.allMatches(line)) {
       final rest = line.substring(match.end).trimLeft();
       if (!rest.startsWith("'")) continue;
@@ -112,13 +146,15 @@ void main() {
       ]),
       hasLength(4),
     );
-    expect(hardcodedSentences([
-      "              Text(l10n.t('garden.seedHelp')),",
-      "            const Icon(Icons.spa, size: 20),",
-      "                  label: Text(l10n.t('common.all')),",
-      "                  value: '0xFF00B88A',",
-      "      static const _storageKey = 'wisdom_state',",
-    ]), isEmpty);
+    expect(
+        hardcodedSentences([
+          "              Text(l10n.t('garden.seedHelp')),",
+          "            const Icon(Icons.spa, size: 20),",
+          "                  label: Text(l10n.t('common.all')),",
+          "                  value: '0xFF00B88A',",
+          "      static const _storageKey = 'wisdom_state',",
+        ]),
+        isEmpty);
   });
 
   test('the detector catches the holes the sweeps slipped through', () {
@@ -159,6 +195,68 @@ void main() {
         "                      'لا توجد مشاعر مسجلة بعد',",
       ]),
       hasLength(1),
+    );
+    // A ternary branch hid literals from every earlier pass: the line begins
+    // with `?` or `:`, so neither the Text( rule nor the continuation rule saw it.
+    expect(
+      hardcodedSentences([
+        "                      ? 'حان وقت المراجعة'",
+        "                      : 'متبقٍ \$daysLeft أيام',",
+        "              ? 'My future self'",
+      ]),
+      hasLength(3),
+    );
+    // ...and the localized spelling of the same ternary stays green.
+    expect(
+      hardcodedSentences([
+        "                      ? l10n.t('worryBox.reviewTime')",
+        "                      : l10n.t('worryBox.daysLeft'),",
+      ]),
+      isEmpty,
+    );
+    // The branch can also sit after the condition, on one line.
+    expect(
+      hardcodedSentences([
+        "          address: name.isEmpty ? 'My future self' : name,",
+      ]),
+      hasLength(1),
+    );
+    // A single-word branch or a localized one stays out of the way.
+    expect(
+      hardcodedSentences([
+        "          icon: ok ? '✅' : '❌',",
+        "          address: name.isEmpty ? l10n.t('letters.futureSelf') : name,",
+      ]),
+      isEmpty,
+    );
+    // An interpolated English word hidden in a branch is the `Days` defect again.
+    expect(
+      hardcodedSentences([
+        "                        ? 'Unlocks: \${letter.unlockDate.day}/\${letter.unlockDate.month}',",
+      ]),
+      hasLength(1),
+    );
+    // ...including the else branch alone on its own line.
+    expect(
+      hardcodedSentences([
+        "                        : 'Written: \${letter.createdAt.day}',",
+      ]),
+      hasLength(1),
+    );
+    // A ternary that switches on the language is the fix, not the defect.
+    expect(
+      hardcodedSentences([
+        "            langCode == 'ar' ? 'كيف تشعر؟' : 'How do you feel?',",
+      ]),
+      isEmpty,
+    );
+    // A map entry is not a ternary branch.
+    expect(
+      hardcodedSentences([
+        "          'ar': 'العربية',",
+        "          {'code': 'ar', 'name': 'العربية'},",
+      ]),
+      isEmpty,
     );
   });
 

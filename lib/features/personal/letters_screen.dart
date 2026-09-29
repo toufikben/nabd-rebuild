@@ -25,6 +25,7 @@ class _LettersScreenState extends State<LettersScreen> {
   void _reload() => setState(() => _letters = _service.getLetters());
 
   Future<void> _createLetter() async {
+    final futureSelf = AppLocalizations.of(context).t('letters.futureSelf');
     final result = await showModalBottomSheet<_LetterDraft>(
       context: context,
       isScrollControlled: true,
@@ -37,10 +38,9 @@ class _LettersScreenState extends State<LettersScreen> {
       PersonalLetter(
         id: const Uuid().v4(),
         kind: result.kind,
-        address:
-            result.address.trim().isEmpty
-                ? 'My future self'
-                : result.address.trim(),
+        address: result.address.trim().isEmpty
+            ? futureSelf
+            : result.address.trim(),
         content: result.content.trim(),
         createdAt: now,
         unlockDate:
@@ -136,7 +136,9 @@ class _LetterCard extends StatelessWidget {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    future ? 'Future letter' : 'Unsent letter',
+                    AppLocalizations.of(context).t(
+                      future ? 'letters.kindFuture' : 'letters.kindUnsent',
+                    ),
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),

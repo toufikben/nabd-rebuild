@@ -222,8 +222,12 @@ class _WorryCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   canReview
-                      ? 'حان وقت المراجعة'
-                      : 'متبقٍ $daysLeft ${daysLeft == 1 ? 'يوم' : 'أيام'}',
+                      ? AppLocalizations.of(context).t('worryBox.reviewTime')
+                      : daysLeft == 1
+                          ? AppLocalizations.of(context).t('worryBox.dayLeft')
+                          : AppLocalizations.of(context)
+                              .t('worryBox.daysLeft')
+                              .replaceAll('{n}', '$daysLeft'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -234,7 +238,8 @@ class _WorryCard extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onRemove,
-                tooltip: AppLocalizations.of(context).t('worryBox.deleteTooltip'),
+                tooltip:
+                    AppLocalizations.of(context).t('worryBox.deleteTooltip'),
                 icon: const Icon(Icons.delete_outline, size: 18),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
