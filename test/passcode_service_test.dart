@@ -28,7 +28,7 @@ class _MemoryStore implements PasscodeStore {
 /// Stands in for PBKDF2: deterministic and instant, but one-way like the real
 /// thing, so the "the pin is never stored readably" assertion stays meaningful.
 Future<Uint8List> _derive(String pin, Uint8List salt) async {
-  return Hmac(sha256, salt).convert(utf8.encode(pin)).bytes;
+  return Uint8List.fromList(Hmac(sha256, salt).convert(utf8.encode(pin)).bytes);
 }
 
 void main() {
