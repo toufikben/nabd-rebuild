@@ -1,9 +1,9 @@
 # خارطة طريق نبض — الحالة الموثقة
 
-**آخر تحديث:** 2026-09-22 بعد تنفيذ Hotfix للتشفير والنسخ والإعلانات وتهيئة المشتريات
+**آخر تحديث:** 2026-09-29 بعد قفل كلمة السر وإصلاح عيوب التدقيق الثلاثة على الجهاز
 **الفرع:** `main`
-**آخر commit قبل هذه الدفعة:** `7493fd8` — `fix: restore Android biometric prompt lifecycle`
-**حالة التنفيذ:** تعديلات Hotfix محلية جاهزة للمراجعة والرفع إلى `origin/main`
+**آخر commit:** `e5ba5b3` — `fix: reject an impossible gratitude day and assert the limit against entries`
+**حالة التنفيذ:** `origin/main` أخضر في CI بـ 154 اختبارًا، وبناء Debug APK/AAB ناجح، والتثبيت على هاتف Realme تم
 
 ## الحكم التنفيذي
 
@@ -18,11 +18,11 @@
 | 5 | R-Stats | ✅ منفذة | مراجعة دقة البيانات وRTL ضمن R-Polish/Final QA |
 | 6 | R-Wellbeing | ✅ منفذة | تشمل Gratitude وWorry وBreathing وSilent وMotivation |
 | 7 | R-Personal | ✅ منفذة | Letters وEchoes وWeekly Pulse وSage مرتبطة بالمسارات وتملك اختبارات منطق وWidget |
-| 8 | R-Settings & Lock | ✅ منفذة جزئيًا | Settings وApp Lock موجودان؛ يلزم اختبار جهاز فعلي وتوحيد i18n |
+| 8 | R-Settings & Lock | ✅ منفذة | Settings و App Lock موجودان؛ لوحة رمز 4–6 أرقام مع PBKDF2 وبوابة في الإعدادات، ومثبتة باختبارات CI. يبقى التحقق runtime على الجهاز (لا يشغّل CI نافذة مصادقة حيوية) |
 | 9 | R-Data & Security | ✅ منفذة (تدوير ذري مطبق) | التدوير يعيد تشفير كل الصناديق مع نسخ احتياطية `.rotating` وتراجع تلقائي عند الفشل؛ يلزم إثباته على جهاز حقيقي |
 | 10 | R-Monetization | 🟡 مجهزة جزئيًا | معرفات المنتجات قابلة للحقن، لكن Monthly/Yearly لا تمنح Pro قبل verifier خادمي |
 | 11 | R-Polish | 🟡 جارية | i18n للواجهة منتهٍ ✅، RTL يعمل ✅، App Icon ✅، صوت Splash موحّد ✅، تباين الوضع الليلي ✅؛ بقيت جُمل طبقة الخدمات |
-| 12 | R-Final QA | ⏳ جارية | CI أخضر بـ 81 اختبارًا ✅، وبناء Debug APK/AAB ✅؛ يبقي اختبار جهاز وRelease signing وApp Links |
+| 12 | R-Final QA | 🟡 جارية | CI أخضر بـ 154 اختبارًا ✅ وبناء Debug APK/AAB ✅ والتثبيت على Realme ✅؛ بقيت جولة الشاشات باللقطات، ثم Release signing و App Links |
 
 ## R-Launch & Polish — سجل 2026-09-26
 
@@ -54,7 +54,13 @@
 
 ## القرارات المؤجلة التي تبقى كما هي
 
-يبقى تأجيل أخطاء Journal الصغيرة مقبولًا. تبقى ملفات Android الثلاثة المولدة سابقًا دينًا تقنيًا للمراجعة، لكنها ليست تغييرات غير متتبعة في working tree الحالي. يبقى Splash sound الحالي. يؤجل Water-drop + echo، وApp Icon، وSilent rain/storm الجديد إلى R-Polish.
+يبقى تأجيل أخطاء Journal الصغيرة مقبولًا. يبقى Splash sound الحالي. يؤجل Silent rain/storm الجديد إلى R-Polish.
+
+## ملفات لا تُدفع أبدًا (حيل بناء محلية)
+
+ستة ملفات معدّلة محليًا ومقصورة على جهاز التطوير، ولا يجوز رفعها إلى `origin/main` لأنها تُغيّر إصدارات الأدوات التي يبني بها CI:
+`pubspec.yaml`، `pubspec.lock`، `analysis_options.yaml`، `android/gradle.properties`، `android/gradle/wrapper/gradle-wrapper.properties`، `android/app/build.gradle`.
+كذلك المجلدات والملفات المولّدة غير المتتبَّعة (`lib/l10n/generated/`، `ios/Flutter/`، `apk-out/`، `flutter_01.log`، `l10n_untranslated.txt`) تبقى خارج الـ commit.
 
 ## شروط إغلاق Security
 
@@ -62,21 +68,59 @@
 
 ## التحقق الأخير
 
-- `git diff --check`: **PASS** بعد تعديلات Hotfix.
-- تحقق XML/Info.plist: **PASS** محليًا.
-- `flutter analyze` و`flutter test`: **بانتظار CI بعد رفع Hotfix**؛ Flutter SDK غير متاح في بيئة الفحص الحالية.
-- اختبار الهاتف: **متبقٍ** ويشمل التصدير المشفر والحذف والمشتريات والإعلانات.
-- AdMob Android: جاهز بعد إضافة `ADMOB_ANDROID_APP_ID` و`ADMOB_ANDROID_REWARDED_ID`.
-- Google Play products: جاهزة للحقن عبر `NABD_PRO_MONTHLY_ID` و`NABD_PRO_YEARLY_ID` و`NABD_LIFETIME_ID`، لكن verifier الاشتراكات غير موجود.
+سياسة ثابتة منذ 2026-09-29: **GitHub Actions هو المتحقّق الوحيد**. لا يُشغَّل `flutter analyze` ولا `flutter test` محليًا لأن جهاز التطوير (معالجان، 4 غيغابايت RAM، قرص HDD) لا يحتمل البناء، فأي نتيجة محلية تعتبر غير موثوقة.
+
+| التحقق | الحالة | الدليل |
+|---|---|---|
+| `flutter analyze` | ✅ نظيف | `No issues found! (ran in 18.1s)` في التشغيل `36541628570` |
+| `flutter test` | ✅ 154 اختبارًا | `🎉 154 tests passed.` في نفس التشغيل |
+| بناء Debug APK/AAB | ✅ ناجح | الـ artifact باسم `nabd-debug-apk` (23,403,627 بايت) حُمِّل وثُبِّت على الهاتف |
+| بناء Release الموقّع | ⏳ `skipped` بشكل مقصود | أسرار ومتغيرات التوقيع غير موجودة في المستودع، ولا يُسمح بإضافتها من هنا |
+| اختبار الهاتف | 🟡 بدأ | التطبيق مثبَّت على Realme RMX3910 (`IR7X5DJ7KZGEHMS8`, Android 16)؛ جولة الشاشات باللقطات لم تُوثَّق بعد |
+| AdMob Android | ✅ جاهز | بعد إضافة `ADMOB_ANDROID_APP_ID` و `ADMOB_ANDROID_REWARDED_ID` |
+| Google Play products | 🟡 جاهزة للحقن فقط | عبر `NABD_PRO_MONTHLY_ID` و `NABD_PRO_YEARLY_ID` و `NABD_LIFETIME_ID`، لكن verifier الاشتراكات غير موجود |
+
+## R-Final QA — سجل 2026-09-29
+
+### قفل التطبيق برمز سري
+
+| البند | التفصيل |
+|---|---|
+| التخزين | الرمز نفسه لا يُحفظ أبدًا: `salt` عشوائي 16 بايت و PBKDF2 digest لـ `pin + salt` تحت مفتاحي `nabd_passcode_salt` و `nabd_passcode_hash` في `FlutterSecureStorage` (keystore نظام التشغيل، `encryptedSharedPreferences: true`)، لا في صناديق Hive (commit `cd0b4fa`) |
+| اللوحة | `PasscodePad` في `lib/features/lock/passcode_pad.dart` — أرقام 0–9 بمفاتيح `ValueKey<int>`، زر `backspace`، وزر `submit` (`ValueKey('submit')`) يبقى `onPressed == null` حتى يبلغ الإدخال `minLength` |
+| الطول | من 4 إلى 6 أرقام (`PasscodeService.minLength` / `maxLength`)، وأرقام فقط وإلا `PasscodeFormatException` (commit `1cfc08a`) |
+| العرض | نقاط `_PasscodeDots` بعدد `maxLength` لا تُظهر الرقم، فلا يُقرأ من فوق الكتف |
+| النسيان | زر `forgot` يظهر فقط عند تمرير `onForgotTap`، ويطلب بيانات اعتماد الجهاز للسماح باختيار رمز جديد؛ لا يوجد مسار إعادة تعيين عبر الخادم |
+| الحماية من التخمين | `PasscodeAttempts`: خمس محاولات فاشلة تُقفل اللوحة 30 ثانية، والأزرار تتعطّل والعدّاد يظهر في `lock.pin.cooldown` |
+| البوابة | التفعيل والإزالة من `passcode_setup_sheet.dart` داخل شاشة الإعدادات؛ تفعيل القفل صار يتطلب رمزًا، وهذا يسدّ الفخّ الذي كان يقفل الجهاز نهائيًا إذا لم تكن هناك بصمة مسجّلة |
+| المظهر | `dark: true` لشاشة القفل على التدرّج الداكن، و `dark: false` لورقة الإعدادات الفاتحة |
+| الاختبارات | `test/passcode_pad_test.dart` — سبع حالات Widget، وكلها تحتاج `await tester.pump()` بعد `pumpWidget` لأن `AppLocalizations.delegate` يستغرق إطارًا ليُحلّ وإلا وجدت كل الـ finders شجرة فارغة (commit `ee51f7f`) |
+| CI | التشغيل `36538021011` أخضر بـ 134 اختبارًا |
+| غير مثبت | نافذة المصادقة الحيوية نفسها: لا يملك أي CI runner بصمة، فتحتاج جولة الهاتف |
+
+### ثلاثة عيوب من تدقيق الجهاز — صُحّحت
+
+| العيب | الإصلاح | commits |
+|---|---|---|
+| الأحلام كانت تُحسب كمدخلات يوميات (العدد، البحث، الكلمات، توزيع المزاج، streak، وحصّة الشهر المجاني) | حقل `isDream` على `JournalEntry` مع تمريره عبر `toMap`/`fromMap`/`copyWith`، ثم `getAllEntries()` و `getEntryCount()` يستبعدانها في `database_service.dart`. خدمة النسخ لم تُمسّ فتبقى الأحلام تُصدَّر | `59a3228` → `a306e4d` |
+| 5 من 8 جلسات تنفّس مقفلة دائمًا للأبد | حُذف `const bool _hasPremium = false` وصار القرار `sessionIsLocked(isFree:, isPro:)` يقرأ `monetizationProvider`، والمحرّك يبدأ بعد إطار الاستحقاق | `a306e4d` |
+| شاشة الإنجازات لا تفتح شيئًا أبدًا ولا تعدّ الامتنان | `AchievementsScreen` صار `ConsumerStatefulWidget` يستدعي `unlockEligible(...)` في `addPostFrameCallback`، و`gratitudeDayCount()` يعدّ الأيام الصحيحة ويتجاهل مفاتيح الحديقة | `a306e4d` |
+
+فخّان واجها الدفعة:
+1. `DateTime.parse` متساهل: `'2026-9-31'` ينتقل إلى أكتوبر، فصار كل مفتاح تحقَّق من أجزائه مقابل التاريخ الذي يبنيه (commit `e5ba5b3`).
+2. `flutter test` يفصل كل ملف اختبار، ففشل ملف واحد لا يمنع بقية الملفات من النجاح — لذلك كان الرقم 152/2 طبيعيًا في التشغيل الأحمر.
+
+أدلة RED ثم GREEN: `36540351838` (137 نجحت / 17 فشلت كما هو مقصود) ← `36540932035` (152/2) ← `36541628570` (154 نجحت، التحليل نظيف، APK و AAB مبنيان).
 
 ## الترتيب التنفيذي بعد التدقيق
 
-1. تشغيل CI بعد Hotfix وتصحيح أي أخطاء تحليل أو اختبار.
-2. فحص الهاتف: backup مشفر، restore، Delete All، lock، وقراءة البيانات بعد إعادة التشغيل.
+1. ~~تشغيل CI بعد Hotfix وتصحيح أي أخطاء تحليل أو اختبار~~ ✅ منتهٍ (154 اختبارًا).
+2. جولة الهاتف الحالية بالترتيب: شاشة القفل واللوحة ونسيان الرمز والانتظار 30 ثانية وبوابة الإعدادات ← الأحلام (تختفي من العدد والبحث) ← الجلسات المجانية ← الإنجازات ← التصدير المشفر و Delete All ← جولة عربية + إنجليزية باللقطات.
 3. إضافة verifier موثوق للاشتراكات الشهرية والسنوية قبل منح Pro.
-4. تشغيل Release مع متغيرات AdMob وGoogle Play والتحقق من عدم استخدام Test IDs.
+4. تشغيل Release مع متغيرات AdMob و Google Play والتحقق من عدم استخدام Test IDs (يتطلب أسرار من صاحب الحساب).
 5. نشر `assetlinks.json` ببصمة Release واختبار App Links.
-6. تنفيذ R-Polish وR-Final QA ثم مراجعة المتجر والخصوصية.
+6. مرحلة تحسين الهيكل وإزالة التكرار (مؤجّلة غير ملغاة): قائمة 21 → 5، `push` ← `go` في overflow الشاشة الرئيسية، حذف `/gratitude` المكرر، `sage` → `motivation`، ودمج الرسائل (لا يحتاج هجرة بيانات).
+7. مراجعة المتجر والخصوصية.
 
 ## مراجع الكود الأساسية
 
