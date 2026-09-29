@@ -114,7 +114,7 @@ void main() {
         deriveKey: (pin, salt) async {
           final key = await EncryptionService()
               .deriveKeyFromPassword(password: pin, salt: salt);
-          return await key.extractBytes();
+          return Uint8List.fromList(await key.extractBytes());
         },
       );
       await secure.setPasscode('2468');
