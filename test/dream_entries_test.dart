@@ -116,14 +116,19 @@ void main() {
       expect(db.getMoodDistribution(), isEmpty);
     });
 
-    test('the free monthly limit is not filled by dreams', () async {
+    test('the free monthly limit counts entries, not dreams', () async {
       for (var i = 0; i < 7; i++) {
         await box.put('dream-$i', _dreamMap(id: 'dream-$i'));
       }
 
       expect(db.canCreateFreeEntry(), isTrue);
-      await db.addEntry(_entry());
+
+      for (var i = 0; i < 7; i++) {
+        await db.addEntry(_entry(id: 'entry-$i'));
+      }
       expect(db.canCreateFreeEntry(), isFalse);
+      await expectLater(db.addEntry(_entry(id: 'entry-8')),
+          throwsA(isA<EntryLimitExceededException>()));
     });
   });
 }

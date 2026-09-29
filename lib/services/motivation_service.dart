@@ -310,12 +310,19 @@ class AchievementService {
   }
 
   /// `gratitude_<y>_<m>_<d>` stands for a journal day; anything else in the
-  /// same prefix belongs to the garden or to an older writer.
+  /// same prefix belongs to the garden or to an older writer. The parts are
+  /// checked against the date they build because `DateTime.parse` happily
+  /// rolls an impossible day like `2026-9-31` into the next month.
   static DateTime? _journalDateFromKey(String key) {
     final parts = key.split('_');
     if (parts.length != 4) return null;
-    return DateTime.tryParse(
-        '${parts[1].padLeft(4, '0')}-${parts[2].padLeft(2, '0')}-${parts[3].padLeft(2, '0')}');
+    final year = int.tryParse(parts[1]);
+    final month = int.tryParse(parts[2]);
+    final day = int.tryParse(parts[3]);
+    if (year == null || month == null || day == null) return null;
+    final date = DateTime(year, month, day);
+    if (date.year != year || date.month != month || date.day != day) return null;
+    return date;
   }
 
   /// Unlocks every achievement the stats qualify for and returns the new ones.
