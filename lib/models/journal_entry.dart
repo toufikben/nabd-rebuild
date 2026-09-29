@@ -15,6 +15,10 @@ class JournalEntry {
   final bool isPinned;
   final String? location;
 
+  /// Dreams live in the same box as journal entries. The flag is what keeps
+  /// them out of the journal, the counts and the analytics.
+  final bool isDream;
+
   JournalEntry({
     String? id,
     required this.title,
@@ -28,6 +32,7 @@ class JournalEntry {
     this.isFavorite = false,
     this.isPinned = false,
     this.location,
+    this.isDream = false,
   }) : id = id ?? const Uuid().v4();
 
   Map<String, dynamic> toMap() => {
@@ -43,6 +48,7 @@ class JournalEntry {
         'isFavorite': isFavorite,
         'isPinned': isPinned,
         'location': location,
+        'isDream': isDream,
       };
 
   factory JournalEntry.fromMap(Map<dynamic, dynamic> map) => JournalEntry(
@@ -60,6 +66,7 @@ class JournalEntry {
         isFavorite: map['isFavorite'] == true,
         isPinned: map['isPinned'] == true,
         location: map['location']?.toString(),
+        isDream: map['isDream'] == true,
       );
 
   static List<String> _stringList(dynamic value) => value is Iterable
@@ -92,6 +99,7 @@ class JournalEntry {
           identical(audioPath, _unset) ? this.audioPath : audioPath as String?,
       isFavorite: isFavorite ?? this.isFavorite,
       isPinned: isPinned ?? this.isPinned,
+      isDream: isDream,
       location:
           identical(location, _unset) ? this.location : location as String?,
     );

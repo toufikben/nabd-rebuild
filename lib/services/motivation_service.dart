@@ -290,4 +290,22 @@ class AchievementService {
     final ids = unlockedIds..add(a.id);
     await _box.put('unlocked_achievements', ids.toList());
   }
+
+  /// Distinct gratitude journal days saved in [box]. The garden stores its
+  /// flowers under the same `gratitude_` prefix, so only day-shaped keys with
+  /// at least one non-empty line count.
+  static int gratitudeDayCount(Box box) {
+    throw UnimplementedError('gratitudeDayCount');
+  }
+
+  /// Unlocks every achievement the stats qualify for and returns the new ones.
+  Future<List<Achievement>> unlockEligible({
+    required int entries,
+    required int streak,
+    required int words,
+    required int moods,
+    required int gratitudeDays,
+  }) async {
+    throw UnimplementedError('unlockEligible');
+  }
 }
