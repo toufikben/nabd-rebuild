@@ -4,7 +4,6 @@
 // - يعتمد على BreathingEngine الحالي (R1.2-A). لا Engine جديد.
 // - يعرض BreathingCircle + RunnerControls.
 // - لا Activities حقيقية، لا TTS، ولا Audio مستقل داخل الشاشة.
-// - لا Riverpod: ValueListenableBuilder + listener واحد.
 // - لا Timer جديد داخل الشاشة.
 //
 // المسار المستقبلي: /sessions/run?id=<sessionId>
@@ -17,13 +16,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import '../../../core/l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 
+import '../../../services/monetization_service.dart';
 import '../data/sessions_data.dart';
 import '../engine/breathing_engine.dart';
 import '../engine/breathing_state.dart';
 import '../models/session.dart';
+import '../session_access.dart';
 import '../widgets/breathing_circle.dart';
 import '../widgets/runner_controls.dart';
 import '../../../services/audio_service.dart';
@@ -39,9 +41,7 @@ const Map<String, Color> _sessionAccentMap = <String, Color>{
   'teal': Color(0xFF16A085),
 };
 
-const bool _hasPremium = false;
-
-class SessionRunnerScreen extends StatefulWidget {
+class SessionRunnerScreen extends ConsumerStatefulWidget {
   const SessionRunnerScreen({
     super.key,
     required this.sessionId,
@@ -50,16 +50,16 @@ class SessionRunnerScreen extends StatefulWidget {
   final String sessionId;
 
   @override
-  State<SessionRunnerScreen> createState() => _SessionRunnerScreenState();
+  ConsumerState<SessionRunnerScreen> createState() =>
+      _SessionRunnerScreenState();
 }
 
-class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
+class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
   late AppLocalizations l10n;
   Session? _session;
   BreathingEngine? _engine;
 
   bool _invalid = false;
-  bool _premiumLocked = false;
   bool _completionHandled = false;
   bool _showSuccess = false;
   int? _ambientRequestId;
@@ -76,11 +76,12 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
     }
 
     _session = session;
+  }
 
-    if (!session.isFree && !_hasPremium) {
-      _premiumLocked = true;
-      return;
-    }
+  /// The engine only starts once the entitlement says the session is open, so
+  /// a Pro customer whose purchase resolves a frame late is not locked out.
+  void _ensureStarted(Session session) {
+    if (_engine != null) return;
 
     final engine = BreathingEngine(session.breathingPattern);
     _engine = engine;
@@ -229,11 +230,13 @@ class _SessionRunnerScreenState extends State<SessionRunnerScreen> {
       return _buildInvalid(context);
     }
 
-    if (_premiumLocked) {
+    final session = _session!;
+    final isPro = ref.watch(monetizationProvider).isPro;
+    if (sessionIsLocked(isFree: session.isFree, isPro: isPro)) {
       return _buildPremiumLocked(context);
     }
+    _ensureStarted(session);
 
-    final session = _session!;
     final engine = _engine!;
     final theme = Theme.of(context);
     final Color accent = _accentFor(context);

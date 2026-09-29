@@ -1,32 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/journal_entry.dart';
 import '../../services/database_service.dart';
 import '../../services/motivation_service.dart';
 
 /// AchievementsScreen — عرض الإنجازات.
-class AchievementsScreen extends ConsumerWidget {
+class AchievementsScreen extends ConsumerStatefulWidget {
   const AchievementsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AchievementsScreen> createState() =>
+      _AchievementsScreenState();
+}
+
+class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncProgress());
+  }
+
+  /// Opening an achievement is the screen's job: nothing else calls `unlock`,
+  /// so without this the list would stay empty forever.
+  Future<void> _syncProgress() async {
+    final stats = _userStats();
+    final fresh = await AchievementService().unlockEligible(
+      entries: stats['entries']!,
+      streak: stats['streak']!,
+      words: stats['words']!,
+      moods: stats['moods']!,
+      gratitudeDays: stats['gratitude']!,
+    );
+    if (fresh.isNotEmpty && mounted) setState(() {});
+  }
+
+  Map<String, int> _userStats() {
     final db = DatabaseService();
+    final entries = db.getAllEntries();
+
+    return {
+      'entries': entries.length,
+      'streak': _calculateStreak(entries),
+      'words': db.getWordCount(),
+      'moods': entries
+          .map((e) => e.mood)
+          .where((m) => m.isNotEmpty)
+          .toSet()
+          .length,
+      'gratitude': AchievementService.gratitudeDayCount(Hive.box('settings')),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final service = AchievementService();
 
-    final entries = db.getAllEntries();
     final unlocked = service.unlockedIds;
-
-    final userStats = {
-      'entries': entries.length,
-      'streak': _calculateStreak(),
-      'words': entries.fold<int>(
-          0, (sum, e) => sum + e.content.split(RegExp(r'\s+')).length),
-      'moods': entries.map((e) => e.mood).where((m) => m.isNotEmpty).toSet().length,
-      'gratitude': 0, // TODO: hook gratitude
-    };
+    final userStats = _userStats();
 
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).t('achievements.title'))),
@@ -168,9 +203,7 @@ class AchievementsScreen extends ConsumerWidget {
     return (current / a.requirement).clamp(0.0, 1.0);
   }
 
-  int _calculateStreak() {
-    final db = DatabaseService();
-    final entries = db.getAllEntries();
+  int _calculateStreak(List<JournalEntry> entries) {
     if (entries.isEmpty) return 0;
 
     final dates = entries

@@ -295,7 +295,27 @@ class AchievementService {
   /// flowers under the same `gratitude_` prefix, so only day-shaped keys with
   /// at least one non-empty line count.
   static int gratitudeDayCount(Box box) {
-    throw UnimplementedError('gratitudeDayCount');
+    var days = 0;
+    for (final key in box.keys) {
+      final name = key.toString();
+      if (!name.startsWith('gratitude_')) continue;
+      final date = _journalDateFromKey(name);
+      if (date == null) continue;
+      final raw = box.get(key);
+      if (raw is! Iterable) continue;
+      final hasText = raw.any((item) => item?.toString().trim().isNotEmpty ?? false);
+      if (hasText) days++;
+    }
+    return days;
+  }
+
+  /// `gratitude_<y>_<m>_<d>` stands for a journal day; anything else in the
+  /// same prefix belongs to the garden or to an older writer.
+  static DateTime? _journalDateFromKey(String key) {
+    final parts = key.split('_');
+    if (parts.length != 4) return null;
+    return DateTime.tryParse(
+        '${parts[1].padLeft(4, '0')}-${parts[2].padLeft(2, '0')}-${parts[3].padLeft(2, '0')}');
   }
 
   /// Unlocks every achievement the stats qualify for and returns the new ones.
@@ -306,6 +326,16 @@ class AchievementService {
     required int moods,
     required int gratitudeDays,
   }) async {
-    throw UnimplementedError('unlockEligible');
+    final fresh = checkNew(
+      entries: entries,
+      streak: streak,
+      words: words,
+      moods: moods,
+      gratitudeDays: gratitudeDays,
+    );
+    for (final achievement in fresh) {
+      await unlock(achievement);
+    }
+    return fresh;
   }
 }

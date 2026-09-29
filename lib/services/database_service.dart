@@ -54,8 +54,12 @@ class DatabaseService {
     }
   }
 
+  /// Dreams share this box with the journal, so every read here decides:
+  /// analytics, search, counts and the free monthly limit see journal entries
+  /// only. The dream screen reads the box itself.
   List<JournalEntry> getAllEntries() => entriesBox.values
       .map((e) => JournalEntry.fromMap(Map<dynamic, dynamic>.from(e as Map)))
+      .where((e) => !e.isDream)
       .toList()
     ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   List<JournalEntry> getEntriesForDate(DateTime date) => getAllEntries()
@@ -76,7 +80,7 @@ class DatabaseService {
 
   List<JournalEntry> getFavoriteEntries() =>
       getAllEntries().where((e) => e.isFavorite).toList();
-  int getEntryCount() => entriesBox.length;
+  int getEntryCount() => getAllEntries().length;
 
   int getCurrentMonthEntryCount([DateTime? now]) {
     final date = now ?? DateTime.now();
