@@ -30,7 +30,8 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
       final dateKey = key.toString();
       final raw = _box.get(key);
       if (raw is! List) continue;
-      final date = _dateFromKey(dateKey);
+      final date = journalDateFromKey(dateKey);
+      if (date == null) continue;
       for (final value in raw) {
         final text = value?.toString().trim() ?? '';
         if (text.isNotEmpty) {
@@ -233,16 +234,6 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
     );
   }
 
-  DateTime _dateFromKey(String key) {
-    final parts = key.split('_');
-    if (parts.length == 4) {
-      return DateTime.tryParse(
-              '${parts[1].padLeft(4, '0')}-${parts[2].padLeft(2, '0')}-${parts[3].padLeft(2, '0')}') ??
-          DateTime(1970);
-    }
-    return DateTime(1970);
-  }
-
   String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
 }
 
@@ -253,4 +244,14 @@ class _GratitudeItem {
 
   const _GratitudeItem(
       {required this.dateKey, required this.date, required this.text});
+}
+
+/// The date a `gratitude_<y>_<m>_<d>` key stands for, or null when the key is
+/// not a journal day. The garden saves its flowers under `gratitude_items`,
+/// which shares this prefix, so the shape of the key is what tells them apart.
+DateTime? journalDateFromKey(String key) {
+  final parts = key.split('_');
+  if (parts.length != 4) return null;
+  return DateTime.tryParse(
+      '${parts[1].padLeft(4, '0')}-${parts[2].padLeft(2, '0')}-${parts[3].padLeft(2, '0')}');
 }
