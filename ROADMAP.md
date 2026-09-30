@@ -2,8 +2,8 @@
 
 **آخر تحديث:** 2026-09-30 بعد تفعيل البناء الموقّع داخل المستودع وتحديث أدلة CI
 **الفرع:** `main`
-**آخر commit:** `dd992cf` — `docs(roadmap): record what the device round proved and the sheet overflow it found`
-**حالة التنفيذ:** `origin/main` أخضر في CI بـ 154 اختبارًا، وبناء Debug وRelease موقّع (APK/AAB) ناجحان، والتثبيت على هاتف Realme تم في جولة 2026-09-29
+**آخر commit موثّق:** `036a434` — `docs(roadmap): record the signed release pipeline and refresh CI evidence`
+**حالة التنفيذ:** `origin/main` أخضر في CI (التشغيل `36741511372`) بـ 154 اختبارًا، وبناء Debug وبناء Release موقّع (APK/AAB) ناجحان، والتثبيت على هاتف Realme تم في جولة 2026-09-29
 
 ## الحكم التنفيذي
 
@@ -72,10 +72,10 @@
 
 | التحقق | الحالة | الدليل |
 |---|---|---|
-| `flutter analyze` | ✅ نظيف | `No issues found! (ran in 17.6s)` في التشغيل `36618397448` |
+| `flutter analyze` | ✅ نظيف | `No issues found! (ran in 19.1s)` في التشغيل `36741511372` |
 | `flutter test` | ✅ 154 اختبارًا | `🎉 154 tests passed.` في نفس التشغيل |
-| بناء Debug APK/AAB | ✅ ناجح | `nabd-debug-apk` (126,582,822 بايت) و`nabd-debug-aab` في التشغيل `36618397448`؛ وقد حُمِّل الـAPK وثُبِّت على الهاتف في جولة 2026-09-29 |
-| بناء Release الموقّع (APK+AAB) | ✅ ناجح | مفعّل بمتغيّر المستودع `NABD_RELEASE_ENABLED=true` وأسرار التوقيع؛ ينتج `nabd-release-apk` (56,054,840 بايت) و`nabd-release-aab` (59,384,050 بايت) — التشغيل `36618397448` |
+| بناء Debug APK/AAB | ✅ ناجح | `nabd-debug-apk` (126,582,820 بايت) و`nabd-debug-aab` (105,906,868 بايت) في التشغيل `36741511372`؛ وقد حُمِّل الـAPK وثُبِّت على الهاتف في جولة 2026-09-29 |
+| بناء Release الموقّع (APK+AAB) | ✅ ناجح | مفعّل بمتغيّر المستودع `NABD_RELEASE_ENABLED=true` وأسرار التوقيع؛ ينتج `nabd-release-apk` (56,054,837 بايت) و`nabd-release-aab` (59,384,053 بايت) — التشغيل `36741511372` |
 | اختبار الهاتف | 🟡 بدأ | Realme RMX3910 (`IR7X5DJ7KZGEHMS8`, Android 16، لغة النظام `en-DZ` فالواجهة الإنجليزية صحيحة). ثبت على الجهاز: الإقلاع الأول ← البذرة ← الرئيسية، الإعدادات، بوابة الرمز عند تفعيل القفل، إنشاء الرمز على مرحلتين، الإقلاع البارد ← البصمة ← اللوحة، «Wrong passcode»، والفتح بالرمز الصحيح. لم يُفحص بعد: الأحلام، الجلسات، الإنجازات، جولة العربية. وُجد في فحص 2026-09-30 أن التطبيق لم يعد مثبتًا على الجهاز، فالجولة المتبقية تبدأ بإعادة تثبيت |
 | AdMob Android | ✅ جاهز | يُحقَن `ADMOB_ANDROID_APP_ID` و`ADMOB_ANDROID_REWARDED_ID` وقت بناء الـRelease من أسرار المستودع |
 | Google Play products | 🟡 جاهزة للحقن فقط | عبر `NABD_PRO_MONTHLY_ID` و `NABD_PRO_YEARLY_ID` و `NABD_LIFETIME_ID`، لكن verifier الاشتراكات غير موجود |
