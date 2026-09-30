@@ -1,9 +1,9 @@
 # خارطة طريق نبض — الحالة الموثقة
 
-**آخر تحديث:** 2026-09-29 بعد قفل كلمة السر وإصلاح عيوب التدقيق الثلاثة على الجهاز
+**آخر تحديث:** 2026-09-30 بعد تفعيل البناء الموقّع داخل المستودع وتحديث أدلة CI
 **الفرع:** `main`
-**آخر commit:** `e5ba5b3` — `fix: reject an impossible gratitude day and assert the limit against entries`
-**حالة التنفيذ:** `origin/main` أخضر في CI بـ 154 اختبارًا، وبناء Debug APK/AAB ناجح، والتثبيت على هاتف Realme تم
+**آخر commit:** `dd992cf` — `docs(roadmap): record what the device round proved and the sheet overflow it found`
+**حالة التنفيذ:** `origin/main` أخضر في CI بـ 154 اختبارًا، وبناء Debug وRelease موقّع (APK/AAB) ناجحان، والتثبيت على هاتف Realme تم في جولة 2026-09-29
 
 ## الحكم التنفيذي
 
@@ -22,7 +22,7 @@
 | 9 | R-Data & Security | ✅ منفذة (تدوير ذري مطبق) | التدوير يعيد تشفير كل الصناديق مع نسخ احتياطية `.rotating` وتراجع تلقائي عند الفشل؛ يلزم إثباته على جهاز حقيقي |
 | 10 | R-Monetization | 🟡 مجهزة جزئيًا | معرفات المنتجات قابلة للحقن، لكن Monthly/Yearly لا تمنح Pro قبل verifier خادمي |
 | 11 | R-Polish | 🟡 جارية | i18n للواجهة منتهٍ ✅، RTL يعمل ✅، App Icon ✅، صوت Splash موحّد ✅، تباين الوضع الليلي ✅؛ بقيت جُمل طبقة الخدمات |
-| 12 | R-Final QA | 🟡 جارية | CI أخضر بـ 154 اختبارًا ✅ وبناء Debug APK/AAB ✅ والتثبيت على Realme ✅؛ بقيت جولة الشاشات باللقطات، ثم Release signing و App Links |
+| 12 | R-Final QA | 🟡 جارية | CI أخضر بـ 154 اختبارًا ✅ وبناء Debug ✅ وبناء Release موقّع (APK/AAB) ✅ والتثبيت على Realme ✅؛ بقيت جولة الشاشات باللقطات، ثم App Links |
 
 ## R-Launch & Polish — سجل 2026-09-26
 
@@ -60,7 +60,7 @@
 
 ستة ملفات معدّلة محليًا ومقصورة على جهاز التطوير، ولا يجوز رفعها إلى `origin/main` لأنها تُغيّر إصدارات الأدوات التي يبني بها CI:
 `pubspec.yaml`، `pubspec.lock`، `analysis_options.yaml`، `android/gradle.properties`، `android/gradle/wrapper/gradle-wrapper.properties`، `android/app/build.gradle`.
-كذلك المجلدات والملفات المولّدة غير المتتبَّعة (`lib/l10n/generated/`، `ios/Flutter/`، `apk-out/`، `flutter_01.log`، `l10n_untranslated.txt`) تبقى خارج الـ commit.
+كذلك المجلدات والملفات المولّدة غير المتتبَّعة (`lib/l10n/generated/`، `ios/Flutter/`، `ios/Runner/GeneratedPluginRegistrant.*`، `apk-out/`، `flutter_01.log`، `l10n_untranslated.txt`) تبقى خارج الـ commit، وأُدرجت في `.gitignore` في 2026-09-30 حتى لا تُلتقط بالخطأ.
 
 ## شروط إغلاق Security
 
@@ -72,12 +72,12 @@
 
 | التحقق | الحالة | الدليل |
 |---|---|---|
-| `flutter analyze` | ✅ نظيف | `No issues found! (ran in 18.1s)` في التشغيل `36541628570` |
+| `flutter analyze` | ✅ نظيف | `No issues found! (ran in 17.6s)` في التشغيل `36618397448` |
 | `flutter test` | ✅ 154 اختبارًا | `🎉 154 tests passed.` في نفس التشغيل |
-| بناء Debug APK/AAB | ✅ ناجح | الـ artifact باسم `nabd-debug-apk` (23,403,627 بايت) حُمِّل وثُبِّت على الهاتف |
-| بناء Release الموقّع | ⏳ `skipped` بشكل مقصود | أسرار ومتغيرات التوقيع غير موجودة في المستودع، ولا يُسمح بإضافتها من هنا |
-| اختبار الهاتف | 🟡 بدأ | Realme RMX3910 (`IR7X5DJ7KZGEHMS8`, Android 16، لغة النظام `en-DZ` فالواجهة الإنجليزية صحيحة). ثبت على الجهاز: الإقلاع الأول ← البذرة ← الرئيسية، الإعدادات، بوابة الرمز عند تفعيل القفل، إنشاء الرمز على مرحلتين، الإقلاع البارد ← البصمة ← اللوحة، «Wrong passcode»، والفتح بالرمز الصحيح. لم يُفحص بعد: الأحلام، الجلسات، الإنجازات، جولة العربية |
-| AdMob Android | ✅ جاهز | بعد إضافة `ADMOB_ANDROID_APP_ID` و `ADMOB_ANDROID_REWARDED_ID` |
+| بناء Debug APK/AAB | ✅ ناجح | `nabd-debug-apk` (126,582,822 بايت) و`nabd-debug-aab` في التشغيل `36618397448`؛ وقد حُمِّل الـAPK وثُبِّت على الهاتف في جولة 2026-09-29 |
+| بناء Release الموقّع (APK+AAB) | ✅ ناجح | مفعّل بمتغيّر المستودع `NABD_RELEASE_ENABLED=true` وأسرار التوقيع؛ ينتج `nabd-release-apk` (56,054,840 بايت) و`nabd-release-aab` (59,384,050 بايت) — التشغيل `36618397448` |
+| اختبار الهاتف | 🟡 بدأ | Realme RMX3910 (`IR7X5DJ7KZGEHMS8`, Android 16، لغة النظام `en-DZ` فالواجهة الإنجليزية صحيحة). ثبت على الجهاز: الإقلاع الأول ← البذرة ← الرئيسية، الإعدادات، بوابة الرمز عند تفعيل القفل، إنشاء الرمز على مرحلتين، الإقلاع البارد ← البصمة ← اللوحة، «Wrong passcode»، والفتح بالرمز الصحيح. لم يُفحص بعد: الأحلام، الجلسات، الإنجازات، جولة العربية. وُجد في فحص 2026-09-30 أن التطبيق لم يعد مثبتًا على الجهاز، فالجولة المتبقية تبدأ بإعادة تثبيت |
+| AdMob Android | ✅ جاهز | يُحقَن `ADMOB_ANDROID_APP_ID` و`ADMOB_ANDROID_REWARDED_ID` وقت بناء الـRelease من أسرار المستودع |
 | Google Play products | 🟡 جاهزة للحقن فقط | عبر `NABD_PRO_MONTHLY_ID` و `NABD_PRO_YEARLY_ID` و `NABD_LIFETIME_ID`، لكن verifier الاشتراكات غير موجود |
 
 ## R-Final QA — سجل 2026-09-29
@@ -118,7 +118,7 @@
 1. ~~تشغيل CI بعد Hotfix وتصحيح أي أخطاء تحليل أو اختبار~~ ✅ منتهٍ (154 اختبارًا).
 2. جولة الهاتف الحالية بالترتيب: شاشة القفل واللوحة ونسيان الرمز والانتظار 30 ثانية وبوابة الإعدادات ← الأحلام (تختفي من العدد والبحث) ← الجلسات المجانية ← الإنجازات ← التصدير المشفر و Delete All ← جولة عربية + إنجليزية باللقطات.
 3. إضافة verifier موثوق للاشتراكات الشهرية والسنوية قبل منح Pro.
-4. تشغيل Release مع متغيرات AdMob و Google Play والتحقق من عدم استخدام Test IDs (يتطلب أسرار من صاحب الحساب).
+4. ~~تشغيل Release~~ ✅ صار البناء الموقّع ينتج artifacts داخل CI؛ يبقى التأكد أن معرّفات AdMob وGoogle Play إنتاجية لا تجريبية قبل النشر.
 5. نشر `assetlinks.json` ببصمة Release واختبار App Links.
 6. مرحلة تحسين الهيكل وإزالة التكرار (مؤجّلة غير ملغاة): قائمة 21 → 5، `push` ← `go` في overflow الشاشة الرئيسية، حذف `/gratitude` المكرر، `sage` → `motivation`، ودمج الرسائل (لا يحتاج هجرة بيانات).
 7. مراجعة المتجر والخصوصية.
