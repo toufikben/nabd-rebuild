@@ -45,6 +45,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final BiometricService _biometric = BiometricService();
 
   bool _notificationsEnabled = false;
+  bool _weeklyReview = false;
   bool _lockEnabled = false;
   int _lockTimeoutMinutes = 5;
   int _reminderHour = NotificationService.defaultHour;
@@ -57,6 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     _notificationsEnabled = NotificationService.isEnabled;
+    _weeklyReview = NotificationService.isWeeklyReviewEnabled;
     _reminderHour = NotificationService.hour;
     _reminderMinute = NotificationService.minute;
     _lockEnabled = _biometric.isLockEnabled();
@@ -183,6 +185,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
               onTap: _pickReminderTime,
             ),
+
+          SwitchListTile(
+            secondary: const Icon(Icons.calendar_view_week_outlined),
+            title: Text(l10n.t('settings.notify.weekly')),
+            subtitle: Text(l10n.t('settings.notify.weeklyHint')),
+            value: _weeklyReview,
+            onChanged: (value) => _setWeeklyReview(value, l10n),
+          ),
 
           // ─── Data ───
           _section(l10n.t('settings.section.data')),
@@ -610,6 +620,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await _scheduleReminder(l10n);
   }
 
+  Future<void> _setWeeklyReview(bool value, AppLocalizations l10n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (!value) {
+      await NotificationService.disableWeeklyReview();
+      if (mounted) setState(() => _weeklyReview = false);
+      return;
+    }
+    if (!await NotificationService.requestPermission()) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.notify.denied'))),
+      );
+      return;
+    }
+    try {
+      await NotificationService.enableWeeklyReview(
+        title: l10n.t('notify.weekly.title'),
+        body: l10n.t('notify.weekly.body'),
+      );
+      if (mounted) setState(() => _weeklyReview = true);
+    } catch (error) {
+      debugPrint('Weekly review could not be scheduled: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.notify.failed'))),
+      );
+    }
+  }
+
   Future<void> _scheduleReminder(AppLocalizations l10n) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -964,6 +1001,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await _biometric.setLockEnabled(false);
     try {
       await NotificationService.disableDailyReminder();
+      await NotificationService.disableWeeklyReview();
     } catch (_) {}
     DatabaseService.invalidate();
     VaultImage.clearCache();

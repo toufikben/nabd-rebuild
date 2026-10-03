@@ -725,6 +725,9 @@ class BackupService {
     'reminder_minute',
     'reminder_title',
     'reminder_body',
+    'weekly_review_enabled',
+    'weekly_review_title',
+    'weekly_review_body',
     'garden_growth_day',
     'garden_growth_today',
   };

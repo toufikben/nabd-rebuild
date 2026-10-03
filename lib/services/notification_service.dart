@@ -13,6 +13,10 @@ class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
 
   static const _dailyReminderId = 0;
+  static const _weeklyReviewId = 1;
+  static const weeklyEnabledKey = 'weekly_review_enabled';
+  static const weeklyTitleKey = 'weekly_review_title';
+  static const weeklyBodyKey = 'weekly_review_body';
   static const enabledKey = 'reminder_enabled';
   static const hourKey = 'reminder_hour';
   static const minuteKey = 'reminder_minute';
@@ -109,6 +113,17 @@ class NotificationService {
   /// Re-applies the stored reminder. Called on launch so a changed time zone
   /// or a reinstall of the plugin state never leaves the switch lying.
   static Future<void> restoreScheduledReminder() async {
+    if (isWeeklyReviewEnabled) {
+      final title = _settings.get(weeklyTitleKey);
+      final body = _settings.get(weeklyBodyKey);
+      if (title is String && body is String) {
+        try {
+          await _scheduleWeekly(title, body);
+        } catch (error) {
+          debugPrint('Weekly review could not be rescheduled: $error');
+        }
+      }
+    }
     if (!isEnabled) return;
     final title = _settings.get(titleKey);
     final body = _settings.get(bodyKey);
@@ -144,6 +159,104 @@ class NotificationService {
       // late is fine, and exact alarms are reserved for alarm-clock apps.
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  // ─── Letters to the future ─────────────────────────────────────────────
+
+  /// A stable notification id per letter, clear of the fixed ids above.
+  static int letterNotificationId(String letterId) {
+    var hash = 0;
+    for (final unit in letterId.codeUnits) {
+      hash = (hash * 31 + unit) & 0x3fffffff;
+    }
+    return 1000 + hash % 1000000;
+  }
+
+  /// Announces a letter to the future on the day it opens. The text is
+  /// generic so the lock screen never shows what was written.
+  static Future<void> scheduleLetterUnlock({
+    required String letterId,
+    required DateTime opensAt,
+    required String title,
+    required String body,
+  }) async {
+    final when = tz.TZDateTime(
+      tz.local,
+      opensAt.year,
+      opensAt.month,
+      opensAt.day,
+      9,
+    );
+    if (!when.isAfter(tz.TZDateTime.now(tz.local))) return;
+    try {
+      await _plugin.zonedSchedule(
+        letterNotificationId(letterId),
+        title,
+        body,
+        when,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'letters',
+            'Letters to the future',
+            importance: Importance.defaultImportance,
+          ),
+          iOS: DarwinNotificationDetails(),
+        ),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    } catch (error) {
+      debugPrint('Letter notification not scheduled: $error');
+    }
+  }
+
+  static Future<void> cancelLetterUnlock(String letterId) =>
+      _plugin.cancel(letterNotificationId(letterId));
+
+  // ─── Weekly review ─────────────────────────────────────────────────────
+
+  static bool get isWeeklyReviewEnabled =>
+      _settings.get(weeklyEnabledKey, defaultValue: false) == true;
+
+  /// Every Sunday evening: the week's pulse is ready to read.
+  static Future<void> enableWeeklyReview({
+    required String title,
+    required String body,
+  }) async {
+    await _settings.putAll({
+      weeklyEnabledKey: true,
+      weeklyTitleKey: title,
+      weeklyBodyKey: body,
+    });
+    await _scheduleWeekly(title, body);
+  }
+
+  static Future<void> disableWeeklyReview() async {
+    await _settings.put(weeklyEnabledKey, false);
+    await _plugin.cancel(_weeklyReviewId);
+  }
+
+  static Future<void> _scheduleWeekly(String title, String body) {
+    final now = tz.TZDateTime.now(tz.local);
+    var when = tz.TZDateTime(tz.local, now.year, now.month, now.day, 18);
+    while (when.weekday != DateTime.sunday || !when.isAfter(now)) {
+      when = when.add(const Duration(days: 1));
+    }
+    return _plugin.zonedSchedule(
+      _weeklyReviewId,
+      title,
+      body,
+      when,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'weekly_review',
+          'Weekly review',
+          importance: Importance.defaultImportance,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
   }
 

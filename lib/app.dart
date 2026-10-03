@@ -7,6 +7,7 @@ import 'core/router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'services/biometric_service.dart';
+import 'services/home_widget_service.dart';
 import 'services/settings_service.dart';
 
 class NabdApp extends ConsumerStatefulWidget {
@@ -23,6 +24,7 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshWidget());
   }
 
   @override
@@ -42,6 +44,7 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
       return;
     }
     if (state == AppLifecycleState.resumed) {
+      _refreshWidget();
       final shouldLock = _biometric.shouldShowLock();
       if (shouldLock) {
         // Pushed on top, so whatever was open (a half-written entry) is
@@ -51,6 +54,14 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
         _biometric.clearBackgrounded();
       }
     }
+  }
+
+  /// Keeps the home-screen widget's streak and prompt current; a new day
+  /// changes both even when nothing was written.
+  void _refreshWidget() {
+    final context = router.routerDelegate.navigatorKey.currentContext;
+    if (context == null) return;
+    HomeWidgetService.refresh(AppLocalizations.of(context));
   }
 
   @override

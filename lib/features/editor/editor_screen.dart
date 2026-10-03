@@ -13,11 +13,13 @@ import 'package:uuid/uuid.dart';
 import '../../core/constants.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/storage.dart';
+import '../../core/writing_prompts.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../models/tag.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
+import '../../services/home_widget_service.dart';
 import '../../services/media_vault.dart';
 import '../../services/motivation_service.dart';
 import '../../services/voice_to_text_service.dart';
@@ -372,7 +374,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   Future<void> _leave() async {
     _leaving = true;
     await _db.discardDraftMedia(_sessionMedia.toList());
-    if (mounted) context.pop();
+    if (!mounted) return;
+    unawaited(HomeWidgetService.refresh(AppLocalizations.of(context)));
+    context.pop();
   }
 
   // ─── Entry actions ────────────────────────────────────────────────────
@@ -737,7 +741,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     textCapitalization: TextCapitalization.sentences,
                     style: theme.textTheme.bodyLarge?.copyWith(height: 1.8),
                     decoration: InputDecoration(
-                      hintText: l10n.t('editor.body.hint'),
+                      hintText: _isNewEntry
+                          ? WritingPrompts.today(l10n)
+                          : l10n.t('editor.body.hint'),
+                      hintMaxLines: 3,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
