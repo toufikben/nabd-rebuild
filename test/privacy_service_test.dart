@@ -23,6 +23,11 @@ class _RotatingEncryption extends EncryptionService {
   Future<void> restoreKeyBytes(List<int> bytes) async {
     key = List<int>.from(bytes);
   }
+
+  final secrets = <String, String>{'nabd_media_key_v1': 'stale'};
+
+  @override
+  Future<void> deleteSecret(String key) async => secrets.remove(key);
 }
 
 void main() {
@@ -62,5 +67,6 @@ void main() {
       expect(reopened.isEmpty, isTrue);
     }
     expect(await media.exists(), isFalse);
+    expect(encryption.secrets.containsKey('nabd_media_key_v1'), isFalse);
   });
 }

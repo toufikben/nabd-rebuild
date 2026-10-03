@@ -85,4 +85,33 @@ class ContentBoxMigration {
     await settings.deleteAll(keys);
     return keys.length;
   }
+
+  /// Time capsules and letters to the future were the same idea kept in two
+  /// places. Capsules become future letters that open on the same date.
+  static Future<int> foldTimeCapsules(Box content) async {
+    final capsules = content.get(ContentKeys.timeCapsules);
+    if (capsules is! Iterable) return 0;
+    final raw = content.get(ContentKeys.futureLetters);
+    final letters = <Map<dynamic, dynamic>>[
+      if (raw is Iterable) ...raw.whereType<Map>(),
+    ];
+    final known = letters.map((letter) => letter['id']?.toString()).toSet();
+    var folded = 0;
+    for (final capsule in capsules.whereType<Map>()) {
+      final id = capsule['id']?.toString() ?? '';
+      if (id.isEmpty || known.contains(id)) continue;
+      final title = capsule['title']?.toString().trim() ?? '';
+      final body = capsule['content']?.toString().trim() ?? '';
+      letters.add({
+        'id': id,
+        'text': title.isEmpty ? body : '$title\n\n$body',
+        'createdAt': capsule['createdAt'],
+        'unlockDate': capsule['unlockAt'],
+      });
+      folded++;
+    }
+    await content.put(ContentKeys.futureLetters, letters);
+    await content.delete(ContentKeys.timeCapsules);
+    return folded;
+  }
 }

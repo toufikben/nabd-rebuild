@@ -69,4 +69,27 @@ void main() {
     expect(content.get('worry_box')[0]['id'], 'new');
     expect(settings.containsKey('worry_box'), isFalse);
   });
+
+  test('time capsules become letters to the future', () async {
+    await content.put('future_letters', [
+      {'id': 'f1', 'text': 'hello', 'unlockDate': '2027-01-01T00:00:00.000'},
+    ]);
+    await content.put('time_capsules', [
+      {
+        'id': 'c1',
+        'title': 'Open me',
+        'content': 'remember today',
+        'createdAt': '2026-10-01T00:00:00.000',
+        'unlockAt': '2027-10-01T00:00:00.000',
+      },
+    ]);
+
+    expect(await ContentBoxMigration.foldTimeCapsules(content), 1);
+    expect(content.containsKey('time_capsules'), isFalse);
+    final letters = content.get('future_letters') as List;
+    expect(letters, hasLength(2));
+    expect(letters.last['text'], 'Open me\n\nremember today');
+    expect(letters.last['unlockDate'], '2027-10-01T00:00:00.000');
+    expect(await ContentBoxMigration.foldTimeCapsules(content), 0);
+  });
 }

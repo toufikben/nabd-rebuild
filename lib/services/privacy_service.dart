@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'encryption_service.dart';
+import 'media_vault.dart';
 import '../core/storage.dart';
 
 /// Deletes all user-owned local data and creates a fresh Hive key only after
@@ -45,12 +46,14 @@ class PrivacyService {
       await _verifyOpenBoxes();
 
       final docs = await _documentsDirectory();
-      for (final directoryName in ['images', 'audio']) {
+      for (final directoryName in [MediaVault.imagesDir, MediaVault.audioDir]) {
         final directory = Directory('${docs.path}/$directoryName');
         if (await directory.exists()) {
           await directory.delete(recursive: true);
         }
       }
+      // The media it protected is gone; the next photo gets a fresh key.
+      await encryption.deleteMediaKey();
     } catch (_) {
       await _rollback(oldKey, snapshots);
       rethrow;

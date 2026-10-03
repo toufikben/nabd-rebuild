@@ -29,6 +29,11 @@ class EncryptionService {
   );
 
   static const _keyAlias = 'nabd_master_key_v1';
+
+  /// Photos and voice notes have their own key, so rotating the journal key
+  /// never has to rewrite every media file.
+  static const _mediaKeyAlias = 'nabd_media_key_v1';
+  static SecretKey? _cachedMediaKey;
   static const _iterations = 100000;
 
   static final _algorithm = AesGcm.with256bits();
@@ -55,9 +60,34 @@ class EncryptionService {
   /// created earlier must not keep using the key it cached before.
   static SecretKey? _cachedKey;
 
-  /// Forgets the cached key so each test starts from what storage holds.
+  /// Forgets the cached keys so each test starts from what storage holds.
   @visibleForTesting
-  static void resetCachedKey() => _cachedKey = null;
+  static void resetCachedKey() {
+    _cachedKey = null;
+    _cachedMediaKey = null;
+  }
+
+  /// The media key, created on first use. Losing it only costs media that
+  /// was encrypted with it, which is why Delete All removes both together.
+  Future<SecretKey> mediaKey() async {
+    final cached = _cachedMediaKey;
+    if (cached != null) return cached;
+    final stored = await readSecret(_mediaKeyAlias);
+    if (stored != null) {
+      final bytes = base64Decode(stored);
+      if (bytes.length != 32) throw const InvalidEncryptionKeyException();
+      return _cachedMediaKey = SecretKey(bytes);
+    }
+    final fresh = await _algorithm.newSecretKey();
+    await writeSecret(_mediaKeyAlias, base64Encode(await fresh.extractBytes()));
+    return _cachedMediaKey = fresh;
+  }
+
+  /// Forgets the media key after every media file was deleted.
+  Future<void> deleteMediaKey() async {
+    await deleteSecret(_mediaKeyAlias);
+    _cachedMediaKey = null;
+  }
 
   /// تهيئة المفتاح — يُستدعى مرة واحدة عند بدء التطبيق.
   ///

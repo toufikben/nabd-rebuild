@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
 import 'core/storage.dart';
+import 'services/database_service.dart';
 import 'services/encryption_service.dart';
 import 'services/notification_service.dart';
 import 'services/database_migration_service.dart';
@@ -41,6 +42,7 @@ Future<void> main() async {
       settings: Hive.box(HiveBoxes.settings),
       content: Hive.box(HiveBoxes.content),
     );
+    await ContentBoxMigration.foldTimeCapsules(Hive.box(HiveBoxes.content));
   } catch (_) {
     storageError = const Object();
   }
@@ -64,6 +66,12 @@ Future<void> main() async {
 }
 
 Future<void> _initializeDeferredServices() async {
+  // Older photos and voice notes are plain files with absolute paths; move
+  // them into the encrypted vault in the background.
+  unawaited(DatabaseService().encryptLegacyMedia().catchError((Object error) {
+    debugPrint('Legacy media encryption failed: $error');
+    return 0;
+  }));
   await NotificationService.init();
   await NotificationService.restoreScheduledReminder();
   await SettingsService.init();
