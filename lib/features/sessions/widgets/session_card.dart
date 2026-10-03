@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../services/monetization_service.dart';
 import '../models/session.dart';
+import '../session_access.dart';
 
 const Map<String, Color> _sessionAccentMap = <String, Color>{
   'red': Color(0xFFE74C3C),
@@ -13,7 +16,7 @@ const Map<String, Color> _sessionAccentMap = <String, Color>{
   'teal': Color(0xFF16A085),
 };
 
-class SessionCard extends StatelessWidget {
+class SessionCard extends ConsumerWidget {
   const SessionCard({
     super.key,
     required this.session,
@@ -29,7 +32,11 @@ class SessionCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool locked = sessionIsLocked(
+      isFree: session.isFree,
+      isPro: ref.watch(monetizationProvider.select((state) => state.isPro)),
+    );
     final ThemeData theme = Theme.of(context);
     final Color accent = _accentFor(context);
     final bool isDark = theme.brightness == Brightness.dark;
@@ -76,7 +83,7 @@ class SessionCard extends StatelessWidget {
                   color: theme.colorScheme.onSurface,
                 ),
               ),
-              if (!session.isFree) ...<Widget>[
+              if (locked) ...<Widget>[
                 const SizedBox(height: 6),
                 Icon(
                   Icons.lock_outline_rounded,
