@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/l10n/app_localizations.dart';
+import '../../core/streak.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
@@ -390,9 +391,9 @@ class _StatsSummary {
 
     final now = DateTime.now();
     final today = _dateOnly(now);
-    final currentStreak =
-        dates.contains(today) ? _streakEndingAt(dates, today) : 0;
-    final longestStreak = _longestStreak(dates);
+    final moments = entries.map((entry) => entry.createdAt);
+    final currentStreak = StreakCalculator.current(moments, now: now);
+    final longestStreak = StreakCalculator.longest(moments);
     final moodCounts = <String, int>{};
     for (final entry in entries) {
       if (Mood.journalMoods.any((mood) => mood.id == entry.mood)) {
@@ -435,32 +436,6 @@ class _StatsSummary {
   static int _completedSessions() {
     final raw = Hive.box('settings').get('sessions_completed_total');
     return raw is int ? raw : 0;
-  }
-
-  static int _streakEndingAt(List<DateTime> dates, DateTime end) {
-    final available = dates.toSet();
-    var length = 0;
-    var date = end;
-    while (available.contains(date)) {
-      length++;
-      date = date.subtract(const Duration(days: 1));
-    }
-    return length;
-  }
-
-  static int _longestStreak(List<DateTime> dates) {
-    if (dates.isEmpty) return 0;
-    var longest = 1;
-    var current = 1;
-    for (var i = 1; i < dates.length; i++) {
-      if (dates[i].difference(dates[i - 1]).inDays == 1) {
-        current++;
-        if (current > longest) longest = current;
-      } else {
-        current = 1;
-      }
-    }
-    return longest;
   }
 
   static Map<String, int> _countWords(List<JournalEntry> entries) {

@@ -59,4 +59,28 @@ void main() {
       expect(tags, contains('work'));
     });
   });
+
+  group('Arabic analysis', () {
+    final ai = LocalAIService();
+
+    test('a definite article or a conjunction still matches', () {
+      expect(ai.analyzeSentiment('شعرت بالسعادة والفرح'), greaterThan(0));
+      expect(ai.analyzeSentiment('غلبني الحزن'), lessThan(0));
+    });
+
+    test('a two-letter word counts', () {
+      expect(ai.analyzeSentiment('حب'), greaterThan(0));
+    });
+
+    test('hamza and taa marbuta spellings are folded together', () {
+      expect(LocalAIService.normalizeArabic('أمل إيمان آمال'), 'امل ايمان امال');
+      expect(LocalAIService.normalizeArabic('سعادة'), 'سعاده');
+      expect(ai.analyzeSentiment('أشعر بالطمأنينة'), greaterThan(0));
+    });
+
+    test('negation flips the meaning', () {
+      expect(ai.analyzeSentiment('لست سعيدا اليوم'), lessThan(0));
+      expect(ai.analyzeSentiment('I am not happy'), lessThan(0));
+    });
+  });
 }

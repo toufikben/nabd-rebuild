@@ -1,5 +1,8 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../core/streak.dart';
+import '../models/journal_entry.dart';
+
 /// MotivationService — الاقتباسات + الإنجازات + التحديات.
 class MotivationService {
   /// اقتباسات محلية.
@@ -323,6 +326,45 @@ class AchievementService {
     final date = DateTime(year, month, day);
     if (date.year != year || date.month != month || date.day != day) return null;
     return date;
+  }
+
+  /// The progress numbers every achievement is judged on, from the journal as
+  /// it is now. The streak is the longest run ever, so a past week of writing
+  /// is never "un-earned" by a missed day.
+  static Map<String, int> progressFor(List<JournalEntry> entries, Box settings) {
+    return {
+      'entries': entries.length,
+      'streak': StreakCalculator.longest(entries.map((e) => e.createdAt)),
+      'words': entries.fold<int>(
+        0,
+        (sum, e) => sum +
+            (e.content.trim().isEmpty
+                ? 0
+                : e.content.trim().split(RegExp(r'\s+')).length),
+      ),
+      'moods': entries
+          .map((e) => e.mood)
+          .where((m) => m.isNotEmpty)
+          .toSet()
+          .length,
+      'gratitude': gratitudeDayCount(settings),
+    };
+  }
+
+  /// Unlocks whatever the journal now qualifies for. The single caller-facing
+  /// entry point, used after a save and when the achievements screen opens.
+  Future<List<Achievement>> unlockFromJournal(
+    List<JournalEntry> entries,
+    Box settings,
+  ) {
+    final progress = progressFor(entries, settings);
+    return unlockEligible(
+      entries: progress['entries']!,
+      streak: progress['streak']!,
+      words: progress['words']!,
+      moods: progress['moods']!,
+      gratitudeDays: progress['gratitude']!,
+    );
   }
 
   /// Unlocks every achievement the stats qualify for and returns the new ones.

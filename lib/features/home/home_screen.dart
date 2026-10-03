@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/data_revision.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/streak.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -377,22 +378,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
   }
 
-  int _calculateStreak() {
-    final entries = _db.getAllEntries();
-    if (entries.isEmpty) return 0;
-
-    final dates = entries
-        .map((e) =>
-            DateTime(e.createdAt.year, e.createdAt.month, e.createdAt.day))
-        .toSet();
-    var streak = 0;
-    var date = DateTime.now();
-    while (dates.contains(DateTime(date.year, date.month, date.day))) {
-      streak++;
-      date = date.subtract(const Duration(days: 1));
-    }
-    return streak;
-  }
+  int _calculateStreak() => StreakCalculator.current(
+        _db.getAllEntries().map((e) => e.createdAt),
+      );
 
   Widget _statCard(IconData icon, String value, String label) {
     return Expanded(

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
@@ -253,32 +254,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     }
 
     try {
-      final entries = _db.getAllEntries();
-      final dates = entries
-          .map((item) => DateTime(
-              item.createdAt.year, item.createdAt.month, item.createdAt.day))
-          .toSet();
-      var streak = 0;
-      var day = DateTime.now();
-      while (dates.contains(DateTime(day.year, day.month, day.day))) {
-        streak++;
-        day = day.subtract(const Duration(days: 1));
-      }
-      final service = AchievementService();
-      final newAchievements = service.checkNew(
-        entries: entries.length,
-        streak: streak,
-        words: _db.getWordCount(),
-        moods: entries
-            .map((item) => item.mood)
-            .where((mood) => mood.isNotEmpty)
-            .toSet()
-            .length,
-        gratitudeDays: 0,
+      await AchievementService().unlockFromJournal(
+        _db.getAllEntries(),
+        Hive.box('settings'),
       );
-      for (final achievement in newAchievements) {
-        await service.unlock(achievement);
-      }
     } catch (error) {
       debugPrint('Achievement evaluation failed after journal save: $error');
     }

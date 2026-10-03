@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/journal_entry.dart';
+import '../models/mood.dart';
 import '../models/seed.dart';
 import 'local_ai_service.dart';
 
@@ -73,13 +74,21 @@ class GardenService extends StateNotifier<GardenState> {
     return planted;
   }
 
-  /// "سقي" البذرة بعد كتابة مذكرة.
+  /// The most growth one day of writing can give, so the garden rewards a
+  /// daily habit rather than many short entries in one sitting.
+  static const dailyGrowthCap = 12;
+  static const _growthDayKey = 'garden_growth_day';
+  static const _growthTodayKey = 'garden_growth_today';
+
+  /// Waters the neediest seed after a journal entry is saved.
   ///
-  /// المنطق:
-  ///   • مذكرة عادية → +2 نقاط نمو
-  ///   • مذكرة إيجابية → +5 نقاط
-  ///   • مذكرة سلبية → لا نمو + تحتاج للترطيب
-  ///   • 3 جمل إيجابية → +8 نقاط
+  /// The garden rewards the act of writing, never the mood: an honest entry on
+  /// a hard day grows the seed as much as a happy one, and is acknowledged
+  /// with extra care instead of being treated as a drought.
+  ///   • any entry → +3
+  ///   • a longer entry → +2 (over 100 words) or +5 (over 300 words)
+  ///   • a hard day (negative mood or tone) → +2 care
+  ///   • at most [dailyGrowthCap] points a day across all entries
   Future<WateringResult> water(JournalEntry entry) async {
     if (state.seeds.isEmpty) {
       return const WateringResult(
@@ -88,7 +97,6 @@ class GardenService extends StateNotifier<GardenState> {
       );
     }
 
-    // Find the most needy seed
     final target = _findTargetSeed();
     if (target == null) {
       return const WateringResult(
@@ -97,34 +105,31 @@ class GardenService extends StateNotifier<GardenState> {
       );
     }
 
-    // Analyze entry
     final sentiment = _ai.analyzeSentiment(entry.content);
-    final wordCount = entry.content.split(RegExp(r'\s+')).length;
+    final trimmed = entry.content.trim();
+    final wordCount = trimmed.isEmpty ? 0 : trimmed.split(RegExp(r'\s+')).length;
+    final hardDay = sentiment < -0.1 ||
+        Mood.getById(entry.mood)?.category == 'negative';
 
-    int growth;
-    String messageKey;
-
-    if (sentiment > 0.3) {
-      // Positive entry
-      growth = 5;
-      messageKey = 'garden.water.growing';
-    } else if (sentiment > 0.1) {
-      // Slightly positive
-      growth = 3;
-      messageKey = 'garden.water.gentle';
-    } else if (sentiment > -0.1) {
-      // Neutral
-      growth = 2;
-      messageKey = 'garden.water.drizzle';
-    } else {
-      // Negative
-      growth = 0;
-      messageKey = 'garden.water.needsLove';
+    var growth = 3;
+    if (wordCount > 300) {
+      growth += 5;
+    } else if (wordCount > 100) {
+      growth += 2;
     }
+    if (hardDay) growth += 2;
 
-    // Bonus for longer entries
-    if (wordCount > 100) growth += 2;
-    if (wordCount > 300) growth += 3;
+    var messageKey = hardDay
+        ? 'garden.water.care'
+        : sentiment > 0.3
+            ? 'garden.water.growing'
+            : sentiment > 0.1
+                ? 'garden.water.gentle'
+                : 'garden.water.drizzle';
+
+    final allowed = _consumeDailyGrowth(growth);
+    if (allowed == 0) messageKey = 'garden.water.rested';
+    growth = allowed;
 
     final now = DateTime.now();
     final today = now.year * 10000 + now.month * 100 + now.day;
@@ -135,7 +140,8 @@ class GardenService extends StateNotifier<GardenState> {
 
     final updated = target.copyWith(
       growthPoints: newPoints,
-      daysCared: target.daysCared + (growth > 0 ? 1 : 0),
+      daysCared: target.daysCared +
+          (growth > 0 && target.lastWateredDay != today ? 1 : 0),
       lastWateredDay: today,
       isComplete: isNowComplete,
       completionCertificate:
@@ -152,6 +158,23 @@ class GardenService extends StateNotifier<GardenState> {
       isComplete: isNowComplete && !wasComplete,
       seed: updated,
     );
+  }
+
+  /// Takes up to [wanted] points from today's allowance and returns what was
+  /// granted.
+  int _consumeDailyGrowth(int wanted) {
+    final settings = Hive.box('settings');
+    final now = DateTime.now();
+    final today = now.year * 10000 + now.month * 100 + now.day;
+    final usedToday = settings.get(_growthDayKey) == today
+        ? (settings.get(_growthTodayKey) as num?)?.toInt() ?? 0
+        : 0;
+    final granted = (dailyGrowthCap - usedToday).clamp(0, wanted);
+    unawaited(settings.putAll({
+      _growthDayKey: today,
+      _growthTodayKey: usedToday + granted,
+    }));
+    return granted;
   }
 
   /// حذف بذرة.
@@ -174,10 +197,9 @@ class GardenService extends StateNotifier<GardenState> {
   }
 
   String _generateCertificate(PlantedSeed seed) {
-    return 'Certificate of Growth\n'
-        'Awarded to: You\n'
-        'Date: ${DateTime.now().toIso8601String()}\n'
-        'For nurturing a ${seed.seed?.nameEn ?? "seed"} to full bloom.';
+    // Stored as data, rendered through the string table by the screen.
+    return 'garden.certificate|${seed.seedTypeId}|'
+        '${DateTime.now().toIso8601String()}';
   }
 
   /// إحصائيات الحديقة.

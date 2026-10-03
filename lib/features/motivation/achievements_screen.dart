@@ -5,7 +5,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
-import '../../models/journal_entry.dart';
 import '../../services/database_service.dart';
 import '../../services/motivation_service.dart';
 
@@ -28,33 +27,17 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   /// Opening an achievement is the screen's job: nothing else calls `unlock`,
   /// so without this the list would stay empty forever.
   Future<void> _syncProgress() async {
-    final stats = _userStats();
-    final fresh = await AchievementService().unlockEligible(
-      entries: stats['entries']!,
-      streak: stats['streak']!,
-      words: stats['words']!,
-      moods: stats['moods']!,
-      gratitudeDays: stats['gratitude']!,
+    final fresh = await AchievementService().unlockFromJournal(
+      DatabaseService().getAllEntries(),
+      Hive.box('settings'),
     );
     if (fresh.isNotEmpty && mounted) setState(() {});
   }
 
-  Map<String, int> _userStats() {
-    final db = DatabaseService();
-    final entries = db.getAllEntries();
-
-    return {
-      'entries': entries.length,
-      'streak': _calculateStreak(entries),
-      'words': db.getWordCount(),
-      'moods': entries
-          .map((e) => e.mood)
-          .where((m) => m.isNotEmpty)
-          .toSet()
-          .length,
-      'gratitude': AchievementService.gratitudeDayCount(Hive.box('settings')),
-    };
-  }
+  Map<String, int> _userStats() => AchievementService.progressFor(
+        DatabaseService().getAllEntries(),
+        Hive.box('settings'),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -201,21 +184,5 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   double _progressFor(Achievement a, Map<String, int> stats) {
     final current = stats[a.requirementType] ?? 0;
     return (current / a.requirement).clamp(0.0, 1.0);
-  }
-
-  int _calculateStreak(List<JournalEntry> entries) {
-    if (entries.isEmpty) return 0;
-
-    final dates = entries
-        .map((e) => DateTime(e.createdAt.year, e.createdAt.month, e.createdAt.day))
-        .toSet();
-
-    var streak = 0;
-    var date = DateTime.now();
-    while (dates.contains(DateTime(date.year, date.month, date.day))) {
-      streak++;
-      date = date.subtract(const Duration(days: 1));
-    }
-    return streak;
   }
 }

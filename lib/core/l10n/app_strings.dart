@@ -251,8 +251,9 @@ class S {
     'garden.water.growing': 'بذرتك تنمو بشكل جميل! 🌱',
     'garden.water.gentle': 'حصلت بذرتك على رشة لطيفة 💧',
     'garden.water.drizzle': 'تلقت بذرتك رذاذًا خفيفًا 🌦️',
-    'garden.water.needsLove':
-        'تحتاج بذرتك إلى عناية. جرّب كتابة ٣ أشياء جميلة 💗',
+    'garden.water.care':
+        'كتبتَ في يوم صعب، وهذه شجاعة. سقيتُ بذرتك بعناية مضاعفة 💗',
+    'garden.water.rested': 'ارتوت حديقتك اليوم بما يكفي. عُد غدًا لتنمو أكثر 🌙',
     'garden.water.noSeed': 'ازرع بذرة أولًا',
     'garden.water.noTargets': 'لا توجد بذور تحتاج إلى سقي',
     'common.all': 'الكل',
@@ -944,8 +945,9 @@ class S {
     'garden.water.growing': 'Your seed is growing beautifully! 🌱',
     'garden.water.gentle': 'Your seed got a gentle shower 💧',
     'garden.water.drizzle': 'Your seed received a light drizzle 🌦️',
-    'garden.water.needsLove':
-        'Your seed needs love. Try writing 3 beautiful things 💗',
+    'garden.water.care':
+        'You wrote on a hard day, and that takes courage. Your seed got extra care 💗',
+    'garden.water.rested': 'Your garden has had enough water today. Come back tomorrow 🌙',
     'garden.water.noSeed': 'Plant a seed first',
     'garden.water.noTargets': 'No seeds to water',
     'common.all': 'All',
