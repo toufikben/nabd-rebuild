@@ -1,6 +1,11 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 
+/// Lock timeout values stored in settings: [lockImmediately] locks on every
+/// return from the background, [lockNever] only on a cold start.
+const lockImmediately = -1;
+const lockNever = 0;
+
 class AppLockPolicy {
   AppLockPolicy({DateTime Function()? now}) : _now = now ?? DateTime.now;
 
@@ -42,7 +47,10 @@ class AppLockPolicy {
     if (coldStart) return _coldStartPending;
 
     final backgroundedAt = _backgroundedAt;
-    if (backgroundedAt == null || timeoutMinutes <= 0) return false;
+    if (backgroundedAt == null) return false;
+    // A negative timeout locks as soon as the app has been in the background.
+    if (timeoutMinutes < 0) return true;
+    if (timeoutMinutes == 0) return false;
     return _now().difference(backgroundedAt) >=
         Duration(minutes: timeoutMinutes);
   }
@@ -53,6 +61,20 @@ class BiometricService {
   final LocalAuthentication _auth = LocalAuthentication();
   static final AppLockPolicy _policy = AppLockPolicy();
   String? lastAuthenticationError;
+
+  /// Where the user was going when the lock stepped in, so unlocking returns
+  /// there instead of always to the journal.
+  static String? pendingLocation;
+
+  /// Whether the phone can prove its owner at all: a fingerprint, a face or
+  /// the device PIN, pattern or password.
+  Future<bool> canAuthenticate() async {
+    try {
+      return await _auth.isDeviceSupported();
+    } catch (_) {
+      return false;
+    }
+  }
 
   /// هل الجهاز يدعم المصادقة الحيوية؟
   Future<bool> isAvailable() async {

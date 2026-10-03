@@ -48,6 +48,15 @@ class _LockScreenState extends State<LockScreen> {
     await _attempts.load();
     final hasPasscode = await _passcodes.hasPasscode();
     final available = await _bio.isAvailable();
+    // A lock switched on before passcodes existed, on a phone that cannot
+    // authenticate its owner at all, can never be opened. There is nothing
+    // to protect with, so the lock is switched off instead of bricking the
+    // journal.
+    if (!hasPasscode && !await _bio.canAuthenticate()) {
+      await _bio.setLockEnabled(false);
+      await _enter();
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _hasPasscode = hasPasscode;
@@ -129,11 +138,19 @@ class _LockScreenState extends State<LockScreen> {
     await _enter();
   }
 
+  /// Back to where the user was: the screen underneath when the lock was
+  /// pushed over it, or the place a cold start or link was heading.
   Future<void> _enter() async {
     await _attempts.recordSuccess();
     await _bio.updateLastActivity();
     if (!mounted) return;
-    context.go('/home');
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    final target = BiometricService.pendingLocation;
+    BiometricService.pendingLocation = null;
+    context.go(target == null || target == '/lock' ? '/journal' : target);
   }
 
   void _startCooldownTick() {

@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 
@@ -20,6 +22,9 @@ import '../../services/passcode_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
+import '../../services/database_service.dart';
+import '../../services/garden_service.dart';
+import '../lock/passcode_verify_sheet.dart';
 import '../../widgets/vault_image.dart';
 import 'backup_password_dialog.dart';
 
@@ -42,6 +47,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _reminderMinute = NotificationService.defaultMinute;
   bool _hasPasscode = false;
   bool _biometricsAvailable = false;
+  String _version = '';
 
   @override
   void initState() {
@@ -59,10 +65,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _loadLockState() async {
     final hasPasscode = await PasscodeService.secure().hasPasscode();
     final available = await _biometric.isAvailable();
+    var version = '';
+    try {
+      final info = await PackageInfo.fromPlatform();
+      version = '${info.version} (${info.buildNumber})';
+    } catch (_) {}
     if (!mounted) return;
     setState(() {
       _hasPasscode = hasPasscode;
       _biometricsAvailable = available;
+      _version = version;
     });
   }
 
@@ -215,7 +227,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _tile(
             icon: Icons.info_outline,
             title: l10n.t('settings.about.version'),
-            subtitle: '1.0.0',
+            subtitle: _version,
             onTap: null,
           ),
 
@@ -297,6 +309,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   String _lockTimeoutLabel(int minutes, AppLocalizations l10n) {
     switch (minutes) {
+      case lockImmediately:
+        return l10n.t('settings.lock.immediately');
       case 1:
         return l10n.t('settings.lock.1m');
       case 5:
@@ -351,6 +365,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _changePasscode() async {
+    if (_hasPasscode && !await PasscodeVerifySheet.confirm(context)) return;
+    if (!mounted) return;
     final saved = await _openPasscodeSetup();
     if (!saved || !mounted) return;
     setState(() => _hasPasscode = true);
@@ -388,7 +404,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
     );
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
+    if (!await PasscodeVerifySheet.confirm(context)) return;
     await PasscodeService.secure().removePasscode();
     if (!mounted) return;
     setState(() => _hasPasscode = false);
@@ -398,9 +415,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _pickLockTimeout(AppLocalizations l10n) async {
-    const options = <int>[1, 5, 15, 30, 0];
+    const options = <int>[lockImmediately, 1, 5, 15, 30, lockNever];
     final result = await showModalBottomSheet<int>(
       context: context,
+      isScrollControlled: true,
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -846,12 +864,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
 
-    if (ok == true) {
+    if (ok != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    try {
       await _privacy.deleteEverything();
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.t('dialog.delete.done'))));
-      }
+    } catch (error) {
+      debugPrint('Delete All failed: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('dialog.delete.failed'))),
+      );
+      return;
     }
+    // Everything that lives outside the boxes goes too: the passcode and its
+    // attempt record, the scheduled reminder and the in-memory caches.
+    await PasscodeService.secure().removePasscode();
+    await _biometric.setLockEnabled(false);
+    try {
+      await NotificationService.disableDailyReminder();
+    } catch (_) {}
+    DatabaseService.invalidate();
+    VaultImage.clearCache();
+    ref.invalidate(gardenProvider);
+    ref.invalidate(themeModeProvider);
+    ref.invalidate(localeProvider);
+    ref.invalidate(genderThemeProvider);
+    ref.read(dataRevisionProvider.notifier).bump();
+    messenger.showSnackBar(SnackBar(content: Text(l10n.t('dialog.delete.done'))));
+    // A fresh start: splash, then choosing a first seed.
+    router.go('/');
   }
 }

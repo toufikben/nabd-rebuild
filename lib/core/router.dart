@@ -81,6 +81,7 @@ final router = GoRouter(
         (location == '/seed-selection' && !onboardingComplete);
     if (!exempt &&
         BiometricService().shouldShowLock(coldStart: location != '/')) {
+      BiometricService.pendingLocation = state.uri.toString();
       return '/lock';
     }
     return null;

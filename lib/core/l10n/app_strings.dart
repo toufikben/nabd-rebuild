@@ -729,6 +729,9 @@ class S {
     'backup.password.strong': 'قوية',
     'backup.password.hint': 'لا يمكن استعادة النسخة بدون كلمة المرور، احفظها في مكان آمن',
     'backup.progress': 'جارٍ التجهيز',
+    'settings.lock.immediately': 'فورًا',
+    'settings.lock.verifyTitle': 'أدخل رمزك الحالي',
+    'dialog.delete.failed': 'تعذّر حذف البيانات، ولم يتغير شيء',
   };
 
   static const Map<String, String> en = <String, String>{
@@ -1457,6 +1460,9 @@ class S {
     'backup.password.strong': 'Strong',
     'backup.password.hint': 'The backup cannot be opened without this password. Keep it somewhere safe',
     'backup.progress': 'Preparing',
+    'settings.lock.immediately': 'Immediately',
+    'settings.lock.verifyTitle': 'Enter your current passcode',
+    'dialog.delete.failed': 'The data could not be deleted; nothing was changed',
   };
 
   /// Every key known to the table, used by the parity test.

@@ -33,19 +33,30 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Only a real trip to the background counts. `inactive` also fires for
+    // the notification shade and for the biometric prompt itself, which
+    // would make an immediate lock loop on its own dialog.
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+        state == AppLifecycleState.hidden) {
       _biometric.markBackgrounded();
       return;
     }
     if (state == AppLifecycleState.resumed) {
       final shouldLock = _biometric.shouldShowLock();
       if (shouldLock) {
-        if (router.state.uri.path != '/lock') router.go('/lock');
+        // Pushed on top, so whatever was open (a half-written entry) is
+        // still there after unlocking.
+        if (router.state.uri.path != '/lock') router.push('/lock');
       } else {
         _biometric.clearBackgrounded();
       }
     }
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    // AppColors follows the theme; in "system" mode that means the phone.
+    if (mounted) setState(() {});
   }
 
   @override
