@@ -44,6 +44,7 @@ import '../features/personal/weekly_pulse_screen.dart';
 import '../features/personal/sage_screen.dart';
 import '../features/navigation/section_hub_screen.dart';
 import '../services/biometric_service.dart';
+import '../widgets/pro_gate.dart';
 
 String? _entryIdFromState(GoRouterState state) {
   final extra = state.extra;
@@ -154,12 +155,27 @@ final router = GoRouter(
     GoRoute(path: '/paywall', builder: (_, __) => const PaywallScreen()),
     GoRoute(path: '/heatmap', builder: (_, __) => const HeatmapScreen()),
     GoRoute(path: '/weather', builder: (_, __) => const WeatherScreen()),
-    GoRoute(path: '/word-cloud', builder: (_, __) => const WordCloudScreen()),
+    GoRoute(
+      path: '/word-cloud',
+      builder: (_, __) => const ProGate(
+        icon: Icons.cloud_outlined,
+        child: WordCloudScreen(),
+      ),
+    ),
     GoRoute(
       path: '/emotion-radar',
-      builder: (_, __) => const EmotionRadarScreen(),
+      builder: (_, __) => const ProGate(
+        icon: Icons.radar,
+        child: EmotionRadarScreen(),
+      ),
     ),
-    GoRoute(path: '/year-review', builder: (_, __) => const YearReviewScreen()),
+    GoRoute(
+      path: '/year-review',
+      builder: (_, __) => const ProGate(
+        icon: Icons.auto_awesome,
+        child: YearReviewScreen(),
+      ),
+    ),
     GoRoute(
       path: '/seed-selection',
       builder: (_, __) => const SeedSelectionScreen(),

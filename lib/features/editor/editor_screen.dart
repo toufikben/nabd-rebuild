@@ -19,7 +19,6 @@ import '../../models/tag.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
 import '../../services/media_vault.dart';
-import '../../services/monetization_service.dart';
 import '../../services/motivation_service.dart';
 import '../../services/voice_to_text_service.dart';
 import '../../widgets/audio_note_player.dart';
@@ -240,17 +239,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       return false;
     }
 
-    final isPro = ref.read(monetizationProvider).isPro;
-    if (_saved == null && !isPro && !_db.canCreateFreeEntry()) {
-      if (explicit && mounted) unawaited(context.push('/paywall'));
-      return false;
-    }
-
     if (mounted) setState(() => _isSaving = true);
     try {
       final entry = _buildEntry();
       if (_saved == null) {
-        await _db.addEntry(entry, isPro: isPro);
+        await _db.addEntry(entry);
       } else {
         await _db.updateEntry(entry);
       }

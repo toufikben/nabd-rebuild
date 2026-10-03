@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +26,8 @@ import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
+import '../../services/journal_export_service.dart';
+import '../../services/monetization_service.dart';
 import '../lock/passcode_verify_sheet.dart';
 import '../../widgets/vault_image.dart';
 import 'backup_password_dialog.dart';
@@ -188,6 +192,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l10n.t('settings.data.export'),
             subtitle: l10n.t('settings.data.exportHint'),
             onTap: _exportData,
+          ),
+
+          _tile(
+            icon: Icons.picture_as_pdf_outlined,
+            title: l10n.t('settings.data.exportDoc'),
+            subtitle: l10n.t('settings.data.exportDocHint'),
+            onTap: _exportDocument,
           ),
 
           _tile(
@@ -676,6 +687,77 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } finally {
       final file = backup;
       if (file != null && await file.exists()) await file.delete();
+    }
+  }
+
+  /// Exports the journal as a readable PDF or Markdown file (a Pro extra).
+  Future<void> _exportDocument() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (!ref.read(monetizationProvider).isPro) {
+      await context.push('/paywall');
+      return;
+    }
+    final entries = DatabaseService().getAllEntries();
+    if (entries.isEmpty) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('export.doc.empty'))),
+      );
+      return;
+    }
+    final format = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.t('export.doc.title')),
+        content: Text(l10n.t('export.doc.warning')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'md'),
+            child: Text(l10n.t('export.doc.markdown')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'pdf'),
+            child: Text(l10n.t('export.doc.pdf')),
+          ),
+        ],
+      ),
+    );
+    if (format == null || !mounted) return;
+    try {
+      final exporter = JournalExportService();
+      final title = l10n.t('export.doc.name');
+      final language = l10n.locale.languageCode;
+      final Uint8List bytes = format == 'pdf'
+          ? await exporter.toPdf(entries, title: title, languageCode: language)
+          : Uint8List.fromList(utf8.encode(exporter.toMarkdown(
+              entries,
+              title: title,
+              languageCode: language,
+            )));
+      final stamp = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final destination = await FilePicker.platform.saveFile(
+        dialogTitle: l10n.t('dialog.save.title'),
+        fileName: 'nabd_journal_$stamp.$format',
+        type: FileType.any,
+        bytes: bytes,
+      );
+      if (destination == null) return;
+      if (!kIsWeb && destination.isNotEmpty) {
+        final target = File(destination);
+        if (!await target.exists()) await target.writeAsBytes(bytes, flush: true);
+      }
+      messenger.showSnackBar(SnackBar(
+        content: Text('${l10n.t('dialog.save.done')}: ${p.basename(destination)}'),
+      ));
+    } catch (error) {
+      debugPrint('Document export failed: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('dialog.save.failed'))),
+      );
     }
   }
 

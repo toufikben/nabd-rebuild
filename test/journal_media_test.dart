@@ -64,7 +64,7 @@ void main() {
     final plain = File('${docs.path}/images/old.jpg')
       ..createSync(recursive: true)
       ..writeAsBytesSync([1, 2, 3, 4]);
-    await db.addEntry(entry(images: [plain.path]), isPro: true);
+    await db.addEntry(entry(images: [plain.path]));
 
     expect(await db.encryptLegacyMedia(), 1);
 
@@ -81,7 +81,7 @@ void main() {
       Uint8List.fromList([9, 9]),
       folder: 'images',
     );
-    await db.addEntry(entry(images: [stored]), isPro: true);
+    await db.addEntry(entry(images: [stored]));
 
     await db.deleteEntry('e1');
 
@@ -89,7 +89,7 @@ void main() {
   });
 
   test('the cache sees a write made straight to the box', () async {
-    await db.addEntry(entry(), isPro: true);
+    await db.addEntry(entry());
     expect(db.getAllEntries(), hasLength(1));
 
     await Hive.box('journal_entries').delete('e1');

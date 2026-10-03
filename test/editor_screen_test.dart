@@ -56,7 +56,7 @@ void main() {
       overrides: [
         monetizationProvider.overrideWith(
           (_) => MonetizationService.preset(
-            const MonetizationState(isPro: true),
+            const MonetizationState(),
           ),
         ),
       ],

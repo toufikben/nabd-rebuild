@@ -78,9 +78,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             // Features
             // Only what Pro really unlocks in this build. Everything else in
             // the app is free, so it is not listed as a paid feature.
-            _featureRow('📝', AppLocalizations.of(context).t('paywall.f1')),
-            _featureRow('🧘', AppLocalizations.of(context).t('paywall.f2')),
-            _featureRow('💜', AppLocalizations.of(context).t('paywall.f3')),
+            _featureRow('🧘', AppLocalizations.of(context).t('paywall.f1')),
+            _featureRow('🔭', AppLocalizations.of(context).t('paywall.f2')),
+            _featureRow('📄', AppLocalizations.of(context).t('paywall.f3')),
+            _featureRow('💜', AppLocalizations.of(context).t('paywall.f4')),
 
             const SizedBox(height: 32),
 

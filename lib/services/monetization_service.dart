@@ -597,12 +597,6 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   bool get isProActive => state.isPro;
 
-  bool canWriteEntry({required int currentMonthEntries}) =>
-      isProActive || currentMonthEntries < 7;
-
-  int remainingEntries({required int currentMonthEntries}) =>
-      isProActive ? -1 : (7 - currentMonthEntries).clamp(0, 7);
-
   String priceFor(String productId) {
     for (final item in state.products) {
       if (item.id == productId) return item.price;

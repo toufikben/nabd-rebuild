@@ -44,10 +44,9 @@ class DatabaseService {
         ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
     );
   }
-  Future<void> addEntry(JournalEntry entry, {bool isPro = false}) async {
-    if (!isPro && !canCreateFreeEntry()) {
-      throw const EntryLimitExceededException();
-    }
+  /// Writing is never limited: a journal that stops you mid-habit defeats
+  /// its purpose. Pro unlocks extras, not the act of writing.
+  Future<void> addEntry(JournalEntry entry) async {
     invalidate();
     await entriesBox.put(entry.id, entry.toMap());
   }
@@ -170,8 +169,6 @@ class DatabaseService {
         .length;
   }
 
-  bool canCreateFreeEntry({DateTime? now, int limit = 7}) =>
-      getCurrentMonthEntryCount(now) < limit;
   int getWordCount() => getAllEntries().fold(
       0,
       (sum, e) =>
@@ -229,11 +226,4 @@ class DatabaseService {
     }
     return out;
   }
-}
-
-class EntryLimitExceededException implements Exception {
-  const EntryLimitExceededException();
-
-  @override
-  String toString() => 'Monthly free entry limit reached';
 }
