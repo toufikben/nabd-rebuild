@@ -54,6 +54,7 @@ Future<void> main() async {
 
 Future<void> _initializeDeferredServices() async {
   await NotificationService.init();
+  await NotificationService.restoreScheduledReminder();
   await SettingsService.init();
   await EncryptionService().initialize();
   await MobileAds.instance.initialize();

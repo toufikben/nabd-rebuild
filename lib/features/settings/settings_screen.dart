@@ -43,17 +43,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final TextEditingController _restorePasswordController =
       TextEditingController();
 
-  bool _notificationsEnabled = true;
+  bool _notificationsEnabled = false;
   bool _lockEnabled = false;
   int _lockTimeoutMinutes = 5;
-  int _reminderHour = 20;
-  int _reminderMinute = 0;
+  int _reminderHour = NotificationService.defaultHour;
+  int _reminderMinute = NotificationService.defaultMinute;
   bool _hasPasscode = false;
   bool _biometricsAvailable = false;
 
   @override
   void initState() {
     super.initState();
+    _notificationsEnabled = NotificationService.isEnabled;
+    _reminderHour = NotificationService.hour;
+    _reminderMinute = NotificationService.minute;
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
     _loadLockState();
@@ -163,17 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: Text(l10n.t('settings.notify.daily')),
             subtitle: Text(l10n.t('settings.notify.dailyHint')),
             value: _notificationsEnabled,
-            onChanged: (v) {
-              setState(() => _notificationsEnabled = v);
-              if (v) {
-                NotificationService.scheduleDailyReminder(
-                  hour: _reminderHour,
-                  minute: _reminderMinute,
-                );
-              } else {
-                NotificationService.cancelAll();
-              }
-            },
+            onChanged: (v) => _setReminderEnabled(v, l10n),
           ),
 
           if (_notificationsEnabled)
@@ -567,14 +560,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       initialTime: TimeOfDay(hour: _reminderHour, minute: _reminderMinute),
     );
 
-    if (time != null) {
-      setState(() {
-        _reminderHour = time.hour;
-        _reminderMinute = time.minute;
-      });
-      await NotificationService.scheduleDailyReminder(
-        hour: time.hour,
-        minute: time.minute,
+    if (time == null || !mounted) return;
+    setState(() {
+      _reminderHour = time.hour;
+      _reminderMinute = time.minute;
+    });
+    await _scheduleReminder(AppLocalizations.of(context));
+  }
+
+  /// The reminder is only shown as on once the OS has granted permission and
+  /// the schedule is stored, so the switch never claims what is not true.
+  Future<void> _setReminderEnabled(bool value, AppLocalizations l10n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (!value) {
+      await NotificationService.disableDailyReminder();
+      if (mounted) setState(() => _notificationsEnabled = false);
+      return;
+    }
+    final granted = await NotificationService.requestPermission();
+    if (!mounted) return;
+    if (!granted) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.notify.denied'))),
+      );
+      return;
+    }
+    await _scheduleReminder(l10n);
+  }
+
+  Future<void> _scheduleReminder(AppLocalizations l10n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await NotificationService.enableDailyReminder(
+        hour: _reminderHour,
+        minute: _reminderMinute,
+        title: l10n.t('notify.title'),
+        body: l10n.t('notify.body'),
+      );
+      if (mounted) setState(() => _notificationsEnabled = true);
+    } catch (error) {
+      debugPrint('Daily reminder could not be scheduled: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.notify.failed'))),
       );
     }
   }

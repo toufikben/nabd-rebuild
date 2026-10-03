@@ -340,6 +340,8 @@ class S {
     'paywall.restoreNothing': 'لم يُعثر على مشتريات سابقة لهذا الحساب.',
     'notify.title': 'حان وقت الكتابة',
     'notify.body': 'دوّن أفكارك عن يومك',
+    'settings.notify.denied': 'لم يُسمح بالإشعارات. فعّلها من إعدادات الهاتف.',
+    'settings.notify.failed': 'تعذّر جدولة التذكير.',
 
     // ── Weekly pulse ───────────────────────────────────────────────────
     'weekly.title': 'نبض الأسبوع',
@@ -1312,6 +1314,8 @@ class S {
     'paywall.restoreNothing': 'No previous purchases were found for this account.',
     'notify.title': 'Time to write',
     'notify.body': 'Capture your thoughts about today',
+    'settings.notify.denied': 'Notifications are not allowed. Turn them on in the phone settings.',
+    'settings.notify.failed': 'The reminder could not be scheduled.',
 
     // ── Weekly pulse ───────────────────────────────────────────────────
     'weekly.title': 'Weekly Pulse',
