@@ -117,14 +117,20 @@ void main() {
     });
 
     test('the free monthly limit counts entries, not dreams', () async {
+      // The limit counts the current month, so the fixtures must be dated
+      // now; a fixed date silently stops counting once that month is over.
+      final thisMonth = DateTime.now();
       for (var i = 0; i < 7; i++) {
-        await box.put('dream-$i', _dreamMap(id: 'dream-$i'));
+        await box.put(
+          'dream-$i',
+          _dreamMap(id: 'dream-$i', createdAt: thisMonth),
+        );
       }
 
       expect(db.canCreateFreeEntry(), isTrue);
 
       for (var i = 0; i < 7; i++) {
-        await db.addEntry(_entry(id: 'entry-$i'));
+        await db.addEntry(_entry(id: 'entry-$i', at: thisMonth));
       }
       expect(db.canCreateFreeEntry(), isFalse);
       await expectLater(db.addEntry(_entry(id: 'entry-8')),
