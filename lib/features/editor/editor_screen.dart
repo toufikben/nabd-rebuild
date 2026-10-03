@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,6 +18,7 @@ import '../../services/garden_service.dart';
 import '../../services/motivation_service.dart';
 import '../../services/monetization_service.dart';
 import '../../widgets/mood_picker.dart';
+import '../../core/storage.dart';
 
 class EditorScreen extends ConsumerStatefulWidget {
   final String? entryId;
@@ -256,7 +256,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     try {
       await AchievementService().unlockFromJournal(
         _db.getAllEntries(),
-        Hive.box('settings'),
+        contentBox(),
       );
     } catch (error) {
       debugPrint('Achievement evaluation failed after journal save: $error');

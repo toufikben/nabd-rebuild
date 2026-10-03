@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/storage.dart';
 
 /// FutureLettersScreen — رسائل لمستقبلك.
 ///
@@ -17,7 +18,7 @@ class FutureLettersScreen extends StatefulWidget {
 }
 
 class _FutureLettersScreenState extends State<FutureLettersScreen> {
-  final Box _box = Hive.box('settings');
+  final Box _box = contentBox();
 
   List<FutureLetter> get _letters {
     final raw = _box.get('future_letters', defaultValue: <dynamic>[]) as List;

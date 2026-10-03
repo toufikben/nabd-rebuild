@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/storage.dart';
 
 /// TimeCapsuleScreen — كبسولة زمنية تُفتح بعد سنوات.
 class TimeCapsuleScreen extends StatefulWidget {
@@ -14,7 +15,7 @@ class TimeCapsuleScreen extends StatefulWidget {
 }
 
 class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
-  final Box _box = Hive.box('settings');
+  final Box _box = contentBox();
 
   List<TimeCapsule> get _capsules {
     final raw = _box.get('time_capsules', defaultValue: <dynamic>[]) as List;

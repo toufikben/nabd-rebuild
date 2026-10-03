@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/database_service.dart';
 import '../../services/motivation_service.dart';
+import '../../core/storage.dart';
 
 /// AchievementsScreen — عرض الإنجازات.
 class AchievementsScreen extends ConsumerStatefulWidget {
@@ -29,14 +29,14 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   Future<void> _syncProgress() async {
     final fresh = await AchievementService().unlockFromJournal(
       DatabaseService().getAllEntries(),
-      Hive.box('settings'),
+      contentBox(),
     );
     if (fresh.isNotEmpty && mounted) setState(() {});
   }
 
   Map<String, int> _userStats() => AchievementService.progressFor(
         DatabaseService().getAllEntries(),
-        Hive.box('settings'),
+        contentBox(),
       );
 
   @override

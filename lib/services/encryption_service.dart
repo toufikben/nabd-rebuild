@@ -9,6 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'hive_value_equality.dart';
+import '../core/storage.dart';
 
 /// EncryptionService — تشفير AES-256-GCM حقيقي مع مصادقة.
 ///
@@ -184,13 +185,7 @@ class EncryptionService {
     return await readSecret(_keyAlias) != null;
   }
 
-  static const _boxNames = <String>[
-    'journal_entries',
-    'settings',
-    'moods',
-    'tags',
-    'garden',
-  ];
+  static const _boxNames = HiveBoxes.all;
 
   /// The key a rotation is moving to. It is stored before any box is
   /// rewritten, so a crash at any point leaves enough on disk to finish or to

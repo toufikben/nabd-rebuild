@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/storage.dart';
 
 class GratitudeJournalScreen extends StatefulWidget {
   const GratitudeJournalScreen({super.key});
@@ -12,7 +13,7 @@ class GratitudeJournalScreen extends StatefulWidget {
 }
 
 class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
-  final Box _box = Hive.box('settings');
+  final Box _box = contentBox();
   final List<TextEditingController> _controllers = List.generate(
     3,
     (_) => TextEditingController(),

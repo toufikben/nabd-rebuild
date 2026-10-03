@@ -4,17 +4,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'encryption_service.dart';
+import '../core/storage.dart';
 
 /// Deletes all user-owned local data and creates a fresh Hive key only after
 /// all encrypted boxes have been safely deleted.
 class PrivacyService {
-  static const _boxNames = <String>[
-    'journal_entries',
-    'settings',
-    'moods',
-    'tags',
-    'garden',
-  ];
+  static const _boxNames = HiveBoxes.all;
 
   final EncryptionService encryption;
   final Future<Directory> Function() _documentsDirectory;

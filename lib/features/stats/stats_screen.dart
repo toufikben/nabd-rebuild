@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/streak.dart';
@@ -10,6 +9,7 @@ import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
+import '../../core/storage.dart';
 
 class StatsScreen extends ConsumerStatefulWidget {
   const StatsScreen({super.key});
@@ -434,7 +434,7 @@ class _StatsSummary {
   }
 
   static int _completedSessions() {
-    final raw = Hive.box('settings').get('sessions_completed_total');
+    final raw = contentBox().get(ContentKeys.sessionsCompleted);
     return raw is int ? raw : 0;
   }
 

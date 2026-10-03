@@ -10,6 +10,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
+import 'core/storage.dart';
 import 'services/encryption_service.dart';
 import 'services/notification_service.dart';
 import 'services/database_migration_service.dart';
@@ -33,11 +34,13 @@ Future<void> main() async {
     final hiveCipher = HiveAesCipher(
       await EncryptionService().hiveKeyBytes(),
     );
-    await Hive.openBox('journal_entries', encryptionCipher: hiveCipher);
-    await Hive.openBox('settings', encryptionCipher: hiveCipher);
-    await Hive.openBox('moods', encryptionCipher: hiveCipher);
-    await Hive.openBox('tags', encryptionCipher: hiveCipher);
-    await Hive.openBox('garden', encryptionCipher: hiveCipher);
+    for (final name in HiveBoxes.all) {
+      await Hive.openBox(name, encryptionCipher: hiveCipher);
+    }
+    await ContentBoxMigration.run(
+      settings: Hive.box(HiveBoxes.settings),
+      content: Hive.box(HiveBoxes.content),
+    );
   } catch (_) {
     storageError = const Object();
   }
@@ -80,14 +83,6 @@ class StorageFailureApp extends StatefulWidget {
 }
 
 class _StorageFailureAppState extends State<StorageFailureApp> {
-  static const _boxNames = <String>[
-    'journal_entries',
-    'settings',
-    'moods',
-    'tags',
-    'garden',
-  ];
-
   bool _resetting = false;
 
   // Localizations are not loaded on this screen, so the text picks its
@@ -134,7 +129,7 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
     try {
       await Hive.close();
     } catch (_) {}
-    for (final name in _boxNames) {
+    for (final name in HiveBoxes.all) {
       for (final candidate in [
         name,
         '${name}__encrypted_migration',

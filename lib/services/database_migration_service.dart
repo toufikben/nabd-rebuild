@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'encryption_service.dart';
 import 'hive_value_equality.dart';
+import '../core/storage.dart';
 
 /// Migrates legacy plaintext Hive boxes to encrypted boxes without changing
 /// their public names. The source is retained until an encrypted target has
@@ -12,13 +13,7 @@ class DatabaseMigrationService {
   static const _marker = 'nabd_hive_schema_version';
   static const _temporarySuffix = '__encrypted_migration';
   static const _targetSuffix = '__encrypted_target';
-  static const _boxes = <String>[
-    'journal_entries',
-    'settings',
-    'moods',
-    'tags',
-    'garden',
-  ];
+  static const _boxes = HiveBoxes.all;
 
   final EncryptionService encryption;
 

@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/storage.dart';
 
 class WorryBoxScreen extends StatefulWidget {
   const WorryBoxScreen({super.key});
@@ -13,7 +14,7 @@ class WorryBoxScreen extends StatefulWidget {
 }
 
 class _WorryBoxScreenState extends State<WorryBoxScreen> {
-  final Box _box = Hive.box('settings');
+  final Box _box = contentBox();
   final TextEditingController _controller = TextEditingController();
 
   List<WorryItem> get _worries {

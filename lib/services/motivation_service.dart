@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../core/streak.dart';
 import '../models/journal_entry.dart';
+import '../core/storage.dart';
 
 /// MotivationService — الاقتباسات + الإنجازات + التحديات.
 class MotivationService {
@@ -242,7 +243,7 @@ class Achievement {
 
 /// AchievementService — فحص الإنجازات المفتوحة.
 class AchievementService {
-  Box get _box => Hive.box('settings');
+  Box get _box => contentBox();
 
   Set<String> get unlockedIds {
     final raw =
