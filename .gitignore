@@ -18,3 +18,4 @@ ios/Runner/GeneratedPluginRegistrant.h
 ios/Runner/GeneratedPluginRegistrant.m
 apk-out/
 flutter_01.log
+device-test-output/
