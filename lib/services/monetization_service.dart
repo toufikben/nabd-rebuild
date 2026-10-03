@@ -333,9 +333,8 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   /// A service frozen at [state] that never talks to the store, for tests.
   @visibleForTesting
-  MonetizationService.preset(MonetizationState state)
-      : _store = const SecureEntitlementStore(),
-        super(state);
+  MonetizationService.preset(super.state)
+      : _store = const SecureEntitlementStore();
 
   static final InAppPurchase _iap = InAppPurchase.instance;
   static const String proMonthlyId = MonetizationConfig.monthlyId;
