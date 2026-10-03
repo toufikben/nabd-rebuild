@@ -350,6 +350,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<bool> _openPasscodeSetup() async {
     final saved = await showModalBottomSheet<bool>(
       context: context,
+      // Without this the sheet is capped at 9/16 of the screen and the last
+      // row of the pad is cut off.
+      isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
       builder: (_) => const PasscodeSetupSheet(),

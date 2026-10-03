@@ -66,8 +66,9 @@ class _PasscodeSetupSheetState extends State<PasscodeSetupSheet> {
     final title = _pending == null
         ? l10n.t('settings.lock.setupTitle')
         : l10n.t('settings.lock.confirmTitle');
+    // Scrollable so a short screen or large font never clips the pad.
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,

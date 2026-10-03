@@ -21,7 +21,8 @@ class LockScreen extends StatefulWidget {
 class _LockScreenState extends State<LockScreen> {
   final BiometricService _bio = BiometricService();
   final PasscodeService _passcodes = PasscodeService.secure();
-  final PasscodeAttempts _attempts = PasscodeAttempts();
+  final PasscodeAttempts _attempts =
+      PasscodeAttempts(store: const SecureStoragePasscodeStore());
 
   String? _error;
   bool _busy = false;
@@ -44,10 +45,15 @@ class _LockScreenState extends State<LockScreen> {
   /// The lock opens with a biometric prompt when one is enrolled, and leaves
   /// the pad on screen for every other case.
   Future<void> _open() async {
+    await _attempts.load();
     final hasPasscode = await _passcodes.hasPasscode();
     final available = await _bio.isAvailable();
     if (!mounted) return;
-    setState(() => _hasPasscode = hasPasscode);
+    setState(() {
+      _hasPasscode = hasPasscode;
+      _remaining = _attempts.remainingSeconds();
+    });
+    if (_remaining > 0) _startCooldownTick();
     if (hasPasscode && available) await _authenticate();
   }
 
@@ -83,7 +89,8 @@ class _LockScreenState extends State<LockScreen> {
       await _enter();
       return;
     }
-    _attempts.recordFailure();
+    await _attempts.recordFailure();
+    if (!mounted) return;
     setState(() {
       _busy = false;
       _error = wrong;
@@ -111,6 +118,9 @@ class _LockScreenState extends State<LockScreen> {
     }
     final saved = await showModalBottomSheet<bool>(
       context: context,
+      // Without this the sheet is capped at 9/16 of the screen and the last
+      // row of the pad is cut off.
+      isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
       builder: (_) => const PasscodeSetupSheet(),
@@ -120,7 +130,7 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   Future<void> _enter() async {
-    _attempts.recordSuccess();
+    await _attempts.recordSuccess();
     await _bio.updateLastActivity();
     if (!mounted) return;
     context.go('/home');

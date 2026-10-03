@@ -91,4 +91,102 @@ void main() {
     expect(strict.isLocked(), isTrue);
     expect(strict.remainingSeconds(), 60);
   });
+
+  group('persisted throttle', () {
+    late _MemoryStore store;
+
+    PasscodeAttempts reopen() =>
+        PasscodeAttempts(store: store, now: () => now);
+
+    setUp(() => store = _MemoryStore());
+
+    test('killing the app does not hand out a fresh set of tries', () async {
+      final first = reopen();
+      for (var i = 0; i < 5; i++) {
+        await first.recordFailure();
+      }
+      final second = reopen();
+      await second.load();
+      expect(second.isLocked(), isTrue);
+      expect(second.remainingSeconds(), 30);
+    });
+
+    test('failures below the limit also survive a restart', () async {
+      final first = reopen();
+      for (var i = 0; i < 4; i++) {
+        await first.recordFailure();
+      }
+      final second = reopen();
+      await second.load();
+      await second.recordFailure();
+      expect(second.isLocked(), isTrue);
+    });
+
+    test('each lockout in a row doubles the wait', () async {
+      final pad = reopen();
+      for (var round = 0; round < 3; round++) {
+        for (var i = 0; i < 5; i++) {
+          await pad.recordFailure();
+        }
+        final expected = 30 * (1 << round);
+        expect(pad.remainingSeconds(), expected);
+        now = now.add(Duration(seconds: expected));
+      }
+    });
+
+    test('the wait never exceeds the cap', () async {
+      final pad = reopen();
+      for (var round = 0; round < 12; round++) {
+        for (var i = 0; i < 5; i++) {
+          await pad.recordFailure();
+        }
+        expect(pad.remainingSeconds(), lessThanOrEqualTo(3600));
+        now = now.add(Duration(seconds: pad.remainingSeconds()));
+      }
+    });
+
+    test('a clock moved back cannot extend the lock past the cap', () async {
+      final pad = reopen();
+      for (var i = 0; i < 5; i++) {
+        await pad.recordFailure();
+      }
+      now = now.subtract(const Duration(days: 30));
+      final reopened = reopen();
+      await reopened.load();
+      expect(reopened.remainingSeconds(), lessThanOrEqualTo(3600));
+    });
+
+    test('a successful unlock clears the stored record', () async {
+      final pad = reopen();
+      for (var i = 0; i < 3; i++) {
+        await pad.recordFailure();
+      }
+      await pad.recordSuccess();
+      expect(store.values, isEmpty);
+    });
+
+    test('a corrupted record is ignored', () async {
+      store.values[PasscodeAttempts.storageKey] = 'garbage';
+      final pad = reopen();
+      await pad.load();
+      expect(pad.isLocked(), isFalse);
+    });
+  });
+}
+
+class _MemoryStore implements PasscodeStore {
+  final Map<String, String> values = {};
+
+  @override
+  Future<String?> read(String key) async => values[key];
+
+  @override
+  Future<void> write(String key, String value) async {
+    values[key] = value;
+  }
+
+  @override
+  Future<void> delete(String key) async {
+    values.remove(key);
+  }
 }
