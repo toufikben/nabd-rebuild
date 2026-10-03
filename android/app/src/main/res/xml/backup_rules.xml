@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older. The journal is encrypted with a key that lives in
+     the device keystore and is never backed up, so a restored copy of the
+     data could not be opened. Users move data with the encrypted .nabd export
+     instead. -->
+<full-backup-content>
+    <exclude domain="root" path="." />
+    <exclude domain="file" path="." />
+    <exclude domain="database" path="." />
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="external" path="." />
+</full-backup-content>
