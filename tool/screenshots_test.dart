@@ -165,6 +165,7 @@ void main() {
     for (final name in HiveBoxes.all) {
       await Hive.openBox<dynamic>(name);
     }
+    await Hive.box(HiveBoxes.settings).put('ui_sounds_enabled', false);
     await _seed();
   });
 

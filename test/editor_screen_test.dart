@@ -24,6 +24,8 @@ void main() {
     for (final name in HiveBoxes.all) {
       await Hive.openBox<dynamic>(name);
     }
+    // There is no audio plugin in widget tests.
+    await Hive.box(HiveBoxes.settings).put('ui_sounds_enabled', false);
     DatabaseService.invalidate();
   });
 

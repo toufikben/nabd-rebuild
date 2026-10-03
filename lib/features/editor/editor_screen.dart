@@ -23,6 +23,7 @@ import '../../services/garden_service.dart';
 import '../../services/home_widget_service.dart';
 import '../../services/media_vault.dart';
 import '../../services/motivation_service.dart';
+import '../../services/ui_sounds.dart';
 import '../../services/voice_to_text_service.dart';
 import '../../widgets/audio_note_player.dart';
 import '../../widgets/mood_picker.dart';
@@ -256,7 +257,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         await _db.updateEntry(entry);
       }
       _saved = entry;
-      if (explicit) await _rewardIfNew();
+      if (explicit) {
+        unawaited(UiSounds.play(UiSound.save));
+        await _rewardIfNew();
+      }
       return true;
     } catch (error) {
       if (explicit) {
@@ -281,6 +285,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     try {
       final result = await ref.read(gardenProvider.notifier).water(saved);
       if (result.ok) {
+        unawaited(UiSounds.play(
+          result.isComplete ? UiSound.bloom : UiSound.water,
+          delay: const Duration(milliseconds: 450),
+        ));
         messenger.showSnackBar(
           SnackBar(content: Text(l10n.t(result.messageKey))),
         );
@@ -289,10 +297,16 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       debugPrint('Garden update failed after journal save: $error');
     }
     try {
-      await AchievementService().unlockFromJournal(
+      final fresh = await AchievementService().unlockFromJournal(
         _db.getAllEntries(),
         contentBox(),
       );
+      if (fresh.isNotEmpty) {
+        unawaited(UiSounds.play(
+          UiSound.bloom,
+          delay: const Duration(milliseconds: 1200),
+        ));
+      }
     } catch (error) {
       debugPrint('Achievement evaluation failed after journal save: $error');
     }

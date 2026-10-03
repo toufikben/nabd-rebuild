@@ -22,40 +22,45 @@ class GardenScreen extends ConsumerWidget {
 
     if (state.seeds.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context).t('garden.title'))),
+        appBar:
+            AppBar(title: Text(AppLocalizations.of(context).t('garden.title'))),
         body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildGardenAudioControl(context),
-              const SizedBox(height: 20),
-              const Text('🌱', style: TextStyle(fontSize: 80)),
-              const SizedBox(height: 20),
-              Text(
-                AppLocalizations.of(context).t('garden.empty'),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildGardenAudioControl(context),
+                const SizedBox(height: 20),
+                const Text('🌱', style: TextStyle(fontSize: 80)),
+                const SizedBox(height: 20),
+                Text(
+                  AppLocalizations.of(context).t('garden.empty'),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                AppLocalizations.of(context).t('garden.emptyHint'),
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: () => context.push('/seed-selection'),
-                icon: const Icon(Icons.add),
-                label: Text(AppLocalizations.of(context).t('garden.plant')),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => context.push('/sound-garden'),
-                icon: const Icon(Icons.library_music_outlined),
-                label: Text(AppLocalizations.of(context).t('garden.soundGarden')),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  AppLocalizations.of(context).t('garden.emptyHint'),
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 24),
+                FilledButton.icon(
+                  onPressed: () => context.push('/seed-selection'),
+                  icon: const Icon(Icons.add),
+                  label: Text(AppLocalizations.of(context).t('garden.plant')),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => context.push('/sound-garden'),
+                  icon: const Icon(Icons.library_music_outlined),
+                  label: Text(
+                      AppLocalizations.of(context).t('garden.soundGarden')),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -105,8 +110,8 @@ class GardenScreen extends ConsumerWidget {
                 child: _statCard(
                   icon: Icons.emoji_events,
                   value: '${stats.completedSeeds}',
-                  label: AppLocalizations.of(context)
-                      .t('garden.stat.completed'),
+                  label:
+                      AppLocalizations.of(context).t('garden.stat.completed'),
                   color: AppColors.warning,
                 ),
               ),
@@ -115,8 +120,8 @@ class GardenScreen extends ConsumerWidget {
                 child: _statCard(
                   icon: Icons.trending_up,
                   value: '${stats.averageGrowth.round()}%',
-                  label: AppLocalizations.of(context)
-                      .t('garden.stat.avgGrowth'),
+                  label:
+                      AppLocalizations.of(context).t('garden.stat.avgGrowth'),
                   color: AppColors.primary,
                 ),
               ),
@@ -232,8 +237,7 @@ class GardenScreen extends ConsumerWidget {
           ),
           Text(
             label,
-            style:
-                TextStyle(fontSize: 10, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
           ),
         ],
       ),

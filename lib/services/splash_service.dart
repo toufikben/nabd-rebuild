@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../core/app_settings.dart';
@@ -12,21 +11,14 @@ import '../core/app_settings.dart';
 /// resolved at load time. An earlier revision hard-coded `.mp3`, which silently
 /// failed for the synthesised `.wav` cue.
 class SplashService {
-  /// Number of distinct splash animations. The sound is shared, but the
-  /// animation still rotates so the launch is not identical every time.
-  static const _splashCount = 5;
+  /// The signature launch cue: two soft heartbeats that bloom into a warm
+  /// chord over a breath of air (2.6 s). Synthesised by
+  /// `scripts/synth_sounds.py`, so it is original and reproducible.
+  static const signatureSound = 'nabd_pulse';
 
-  /// The signature launch cue: a water drop with two slap-backs, then four
-  /// rising songbird notes (about 600 Hz up to 1.5 kHz) over a breath of
-  /// outdoor air — 1.1s, so it finishes inside the splash rather than trailing it.
-  static const signatureSound = 'splash_dawn';
-
-  /// Preferred cue first, then the older drop and a proven MP3 so the launch is
-  /// never silent. The rejected `splash_nabd` is deliberately not a fallback:
-  /// a failing dawn should go to the drop, not back to the bell.
+  /// If the signature cue cannot be decoded, a bowl is the gentlest fallback.
   static const _candidates = <String>[
-    'splash_dawn',
-    'splash_drop',
+    'nabd_pulse',
     'tibetan_bowl',
   ];
 
@@ -47,7 +39,7 @@ class SplashService {
       if (path == null) continue;
       try {
         await _player.setAsset(path);
-        await _player.setVolume(0.9);
+        await _player.setVolume(0.8);
         unawaited(_player.play());
         return;
       } catch (error) {
@@ -76,22 +68,4 @@ class SplashService {
   Future<void> dispose() async {
     await _player.dispose();
   }
-
-  /// Returns the next splash id, never the same one twice in a row.
-  static int getNextSplash() {
-    final box = Hive.box('settings');
-    final last = box.get('last_splash_id', defaultValue: 0) as int;
-
-    int next;
-    do {
-      next = DateTime.now().microsecondsSinceEpoch % _splashCount + 1;
-    } while (next == last && _splashCount > 1);
-
-    unawaited(box.put('last_splash_id', next));
-    return next;
-  }
-
-  /// Every splash variant shares one cue so the launch is repeatable. The
-  /// splashId is still accepted so callers keep working.
-  static String defaultSoundFor(int splashId) => signatureSound;
 }

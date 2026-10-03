@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
@@ -24,6 +25,7 @@ import '../../services/passcode_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
+import '../../services/ui_sounds.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
 import '../../services/journal_export_service.dart';
@@ -47,6 +49,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   bool _notificationsEnabled = false;
   bool _weeklyReview = false;
+  bool _launchSound = true;
+  bool _uiSounds = true;
   bool _lockEnabled = false;
   int _lockTimeoutMinutes = 5;
   int _reminderHour = NotificationService.defaultHour;
@@ -60,6 +64,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     super.initState();
     _notificationsEnabled = NotificationService.isEnabled;
     _weeklyReview = NotificationService.isWeeklyReviewEnabled;
+    _launchSound =
+        Hive.box('settings').get('splash_sound_enabled', defaultValue: true) ==
+            true;
+    _uiSounds = UiSounds.enabled;
     _reminderHour = NotificationService.hour;
     _reminderMinute = NotificationService.minute;
     _lockEnabled = _biometric.isLockEnabled();
@@ -125,6 +133,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: l10n.t('settings.language'),
               subtitle: _languageName(locale.languageCode),
               onTap: () => _pickLanguage(locale.languageCode),
+            ),
+          ]),
+
+          // ─── Sounds ───
+          _group(l10n.t('settings.section.sound'), [
+            SwitchListTile(
+              secondary: _iconBadge(Icons.favorite_outline, AppColors.pulse),
+              title: Text(l10n.t('settings.sound.launch')),
+              subtitle: Text(l10n.t('settings.sound.launchHint')),
+              value: _launchSound,
+              onChanged: (value) async {
+                await Hive.box('settings').put('splash_sound_enabled', value);
+                if (mounted) setState(() => _launchSound = value);
+              },
+            ),
+            SwitchListTile(
+              secondary: _iconBadge(Icons.music_note_outlined, AppColors.secondary),
+              title: Text(l10n.t('settings.sound.ui')),
+              subtitle: Text(l10n.t('settings.sound.uiHint')),
+              value: _uiSounds,
+              onChanged: (value) async {
+                await UiSounds.setEnabled(value);
+                if (mounted) setState(() => _uiSounds = value);
+                if (value) unawaited(UiSounds.play(UiSound.bloom));
+              },
             ),
           ]),
 

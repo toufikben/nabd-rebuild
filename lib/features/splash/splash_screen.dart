@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -10,8 +9,10 @@ import '../../core/app_settings.dart';
 import '../../services/splash_service.dart';
 import '../../services/biometric_service.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/theme/app_colors.dart';
 
-/// SplashScreen — يعرض splash عشوائي من 5 (لا يكرر السابق).
+/// The launch screen: the name on the dusk gradient, with two rings that
+/// expand in time with the two heartbeats of the launch cue. A tap skips it.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -20,7 +21,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late final int _splashId;
   final SplashService _splash = SplashService();
   late final bool _soundEnabled;
   late final String _sound;
@@ -28,14 +28,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _splashId = SplashService.getNextSplash();
     final box = Hive.box('settings');
     _soundEnabled =
         box.get('splash_sound_enabled', defaultValue: true) as bool &&
         AppSettings.splashSoundEnabled;
     final customSound = box.get('splash_sound') as String?;
     _sound = AppSettings.fallbackSound(
-      customSound ?? SplashService.defaultSoundFor(_splashId),
+      customSound ?? SplashService.signatureSound,
     );
     _boot();
   }
@@ -52,16 +51,27 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     }
 
-    // Dwell matches the 3.2s cue, so the bell finishes instead of being cut.
-    await Future.delayed(const Duration(milliseconds: 3200));
-    unawaited(_splash.stopSplashSound());
+    // Long enough for both heartbeats and the chord to bloom; the tail keeps
+    // ringing softly over the first screen instead of being cut off. Without
+    // sound there is nothing to wait for. A tap skips it either way.
+    await Future.delayed(
+      Duration(milliseconds: _soundEnabled ? 2200 : 1200),
+    );
+    if (!mounted) return;
+    await _routeAway();
+  }
 
+  bool _leaving = false;
+
+  Future<void> _skip() async {
     if (!mounted) return;
     await _routeAway();
   }
 
   /// Leaves the splash. Kept separate so the audio path can never block it.
   Future<void> _routeAway() async {
+    if (_leaving) return;
+    _leaving = true;
     // إذا لا بذرة → شاشة اختيار البذرة
     final gardenBox = Hive.box('garden');
     final settings = Hive.box('settings');
@@ -79,300 +89,121 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void dispose() {
-    unawaited(_splash.dispose());
+    // Let the cue's tail finish over the next screen, then release it.
+    final splash = _splash;
+    unawaited(Future<void>.delayed(
+      const Duration(seconds: 3),
+      splash.dispose,
+    ));
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 800),
-        child: _buildSplash(),
-      ),
-    );
-  }
-
-  Widget _buildSplash() {
-    switch (_splashId) {
-      case 2:
-        return _newDawnSplash();
-      case 3:
-        return _bookToButterflySplash();
-      case 4:
-        return _candleSplash();
-      case 5:
-        return _circleOfLifeSplash();
-      default:
-        return _firstSeedSplash();
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // Splash 1: First Seed
-  // ═══════════════════════════════════════════════════════════
-  Widget _firstSeedSplash() {
-    return Container(
-      key: const ValueKey('seed'),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0A0D14), Color(0xFF1A2A1E)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              '🌰',
-              style: TextStyle(fontSize: 60),
-            ).animate().moveY(begin: -100, end: 0, duration: 1000.ms).fadeIn(),
-            const SizedBox(height: 20),
-            const Text('🌱', style: TextStyle(fontSize: 100))
-                .animate()
-                .fadeIn(delay: 1200.ms)
-                .scale(
-                  delay: 1200.ms,
-                  duration: 600.ms,
-                  curve: Curves.easeOutBack,
-                ),
-            const SizedBox(height: 24),
-            _buildBrand(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // Splash 2: New Dawn
-  // ═══════════════════════════════════════════════════════════
-  Widget _newDawnSplash() {
-    return Container(
-      key: const ValueKey('dawn'),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0A0D14), Color(0xFFFF7B54), Color(0xFFFFD54F)],
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          stops: [0.2, 0.75, 1.0],
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🌅', style: TextStyle(fontSize: 120))
-                .animate()
-                .scale(duration: 1500.ms, curve: Curves.easeOutCubic)
-                .fadeIn(),
-            const SizedBox(height: 30),
-            _buildBrand(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // Splash 3: Book to Butterfly ⭐ (المفضل لديك)
-  // ═══════════════════════════════════════════════════════════
-  Widget _bookToButterflySplash() {
-    return Container(
-      key: const ValueKey('book_butterfly'),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF2C1810), Color(0xFF1A1F3A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              alignment: Alignment.center,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _skip,
+        child: Container(
+          decoration: const BoxDecoration(gradient: AppColors.brandGradient),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Book opens
-                const Text('📖', style: TextStyle(fontSize: 100))
-                    .animate()
-                    .scale(duration: 800.ms, curve: Curves.easeOutBack)
-                    .then()
-                    .shake(delay: 800.ms, duration: 200.ms),
-
-                // Butterflies fly out (5 butterflies with different paths)
-                ...List.generate(5, (i) {
-                  final angle = (i / 5) * math.pi * 2;
-                  final targetX = math.cos(angle) * 120;
-                  final targetY = -150 - i * 20.0;
-
-                  return Transform.translate(
-                    offset: Offset(targetX, targetY),
-                    child: const Text('🦋', style: TextStyle(fontSize: 28)),
-                  )
-                      .animate()
-                      .fadeIn(delay: Duration(milliseconds: 1000 + i * 150))
-                      .moveY(
-                        begin: 0,
-                        end: -60,
-                        duration: 1500.ms,
-                        curve: Curves.easeOutCubic,
+                SizedBox(
+                  width: 220,
+                  height: 220,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // One ring per heartbeat of the cue (0.05 s and 0.33 s).
+                      for (final delay in const [50, 330])
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              width: 2,
+                            ),
+                          ),
+                        )
+                            .animate(delay: delay.ms)
+                            .scale(
+                              begin: const Offset(0.8, 0.8),
+                              end: const Offset(1.8, 1.8),
+                              duration: 1100.ms,
+                              curve: Curves.easeOutCubic,
+                            )
+                            .fadeOut(duration: 1100.ms, curve: Curves.easeIn),
+                      Container(
+                        width: 112,
+                        height: 112,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.14),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.favorite_rounded,
+                          color: AppColors.pulse,
+                          size: 48,
+                        ),
                       )
-                      .then()
-                      .moveX(
-                        begin: 0,
-                        end: i % 2 == 0 ? 20 : -20,
-                        duration: 800.ms,
-                        curve: Curves.easeInOut,
-                      );
-                }),
-              ],
-            ),
-            const SizedBox(height: 40),
-            _buildBrand(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // Splash 4: Candle
-  // ═══════════════════════════════════════════════════════════
-  Widget _candleSplash() {
-    return Container(
-      key: const ValueKey('candle'),
-      color: const Color(0xFF0A0D14),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFFFB74D).withValues(alpha: 0.5),
-                    Colors.transparent,
-                  ],
+                          .animate()
+                          .scale(
+                            begin: const Offset(0.92, 0.92),
+                            end: const Offset(1.06, 1.06),
+                            duration: 140.ms,
+                            curve: Curves.easeOut,
+                          )
+                          .then()
+                          .scale(
+                            begin: const Offset(1.06, 1.06),
+                            end: const Offset(0.96, 0.96),
+                            duration: 140.ms,
+                          )
+                          .then(delay: 20.ms)
+                          .scale(
+                            begin: const Offset(0.96, 0.96),
+                            end: const Offset(1.04, 1.04),
+                            duration: 120.ms,
+                          )
+                          .then()
+                          .scale(
+                            begin: const Offset(1.04, 1.04),
+                            end: const Offset(1, 1),
+                            duration: 300.ms,
+                            curve: Curves.easeOutBack,
+                          ),
+                    ],
+                  ),
                 ),
-              ),
-              child: const Center(
-                child: Text('🕯️', style: TextStyle(fontSize: 100)),
-              ),
-            )
-                .animate()
-                .fadeIn(duration: 1200.ms)
-                .then()
-                .shimmer(duration: 2000.ms, color: const Color(0xFFFFD54F)),
-            const SizedBox(height: 30),
-            _buildBrand(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // Splash 5: Circle of Life
-  // ═══════════════════════════════════════════════════════════
-  Widget _circleOfLifeSplash() {
-    return Container(
-      key: const ValueKey('circle'),
-      decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          colors: [Color(0xFF1A0B2E), Color(0xFF0A0D14)],
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                ...List.generate(3, (i) {
-                  return Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.5),
-                        width: 2,
+                const SizedBox(height: 12),
+                Text(
+                  l10n.t('app.name'),
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
                       ),
-                      shape: BoxShape.circle,
-                    ),
-                  )
-                      .animate(delay: Duration(milliseconds: i * 300))
-                      .scale(
-                        begin: const Offset(0.5, 0.5),
-                        end: const Offset(3, 3),
-                        duration: 2500.ms,
-                      )
-                      .fadeOut();
-                }),
-                const Text('🌳', style: TextStyle(fontSize: 120))
-                    .animate()
-                    .fadeIn(delay: 800.ms)
-                    .scale(delay: 800.ms, duration: 1000.ms),
+                ).animate().fadeIn(delay: 450.ms, duration: 600.ms),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.t('splash.tagline'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.copyWith(color: Colors.white70),
+                ).animate().fadeIn(delay: 700.ms, duration: 700.ms),
               ],
             ),
-            const SizedBox(height: 30),
-            _buildBrand(),
-          ],
+          ),
         ),
       ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // Brand (مشترك)
-  // ═══════════════════════════════════════════════════════════
-  Widget _buildBrand() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF6C5CE7), Color(0xFF00D2A8)],
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(Icons.favorite, color: Colors.white, size: 16),
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Nabd',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2,
-              ),
-            ),
-          ],
-        ).animate().fadeIn(delay: 1800.ms),
-        const SizedBox(height: 8),
-        Text(
-          AppLocalizations.of(context).t('app.tagline'),
-          style: const TextStyle(
-            color: Colors.white60,
-            fontSize: 13,
-            letterSpacing: 1,
-          ),
-        ).animate().fadeIn(delay: 2100.ms),
-      ],
     );
   }
 }

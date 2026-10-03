@@ -818,6 +818,12 @@ class S {
     'letters.writtenOn': 'كُتبت في',
     'letters.read': 'اقرأ',
     'journal.pinned': 'مثبّتة',
+    'splash.tagline': 'مذكرتك الخاصة، بإيقاعك',
+    'settings.section.sound': 'الأصوات',
+    'settings.sound.launch': 'صوت البداية',
+    'settings.sound.launchHint': 'نبضتان ونغمة هادئة عند فتح التطبيق',
+    'settings.sound.ui': 'أصوات اللحظات',
+    'settings.sound.uiHint': 'صوت خفيف عند الحفظ والسقي والإنجاز',
   };
 
   static const Map<String, String> en = <String, String>{
@@ -1635,6 +1641,12 @@ class S {
     'letters.writtenOn': 'Written on',
     'letters.read': 'Read',
     'journal.pinned': 'Pinned',
+    'splash.tagline': 'Your private journal, at your own pace',
+    'settings.section.sound': 'Sounds',
+    'settings.sound.launch': 'Launch sound',
+    'settings.sound.launchHint': 'Two heartbeats and a calm chord when the app opens',
+    'settings.sound.ui': 'Moment sounds',
+    'settings.sound.uiHint': 'A soft sound when you save, water the garden or earn an achievement',
   };
 
   /// Every key known to the table, used by the parity test.

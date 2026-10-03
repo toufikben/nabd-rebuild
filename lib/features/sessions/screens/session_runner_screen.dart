@@ -28,6 +28,7 @@ import '../session_access.dart';
 import '../widgets/breathing_circle.dart';
 import '../widgets/runner_controls.dart';
 import '../../../services/audio_service.dart';
+import '../../../services/ui_sounds.dart';
 import '../../../core/storage.dart';
 
 const Map<String, Color> _sessionAccentMap = <String, Color>{
@@ -152,6 +153,7 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
 
     await _stopSessionAmbient(_ambientRequestId);
     if (!mounted) return;
+    unawaited(UiSounds.play(UiSound.complete));
 
     setState(() {
       _showSuccess = true;

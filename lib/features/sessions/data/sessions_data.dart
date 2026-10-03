@@ -84,7 +84,7 @@ class SessionsData {
       voiceOpening: '[مقدمة الراوي — غضب]',
       voiceTransition: '[انتقال الراوي إلى النشاط — غضب]',
       voiceClosing: '[ختام الراوي — غضب]',
-      ambientSound: null,
+      ambientSound: 'assets/sounds/ocean_soft.mp3',
     ),
     Session(
       id: 'sadness',
@@ -97,7 +97,7 @@ class SessionsData {
       voiceOpening: '[مقدمة الراوي — حزن]',
       voiceTransition: '[انتقال الراوي إلى النشاط — حزن]',
       voiceClosing: '[ختام الراوي — حزن]',
-      ambientSound: null,
+      ambientSound: 'assets/sounds/rain_soft.mp3',
     ),
     Session(
       id: 'anxiety',
@@ -110,7 +110,7 @@ class SessionsData {
       voiceOpening: '[مقدمة الراوي — قلق]',
       voiceTransition: '[انتقال الراوي إلى النشاط — قلق]',
       voiceClosing: '[ختام الراوي — قلق]',
-      ambientSound: null,
+      ambientSound: 'assets/sounds/silent_river_water.mp3',
     ),
     Session(
       id: 'emptiness',
@@ -123,7 +123,7 @@ class SessionsData {
       voiceOpening: '[مقدمة الراوي — فراغ]',
       voiceTransition: '[انتقال الراوي إلى النشاط — فراغ]',
       voiceClosing: '[ختام الراوي — فراغ]',
-      ambientSound: null,
+      ambientSound: 'assets/sounds/harp_soft.mp3',
     ),
     Session(
       id: 'disappointment',
@@ -136,7 +136,7 @@ class SessionsData {
       voiceOpening: '[مقدمة الراوي — خذلان]',
       voiceTransition: '[انتقال الراوي إلى النشاط — خذلان]',
       voiceClosing: '[ختام الراوي — خذلان]',
-      ambientSound: null,
+      ambientSound: 'assets/sounds/oud_soft.mp3',
     ),
     Session(
       id: 'sleep',
@@ -149,7 +149,7 @@ class SessionsData {
       voiceOpening: '[مقدمة الراوي — نوم]',
       voiceTransition: '[انتقال الراوي إلى النشاط — نوم]',
       voiceClosing: '[ختام الراوي — نوم]',
-      ambientSound: null,
+      ambientSound: 'assets/sounds/rain_soft.mp3',
     ),
     Session(
       id: 'gratitude',
@@ -162,7 +162,7 @@ class SessionsData {
       voiceOpening: '[مقدمة الراوي — امتنان]',
       voiceTransition: '[انتقال الراوي إلى النشاط — امتنان]',
       voiceClosing: '[ختام الراوي — امتنان]',
-      ambientSound: null,
+      ambientSound: 'assets/sounds/birds_distant.mp3',
     ),
     Session(
       id: 'decision',
@@ -175,7 +175,7 @@ class SessionsData {
       voiceOpening: '[مقدمة الراوي — قرار]',
       voiceTransition: '[انتقال الراوي إلى النشاط — قرار]',
       voiceClosing: '[ختام الراوي — قرار]',
-      ambientSound: null,
+      ambientSound: 'assets/sounds/wind_gentle.mp3',
     ),
   ];
 
