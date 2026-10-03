@@ -150,7 +150,7 @@ class _LockScreenState extends State<LockScreen> {
     }
     final target = BiometricService.pendingLocation;
     BiometricService.pendingLocation = null;
-    context.go(target == null || target == '/lock' ? '/journal' : target);
+    context.go(target == null || target == '/lock' ? '/today' : target);
   }
 
   void _startCooldownTick() {
@@ -177,11 +177,7 @@ class _LockScreenState extends State<LockScreen> {
       child: Scaffold(
         body: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: AppColors.brandGradient,
           ),
           child: SafeArea(
             child: Center(

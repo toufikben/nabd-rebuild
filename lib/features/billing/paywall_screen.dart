@@ -45,11 +45,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: AppColors.brandGradient,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Column(
@@ -238,7 +234,7 @@ class _PlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: highlighted
               ? const LinearGradient(
-                  colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
+                  colors: [AppColors.primaryDark, AppColors.primaryGlow],
                 )
               : null,
           color: highlighted ? null : Theme.of(context).cardColor,

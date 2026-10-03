@@ -78,7 +78,7 @@ class _YearReviewScreenState extends ConsumerState<YearReviewScreen> {
       _YearSlide(
         title: t('year.title'),
         subtitle: '$year',
-        background: [const Color(0xFF6C5CE7), const Color(0xFF8B7BFF)],
+        background: [AppColors.primaryDark, AppColors.primaryGlow],
         emoji: '✨',
       ),
       _YearSlide(

@@ -4,9 +4,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../features/splash/splash_screen.dart';
 import '../features/lock/lock_screen.dart';
-import '../features/home/home_screen.dart';
 import '../features/shell/app_shell.dart';
-import '../features/sessions/screens/sessions_hub_screen.dart';
+import '../features/today/today_screen.dart';
+import '../features/journal/journal_screen.dart';
+import '../features/practice/practice_screen.dart';
 import '../features/sessions/screens/session_runner_screen.dart';
 import '../features/silent/silent_companion_screen.dart';
 import '../features/editor/editor_screen.dart';
@@ -32,17 +33,12 @@ import '../features/breathing/breathing_screen.dart';
 import '../features/dream/dream_journal_screen.dart';
 import '../features/gratitude/gratitude_garden_screen.dart';
 import '../features/gratitude/gratitude_journal_screen.dart';
-import '../features/future_self/future_letters_screen.dart';
-import '../features/social/unsent_letters_screen.dart';
 import '../features/social/legacy_journal_screen.dart';
-import '../features/social/time_capsule_screen.dart';
 import '../features/motivation/achievements_screen.dart';
 import '../features/motivation/challenges_screen.dart';
 import '../features/personal/letters_screen.dart';
 import '../features/personal/echoes_screen.dart';
 import '../features/personal/weekly_pulse_screen.dart';
-import '../features/personal/sage_screen.dart';
-import '../features/navigation/section_hub_screen.dart';
 import '../services/biometric_service.dart';
 import '../widgets/pro_gate.dart';
 
@@ -90,7 +86,17 @@ final router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
     GoRoute(path: '/lock', builder: (_, __) => const LockScreen()),
-    GoRoute(path: '/home', redirect: (_, __) => '/journal'),
+    // Old addresses of screens that were merged, kept so links and
+    // shortcuts saved by users still land somewhere sensible.
+    GoRoute(path: '/home', redirect: (_, __) => '/today'),
+    GoRoute(path: '/writing', redirect: (_, __) => '/journal'),
+    GoRoute(path: '/journey', redirect: (_, __) => '/sessions'),
+    GoRoute(path: '/analytics', redirect: (_, __) => '/stats'),
+    GoRoute(path: '/gratitude', redirect: (_, __) => '/gratitude-journal'),
+    GoRoute(path: '/future-letters', redirect: (_, __) => '/letters'),
+    GoRoute(path: '/unsent-letters', redirect: (_, __) => '/letters'),
+    GoRoute(path: '/time-capsule', redirect: (_, __) => '/letters'),
+    GoRoute(path: '/sage', redirect: (_, __) => '/motivation'),
     GoRoute(
       path: '/sessions/run',
       builder: (_, GoRouterState state) =>
@@ -108,14 +114,22 @@ final router = GoRouter(
       branches: <StatefulShellBranch>[
         StatefulShellBranch(
           routes: <RouteBase>[
-            GoRoute(path: '/journal', builder: (_, __) => const HomeScreen()),
+            GoRoute(path: '/today', builder: (_, __) => const TodayScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/journal',
+              builder: (_, __) => const JournalScreen(),
+            ),
           ],
         ),
         StatefulShellBranch(
           routes: <RouteBase>[
             GoRoute(
               path: '/sessions',
-              builder: (_, __) => const SessionsHubScreen(),
+              builder: (_, __) => const PracticeScreen(),
             ),
           ],
         ),
@@ -132,21 +146,11 @@ final router = GoRouter(
       ],
     ),
     GoRoute(
-      path: '/writing',
-      builder: (_, __) => const SectionHubScreen(section: NabdSection.writing),
-    ),
-    GoRoute(
-      path: '/journey',
-      builder: (_, __) => const SectionHubScreen(section: NabdSection.journey),
-    ),
-    GoRoute(
-      path: '/analytics',
-      builder: (_, __) =>
-          const SectionHubScreen(section: NabdSection.analytics),
-    ),
-    GoRoute(
       path: '/editor',
-      builder: (_, state) => EditorScreen(entryId: _entryIdFromState(state)),
+      builder: (_, state) => EditorScreen(
+        entryId: _entryIdFromState(state),
+        initialMood: state.uri.queryParameters['mood'],
+      ),
     ),
     GoRoute(path: '/calendar', builder: (_, __) => const CalendarScreen()),
     GoRoute(path: '/search', builder: (_, __) => const SearchScreen()),
@@ -202,10 +206,6 @@ final router = GoRouter(
       path: '/gratitude-journal',
       builder: (_, __) => const GratitudeJournalScreen(),
     ),
-    GoRoute(
-      path: '/gratitude',
-      builder: (_, __) => const GratitudeJournalScreen(),
-    ),
     GoRoute(path: '/motivation', builder: (_, __) => const MotivationScreen()),
     GoRoute(path: '/wisdom', builder: (_, __) => const WisdomScreen()),
     GoRoute(path: '/letters', builder: (_, __) => const LettersScreen()),
@@ -214,22 +214,9 @@ final router = GoRouter(
       path: '/weekly-pulse',
       builder: (_, __) => const WeeklyPulseScreen(),
     ),
-    GoRoute(path: '/sage', builder: (_, __) => const SageScreen()),
-    GoRoute(
-      path: '/future-letters',
-      builder: (_, __) => const FutureLettersScreen(),
-    ),
-    GoRoute(
-      path: '/unsent-letters',
-      builder: (_, __) => const UnsentLettersScreen(),
-    ),
     GoRoute(
       path: '/legacy-journal',
       builder: (_, __) => const LegacyJournalScreen(),
-    ),
-    GoRoute(
-      path: '/time-capsule',
-      builder: (_, __) => const TimeCapsuleScreen(),
     ),
     GoRoute(
       path: '/achievements',

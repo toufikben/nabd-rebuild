@@ -89,7 +89,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
             decoration: BoxDecoration(
               gradient: joined
                   ? const LinearGradient(
-                      colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
+                      colors: [AppColors.primaryDark, AppColors.primaryGlow],
                     )
                   : null,
               color: joined ? null : Theme.of(context).cardColor,

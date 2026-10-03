@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nabd/core/l10n/app_localizations.dart';
 import 'package:nabd/core/l10n/app_strings.dart';
 import 'package:nabd/features/personal/echoes_screen.dart';
-import 'package:nabd/features/personal/sage_screen.dart';
 import 'package:nabd/models/journal_entry.dart';
 import 'package:nabd/services/r_personal_service.dart';
 
@@ -108,42 +107,6 @@ void main() {
       expect(find.text('A difficult day'), findsOneWidget);
       expect(find.text('Later positive entry'), findsOneWidget);
       expect(find.text('A hopeful response'), findsOneWidget);
-    });
-  });
-
-  group('SageScreen widget tests', () {
-    testWidgets('shows localized title, supporting copy, and local quote',
-        (tester) async {
-      await tester.pumpWidget(
-        _testApp(const SageScreen(), locale: const Locale('ar')),
-      );
-      await tester.pump();
-
-      expect(find.text('الحكيم'), findsOneWidget);
-      expect(find.text('فكرة هادئة'), findsOneWidget);
-      expect(
-        find.text(
-          'يعتمد الحكيم على مكتبة المحتوى المحلية في التطبيق، ولا يتغير إلا عند الضغط على تحديث.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
-    });
-
-    testWidgets('changes the quote when Refresh is pressed', (tester) async {
-      await tester.pumpWidget(_testApp(const SageScreen()));
-      await tester.pump();
-
-      final quoteFinder = find.byWidgetPredicate(
-        (widget) => widget is Text && widget.data?.startsWith('«') == true,
-      );
-      final before = tester.widget<Text>(quoteFinder).data;
-
-      await tester.tap(find.byTooltip('Refresh'));
-      await tester.pump();
-
-      final after = tester.widget<Text>(quoteFinder).data;
-      expect(after, isNot(before));
     });
   });
 }

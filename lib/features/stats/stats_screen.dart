@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/streak.dart';
+import '../../services/monetization_service.dart';
+import '../../widgets/nabd_ui.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
@@ -28,7 +31,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     final summary = _StatsSummary.fromEntries(entries);
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context).t('nav.stats'))),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).t('insights.title'))),
       body: RefreshIndicator(
         onRefresh: () async => setState(() {}),
         child: ListView(
@@ -36,6 +39,8 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
           children: [
             _buildOverview(context, summary),
+            const SizedBox(height: 24),
+            _buildExplore(context),
             const SizedBox(height: 24),
             _buildTimeline(context, summary),
             const SizedBox(height: 24),
@@ -45,6 +50,64 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// The other insight screens, which used to hide behind a menu.
+  Widget _buildExplore(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final isPro = ref.watch(monetizationProvider.select((s) => s.isPro));
+    final pro = isPro ? null : l10n.t('pro.badge');
+    final tiles = <(IconData, String, String, String, Color, String?)>[
+      (Icons.wb_cloudy_outlined, 'hub.feature.weather.title',
+          'hub.feature.weather.subtitle', '/weather', AppColors.secondary, null),
+      (Icons.calendar_view_week_rounded, 'hub.feature.weeklyPulse.title',
+          'hub.feature.weeklyPulse.subtitle', '/weekly-pulse', AppColors.pulse,
+          null),
+      (Icons.grid_view_rounded, 'hub.feature.heatmap.title',
+          'hub.feature.heatmap.subtitle', '/heatmap', AppColors.success, null),
+      (Icons.wb_sunny_outlined, 'hub.feature.echoes.title',
+          'hub.feature.echoes.subtitle', '/echoes', AppColors.warning, null),
+      (Icons.auto_awesome, 'hub.feature.yearReview.title',
+          'hub.feature.yearReview.subtitle', '/year-review', AppColors.primary,
+          pro),
+      (Icons.radar_rounded, 'hub.feature.emotionRadar.title',
+          'hub.feature.emotionRadar.subtitle', '/emotion-radar',
+          AppColors.femininePrimary, pro),
+      (Icons.cloud_queue_rounded, 'hub.feature.wordCloud.title',
+          'hub.feature.wordCloud.subtitle', '/word-cloud',
+          AppColors.masculinePrimary, pro),
+      (Icons.sell_outlined, 'hub.feature.tags.title',
+          'hub.feature.tags.subtitle', '/tags', AppColors.primaryGlow, null),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(l10n.t('insights.explore')),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: MediaQuery.sizeOf(context).width >= 600 ? 4 : 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.25,
+          children: [
+            for (final (icon, title, subtitle, route, color, badge) in tiles)
+              FeatureTile(
+                icon: icon,
+                title: l10n.t(title),
+                subtitle: l10n.t(subtitle),
+                color: color,
+                badge: badge,
+                onTap: () async {
+                  await context.push(route);
+                  if (mounted) setState(() {});
+                },
+              ),
+          ],
+        ),
+      ],
     );
   }
 

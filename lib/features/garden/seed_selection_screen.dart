@@ -360,7 +360,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
       await ref.read(gardenProvider.notifier).plantSeed(_selectedSeed!);
       await Hive.box('settings').put('onboarding_completed', true);
       await Future.delayed(const Duration(milliseconds: 1500));
-      if (mounted) context.go('/home');
+      if (mounted) context.go('/today');
     } catch (e) {
       if (mounted) {
         setState(() => _isPlanting = false);

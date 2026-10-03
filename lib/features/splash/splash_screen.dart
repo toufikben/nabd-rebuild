@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen> {
       context.go('/lock');
     } else {
       BiometricService().markColdStartComplete();
-      context.go('/journal');
+      context.go('/today');
     }
   }
 

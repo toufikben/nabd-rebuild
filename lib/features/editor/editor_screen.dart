@@ -41,7 +41,10 @@ enum _LeaveAction { save, discard, stay }
 class EditorScreen extends ConsumerStatefulWidget {
   final String? entryId;
 
-  const EditorScreen({super.key, this.entryId});
+  /// A mood chosen before writing, from the check-in on the Today tab.
+  final String? initialMood;
+
+  const EditorScreen({super.key, this.entryId, this.initialMood});
 
   @override
   ConsumerState<EditorScreen> createState() => _EditorScreenState();
@@ -98,6 +101,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final id = widget.entryId;
     if (id == null) {
       _entryId = const Uuid().v4();
+      final mood = widget.initialMood;
+      if (mood != null && Mood.getById(mood) != null) _moodId = mood;
     } else {
       _entryId = id;
       final entry = _db.findEntry(id);
