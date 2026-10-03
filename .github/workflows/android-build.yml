@@ -65,18 +65,26 @@ jobs:
         run: flutter build apk --debug
       - name: Build debug AAB
         run: flutter build appbundle --debug
+      # A pull request only needs to prove the app builds. Uploading ~230 MB
+      # of debug binaries on every push filled the account's artifact quota
+      # and turned green builds red, so artifacts come from main and manual
+      # runs only, and expire after a week.
       - name: Upload debug APK
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: nabd-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+          retention-days: 7
       - name: Upload debug AAB
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: nabd-debug-aab
           path: build/app/outputs/bundle/debug/app-debug.aab
           if-no-files-found: error
+          retention-days: 7
 
   release-build:
     name: Build signed release APK and AAB
@@ -174,11 +182,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nabd-release-apk
+          retention-days: 30
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
       - name: Upload release AAB
         uses: actions/upload-artifact@v4
         with:
           name: nabd-release-aab
+          retention-days: 30
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
