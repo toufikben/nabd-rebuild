@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
@@ -8,8 +9,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Reminders are rescheduled after a reboot or an app update. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- AdMob: مطلوب لتحميل الإعلانات -->
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <!-- No advertising ID: some libraries merge it in, so remove it outright. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <application
         android:label="@string/app_name"
@@ -18,21 +19,6 @@
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:usesCleartextTraffic="false">
-
-        <!-- ═══════════════════════════════════════════════════════════
-             AdMob App ID — يُحقن من ADMOB_ANDROID_APP_ID في Release
-             ═══════════════════════════════════════════════════════════ -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="${admobAppId}" />
-
-        <!-- تحسين تهيئة AdMob وتحميل الإعلانات -->
-        <meta-data
-            android:name="com.google.android.gms.ads.flag.OPTIMIZE_INITIALIZATION"
-            android:value="true" />
-        <meta-data
-            android:name="com.google.android.gms.ads.flag.OPTIMIZE_AD_LOADING"
-            android:value="true" />
 
         <activity
             android:name=".MainActivity"

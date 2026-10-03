@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:path_provider/path_provider.dart';
@@ -76,7 +75,6 @@ Future<void> _initializeDeferredServices() async {
   await NotificationService.restoreScheduledReminder();
   await SettingsService.init();
   await EncryptionService().initialize();
-  await MobileAds.instance.initialize();
 }
 
 /// Shown when the encrypted store cannot be opened, typically because the
