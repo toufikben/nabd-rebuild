@@ -700,6 +700,19 @@ class S {
     'futureLetters.written': 'كُتبت: {d}',
     'letters.kindFuture': 'رسالة إلى المستقبل',
     'letters.kindUnsent': 'رسالة لم تُرسل',
+    'editor.date': 'تاريخ المدخل',
+    'editor.dictate': 'إملاء صوتي',
+    'editor.dictate.stop': 'إيقاف الإملاء',
+    'editor.dictation.unavailable': 'الإملاء الصوتي غير متاح على هذا الجهاز',
+    'editor.images.limit': 'وصلت إلى الحد الأقصى للصور في المدخل',
+    'editor.words': 'كلمة',
+    'editor.notFound': 'لم يعد هذا المدخل موجودًا',
+    'editor.recording': 'جارٍ التسجيل',
+    'editor.media.failed': 'تعذّر حفظ الملف',
+    'editor.audio.replace': 'استبدال التسجيل',
+    'audio.play': 'تشغيل',
+    'audio.pause': 'إيقاف مؤقت',
+    'audio.remove': 'إزالة التسجيل',
   };
 
   static const Map<String, String> en = <String, String>{
@@ -1399,6 +1412,19 @@ class S {
     'futureLetters.written': 'Written: {d}',
     'letters.kindFuture': 'Future letter',
     'letters.kindUnsent': 'Unsent letter',
+    'editor.date': 'Entry date',
+    'editor.dictate': 'Dictate',
+    'editor.dictate.stop': 'Stop dictation',
+    'editor.dictation.unavailable': 'Dictation is not available on this device',
+    'editor.images.limit': 'This entry already has the most photos it can hold',
+    'editor.words': 'words',
+    'editor.notFound': 'This entry no longer exists',
+    'editor.recording': 'Recording',
+    'editor.media.failed': 'The file could not be saved',
+    'editor.audio.replace': 'Replace recording',
+    'audio.play': 'Play',
+    'audio.pause': 'Pause',
+    'audio.remove': 'Remove recording',
   };
 
   /// Every key known to the table, used by the parity test.

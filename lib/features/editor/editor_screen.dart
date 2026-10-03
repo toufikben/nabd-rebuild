@@ -5,21 +5,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:record/record.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../core/constants.dart';
 import '../../core/l10n/app_localizations.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/storage.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../models/tag.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
-import '../../services/motivation_service.dart';
+import '../../services/media_vault.dart';
 import '../../services/monetization_service.dart';
+import '../../services/motivation_service.dart';
+import '../../services/voice_to_text_service.dart';
+import '../../widgets/audio_note_player.dart';
 import '../../widgets/mood_picker.dart';
-import '../../core/storage.dart';
+import '../../widgets/vault_image.dart';
 
+enum _LeaveAction { save, discard, stay }
+
+/// Writing and editing one journal entry.
+///
+/// Saving rules:
+///  • Autosave keeps the draft safe while typing; it never opens the paywall
+///    and never rewards the garden or achievements.
+///  • Every save of one editor session writes the same entry id, so an
+///    autosave racing a manual save can never create a duplicate.
+///  • "Discard" really discards: a new entry is deleted, an edited entry is
+///    put back exactly as it was opened, and media added meanwhile is removed.
 class EditorScreen extends ConsumerStatefulWidget {
   final String? entryId;
 
@@ -30,229 +47,246 @@ class EditorScreen extends ConsumerStatefulWidget {
 }
 
 class _EditorScreenState extends ConsumerState<EditorScreen> {
-  late AppLocalizations l10n;
   final DatabaseService _db = DatabaseService();
+  final MediaVault _media = MediaVault();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-  final AudioRecorder _recorder = AudioRecorder();
+  /// Created on first use: the plugin opens a native recorder on creation,
+  /// which an editor that never records does not need.
+  AudioRecorder? _recorderInstance;
+  AudioRecorder get _recorder => _recorderInstance ??= AudioRecorder();
+  final VoiceToTextService _voice = VoiceToTextService();
 
-  JournalEntry? _existing;
+  /// The entry as it was when the editor opened; null for a new entry.
+  JournalEntry? _original;
+
+  /// The version last written to storage; null until the first save.
+  JournalEntry? _saved;
+
+  late final String _entryId;
+  bool _missing = false;
+  DateTime _createdAt = DateTime.now();
   String? _moodId;
-  List<String> _tags = [];
-  List<String> _imagePaths = [];
+  List<String> _tags = const [];
+  List<String> _imagePaths = const [];
   String? _audioPath;
+
+  /// Media files created in this session, removed on leave unless an entry
+  /// still points at them.
+  final Set<String> _sessionMedia = {};
+
   bool _isRecording = false;
+  String? _recordingPath;
+  int _recordSeconds = 0;
+  Timer? _recordTimer;
+
+  bool _isDictating = false;
+  String _dictationBase = '';
+
   bool _isSaving = false;
-  bool _draftReady = false;
-  bool _isNewEntry = false;
+  Future<void>? _inFlight;
+  bool _rewarded = false;
+  bool _leaving = false;
   Timer? _autosaveTimer;
+
+  bool get _isNewEntry => _original == null;
 
   @override
   void initState() {
     super.initState();
-    _isNewEntry = widget.entryId == null;
-    _titleController.addListener(_onDraftChanged);
-    _contentController.addListener(_onDraftChanged);
-    _loadEntry();
-  }
-
-  void _loadEntry() {
-    if (widget.entryId == null) {
-      _draftReady = true;
-      return;
-    }
-    try {
-      final entries = _db.getAllEntries();
-      final entry = entries.firstWhere((e) => e.id == widget.entryId);
-      setState(() {
-        _existing = entry;
+    final id = widget.entryId;
+    if (id == null) {
+      _entryId = const Uuid().v4();
+    } else {
+      _entryId = id;
+      final entry = _db.findEntry(id);
+      if (entry == null) {
+        _missing = true;
+      } else {
+        _original = entry;
+        _saved = entry;
         _titleController.text = entry.title;
         _contentController.text = entry.content;
+        _createdAt = entry.createdAt;
         _moodId = entry.mood.isEmpty ? null : entry.mood;
-        _tags = List<String>.from(entry.tags);
-        _imagePaths = List<String>.from(entry.imagePaths);
+        _tags = List.of(entry.tags);
+        _imagePaths = List.of(entry.imagePaths);
         _audioPath = entry.audioPath;
-        _draftReady = true;
-      });
-    } catch (error) {
-      debugPrint('Unable to load journal entry: $error');
-    }
-  }
-
-  void _onDraftChanged() {
-    if (!_draftReady || !mounted) return;
-    _autosaveTimer?.cancel();
-    _autosaveTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted && _hasUnsavedChanges) {
-        unawaited(_saveEntry(closeAfterSave: false));
       }
-    });
-    setState(() {});
-  }
-
-  bool get _hasUnsavedChanges {
-    final existing = _existing;
-    if (existing == null) {
-      return _titleController.text.trim().isNotEmpty ||
-          _contentController.text.trim().isNotEmpty ||
-          _moodId != null ||
-          _tags.isNotEmpty ||
-          _imagePaths.isNotEmpty ||
-          _audioPath != null;
     }
-    return _titleController.text.trim() != existing.title ||
-        _contentController.text.trim() != existing.content ||
-        (_moodId ?? '') != existing.mood ||
-        !_sameList(_tags, existing.tags) ||
-        !_sameList(_imagePaths, existing.imagePaths) ||
-        _audioPath != existing.audioPath;
-  }
-
-  bool _sameList(List<String> first, List<String> second) {
-    if (first.length != second.length) return false;
-    for (var i = 0; i < first.length; i++) {
-      if (first[i] != second[i]) return false;
-    }
-    return true;
+    _titleController.addListener(_onDraftChanged);
+    _contentController.addListener(_onDraftChanged);
   }
 
   @override
   void dispose() {
     _autosaveTimer?.cancel();
+    _recordTimer?.cancel();
+    if (_isDictating) unawaited(_voice.stopListening());
     _titleController.dispose();
     _contentController.dispose();
-    _recorder.dispose();
+    final recorder = _recorderInstance;
+    if (recorder != null) unawaited(recorder.dispose());
     super.dispose();
   }
 
-  Future<void> _saveEntry({bool closeAfterSave = true}) async {
-    if (_titleController.text.trim().isEmpty &&
-        _contentController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.t('editor.empty'))),
+  // ─── Draft state ──────────────────────────────────────────────────────
+
+  void _onDraftChanged() {
+    if (_missing || !mounted) return;
+    _scheduleAutosave();
+    setState(() {});
+  }
+
+  void _scheduleAutosave() {
+    _autosaveTimer?.cancel();
+    _autosaveTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && !_leaving && _hasUnsavedChanges) {
+        unawaited(_persist(explicit: false));
+      }
+    });
+  }
+
+  /// Any change outside the two text fields goes through here so it is both
+  /// redrawn and autosaved.
+  void _update(VoidCallback change) {
+    setState(change);
+    _scheduleAutosave();
+  }
+
+  String get _title => _titleController.text.trim();
+  String get _content => _contentController.text.trim();
+  bool get _isEmpty => _title.isEmpty && _content.isEmpty;
+
+  JournalEntry _buildEntry() {
+    final base = _saved ?? _original;
+    final now = DateTime.now();
+    if (base == null) {
+      return JournalEntry(
+        id: _entryId,
+        title: _title,
+        content: _content,
+        createdAt: _createdAt,
+        updatedAt: now,
+        mood: _moodId ?? '',
+        tags: List.of(_tags),
+        imagePaths: List.of(_imagePaths),
+        audioPath: _audioPath,
       );
-      return;
     }
+    return base.copyWith(
+      title: _title,
+      content: _content,
+      createdAt: _createdAt,
+      updatedAt: now,
+      mood: _moodId ?? '',
+      tags: List.of(_tags),
+      imagePaths: List.of(_imagePaths),
+      audioPath: _audioPath,
+    );
+  }
 
-    final monetization = ref.read(monetizationProvider.notifier);
-    if (_existing == null &&
-        !monetization.isProActive &&
-        !_db.canCreateFreeEntry()) {
-      if (mounted) context.push('/paywall');
-      return;
+  bool get _hasUnsavedChanges {
+    final saved = _saved;
+    if (saved == null) {
+      return !_isEmpty ||
+          _moodId != null ||
+          _tags.isNotEmpty ||
+          _imagePaths.isNotEmpty ||
+          _audioPath != null;
     }
+    return _title != saved.title ||
+        _content != saved.content ||
+        (_moodId ?? '') != saved.mood ||
+        _createdAt != saved.createdAt ||
+        !_sameList(_tags, saved.tags) ||
+        !_sameList(_imagePaths, saved.imagePaths) ||
+        _audioPath != saved.audioPath;
+  }
 
-    setState(() => _isSaving = true);
+  static bool _sameList(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
+  // ─── Saving ───────────────────────────────────────────────────────────
+
+  /// Saves one at a time: a save that arrives while another runs waits for
+  /// it, then writes the newest text under the same id.
+  Future<bool> _persist({required bool explicit}) async {
+    while (_inFlight != null) {
+      await _inFlight;
+    }
+    final done = Completer<void>();
+    _inFlight = done.future;
     try {
-      final now = DateTime.now();
-      final entry = _existing != null
-          ? _existing!.copyWith(
-              title: _titleController.text.trim(),
-              content: _contentController.text.trim(),
-              mood: _moodId ?? '',
-              tags: _tags,
-              imagePaths: _imagePaths,
-              audioPath: _audioPath,
-              updatedAt: now,
-            )
-          : JournalEntry(
-              title: _titleController.text.trim(),
-              content: _contentController.text.trim(),
-              createdAt: now,
-              updatedAt: now,
-              mood: _moodId ?? '',
-              tags: _tags,
-              imagePaths: _imagePaths,
-              audioPath: _audioPath,
-            );
+      return await _persistNow(explicit: explicit);
+    } finally {
+      _inFlight = null;
+      done.complete();
+    }
+  }
 
-      if (_existing != null) {
-        await _db.updateEntry(entry);
+  Future<bool> _persistNow({required bool explicit}) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (_isEmpty) {
+      if (explicit) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.t('editor.empty'))));
+      }
+      return false;
+    }
+
+    final isPro = ref.read(monetizationProvider).isPro;
+    if (_saved == null && !isPro && !_db.canCreateFreeEntry()) {
+      if (explicit && mounted) unawaited(context.push('/paywall'));
+      return false;
+    }
+
+    if (mounted) setState(() => _isSaving = true);
+    try {
+      final entry = _buildEntry();
+      if (_saved == null) {
+        await _db.addEntry(entry, isPro: isPro);
       } else {
-        await _db.addEntry(entry,
-            isPro: ref.read(monetizationProvider.notifier).isProActive);
-        await _processPostSave(entry);
+        await _db.updateEntry(entry);
       }
-      _existing = entry;
-
-      if (mounted) {
-        setState(() {});
-        if (closeAfterSave) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.t('editor.saved'))),
-          );
-          context.pop();
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.t('common.error')}: $e')),
+      _saved = entry;
+      if (explicit) await _rewardIfNew();
+      return true;
+    } catch (error) {
+      if (explicit) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('${l10n.t('common.error')}: $error')),
         );
       }
+      return false;
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
   }
 
-  Future<void> _handleBack() async {
-    _autosaveTimer?.cancel();
-    if (!_hasUnsavedChanges) {
-      if (mounted) context.pop();
-      return;
-    }
-
-    final length = _titleController.text.trim().length +
-        _contentController.text.trim().length;
-    if (length < 20) {
-      if (_isNewEntry && _existing != null) {
-        await _db.deleteEntry(_existing!.id);
-      }
-      if (mounted) context.pop();
-      return;
-    }
-
-    if (!mounted) return;
-    final action = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.t('editor.unsaved.title')),
-        content: Text(l10n.t('editor.unsaved.body')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.discard')),
-            child: Text(l10n.t('editor.unsaved.discard')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.cancel')),
-            child: Text(l10n.t('editor.unsaved.cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, l10n.t('editor.unsaved.save')),
-            child: Text(l10n.t('editor.unsaved.save')),
-          ),
-        ],
-      ),
-    );
-    if (!mounted) return;
-    if (action == l10n.t('editor.unsaved.save')) {
-      await _saveEntry();
-    } else if (action == l10n.t('editor.unsaved.discard')) {
-      if (_isNewEntry && _existing != null) {
-        await _db.deleteEntry(_existing!.id);
-      }
-      if (mounted) context.pop();
-    }
-  }
-
-  Future<void> _processPostSave(JournalEntry entry) async {
+  /// A new entry waters the garden and is checked for achievements once,
+  /// when the writer is done with it, not on every autosave.
+  Future<void> _rewardIfNew() async {
+    final saved = _saved;
+    if (_rewarded || !_isNewEntry || saved == null) return;
+    _rewarded = true;
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref.read(gardenProvider.notifier).water(entry);
+      final result = await ref.read(gardenProvider.notifier).water(saved);
+      if (result.ok) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.t(result.messageKey))),
+        );
+      }
     } catch (error) {
       debugPrint('Garden update failed after journal save: $error');
     }
-
     try {
       await AchievementService().unlockFromJournal(
         _db.getAllEntries(),
@@ -263,393 +297,123 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     }
   }
 
+  Future<void> _saveAndClose() async {
+    _autosaveTimer?.cancel();
+    await _stopCapture();
+    final ok = await _persist(explicit: true);
+    if (!ok || !mounted) return;
+    await _leave();
+  }
+
+  // ─── Leaving ──────────────────────────────────────────────────────────
+
+  Future<void> _handleBack() async {
+    if (_leaving) return;
+    _autosaveTimer?.cancel();
+    await _stopCapture();
+    if (_missing) return _leave();
+
+    if (!_hasUnsavedChanges) {
+      // Autosave already holds everything; finishing still counts.
+      await _rewardIfNew();
+      return _leave();
+    }
+
+    // A few stray characters with nothing attached are not worth a dialog.
+    final length = _title.length + _content.length;
+    if (_isNewEntry &&
+        length < 20 &&
+        _imagePaths.isEmpty &&
+        _audioPath == null) {
+      await _discard();
+      return;
+    }
+
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+    final action = await showDialog<_LeaveAction>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.t('editor.unsaved.title')),
+        content: Text(l10n.t('editor.unsaved.body')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, _LeaveAction.discard),
+            child: Text(l10n.t('editor.unsaved.discard')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, _LeaveAction.stay),
+            child: Text(l10n.t('editor.unsaved.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, _LeaveAction.save),
+            child: Text(l10n.t('editor.unsaved.save')),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    switch (action) {
+      case _LeaveAction.save:
+        await _saveAndClose();
+      case _LeaveAction.discard:
+        await _discard();
+      case _LeaveAction.stay:
+      case null:
+        break;
+    }
+  }
+
+  /// Puts storage back as it was before this editor opened.
+  Future<void> _discard() async {
+    final original = _original;
+    final saved = _saved;
+    if (original == null) {
+      if (saved != null) await _db.deleteEntry(saved.id);
+    } else if (saved != null && !identical(saved, original)) {
+      await _db.updateEntry(original);
+    }
+    await _leave();
+  }
+
+  Future<void> _leave() async {
+    _leaving = true;
+    await _db.discardDraftMedia(_sessionMedia.toList());
+    if (mounted) context.pop();
+  }
+
+  // ─── Entry actions ────────────────────────────────────────────────────
+
   Future<void> _toggleFavorite() async {
-    final entry = _existing;
+    final entry = _saved;
     if (entry == null) return;
     final updated = entry.copyWith(isFavorite: !entry.isFavorite);
     await _db.updateEntry(updated);
-    if (mounted) setState(() => _existing = updated);
+    if (!mounted) return;
+    setState(() {
+      _saved = updated;
+      if (_original != null) {
+        _original = _original!.copyWith(isFavorite: updated.isFavorite);
+      }
+    });
   }
 
   Future<void> _togglePinned() async {
-    final entry = _existing;
+    final entry = _saved;
     if (entry == null) return;
     final updated = entry.copyWith(isPinned: !entry.isPinned);
     await _db.updateEntry(updated);
-    if (mounted) setState(() => _existing = updated);
-  }
-
-  Future<void> _pickImages() async {
-    final picker = ImagePicker();
-    final images = await picker.pickMultiImage();
-    if (images.isEmpty) return;
-
-    final docs = await getApplicationDocumentsDirectory();
-    final imagesDir = Directory('${docs.path}/images');
-    if (!await imagesDir.exists()) await imagesDir.create(recursive: true);
-
-    final newPaths = <String>[];
-    for (final img in images) {
-      final newPath =
-          '${imagesDir.path}/${DateTime.now().millisecondsSinceEpoch}_${img.name}';
-      await File(img.path).copy(newPath);
-      newPaths.add(newPath);
-    }
-
-    if (mounted) setState(() => _imagePaths = [..._imagePaths, ...newPaths]);
-  }
-
-  Future<void> _toggleRecording() async {
-    if (_isRecording) {
-      final path = await _recorder.stop();
-      if (!mounted) return;
-      setState(() {
-        _isRecording = false;
-        _audioPath = path;
-      });
-      return;
-    }
-
-    if (!await _recorder.hasPermission()) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.t('editor.audio.denied'))),
-        );
-      }
-      return;
-    }
-
-    final docs = await getApplicationDocumentsDirectory();
-    final audioDir = Directory('${docs.path}/audio');
-    if (!await audioDir.exists()) await audioDir.create(recursive: true);
-
-    final path =
-        '${audioDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
-
     if (!mounted) return;
-    await _recorder.start(const RecordConfig(), path: path);
-    if (mounted) setState(() => _isRecording = true);
-  }
-
-  Future<void> _pickMood() async {
-    final moodId = await MoodPicker.show(
-      context,
-      currentMoodId: _moodId,
-      langCode: l10n.locale.languageCode,
-      moods: Mood.journalMoods,
-    );
-    if (mounted) setState(() => _moodId = moodId);
-  }
-
-  Future<void> _addTag() async {
-    final tag = await showDialog<String>(
-      context: context,
-      builder: (_) => const _AddTagDialog(),
-    );
-
-    if (mounted && tag != null && tag.isNotEmpty && !_tags.contains(tag)) {
-      setState(() => _tags = [..._tags, tag]);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    l10n = AppLocalizations.of(context);
-    final mood = _moodId == null ? null : Mood.getById(_moodId!);
-
-    return PopScope<void>(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) unawaited(_handleBack());
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(_existing == null ? l10n.t('editor.title.new') : l10n.t('editor.title.edit')),
-          actions: [
-            if (_existing != null)
-              IconButton(
-                tooltip:
-                    _existing!.isFavorite ? l10n.t('editor.favorite.remove') : l10n.t('editor.favorite.add'),
-                icon: Icon(_existing!.isFavorite
-                    ? Icons.favorite
-                    : Icons.favorite_border),
-                onPressed: _toggleFavorite,
-              ),
-            if (_existing != null)
-              IconButton(
-                tooltip: _existing!.isPinned ? l10n.t('editor.pin.unpin') : l10n.t('editor.pin'),
-                icon: Icon(_existing!.isPinned
-                    ? Icons.push_pin
-                    : Icons.push_pin_outlined),
-                onPressed: _togglePinned,
-              ),
-            if (_existing != null)
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: AppColors.danger),
-                onPressed: () => _confirmDelete(),
-              ),
-            IconButton(
-              icon: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.check),
-              onPressed: _isSaving ? null : _saveEntry,
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              // ─── Mood + Tags bar ───
-              Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    // Mood
-                    GestureDetector(
-                      onTap: _pickMood,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: mood != null
-                              ? mood.color.withValues(alpha: 0.15)
-                              : Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: mood != null
-                                ? mood.color.withValues(alpha: 0.5)
-                                : AppColors.textTertiary.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              mood?.emoji ?? '😐',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              mood?.label('en') ?? l10n.t('editor.mood'),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: mood?.color ?? AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    // Add tag button
-                    IconButton(
-                      onPressed: _addTag,
-                      icon: const Icon(Icons.label_outline, size: 20),
-                      tooltip: l10n.t('editor.tag.add'),
-                    ),
-                    const Spacer(),
-                    // Audio recorder
-                    IconButton(
-                      onPressed: _toggleRecording,
-                      icon: Icon(
-                        _isRecording ? Icons.stop_circle : Icons.mic,
-                        color: _isRecording ? AppColors.danger : null,
-                      ),
-                      tooltip: _isRecording ? l10n.t('editor.audio.stop') : l10n.t('editor.audio.record'),
-                    ),
-                    // Image picker
-                    IconButton(
-                      onPressed: _pickImages,
-                      icon: const Icon(Icons.image_outlined),
-                      tooltip: l10n.t('editor.images.add'),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ─── Tags chips ───
-              if (_tags.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: _tags.map((tag) {
-                      return Chip(
-                        label: Text('#${localizedTagName(l10n, tag)}'),
-                        deleteIcon: const Icon(Icons.close, size: 14),
-                        onDeleted: () {
-                          setState(() => _tags.remove(tag));
-                        },
-                        backgroundColor:
-                            AppColors.primary.withValues(alpha: 0.1),
-                        labelStyle: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.primary,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-              SizedBox(height: 8),
-
-              // ─── Title ───
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _titleController,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: l10n.t('editor.title.hint'),
-                    border: InputBorder.none,
-                    hintStyle: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textTertiary,
-                    ),
-                  ),
-                ),
-              ),
-
-              // ─── Divider ───
-              Divider(indent: 16, endIndent: 16),
-
-              // ─── Content ───
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TextField(
-                    controller: _contentController,
-                    maxLines: null,
-                    expands: true,
-                    style: TextStyle(
-                      fontSize: 15,
-                      height: 1.7,
-                      color: AppColors.textPrimary,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: l10n.t('editor.body.hint'),
-                      border: InputBorder.none,
-                      hintStyle: TextStyle(
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // ─── Images preview ───
-              if (_imagePaths.isNotEmpty)
-                Container(
-                  height: 100,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _imagePaths.length,
-                    itemBuilder: (_, i) {
-                      final path = _imagePaths[i];
-                      return Stack(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: DecorationImage(
-                                image: FileImage(File(path)),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: -4,
-                            right: 4,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() => _imagePaths.removeAt(i));
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: const BoxDecoration(
-                                  color: AppColors.danger,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.close,
-                                  size: 12,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-
-              // ─── Audio indicator ───
-              if (_audioPath != null)
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.audiotrack,
-                          color: AppColors.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            l10n.t('editor.audio.attached'),
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.close,
-                            size: 18,
-                            color: AppColors.danger,
-                          ),
-                          onPressed: () => setState(() => _audioPath = null),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
+    setState(() {
+      _saved = updated;
+      if (_original != null) {
+        _original = _original!.copyWith(isPinned: updated.isPinned);
+      }
+    });
   }
 
   Future<void> _confirmDelete() async {
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -662,22 +426,577 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+            ),
             child: Text(l10n.t('editor.delete.action')),
           ),
         ],
       ),
     );
+    if (ok != true) return;
+    _autosaveTimer?.cancel();
+    final saved = _saved;
+    if (saved != null) await _db.deleteEntry(saved.id);
+    await _leave();
+  }
 
-    if (ok == true && _existing != null) {
-      await _db.deleteEntry(_existing!.id);
-      if (mounted) context.pop();
+  // ─── Details: date, mood, tags ────────────────────────────────────────
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _createdAt.isAfter(now) ? now : _createdAt,
+      firstDate: DateTime(2000),
+      lastDate: now,
+      helpText: AppLocalizations.of(context).t('editor.date'),
+    );
+    if (picked == null || !mounted) return;
+    // Keep the time of day; only the calendar day moves.
+    _update(() => _createdAt = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          _createdAt.hour,
+          _createdAt.minute,
+        ));
+  }
+
+  Future<void> _pickMood() async {
+    final l10n = AppLocalizations.of(context);
+    final moodId = await MoodPicker.show(
+      context,
+      currentMoodId: _moodId,
+      langCode: l10n.locale.languageCode,
+      moods: Mood.journalMoods,
+    );
+    if (mounted && moodId != null) _update(() => _moodId = moodId);
+  }
+
+  Future<void> _addTag() async {
+    final tag = await showDialog<String>(
+      context: context,
+      builder: (_) => const _AddTagDialog(),
+    );
+    if (mounted && tag != null && tag.isNotEmpty && !_tags.contains(tag)) {
+      _update(() => _tags = [..._tags, tag]);
     }
+  }
+
+  // ─── Media ────────────────────────────────────────────────────────────
+
+  Future<void> _pickImages() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final room = AppConstants.maxImagesPerEntry - _imagePaths.length;
+    if (room <= 0) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('editor.images.limit'))),
+      );
+      return;
+    }
+    // Downscaled and recompressed at pick time: a journal photo does not
+    // need 12 megapixels, and backups stay small.
+    final picked = await ImagePicker().pickMultiImage(
+      maxWidth: 2048,
+      maxHeight: 2048,
+      imageQuality: 85,
+    );
+    if (picked.isEmpty) return;
+    if (picked.length > room) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('editor.images.limit'))),
+      );
+    }
+    final added = <String>[];
+    for (final image in picked.take(room)) {
+      try {
+        final stored = await _media.importFile(
+          File(image.path),
+          folder: MediaVault.imagesDir,
+          deleteSource: true,
+        );
+        added.add(stored);
+        _sessionMedia.add(stored);
+      } catch (error) {
+        debugPrint('Image import failed: $error');
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.t('editor.media.failed'))),
+        );
+      }
+    }
+    if (mounted && added.isNotEmpty) {
+      _update(() => _imagePaths = [..._imagePaths, ...added]);
+    }
+  }
+
+  void _removeImage(String path) {
+    _update(() => _imagePaths = _imagePaths.where((p) => p != path).toList());
+  }
+
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      await _stopRecording();
+      return;
+    }
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (!await _recorder.hasPermission()) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('editor.audio.denied'))),
+      );
+      return;
+    }
+    if (_isDictating) await _stopDictation();
+    // Recorded in the temp directory and moved into the vault on stop, so a
+    // plain copy never sits in the documents directory.
+    final temp = await getTemporaryDirectory();
+    final path =
+        '${temp.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    await _recorder.start(const RecordConfig(), path: path);
+    if (!mounted) return;
+    setState(() {
+      _isRecording = true;
+      _recordingPath = path;
+      _recordSeconds = 0;
+    });
+    _recordTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() => _recordSeconds++);
+      if (_recordSeconds >= AppConstants.maxAudioSeconds) {
+        unawaited(_stopRecording());
+      }
+    });
+  }
+
+  Future<void> _stopRecording() async {
+    if (!_isRecording) return;
+    _recordTimer?.cancel();
+    final path = await _recorder.stop() ?? _recordingPath;
+    if (mounted) setState(() => _isRecording = false);
+    if (path == null) return;
+    try {
+      final stored = await _media.importFile(
+        File(path),
+        folder: MediaVault.audioDir,
+        deleteSource: true,
+      );
+      _sessionMedia.add(stored);
+      if (mounted) _update(() => _audioPath = stored);
+    } catch (error) {
+      debugPrint('Recording import failed: $error');
+    }
+  }
+
+  Future<void> _toggleDictation() async {
+    if (_isDictating) {
+      await _stopDictation();
+      return;
+    }
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (_isRecording) await _stopRecording();
+    if (!await _voice.initialize()) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('editor.dictation.unavailable'))),
+      );
+      return;
+    }
+    _dictationBase = _contentController.text.trimRight();
+    setState(() => _isDictating = true);
+    await _voice.startListening(
+      localeId: l10n.isArabic ? 'ar-SA' : 'en-US',
+      onResult: (words) {
+        if (!mounted) return;
+        final joiner = _dictationBase.isEmpty ? '' : ' ';
+        _contentController.value = TextEditingValue(
+          text: '$_dictationBase$joiner$words',
+          selection: TextSelection.collapsed(
+            offset: _dictationBase.length + joiner.length + words.length,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _stopDictation() async {
+    if (!_isDictating) return;
+    await _voice.stopListening();
+    if (mounted) setState(() => _isDictating = false);
+  }
+
+  Future<void> _stopCapture() async {
+    await _stopRecording();
+    await _stopDictation();
+  }
+
+  // ─── UI ───────────────────────────────────────────────────────────────
+
+  int get _wordCount =>
+      _content.isEmpty ? 0 : _content.split(RegExp(r'\s+')).length;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final saved = _saved;
+
+    if (_missing) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(child: Text(l10n.t('editor.notFound'))),
+      );
+    }
+
+    return PopScope<void>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) unawaited(_handleBack());
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _isNewEntry ? l10n.t('editor.title.new') : l10n.t('editor.title.edit'),
+          ),
+          actions: [
+            if (saved != null) ...[
+              IconButton(
+                tooltip: saved.isFavorite
+                    ? l10n.t('editor.favorite.remove')
+                    : l10n.t('editor.favorite.add'),
+                icon: Icon(
+                  saved.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: saved.isFavorite ? scheme.error : null,
+                ),
+                onPressed: _toggleFavorite,
+              ),
+              IconButton(
+                tooltip: saved.isPinned
+                    ? l10n.t('editor.pin.unpin')
+                    : l10n.t('editor.pin'),
+                icon: Icon(
+                  saved.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                ),
+                onPressed: _togglePinned,
+              ),
+              IconButton(
+                tooltip: l10n.t('editor.delete.action'),
+                icon: Icon(Icons.delete_outline, color: scheme.error),
+                onPressed: _confirmDelete,
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: IconButton.filledTonal(
+                tooltip: l10n.t('editor.unsaved.save'),
+                icon: _isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.check_rounded),
+                onPressed: _isSaving ? null : _saveAndClose,
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _DetailsBar(
+                date: _createdAt,
+                locale: l10n.locale.languageCode,
+                mood: _moodId == null ? null : Mood.getById(_moodId!),
+                tags: _tags,
+                onDate: _pickDate,
+                onMood: _pickMood,
+                onAddTag: _addTag,
+                onRemoveTag: (tag) =>
+                    _update(() => _tags = _tags.where((t) => t != tag).toList()),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: _titleController,
+                  textCapitalization: TextCapitalization.sentences,
+                  style: theme.textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                  decoration: InputDecoration(
+                    hintText: l10n.t('editor.title.hint'),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    filled: false,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: TextField(
+                    controller: _contentController,
+                    maxLines: null,
+                    expands: true,
+                    textAlignVertical: TextAlignVertical.top,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: theme.textTheme.bodyLarge?.copyWith(height: 1.8),
+                    decoration: InputDecoration(
+                      hintText: l10n.t('editor.body.hint'),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
+                    ),
+                  ),
+                ),
+              ),
+              if (_imagePaths.isNotEmpty)
+                SizedBox(
+                  height: 96,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: _imagePaths.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (_, i) => _Thumbnail(
+                      path: _imagePaths[i],
+                      onOpen: () =>
+                          VaultGalleryScreen.open(context, _imagePaths, i),
+                      onRemove: () => _removeImage(_imagePaths[i]),
+                    ),
+                  ),
+                ),
+              if (_audioPath != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: AudioNotePlayer(
+                    key: ValueKey(_audioPath),
+                    storedPath: _audioPath!,
+                    onRemove: () => _update(() => _audioPath = null),
+                  ),
+                ),
+              _Toolbar(
+                isRecording: _isRecording,
+                recordSeconds: _recordSeconds,
+                isDictating: _isDictating,
+                wordCount: _wordCount,
+                onDictate: _toggleDictation,
+                onRecord: _toggleRecording,
+                onPhoto: _pickImages,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
-/// Owns its [TextEditingController] so the controller is only released once the
-/// dialog route has finished animating out and its `TextField` is unmounted.
+class _DetailsBar extends StatelessWidget {
+  const _DetailsBar({
+    required this.date,
+    required this.locale,
+    required this.mood,
+    required this.tags,
+    required this.onDate,
+    required this.onMood,
+    required this.onAddTag,
+    required this.onRemoveTag,
+  });
+
+  final DateTime date;
+  final String locale;
+  final Mood? mood;
+  final List<String> tags;
+  final VoidCallback onDate;
+  final VoidCallback onMood;
+  final VoidCallback onAddTag;
+  final ValueChanged<String> onRemoveTag;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final mood = this.mood;
+    return SizedBox(
+      height: 56,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        children: [
+          ActionChip(
+            avatar: const Icon(Icons.event_outlined, size: 18),
+            label: Text(DateFormat.MMMEd(locale).format(date)),
+            tooltip: l10n.t('editor.date'),
+            onPressed: onDate,
+          ),
+          const SizedBox(width: 8),
+          ActionChip(
+            avatar: Text(mood?.emoji ?? '🙂',
+                style: const TextStyle(fontSize: 16)),
+            label: Text(mood?.label(locale) ?? l10n.t('editor.mood')),
+            backgroundColor: mood?.color.withValues(alpha: 0.14),
+            side: mood == null
+                ? null
+                : BorderSide(color: mood.color.withValues(alpha: 0.4)),
+            onPressed: onMood,
+          ),
+          for (final tag in tags) ...[
+            const SizedBox(width: 8),
+            InputChip(
+              label: Text('#${localizedTagName(l10n, tag)}'),
+              onDeleted: () => onRemoveTag(tag),
+              backgroundColor: scheme.secondaryContainer.withValues(alpha: 0.6),
+            ),
+          ],
+          const SizedBox(width: 8),
+          ActionChip(
+            avatar: const Icon(Icons.sell_outlined, size: 18),
+            label: Text(l10n.t('editor.tag.add')),
+            onPressed: onAddTag,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Thumbnail extends StatelessWidget {
+  const _Thumbnail({
+    required this.path,
+    required this.onOpen,
+    required this.onRemove,
+  });
+
+  final String path;
+  final VoidCallback onOpen;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 88,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            top: 6,
+            child: GestureDetector(
+              onTap: onOpen,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: VaultImage(path),
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            top: 0,
+            end: 0,
+            child: Material(
+              color: scheme.inverseSurface,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: onRemove,
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Icon(Icons.close, size: 14, color: scheme.onInverseSurface),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Toolbar extends StatelessWidget {
+  const _Toolbar({
+    required this.isRecording,
+    required this.recordSeconds,
+    required this.isDictating,
+    required this.wordCount,
+    required this.onDictate,
+    required this.onRecord,
+    required this.onPhoto,
+  });
+
+  final bool isRecording;
+  final int recordSeconds;
+  final bool isDictating;
+  final int wordCount;
+  final VoidCallback onDictate;
+  final VoidCallback onRecord;
+  final VoidCallback onPhoto;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final minutes = (recordSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (recordSeconds % 60).toString().padLeft(2, '0');
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: l10n.t(isDictating ? 'editor.dictate.stop' : 'editor.dictate'),
+            onPressed: onDictate,
+            icon: Icon(
+              isDictating ? Icons.keyboard_voice : Icons.keyboard_voice_outlined,
+              color: isDictating ? scheme.primary : null,
+            ),
+          ),
+          IconButton(
+            tooltip: l10n.t(isRecording ? 'editor.audio.stop' : 'editor.audio.record'),
+            onPressed: onRecord,
+            icon: Icon(
+              isRecording ? Icons.stop_circle : Icons.mic_none_rounded,
+              color: isRecording ? scheme.error : null,
+            ),
+          ),
+          IconButton(
+            tooltip: l10n.t('editor.images.add'),
+            onPressed: onPhoto,
+            icon: const Icon(Icons.add_photo_alternate_outlined),
+          ),
+          const Spacer(),
+          if (isRecording)
+            Row(
+              children: [
+                Icon(Icons.fiber_manual_record, size: 12, color: scheme.error),
+                const SizedBox(width: 4),
+                Text(
+                  '${l10n.t('editor.recording')} $minutes:$seconds',
+                  style: theme.textTheme.labelMedium,
+                ),
+              ],
+            )
+          else
+            Text(
+              '$wordCount ${l10n.t('editor.words')}',
+              style: theme.textTheme.labelMedium
+                  ?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+          const SizedBox(width: 12),
+        ],
+      ),
+    );
+  }
+}
+
+/// Owns its [TextEditingController] so the controller is only released once
+/// the dialog route has finished animating out and its `TextField` is gone.
 class _AddTagDialog extends StatefulWidget {
   const _AddTagDialog();
 
@@ -703,6 +1022,7 @@ class _AddTagDialogState extends State<_AddTagDialog> {
         controller: _controller,
         decoration: InputDecoration(hintText: l10n.t('editor.tag.name')),
         autofocus: true,
+        onSubmitted: (value) => Navigator.pop(context, value.trim()),
       ),
       actions: [
         TextButton(

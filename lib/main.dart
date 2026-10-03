@@ -19,9 +19,9 @@ import 'services/settings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Arabic month and weekday names are loaded lazily by intl; without this the
-  // calendar and entry dates silently fall back to English.
-  await initializeDateFormatting('ar');
+  // Month and weekday names are loaded lazily by intl; without this the
+  // calendar and entry dates fail or silently fall back to English.
+  await initializeDateFormatting();
   Object? storageError;
   try {
     await Hive.initFlutter();
