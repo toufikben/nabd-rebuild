@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -460,16 +461,23 @@ class EncryptionService {
     required String password,
     required Uint8List salt,
   }) async {
+    // 100k rounds of pure-Dart PBKDF2 take a second or more on a modest
+    // phone; run them on a worker isolate so the UI keeps animating.
+    final bytes = await Isolate.run(() => _pbkdf2(password, salt));
+    return SecretKey(bytes);
+  }
+
+  static Future<List<int>> _pbkdf2(String password, Uint8List salt) async {
     final pbkdf2 = Pbkdf2(
       macAlgorithm: Hmac.sha256(),
       iterations: _iterations,
       bits: 256,
     );
-
-    return await pbkdf2.deriveKey(
+    final key = await pbkdf2.deriveKey(
       secretKey: SecretKey(utf8.encode(password)),
       nonce: salt,
     );
+    return key.extractBytes();
   }
 
   /// توليد salt عشوائي.

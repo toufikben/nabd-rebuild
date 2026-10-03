@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -19,6 +20,8 @@ import '../../services/passcode_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/vault_image.dart';
+import 'backup_password_dialog.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -31,17 +34,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final PrivacyService _privacy = PrivacyService();
   final BackupService _backup = BackupService();
   final BiometricService _biometric = BiometricService();
-
-  // These must outlive the dialog that borrows them. `showDialog` returns as
-  // soon as the route starts closing, so disposing a controller in a `finally`
-  // tears down the EditableText/Focus structure while the exit animation is
-  // still mounted. That trips `_dependents.isEmpty` and paints a red screen.
-  // Owning them as State fields means disposal only happens in dispose(),
-  // which the framework guarantees runs after teardown.
-  final TextEditingController _exportPasswordController =
-      TextEditingController();
-  final TextEditingController _restorePasswordController =
-      TextEditingController();
 
   bool _notificationsEnabled = false;
   bool _lockEnabled = false;
@@ -76,8 +68,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   void dispose() {
-    _exportPasswordController.dispose();
-    _restorePasswordController.dispose();
     super.dispose();
   }
 
@@ -612,63 +602,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Exports an encrypted backup. The user picks where the `.nabd` file goes,
   /// so a copy survives even if the app is uninstalled.
   Future<void> _exportData() async {
-    final passwordController = _exportPasswordController;
-    passwordController.clear();
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
-    String? destination;
-    var saved = false;
+    final password = await showDialog<String>(
+      context: context,
+      builder: (_) => const BackupPasswordDialog(confirm: true),
+    );
+    if (password == null || password.isEmpty || !mounted) return;
+
+    File? backup;
     try {
-      final password = await showDialog<String>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l10n.t('dialog.export.title')),
-          content: TextField(
-            controller: passwordController,
-            obscureText: true,
-            autofocus: true,
-            decoration: InputDecoration(labelText: l10n.t('dialog.export.password')),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.t('dialog.cancel')),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, passwordController.text),
-              child: Text(l10n.t('dialog.continue')),
-            ),
-          ],
-        ),
+      final created = await _withProgress(
+        l10n.t('dialog.save.creating'),
+        (onProgress) =>
+            _backup.createBackup(password: password, onProgress: onProgress),
       );
-      if (password == null || password.isEmpty || !mounted) return;
-
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.t('dialog.save.creating'))),
-      );
-      final backup = await _backup.createBackup(password: password);
+      backup = created;
       if (!mounted) return;
-
       // On Android and iOS the picker cannot hand back a writable path, so it
-      // requires the bytes up front. Reading them here also lets us drop the
-      // temp file straight after the save.
-      final bytes = await File(backup.path).readAsBytes();
-      destination = await FilePicker.platform.saveFile(
+      // requires the bytes up front.
+      final bytes = await created.readAsBytes();
+      final destination = await FilePicker.platform.saveFile(
         dialogTitle: l10n.t('dialog.save.title'),
-        fileName: p.basename(backup.path),
+        fileName: p.basename(created.path),
         type: FileType.any,
         bytes: bytes,
       );
       if (destination == null) {
-        await backup.delete().catchError((_) => backup);
         messenger.showSnackBar(
           SnackBar(content: Text(l10n.t('dialog.save.cancelled'))),
         );
         return;
       }
-
-      // Desktop and web return a path, so finish the write ourselves there.
+      // Desktop returns a path, so finish the write ourselves there.
       if (!kIsWeb && destination.isNotEmpty) {
         final target = File(destination);
         if (!await target.exists()) {
@@ -676,32 +642,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           await target.writeAsBytes(bytes, flush: true);
         }
       }
-      await backup.delete().catchError((_) => backup);
-
-      saved = true;
-      messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
         SnackBar(
-          content: Text('${l10n.t('dialog.save.done')}: ${p.basename(destination)}'),
+          content: Text(
+            '${l10n.t('dialog.save.done')}: ${p.basename(destination)}',
+          ),
           duration: const Duration(seconds: 5),
         ),
       );
-    } catch (e) {
-      messenger.hideCurrentSnackBar();
+    } catch (error) {
+      debugPrint('Export failed: $error');
       messenger.showSnackBar(
-        SnackBar(content: Text('${l10n.t('dialog.save.failed')}: $e')),
+        SnackBar(content: Text(l10n.t('dialog.save.failed'))),
       );
-      if (!saved) {
-        debugPrint('Export did not complete; destination=$destination');
-      }
+    } finally {
+      final file = backup;
+      if (file != null && await file.exists()) await file.delete();
     }
   }
 
   /// Restores an encrypted `.nabd` backup, letting the user merge with the
   /// current data or replace it wholesale.
   Future<void> _restoreData() async {
-    final passwordController = _restorePasswordController;
-    passwordController.clear();
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
     try {
@@ -715,72 +677,84 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
       final password = await showDialog<String>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l10n.t('dialog.restore.title')),
-          content: TextField(
-            controller: passwordController,
-            obscureText: true,
-            autofocus: true,
-            decoration: InputDecoration(labelText: l10n.t('dialog.export.password')),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.t('dialog.cancel')),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, passwordController.text),
-              child: Text(l10n.t('dialog.continue')),
-            ),
-          ],
-        ),
+        builder: (_) => const BackupPasswordDialog(confirm: false),
       );
       if (password == null || password.isEmpty || !mounted) return;
 
-      if (!mounted) return;
       final mode = await _askRestoreMode(l10n);
       if (mode == null || !mounted) return;
 
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.t('dialog.restore.restoring'))),
-      );
-      final result = await _backup.restoreBackup(
-        path,
-        password: password,
-        mode: mode,
+      final result = await _withProgress(
+        l10n.t('dialog.restore.restoring'),
+        (onProgress) => _backup.restoreBackup(
+          path,
+          password: password,
+          mode: mode,
+          onProgress: onProgress,
+        ),
       );
       if (!mounted) return;
-
-      messenger.hideCurrentSnackBar();
       if (!result.ok) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('${l10n.t('dialog.restore.failed')}: ${result.error ?? ''}')),
-        );
+        messenger.showSnackBar(SnackBar(
+          content: Text(l10n.t(result.error ?? 'backup.error.failed')),
+        ));
         return;
       }
 
+      final counts = '${result.entriesImported} ${l10n.t('dialog.restore.unit')} '
+          '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
+          '${result.audioRestored} ${l10n.t('dialog.restore.audio')})';
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            mode == RestoreMode.merge
-                ? '${l10n.t('dialog.restore.merged')} ${result.entriesImported}'
-                    ' ${l10n.t('dialog.restore.unit')} '
-                    '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
-                    '${result.audioRestored} ${l10n.t('dialog.restore.audio')})'
-                : '${l10n.t('dialog.restore.replaced')} ${result.entriesImported}'
-                    ' ${l10n.t('dialog.restore.unit')} '
-                    '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
-                    '${result.audioRestored} ${l10n.t('dialog.restore.audio')})',
+            '${l10n.t(mode == RestoreMode.merge ? 'dialog.restore.merged' : 'dialog.restore.replaced')} $counts',
           ),
           duration: const Duration(seconds: 5),
         ),
       );
+      VaultImage.clearCache();
       // Data changed underneath every screen, so ask listeners to refetch.
       ref.read(dataRevisionProvider.notifier).bump();
-    } catch (e) {
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(SnackBar(content: Text('${l10n.t('dialog.restore.failed')}: $e')));
+    } catch (error) {
+      debugPrint('Restore failed: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('backup.error.failed'))),
+      );
+    }
+  }
+
+  /// Runs [task] behind a modal progress dialog that cannot be dismissed.
+  Future<T> _withProgress<T>(
+    String label,
+    Future<T> Function(void Function(double) onProgress) task,
+  ) async {
+    final progress = ValueNotifier<double>(0);
+    final navigator = Navigator.of(context);
+    unawaited(showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: ValueListenableBuilder<double>(
+            valueListenable: progress,
+            builder: (_, value, __) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(value: value == 0 ? null : value),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ));
+    try {
+      return await task((value) => progress.value = value);
+    } finally {
+      navigator.pop();
+      progress.dispose();
     }
   }
 
