@@ -4,8 +4,11 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+import 'hive_value_equality.dart';
 
 /// EncryptionService — تشفير AES-256-GCM حقيقي مع مصادقة.
 ///
@@ -47,14 +50,20 @@ class EncryptionService {
     }
   }
 
-  SecretKey? _cachedKey;
+  /// Shared by every instance: after a rotation or a fresh key, a service
+  /// created earlier must not keep using the key it cached before.
+  static SecretKey? _cachedKey;
+
+  /// Forgets the cached key so each test starts from what storage holds.
+  @visibleForTesting
+  static void resetCachedKey() => _cachedKey = null;
 
   /// تهيئة المفتاح — يُستدعى مرة واحدة عند بدء التطبيق.
   ///
   /// لا يُنشأ مفتاح جديد إذا كانت بيانات Hive موجودة؛ في هذه الحالة يجب
   /// إظهار مسار استعادة آمن بدل الكتابة فوق البيانات القديمة.
   Future<void> initialize({bool hasExistingData = false}) async {
-    final stored = await _storage.read(key: _keyAlias);
+    final stored = await readSecret(_keyAlias);
     switch (keyAction(
       storedValue: stored,
       hasExistingData: hasExistingData,
@@ -73,7 +82,7 @@ class EncryptionService {
     // إنشاء مفتاح جديد
     final newKey = await _algorithm.newSecretKey();
     final bytes = await newKey.extractBytes();
-    await _storage.write(key: _keyAlias, value: base64Encode(bytes));
+    await writeSecret(_keyAlias, base64Encode(bytes));
     _cachedKey = newKey;
   }
 
@@ -85,14 +94,23 @@ class EncryptionService {
     return bytes;
   }
 
-  Future<String?> readMetadata(String key) => _storage.read(key: 'meta_$key');
+  Future<String?> readMetadata(String key) => readSecret('meta_$key');
 
   Future<void> writeMetadata(String key, String value) =>
-      _storage.write(key: 'meta_$key', value: value);
+      writeSecret('meta_$key', value);
+
+  /// The OS keystore. Overridable so key handling can be tested without a
+  /// platform channel.
+  Future<String?> readSecret(String key) => _storage.read(key: key);
+
+  Future<void> writeSecret(String key, String value) =>
+      _storage.write(key: key, value: value);
+
+  Future<void> deleteSecret(String key) => _storage.delete(key: key);
 
   Future<SecretKey> _getKey() async {
     if (_cachedKey != null) return _cachedKey!;
-    final stored = await _storage.read(key: _keyAlias);
+    final stored = await readSecret(_keyAlias);
     if (stored == null) throw const MissingEncryptionKeyException();
     final bytes = base64Decode(stored);
     if (bytes.length != 32) throw const InvalidEncryptionKeyException();
@@ -163,54 +181,50 @@ class EncryptionService {
 
   /// هل التشفير مُفعّل؟
   Future<bool> isEnabled() async {
-    return await _storage.containsKey(key: _keyAlias);
+    return await readSecret(_keyAlias) != null;
   }
 
-  /// Atomically rotates the master key and re-encrypts every open Hive box.
+  static const _boxNames = <String>[
+    'journal_entries',
+    'settings',
+    'moods',
+    'tags',
+    'garden',
+  ];
+
+  /// The key a rotation is moving to. It is stored before any box is
+  /// rewritten, so a crash at any point leaves enough on disk to finish or to
+  /// undo the rotation on the next launch.
+  static const _pendingKeyAlias = 'nabd_master_key_pending';
+  static const _backupSuffix = '.rotating';
+  static const _partialSuffix = '.rotating.partial';
+
+  /// Rotates the master key and re-encrypts every open Hive box, so that it
+  /// survives being interrupted at any step.
   ///
   /// Sequence:
-  ///  1. Snapshot every open box after it is decrypted with the current key.
-  ///  2. Copy the box files aside as `.rotating` backups.
-  ///  3. Generate a fresh AES-256-GCM key.
-  ///  4. Close Hive, reopen each box with the new cipher, write the snapshot back.
-  ///  5. Verify every record reads back under the new key.
-  ///  6. Only on success: persist the new key and drop the backups.
-  ///  7. On any failure: delete the new files, restore the backups and the old key.
+  ///  1. Snapshot every open box, then close Hive.
+  ///  2. Store the new key under a pending alias (the old key stays current).
+  ///  3. Copy every box file aside as `.rotating` (written as `.partial` and
+  ///     renamed, so a half-written copy is never mistaken for a backup).
+  ///  4. Rewrite each box from the snapshot under the new key.
+  ///  5. Close and reopen every box from disk and compare it with the snapshot.
+  ///  6. Commit: make the new key current, delete the backups, then the
+  ///     pending key.
+  /// Any failure restores the backups and the old key. Backups are only ever
+  /// deleted once the data they protect is known to be readable.
+  /// [recoverInterruptedRotation] finishes or undoes a rotation the process
+  /// did not survive.
   Future<void> rotateKey() async {
-    const boxNames = <String>[
-      'journal_entries',
-      'settings',
-      'moods',
-      'tags',
-      'garden',
-    ];
-
-    // 1) Snapshot each open box and stage on-disk backups.
     final snapshot = <String, Map<dynamic, dynamic>>{};
-    final stagedBackups = <File>[];
-
-    for (final name in boxNames) {
+    final boxFiles = <String, File>{};
+    for (final name in _boxNames) {
       if (!Hive.isBoxOpen(name)) continue;
       final box = Hive.box<dynamic>(name);
       snapshot[name] = {for (final key in box.keys) key: box.get(key)};
-
+      await box.flush();
       final boxPath = box.path;
-      if (boxPath == null) continue;
-      final boxFile = File(boxPath);
-      if (!boxFile.existsSync()) continue;
-
-      final backup = File('$boxPath.rotating');
-      if (backup.existsSync()) backup.deleteSync();
-      boxFile.copySync(backup.path);
-      stagedBackups.add(backup);
-
-      final lockFile = File('$boxPath.lock');
-      if (lockFile.existsSync()) {
-        final lockBackup = File('$boxPath.lock.rotating');
-        if (lockBackup.existsSync()) lockBackup.deleteSync();
-        lockFile.copySync(lockBackup.path);
-        stagedBackups.add(lockBackup);
-      }
+      if (boxPath != null) boxFiles[name] = File(boxPath);
     }
 
     if (snapshot.isEmpty) {
@@ -220,96 +234,172 @@ class EncryptionService {
     }
 
     final previousKey = await currentKeyBytes();
+    final newKey = await _algorithm.newSecretKey();
+    final newKeyBytes = await newKey.extractBytes();
+    if (newKeyBytes.length != 32) {
+      throw const FormatException('Invalid Hive encryption key length');
+    }
+
     await Hive.close();
+    await writeSecret(_pendingKeyAlias, base64Encode(newKeyBytes));
 
-    // 2) Re-encrypt under the new key.
+    final backups = <File>[];
     try {
-      final newKey = await _algorithm.newSecretKey();
-      final newKeyBytes = await newKey.extractBytes();
-      if (newKeyBytes.length != 32) {
-        throw const FormatException('Invalid Hive encryption key length');
+      for (final file in boxFiles.values) {
+        if (!file.existsSync()) continue;
+        backups.add(await _stageBackup(file));
       }
+
       final newCipher = HiveAesCipher(newKeyBytes);
-
-      for (final name in boxNames) {
-        final values = snapshot[name];
-        if (values == null) continue;
-        final box =
-            await Hive.openBox<dynamic>(name, encryptionCipher: newCipher);
-        await box.putAll(values);
+      for (final entry in snapshot.entries) {
+        await Hive.deleteBoxFromDisk(entry.key);
+        final box = await Hive.openBox<dynamic>(
+          entry.key,
+          encryptionCipher: newCipher,
+        );
+        await box.putAll(entry.value);
         await box.flush();
+        await box.close();
       }
 
-      // 3) Verify every record is readable under the new key.
-      for (final name in boxNames) {
-        final expected = snapshot[name];
-        if (expected == null) continue;
-        final box = Hive.box<dynamic>(name);
-        if (box.length != expected.length) {
-          throw KeyRotationException(
-            'Box "$name" holds ${box.length} records after rotation, '
-            'expected ${expected.length}.',
-          );
-        }
-        for (final key in expected.keys) {
-          if (!box.containsKey(key)) {
-            throw KeyRotationException('Box "$name" lost the record "$key".');
-          }
-          box.get(key);
-        }
+      // Read every box back from disk, not from Hive's memory cache.
+      for (final entry in snapshot.entries) {
+        final box = await Hive.openBox<dynamic>(
+          entry.key,
+          encryptionCipher: newCipher,
+          crashRecovery: false,
+        );
+        _verifySnapshot(entry.key, box, entry.value);
       }
-
-      // 4) Commit only after full verification.
-      await _storage.write(key: _keyAlias, value: base64Encode(newKeyBytes));
-      _cachedKey = newKey;
     } catch (_) {
-      await _rollbackRotation(previousKey, boxNames, stagedBackups);
+      await _rollbackRotation(previousKey, snapshot.keys, backups);
       rethrow;
-    } finally {
-      for (final backup in stagedBackups) {
-        if (backup.existsSync()) {
-          try {
-            backup.deleteSync();
-          } on FileSystemException {
-            // A leftover backup is harmless; the next rotation replaces it.
-          }
-        }
+    }
+
+    try {
+      await writeSecret(_keyAlias, base64Encode(newKeyBytes));
+    } catch (_) {
+      await _rollbackRotation(previousKey, snapshot.keys, backups);
+      rethrow;
+    }
+    _cachedKey = newKey;
+    // Backups first, pending key last: recovery relies on that order.
+    await _deleteFiles(backups);
+    await deleteSecret(_pendingKeyAlias);
+  }
+
+  void _verifySnapshot(
+    String name,
+    Box<dynamic> box,
+    Map<dynamic, dynamic> expected,
+  ) {
+    if (box.length != expected.length) {
+      throw KeyRotationException(
+        'Box "$name" holds ${box.length} records after rotation, '
+        'expected ${expected.length}.',
+      );
+    }
+    for (final entry in expected.entries) {
+      if (!box.containsKey(entry.key) ||
+          !hiveValuesEqual(box.get(entry.key), entry.value)) {
+        throw KeyRotationException('Box "$name" changed the record '
+            '"${entry.key}" during rotation.');
       }
     }
   }
 
-  /// Undoes a failed rotation: removes the new files, restores the staged
-  /// backups together with the previous key, and reopens the boxes.
+  Future<File> _stageBackup(File boxFile) async {
+    final partial = File('${boxFile.path}$_partialSuffix');
+    await boxFile.copy(partial.path);
+    return partial.rename('${boxFile.path}$_backupSuffix');
+  }
+
+  /// Undoes a failed rotation: puts the staged files back under the previous
+  /// key and reopens the boxes. If that fails as well, the backups and the
+  /// pending key stay where they are for [recoverInterruptedRotation].
   Future<void> _rollbackRotation(
     List<int> previousKey,
-    List<String> boxNames,
-    List<File> stagedBackups,
+    Iterable<String> boxNames,
+    List<File> backups,
   ) async {
     try {
       await Hive.close();
-      for (final name in boxNames) {
-        if (await Hive.boxExists(name)) {
-          await Hive.deleteBoxFromDisk(name);
-        }
+      for (final backup in backups) {
+        await _restoreBackup(backup);
       }
-      for (final backup in stagedBackups) {
-        if (!backup.existsSync()) continue;
-        final original = backup.path.replaceFirst(RegExp(r'\.rotating$'), '');
-        File(original).writeAsBytesSync(backup.readAsBytesSync(), flush: true);
-      }
-      await _storage.write(key: _keyAlias, value: base64Encode(previousKey));
+      await writeSecret(_keyAlias, base64Encode(previousKey));
       _cachedKey = SecretKey(previousKey);
       final restoredCipher = HiveAesCipher(previousKey);
       for (final name in boxNames) {
-        if (await Hive.boxExists(name)) {
-          await Hive.openBox<dynamic>(name, encryptionCipher: restoredCipher);
-        }
+        await Hive.openBox<dynamic>(name, encryptionCipher: restoredCipher);
       }
+      await _deleteFiles(backups);
+      await deleteSecret(_pendingKeyAlias);
     } catch (_) {
-      // Automatic recovery failed. The previous key stays in secure storage so
-      // the store is never left encrypted under a key that is not on disk.
+      // The original failure is the one reported. Next launch recovers from
+      // the backups, which are deliberately left on disk.
       _cachedKey = null;
       await Hive.close();
+    }
+  }
+
+  /// Run at startup before any box is opened. Finishes a rotation whose new
+  /// key was already committed, or undoes one that was not, using the files
+  /// in [hiveDirectory]. Does nothing when no rotation was interrupted.
+  Future<void> recoverInterruptedRotation(Directory hiveDirectory) async {
+    if (!hiveDirectory.existsSync()) return;
+    final entries = hiveDirectory.listSync().whereType<File>().toList();
+    // A partial copy was never a complete backup: the box it was copied from
+    // had not been touched yet, so the copy is simply discarded.
+    for (final file in entries.where((f) => f.path.endsWith(_partialSuffix))) {
+      await file.delete();
+    }
+    final backups =
+        entries.where((f) => f.path.endsWith(_backupSuffix)).toList();
+    final pending = await readSecret(_pendingKeyAlias);
+
+    if (pending == null) {
+      // Backups are deleted before the pending key, so without it any backup
+      // left over belongs to a rotation that already finished.
+      await _deleteFiles(backups);
+      return;
+    }
+
+    final current = await readSecret(_keyAlias);
+    if (current == pending) {
+      // The new key was committed; only the cleanup was cut short.
+      await _deleteFiles(backups);
+      await deleteSecret(_pendingKeyAlias);
+      return;
+    }
+
+    // The new key never became current, so the boxes on disk may be half
+    // rewritten. The backups hold them as they were under the current key.
+    for (final backup in backups) {
+      await _restoreBackup(backup);
+    }
+    _cachedKey = null;
+    await _deleteFiles(backups);
+    await deleteSecret(_pendingKeyAlias);
+  }
+
+  /// Puts a `.rotating` copy back in place of its box file. Written to a
+  /// sibling and renamed, so the box file is never half restored.
+  Future<void> _restoreBackup(File backup) async {
+    final original =
+        backup.path.substring(0, backup.path.length - _backupSuffix.length);
+    final restoring = File('$original.restoring');
+    await backup.copy(restoring.path);
+    await restoring.rename(original);
+  }
+
+  Future<void> _deleteFiles(Iterable<File> files) async {
+    for (final file in files) {
+      try {
+        if (file.existsSync()) await file.delete();
+      } on FileSystemException {
+        // A leftover file is harmless; recovery or the next rotation removes it.
+      }
     }
   }
 
@@ -318,7 +408,7 @@ class EncryptionService {
   Future<void> createFreshKeyAfterDataDeletion() async {
     final newKey = await _algorithm.newSecretKey();
     final bytes = await newKey.extractBytes();
-    await _storage.write(key: _keyAlias, value: base64Encode(bytes));
+    await writeSecret(_keyAlias, base64Encode(bytes));
     _cachedKey = newKey;
   }
 
@@ -328,13 +418,13 @@ class EncryptionService {
     if (bytes.length != 32) {
       throw const FormatException('Invalid encryption key length');
     }
-    await _storage.write(key: _keyAlias, value: base64Encode(bytes));
+    await writeSecret(_keyAlias, base64Encode(bytes));
     _cachedKey = SecretKey(bytes);
   }
 
   /// حذف المفتاح (عند حذف كل البيانات).
   Future<void> deleteKey() async {
-    await _storage.delete(key: _keyAlias);
+    await deleteSecret(_keyAlias);
     _cachedKey = null;
   }
 

@@ -23,6 +23,12 @@ Future<void> main() async {
   Object? storageError;
   try {
     await Hive.initFlutter();
+    // Hive.initFlutter keeps its boxes in the documents directory. A key
+    // rotation cut short by the process dying is finished or undone here,
+    // before any box is opened.
+    await EncryptionService().recoverInterruptedRotation(
+      await getApplicationDocumentsDirectory(),
+    );
     await DatabaseMigrationService().migrate();
     final hiveCipher = HiveAesCipher(
       await EncryptionService().hiveKeyBytes(),
