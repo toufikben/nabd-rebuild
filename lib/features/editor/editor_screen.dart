@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/constants.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/storage.dart';
+import '../../core/text_direction.dart';
 import '../../core/writing_prompts.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
@@ -723,6 +724,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: TextField(
                   controller: _titleController,
+                  textDirection: textDirectionOf(
+                    _titleController.text,
+                    Directionality.of(context),
+                  ),
                   textCapitalization: TextCapitalization.sentences,
                   style: theme.textTheme.headlineSmall
                       ?.copyWith(fontWeight: FontWeight.w700),
@@ -740,6 +745,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: TextField(
                     controller: _contentController,
+                    textDirection: textDirectionOf(
+                      _contentController.text,
+                      Directionality.of(context),
+                    ),
                     maxLines: null,
                     expands: true,
                     textAlignVertical: TextAlignVertical.top,
@@ -958,7 +967,9 @@ class _Toolbar extends StatelessWidget {
             tooltip: l10n.t(isDictating ? 'editor.dictate.stop' : 'editor.dictate'),
             onPressed: onDictate,
             icon: Icon(
-              isDictating ? Icons.keyboard_voice : Icons.keyboard_voice_outlined,
+              isDictating
+                  ? Icons.record_voice_over
+                  : Icons.record_voice_over_outlined,
               color: isDictating ? scheme.primary : null,
             ),
           ),

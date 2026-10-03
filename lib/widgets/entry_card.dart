@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../core/l10n/app_localizations.dart';
+import '../core/text_direction.dart';
 import '../models/journal_entry.dart';
 import '../models/mood.dart';
 import 'nabd_ui.dart';
@@ -71,6 +72,8 @@ class EntryCard extends StatelessWidget {
                               : title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          textDirection: textDirectionOf(
+                              title, Directionality.of(context)),
                           style: theme.textTheme.titleSmall,
                         ),
                       ),
@@ -89,6 +92,8 @@ class EntryCard extends StatelessWidget {
                     Text(
                       preview,
                       maxLines: 2,
+                      textDirection: textDirectionOf(
+                          preview, Directionality.of(context)),
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,

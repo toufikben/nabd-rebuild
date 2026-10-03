@@ -68,7 +68,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
     final groups = <String, List<JournalEntry>>{};
     for (final entry in entries) {
       final key = entry.isPinned
-          ? '📌'
+          ? l10n.t('journal.pinned')
           : DateFormat.yMMMM(locale).format(entry.createdAt);
       groups.putIfAbsent(key, () => []).add(entry);
     }

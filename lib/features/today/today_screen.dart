@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -144,6 +143,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                           style: FilledButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.primaryDark,
+                            iconColor: AppColors.primaryDark,
                           ),
                           onPressed: () => _open('/editor'),
                           icon: const Icon(Icons.edit_rounded, size: 18),
@@ -154,7 +154,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                       ),
                     ],
                   ),
-                ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.06),
+                ),
               ),
             ),
 

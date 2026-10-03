@@ -244,7 +244,7 @@ class S {
 
     // ── Batch found by the on-device Arabic sweep ──────────────────────
     'garden.seedHelp':
-        'كل مدخلة في مذكرتك تُنمّي بذرتك.\nالمشاعر الإيجابية تجعلها تُزهر.',
+        'كل مدخلة تكتبها تسقي بذرتك.\nحتى في الأيام الصعبة، الكتابة الصادقة تُنمّيها.',
     'garden.stat.seeds': 'البذور',
     'garden.stat.completed': 'مكتملة',
     'garden.stat.avgGrowth': 'متوسط النمو',
@@ -817,6 +817,7 @@ class S {
     'letters.daysLeft': 'يومًا متبقيًا',
     'letters.writtenOn': 'كُتبت في',
     'letters.read': 'اقرأ',
+    'journal.pinned': 'مثبّتة',
   };
 
   static const Map<String, String> en = <String, String>{
@@ -1055,7 +1056,7 @@ class S {
 
     // ── Batch found by the on-device Arabic sweep ──────────────────────
     'garden.seedHelp':
-        'Every journal entry helps your seed grow.\nPositive feelings make it bloom.',
+        'Every entry you write waters your seed.\nEven on hard days, honest writing helps it grow.',
     'garden.stat.seeds': 'Seeds',
     'garden.stat.completed': 'Completed',
     'garden.stat.avgGrowth': 'Avg Growth',
@@ -1633,6 +1634,7 @@ class S {
     'letters.daysLeft': 'days left',
     'letters.writtenOn': 'Written on',
     'letters.read': 'Read',
+    'journal.pinned': 'Pinned',
   };
 
   /// Every key known to the table, used by the parity test.

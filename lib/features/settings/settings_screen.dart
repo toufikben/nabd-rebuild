@@ -29,6 +29,7 @@ import '../../services/garden_service.dart';
 import '../../services/journal_export_service.dart';
 import '../../services/monetization_service.dart';
 import '../lock/passcode_verify_sheet.dart';
+import '../../widgets/nabd_ui.dart';
 import '../../widgets/vault_image.dart';
 import 'backup_password_dialog.dart';
 
@@ -101,156 +102,149 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         children: [
           // ─── Appearance ───
-          _section(l10n.t('settings.section.appearance')),
+          _group(l10n.t('settings.section.appearance'), [
+            // Theme
+            _tile(
+              icon: Icons.brightness_6,
+              title: l10n.t('settings.theme'),
+              subtitle: _themeName(themeMode, l10n),
+              onTap: () => _pickTheme(themeMode, l10n),
+            ),
 
-          // Theme
-          _tile(
-            icon: Icons.brightness_6,
-            title: l10n.t('settings.theme'),
-            subtitle: _themeName(themeMode, l10n),
-            onTap: () => _pickTheme(themeMode, l10n),
-          ),
+            // Gender Theme
+            _tile(
+              icon: Icons.palette_outlined,
+              title: l10n.t('settings.themeStyle'),
+              subtitle: _genderThemeName(genderTheme, l10n),
+              onTap: () => _pickGenderTheme(genderTheme, l10n),
+            ),
 
-          // Gender Theme
-          _tile(
-            icon: Icons.person_outline,
-            title: l10n.t('settings.themeStyle'),
-            subtitle: _genderThemeName(genderTheme, l10n),
-            onTap: () => _pickGenderTheme(genderTheme, l10n),
-          ),
-
-          // Language
-          _tile(
-            icon: Icons.language,
-            title: l10n.t('settings.language'),
-            subtitle: _languageName(locale.languageCode),
-            onTap: () => _pickLanguage(locale.languageCode),
-          ),
+            // Language
+            _tile(
+              icon: Icons.language,
+              title: l10n.t('settings.language'),
+              subtitle: _languageName(locale.languageCode),
+              onTap: () => _pickLanguage(locale.languageCode),
+            ),
+          ]),
 
           // ─── Lock ───
-          _section(l10n.t('settings.section.lock')),
-
-          SwitchListTile(
-            secondary: const Icon(Icons.lock_outline, color: AppColors.primary),
-            title: Text(l10n.t('settings.lock.appLock')),
-            subtitle: Text(l10n.t('settings.lock.appLockHint')),
-            value: _lockEnabled,
-            onChanged: (value) => _setLockEnabled(value, l10n),
-          ),
-
-          if (_lockEnabled) ...[
-            _tile(
-              icon: Icons.timer_outlined,
-              title: l10n.t('settings.lock.timeout'),
-              subtitle: _lockTimeoutLabel(_lockTimeoutMinutes, l10n),
-              onTap: () => _pickLockTimeout(l10n),
+          _group(l10n.t('settings.section.lock'), [
+            SwitchListTile(
+              secondary: _iconBadge(Icons.lock_outline, AppColors.primary),
+              title: Text(l10n.t('settings.lock.appLock')),
+              subtitle: Text(l10n.t('settings.lock.appLockHint')),
+              value: _lockEnabled,
+              onChanged: (value) => _setLockEnabled(value, l10n),
             ),
-            _tile(
-              icon: Icons.numbers,
-              title: l10n.t('settings.lock.passcode'),
-              subtitle: _hasPasscode
-                  ? l10n.t('settings.lock.passcodeSet')
-                  : l10n.t('settings.lock.passcodeUnset'),
-              onTap: _changePasscode,
-            ),
-            if (_hasPasscode)
+            if (_lockEnabled) ...[
               _tile(
-                icon: Icons.lock_open_outlined,
-                title: l10n.t('settings.lock.removeTitle'),
-                subtitle: _lockRemovalNote(l10n),
-                onTap: () => _removePasscode(l10n),
-                danger: true,
+                icon: Icons.timer_outlined,
+                title: l10n.t('settings.lock.timeout'),
+                subtitle: _lockTimeoutLabel(_lockTimeoutMinutes, l10n),
+                onTap: () => _pickLockTimeout(l10n),
               ),
-          ],
+              _tile(
+                icon: Icons.numbers,
+                title: l10n.t('settings.lock.passcode'),
+                subtitle: _hasPasscode
+                    ? l10n.t('settings.lock.passcodeSet')
+                    : l10n.t('settings.lock.passcodeUnset'),
+                onTap: _changePasscode,
+              ),
+              if (_hasPasscode)
+                _tile(
+                  icon: Icons.lock_open_outlined,
+                  title: l10n.t('settings.lock.removeTitle'),
+                  subtitle: _lockRemovalNote(l10n),
+                  onTap: () => _removePasscode(l10n),
+                  danger: true,
+                ),
+            ],
+          ]),
 
           // ─── Notifications ───
-          _section(l10n.t('settings.section.notifications')),
-
-          SwitchListTile(
-            secondary: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.primary,
+          _group(l10n.t('settings.section.notifications'), [
+            SwitchListTile(
+              secondary: const Icon(
+                Icons.notifications_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(l10n.t('settings.notify.daily')),
+              subtitle: Text(l10n.t('settings.notify.dailyHint')),
+              value: _notificationsEnabled,
+              onChanged: (v) => _setReminderEnabled(v, l10n),
             ),
-            title: Text(l10n.t('settings.notify.daily')),
-            subtitle: Text(l10n.t('settings.notify.dailyHint')),
-            value: _notificationsEnabled,
-            onChanged: (v) => _setReminderEnabled(v, l10n),
-          ),
-
-          if (_notificationsEnabled)
-            _tile(
-              icon: Icons.access_time,
-              title: l10n.t('settings.notify.time'),
-              subtitle:
-                  '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
-              onTap: _pickReminderTime,
+            if (_notificationsEnabled)
+              _tile(
+                icon: Icons.access_time,
+                title: l10n.t('settings.notify.time'),
+                subtitle:
+                    '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
+                onTap: _pickReminderTime,
+              ),
+            SwitchListTile(
+              secondary: _iconBadge(
+                  Icons.calendar_view_week_outlined, AppColors.secondary),
+              title: Text(l10n.t('settings.notify.weekly')),
+              subtitle: Text(l10n.t('settings.notify.weeklyHint')),
+              value: _weeklyReview,
+              onChanged: (value) => _setWeeklyReview(value, l10n),
             ),
-
-          SwitchListTile(
-            secondary: const Icon(Icons.calendar_view_week_outlined),
-            title: Text(l10n.t('settings.notify.weekly')),
-            subtitle: Text(l10n.t('settings.notify.weeklyHint')),
-            value: _weeklyReview,
-            onChanged: (value) => _setWeeklyReview(value, l10n),
-          ),
+          ]),
 
           // ─── Data ───
-          _section(l10n.t('settings.section.data')),
-
-          _tile(
-            icon: Icons.download_outlined,
-            title: l10n.t('settings.data.export'),
-            subtitle: l10n.t('settings.data.exportHint'),
-            onTap: _exportData,
-          ),
-
-          _tile(
-            icon: Icons.picture_as_pdf_outlined,
-            title: l10n.t('settings.data.exportDoc'),
-            subtitle: l10n.t('settings.data.exportDocHint'),
-            onTap: _exportDocument,
-          ),
-
-          _tile(
-            icon: Icons.upload_outlined,
-            title: l10n.t('settings.data.restore'),
-            subtitle: l10n.t('settings.data.restoreHint'),
-            onTap: _restoreData,
-          ),
-
-          _tile(
-            icon: Icons.key_outlined,
-            title: l10n.t('settings.data.rotateKey'),
-            subtitle: l10n.t('settings.data.rotateKeyHint'),
-            onTap: () => _confirmRotateKey(l10n),
-          ),
-
-          _tile(
-            icon: Icons.delete_outline,
-            title: l10n.t('settings.data.deleteAll'),
-            subtitle: l10n.t('settings.data.deleteAllHint'),
-            danger: true,
-            onTap: () => _confirmDeleteAll(l10n),
-          ),
+          _group(l10n.t('settings.section.data'), [
+            _tile(
+              icon: Icons.download_outlined,
+              title: l10n.t('settings.data.export'),
+              subtitle: l10n.t('settings.data.exportHint'),
+              onTap: _exportData,
+            ),
+            _tile(
+              icon: Icons.picture_as_pdf_outlined,
+              title: l10n.t('settings.data.exportDoc'),
+              subtitle: l10n.t('settings.data.exportDocHint'),
+              onTap: _exportDocument,
+            ),
+            _tile(
+              icon: Icons.upload_outlined,
+              title: l10n.t('settings.data.restore'),
+              subtitle: l10n.t('settings.data.restoreHint'),
+              onTap: _restoreData,
+            ),
+            _tile(
+              icon: Icons.key_outlined,
+              title: l10n.t('settings.data.rotateKey'),
+              subtitle: l10n.t('settings.data.rotateKeyHint'),
+              onTap: () => _confirmRotateKey(l10n),
+            ),
+            _tile(
+              icon: Icons.delete_outline,
+              title: l10n.t('settings.data.deleteAll'),
+              subtitle: l10n.t('settings.data.deleteAllHint'),
+              danger: true,
+              onTap: () => _confirmDeleteAll(l10n),
+            ),
+          ]),
 
           // ─── About ───
-          _section(l10n.t('settings.section.about')),
-
-          _tile(
-            icon: Icons.share_outlined,
-            title: l10n.t('settings.about.share'),
-            subtitle: l10n.t('settings.about.shareHint'),
-            onTap: () {
-              Share.share(l10n.t('settings.about.shareBody'));
-            },
-          ),
-
-          _tile(
-            icon: Icons.info_outline,
-            title: l10n.t('settings.about.version'),
-            subtitle: _version,
-            onTap: null,
-          ),
+          _group(l10n.t('settings.section.about'), [
+            _tile(
+              icon: Icons.share_outlined,
+              title: l10n.t('settings.about.share'),
+              subtitle: l10n.t('settings.about.shareHint'),
+              onTap: () {
+                Share.share(l10n.t('settings.about.shareBody'));
+              },
+            ),
+            _tile(
+              icon: Icons.info_outline,
+              title: l10n.t('settings.about.version'),
+              subtitle: _version,
+              onTap: null,
+            ),
+          ]),
 
           SizedBox(height: 40),
         ],
@@ -262,18 +256,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // Helpers
   // ═══════════════════════════════════════════════════════════
 
-  Widget _section(String title) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-        child: Text(
-          title.toUpperCase(),
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textTertiary,
-            letterSpacing: 1,
+  /// A titled group of settings on one rounded card.
+  Widget _group(String title, List<Widget> children) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+          child: Text(
+            title,
+            style: theme.textTheme.labelLarge
+                ?.copyWith(color: theme.colorScheme.primary),
           ),
         ),
-      );
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: NabdCard(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Column(children: children),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _tile({
     required IconData icon,
@@ -282,19 +288,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required VoidCallback? onTap,
     bool danger = false,
   }) {
+    final scheme = Theme.of(context).colorScheme;
+    final tint = danger ? scheme.error : scheme.primary;
     return ListTile(
-      leading: Icon(icon, color: danger ? AppColors.danger : AppColors.primary),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: danger ? AppColors.danger : AppColors.textPrimary,
-        ),
-      ),
+      leading: _iconBadge(icon, tint),
+      title: Text(title, style: danger ? TextStyle(color: scheme.error) : null),
       subtitle: Text(subtitle),
       trailing: onTap != null
-          ? Icon(Icons.chevron_right, color: AppColors.textTertiary)
+          ? Icon(Icons.chevron_right, color: scheme.onSurfaceVariant)
           : null,
       onTap: onTap,
+    );
+  }
+
+  Widget _iconBadge(IconData icon, Color tint) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, color: tint, size: 20),
     );
   }
 
@@ -503,7 +518,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _pickGenderTheme(GenderTheme current, AppLocalizations l10n) async {
+  Future<void> _pickGenderTheme(
+      GenderTheme current, AppLocalizations l10n) async {
     final result = await showModalBottomSheet<String>(
       context: context,
       builder: (_) => Column(
@@ -785,10 +801,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (destination == null) return;
       if (!kIsWeb && destination.isNotEmpty) {
         final target = File(destination);
-        if (!await target.exists()) await target.writeAsBytes(bytes, flush: true);
+        if (!await target.exists()) {
+          await target.writeAsBytes(bytes, flush: true);
+        }
       }
       messenger.showSnackBar(SnackBar(
-        content: Text('${l10n.t('dialog.save.done')}: ${p.basename(destination)}'),
+        content:
+            Text('${l10n.t('dialog.save.done')}: ${p.basename(destination)}'),
       ));
     } catch (error) {
       debugPrint('Document export failed: $error');
@@ -838,7 +857,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return;
       }
 
-      final counts = '${result.entriesImported} ${l10n.t('dialog.restore.unit')} '
+      final counts =
+          '${result.entriesImported} ${l10n.t('dialog.restore.unit')} '
           '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
           '${result.audioRestored} ${l10n.t('dialog.restore.audio')})';
       messenger.showSnackBar(
@@ -1010,7 +1030,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ref.invalidate(localeProvider);
     ref.invalidate(genderThemeProvider);
     ref.read(dataRevisionProvider.notifier).bump();
-    messenger.showSnackBar(SnackBar(content: Text(l10n.t('dialog.delete.done'))));
+    messenger
+        .showSnackBar(SnackBar(content: Text(l10n.t('dialog.delete.done'))));
     // A fresh start: splash, then choosing a first seed.
     router.go('/');
   }
