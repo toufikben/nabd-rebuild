@@ -14,7 +14,7 @@
 | الأصوات | ✅ | صوت بداية أصلي «نبض»، أصوات لحظات، صوت محيطي لكل جلسة |
 | Pro | 🟡 | Lifetime يعمل ويُحفظ؛ الاشتراكات مخفية حتى خادم تحقق |
 | ودجت الشاشة الرئيسية (Android) | ✅ (يلزم جهاز) | السلسلة وسؤال اليوم فقط، بلا نص من المذكرة |
-| iOS | ⛔ | لا يوجد مشروع Xcode؛ يلزم `flutter create --platforms ios` على macOS ثم ربط `Runner.entitlements` |
+| iOS | ⏸️ مؤجّل بقرار | خارج النطاق حاليًا. عند استئنافه: `flutter create --platforms ios` على macOS ثم ربط `Runner.entitlements` |
 
 ## التحقق الآلي
 
@@ -33,7 +33,6 @@
 ## التالي
 
 1. خادم تحقق للاشتراكات (أو RevenueCat) ثم إظهار الشهري والسنوي.
-2. مشروع iOS.
-3. نشر `assetlinks.json` ببصمة Release لاختبار App Links.
-4. توثيق تراخيص الأصوات المأخوذة من Mixkit وPixabay (انظر `docs/SOUNDS_ATTRIBUTION.md`).
-5. مراجعة المتجر وسياسة الخصوصية ونموذج Data Safety (لا جمع بيانات).
+2. نشر `assetlinks.json` ببصمة Release لاختبار App Links.
+3. توثيق تراخيص الأصوات المأخوذة من Mixkit وPixabay (انظر `docs/SOUNDS_ATTRIBUTION.md`).
+4. مراجعة المتجر وسياسة الخصوصية ونموذج Data Safety (لا جمع بيانات).
