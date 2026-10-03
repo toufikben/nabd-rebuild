@@ -1,6 +1,7 @@
 package com.nabd.journal
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterFragmentActivity
@@ -12,10 +13,28 @@ class MainActivity : FlutterFragmentActivity() {
         super.onCreate(savedInstanceState)
         // A private journal: keep its pages out of screenshots, screen
         // recordings and the Recents thumbnail.
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE,
-        )
+        if (!screenshotsAllowedForTesting()) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE,
+            )
+        }
+    }
+
+    /**
+     * Device testing needs `adb screencap`, which FLAG_SECURE turns black.
+     * Only a debuggable build honours `adb shell setprop
+     * debug.nabd.screenshots 1`; release builds are always protected.
+     */
+    private fun screenshotsAllowedForTesting(): Boolean {
+        val debuggable = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+        if (!debuggable) return false
+        return try {
+            val process = Runtime.getRuntime().exec(arrayOf("getprop", "debug.nabd.screenshots"))
+            process.inputStream.bufferedReader().readText().trim() == "1"
+        } catch (e: Exception) {
+            false
+        }
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
