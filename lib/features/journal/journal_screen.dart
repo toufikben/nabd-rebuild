@@ -215,13 +215,15 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
               SliverToBoxAdapter(child: SectionHeader(group.key)),
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList.list(children: [
-                  for (final entry in group.value)
-                    EntryCard(
-                      entry: entry,
-                      onTap: () => _open('/editor?id=${entry.id}'),
-                    ),
-                ]),
+                // Built lazily: a journal with thousands of entries only
+                // builds the cards on screen.
+                sliver: SliverList.builder(
+                  itemCount: group.value.length,
+                  itemBuilder: (_, i) => EntryCard(
+                    entry: group.value[i],
+                    onTap: () => _open('/editor?id=${group.value[i].id}'),
+                  ),
+                ),
               ),
             ],
           const SliverToBoxAdapter(child: SizedBox(height: 96)),
