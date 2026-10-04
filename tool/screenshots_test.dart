@@ -125,6 +125,26 @@ Future<void> _seed() async {
       tags: i == 0 ? const ['travel'] : const [],
     ).toMap());
   }
+  // A few weeks of moods, so the insight screens have patterns to show.
+  const history = <(String, List<String>, int)>[
+    ('peaceful', ['family'], 9), ('happy', ['family'], 10), ('anxious', ['work'], 22),
+    ('sad', ['work'], 23), ('grateful', ['family'], 8), ('tired', ['work'], 21),
+    ('peaceful', [], 9), ('anxious', ['work'], 23), ('happy', ['family'], 19),
+  ];
+  for (var i = 0; i < history.length; i++) {
+    final (mood, tags, hour) = history[i];
+    final day = now.subtract(Duration(days: 6 + i * 3));
+    final at = DateTime(day.year, day.month, day.day, hour);
+    await journal.put('h$i', JournalEntry(
+      id: 'h$i',
+      title: '',
+      content: '.',
+      mood: mood,
+      tags: tags,
+      createdAt: at,
+      updatedAt: at,
+    ).toMap());
+  }
   // A year-old entry, so "On this day" has something to show.
   final yearAgo = DateTime(now.year - 1, now.month, now.day, 20);
   await journal.put('memory', JournalEntry(
@@ -253,6 +273,7 @@ void main() {
     'journal': (const JournalScreen(), false),
     'practice': (const PracticeScreen(), false),
     'insights': (const StatsScreen(), false),
+    'patterns': (const StatsScreen(), false),
     'editor': (const EditorScreen(entryId: 's0'), false),
     'paywall': (const PaywallScreen(), false),
     'settings': (const SettingsScreen(), false),
@@ -283,6 +304,10 @@ void main() {
               () => Future<void>.delayed(const Duration(milliseconds: 300)));
           for (var i = 0; i < 30; i++) {
             await tester.pump(const Duration(milliseconds: 100));
+          }
+          if (entry.key == 'patterns') {
+            await tester.drag(find.byType(Scrollable).first, const Offset(0, -1500));
+            await tester.pumpAndSettle();
           }
           await tester.runAsync(() => _capture(tester, name));
         });
