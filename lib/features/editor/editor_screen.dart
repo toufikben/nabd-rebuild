@@ -12,6 +12,7 @@ import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/constants.dart';
+import '../../core/journal_templates.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/storage.dart';
 import '../../core/text_direction.dart';
@@ -58,6 +59,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   final MediaVault _media = MediaVault();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
+  final FocusNode _contentFocus = FocusNode();
   /// Created on first use: the plugin opens a native recorder on creation,
   /// which an editor that never records does not need.
   AudioRecorder? _recorderInstance;
@@ -134,6 +136,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     if (_isDictating) unawaited(_voice.stopListening());
     _titleController.dispose();
     _contentController.dispose();
+    _contentFocus.dispose();
     final recorder = _recorderInstance;
     if (recorder != null) unawaited(recorder.dispose());
     super.dispose();
@@ -639,6 +642,49 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     );
   }
 
+  Future<void> _chooseTemplate() async {
+    final l10n = AppLocalizations.of(context);
+    final chosen = await showModalBottomSheet<JournalTemplate>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                l10n.t('editor.templates'),
+                style: Theme.of(sheetContext).textTheme.titleMedium,
+              ),
+            ),
+            for (final template in JournalTemplate.all)
+              ListTile(
+                leading: Icon(template.icon),
+                title: Text(l10n.t(template.titleKey)),
+                subtitle: Text(l10n.t(template.hintKey)),
+                onTap: () => Navigator.of(sheetContext).pop(template),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null || !mounted) return;
+    final (text, cursor) =
+        JournalTemplate.insert(_contentController.text, l10n.t(chosen.bodyKey));
+    if (_titleController.text.trim().isEmpty) {
+      _titleController.text = l10n.t(chosen.titleKey);
+    }
+    _contentController.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: cursor),
+    );
+    _contentFocus.requestFocus();
+  }
+
   /// Dictation is the one feature whose input may leave the phone: the
   /// system speech service can send audio to its servers. Say so once,
   /// before the first use, and respect a "no".
@@ -793,6 +839,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: TextField(
                     controller: _contentController,
+                    focusNode: _contentFocus,
                     textDirection: textDirectionOf(
                       _contentController.text,
                       Directionality.of(context),
@@ -848,6 +895,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 onDictate: _toggleDictation,
                 onRecord: _toggleRecording,
                 onPhoto: _pickImages,
+                onTemplate: _chooseTemplate,
               ),
             ],
           ),
@@ -985,6 +1033,7 @@ class _Toolbar extends StatelessWidget {
     required this.onDictate,
     required this.onRecord,
     required this.onPhoto,
+    required this.onTemplate,
   });
 
   final bool isRecording;
@@ -994,6 +1043,7 @@ class _Toolbar extends StatelessWidget {
   final VoidCallback onDictate;
   final VoidCallback onRecord;
   final VoidCallback onPhoto;
+  final VoidCallback onTemplate;
 
   @override
   Widget build(BuildContext context) {
@@ -1033,6 +1083,11 @@ class _Toolbar extends StatelessWidget {
             tooltip: l10n.t('editor.images.add'),
             onPressed: onPhoto,
             icon: const Icon(Icons.add_photo_alternate_outlined),
+          ),
+          IconButton(
+            tooltip: l10n.t('editor.templates'),
+            onPressed: onTemplate,
+            icon: const Icon(Icons.article_outlined),
           ),
           const Spacer(),
           if (isRecording)
