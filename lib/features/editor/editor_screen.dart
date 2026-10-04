@@ -628,7 +628,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     _dictationBase = _contentController.text.trimRight();
     setState(() => _isDictating = true);
     await _voice.startListening(
-      localeId: l10n.isArabic ? 'ar-SA' : 'en-US',
+      localeId: l10n.language.speechLocale,
       onResult: (words) {
         if (!mounted) return;
         final joiner = _dictationBase.isEmpty ? '' : ' ';

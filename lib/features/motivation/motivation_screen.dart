@@ -14,16 +14,16 @@ class MotivationScreen extends StatefulWidget {
 class _MotivationScreenState extends State<MotivationScreen> {
   (String, String)? _quote;
 
-  bool get _isArabic => AppLocalizations.of(context).isArabic;
+  String get _language => AppLocalizations.of(context).locale.languageCode;
 
   void _refresh() => setState(
-        () => _quote = MotivationService.getRandomQuoteFor(_isArabic),
+        () => _quote = MotivationService.getRandomQuoteFor(_language),
       );
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    _quote ??= MotivationService.getTodayQuoteFor(_isArabic);
+    _quote ??= MotivationService.getTodayQuoteFor(_language);
     final quote = _quote!;
     return Scaffold(
       appBar: AppBar(

@@ -67,7 +67,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     final memories = Memories.onThisDay(entries, now);
     final showBackupNudge = BackupNudge.shouldShowNow(entries.length, now);
     final lastBackup = BackupNudge.lastBackup;
-    _quote ??= MotivationService.getTodayQuoteFor(l10n.isArabic);
+    _quote ??= MotivationService.getTodayQuoteFor(l10n.locale.languageCode);
     final quote = _quote!;
 
     return Scaffold(
@@ -352,7 +352,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 l10n.t('today.quote'),
                 actionLabel: l10n.t('today.anotherQuote'),
                 onAction: () => setState(() => _quote =
-                    MotivationService.getRandomQuoteFor(l10n.isArabic,
+                    MotivationService.getRandomQuoteFor(l10n.locale.languageCode,
                         excludingQuote: quote.$1)),
               ),
             ),

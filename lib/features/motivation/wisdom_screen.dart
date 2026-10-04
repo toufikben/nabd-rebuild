@@ -42,13 +42,13 @@ class _WisdomScreenState extends State<WisdomScreen> {
   }
 
   void _createWisdom() {
-    final wisdom = MotivationService.getRandomQuoteFor(l10n.isArabic);
+    final wisdom = MotivationService.getRandomQuoteFor(l10n.locale.languageCode);
     setState(() => _wisdom = wisdom);
     _persistWisdom(wisdom, deleted: false);
   }
 
   void _changeWisdom() {
-    final wisdom = MotivationService.getRandomQuoteFor(l10n.isArabic,
+    final wisdom = MotivationService.getRandomQuoteFor(l10n.locale.languageCode,
         excludingQuote: _wisdom?.$1);
     setState(() => _wisdom = wisdom);
     _persistWisdom(wisdom, deleted: false);
@@ -74,7 +74,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
     l10n = AppLocalizations.of(context);
     if (_pendingDefault) {
       _pendingDefault = false;
-      _wisdom = MotivationService.getTodayQuoteFor(l10n.isArabic);
+      _wisdom = MotivationService.getTodayQuoteFor(l10n.locale.languageCode);
       _persistWisdom(_wisdom, deleted: false);
     }
     return Scaffold(

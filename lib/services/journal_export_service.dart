@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../core/l10n/languages.dart';
 import '../models/journal_entry.dart';
 import '../models/mood.dart';
 
@@ -64,7 +65,7 @@ class JournalExportService {
     final bold = pw.Font.ttf(
       await _loadAsset('assets/fonts/IBMPlexSansArabic-Bold.ttf'),
     );
-    final rtl = languageCode == 'ar';
+    final rtl = appLanguages.any((l) => l.code == languageCode && l.rtl);
     final dateFormat = DateFormat.yMMMMEEEEd(languageCode);
     final document = pw.Document(title: title, creator: 'Pulse');
 

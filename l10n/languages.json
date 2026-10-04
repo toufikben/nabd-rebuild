@@ -1,0 +1,4 @@
+[
+  {"code": "ar", "name": "العربية", "rtl": true, "speech": "ar-SA", "android": "ar"},
+  {"code": "en", "name": "English", "rtl": false, "speech": "en-US", "android": ""}
+]

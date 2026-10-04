@@ -1,40 +1,73 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
+
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nabd/core/l10n/app_localizations.dart';
 import 'package:nabd/core/l10n/app_strings.dart';
+import 'package:nabd/core/l10n/languages.dart';
 
 void main() {
   group('string table integrity', () {
-    test('every Arabic key has an English counterpart', () {
-      final missing = S.ar.keys.where((k) => !S.en.containsKey(k)).toList()
-        ..sort();
-      expect(
-        missing,
-        isEmpty,
-        reason: 'keys missing from the English table: $missing',
-      );
+    final placeholder = RegExp(r'\{[a-zA-Z_]+\}');
+    String placeholders(String v) =>
+        (placeholder.allMatches(v).map((m) => m.group(0)!).toSet().toList()
+              ..sort())
+            .join();
+
+    for (final entry in S.byLanguage.entries) {
+      final code = entry.key;
+      final table = entry.value;
+
+      test('$code has exactly the English keys', () {
+        final missing = S.en.keys.where((k) => !table.containsKey(k)).toList()
+          ..sort();
+        final extra = table.keys.where((k) => !S.en.containsKey(k)).toList()
+          ..sort();
+        expect(missing, isEmpty, reason: '$code is missing: $missing');
+        expect(extra, isEmpty, reason: '$code has unknown keys: $extra');
+      });
+
+      test('$code has no blank value', () {
+        final blank = [
+          for (final e in table.entries)
+            if (e.value.trim().isEmpty) e.key,
+        ];
+        expect(blank, isEmpty, reason: 'blank in $code: $blank');
+      });
+
+      test('$code keeps every {placeholder}', () {
+        final broken = [
+          for (final e in S.en.entries)
+            if (table[e.key] != null &&
+                placeholders(e.value) != placeholders(table[e.key]!))
+              e.key,
+        ];
+        expect(broken, isEmpty, reason: 'placeholders differ in $code: $broken');
+      });
+    }
+
+    test('generated Dart tables match l10n/*.json', () {
+      final languages = (jsonDecode(File('l10n/languages.json')
+              .readAsStringSync()) as List)
+          .map((l) => (l as Map)['code'] as String)
+          .toSet();
+      expect(S.byLanguage.keys.toSet(), languages,
+          reason: 'run python3 scripts/gen_l10n.py');
+      for (final code in languages) {
+        final json = (jsonDecode(File('l10n/$code.json').readAsStringSync())
+                as Map)
+            .cast<String, String>();
+        expect(S.of(code), json, reason: 'run python3 scripts/gen_l10n.py');
+      }
     });
 
-    test('every English key has an Arabic counterpart', () {
-      final missing = S.en.keys.where((k) => !S.ar.containsKey(k)).toList()
-        ..sort();
-      expect(
-        missing,
-        isEmpty,
-        reason: 'keys missing from the Arabic table: $missing',
-      );
-    });
-
-    test('no value is blank', () {
-      final blank = <String>[];
-      S.ar.forEach((k, v) {
-        if (v.trim().isEmpty) blank.add('ar:$k');
-      });
-      S.en.forEach((k, v) {
-        if (v.trim().isEmpty) blank.add('en:$k');
-      });
-      expect(blank, isEmpty, reason: 'blank values: $blank');
+    test('every shipped language has a name and a speech locale', () {
+      for (final language in appLanguages) {
+        expect(language.nativeName.trim(), isNotEmpty);
+        expect(language.speechLocale, startsWith(language.code));
+      }
     });
   });
 
@@ -52,7 +85,7 @@ void main() {
     });
 
     test('an untranslated locale falls back to English, not blank', () {
-      final l10n = AppLocalizations(const Locale('fr'));
+      final l10n = AppLocalizations(const Locale('xx'));
       expect(l10n.t('home.title'), 'My Journal');
     });
 
@@ -62,11 +95,11 @@ void main() {
     });
 
     test('only locales with a real translation are advertised', () {
-      // The app ships ar + en only. Advertising more would offer the user a
-      // language choice that silently falls back to English.
+      // Advertising a language without a table would offer the user a
+      // choice that silently falls back to English.
       expect(
         AppLocalizations.supportedLocales.map((l) => l.languageCode).toSet(),
-        {'ar', 'en'},
+        S.byLanguage.keys.toSet(),
       );
     });
   });

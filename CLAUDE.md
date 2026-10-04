@@ -26,10 +26,17 @@ session; write findings to `device-test-output/REPORT.md`.
 
 ## Conventions
 
-- Every user-facing string goes into both `S.ar` and `S.en` in
-  `lib/core/l10n/app_strings.dart`; `test/i18n_test.dart` checks parity and
-  `test/i18n_literal_ui_test.dart` forbids literal UI text in `lib/features`
-  and `lib/widgets`.
+- Every user-facing string lives in `l10n/<code>.json`, one file per language,
+  with `l10n/en.json` as the reference key set and `l10n/languages.json` as the
+  language list. Add a key to **every** language file, then run
+  `python3 scripts/gen_l10n.py` (it regenerates `lib/core/l10n/strings/*.dart`,
+  `lib/core/l10n/languages.dart` and the Android `strings.xml` files; never edit
+  those by hand). `test/i18n_test.dart` checks key and `{placeholder}` parity
+  and that the generated files match the JSON; `test/i18n_literal_ui_test.dart`
+  forbids literal UI text in `lib/features` and `lib/widgets`.
+- Never branch on a specific language (`languageCode == 'ar'`); use
+  `l10n.language.rtl`, `l10n.language.speechLocale` or the locale's own
+  formatting (`DateFormat`, `MaterialLocalizations`).
 - Sounds are synthesised (`scripts/synth_sounds.py`, `scripts/synth_ambience.py`);
   never add third-party audio.
 - `flutter analyze` must be clean and `flutter test` green before a push.

@@ -9,6 +9,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
+import 'core/l10n/app_strings.dart';
+import 'core/l10n/languages.dart';
 import 'core/storage.dart';
 import 'services/database_service.dart';
 import 'services/encryption_service.dart';
@@ -93,33 +95,29 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
 
   // Localizations are not loaded on this screen, so the text picks its
   // language directly from the device.
-  bool get _arabic =>
-      WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
+  static String get _deviceLanguage =>
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode;
 
-  String _pick(String english, String arabic) => _arabic ? arabic : english;
+  bool get _rtl => appLanguages
+      .any((l) => l.code == _deviceLanguage && l.rtl);
+
+  String _t(String key) => S.of(_deviceLanguage)[key] ?? S.en[key]!;
 
   Future<void> _confirmReset(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(_pick('Start over?', 'البدء من جديد؟')),
-        content: Text(_pick(
-          'The unreadable journal on this phone will be erased and a new '
-              'empty one created. You can then restore an encrypted .nabd '
-              'backup from Settings. This cannot be undone.',
-          'ستُمسح المذكرة غير القابلة للقراءة على هذا الهاتف ويُنشأ دفتر جديد '
-              'فارغ، ويمكنك بعدها استعادة نسخة .nabd المشفرة من الإعدادات. '
-              'لا يمكن التراجع عن هذا.',
-        )),
+        title: Text(_t('failure.confirmTitle')),
+        content: Text(_t('failure.confirmBody')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(_pick('Cancel', 'إلغاء')),
+            child: Text(_t('failure.cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(_pick('Erase and start over', 'امسح وابدأ من جديد')),
+            child: Text(_t('failure.erase')),
           ),
         ],
       ),
@@ -166,7 +164,7 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
       debugShowCheckedModeBanner: false,
       home: Builder(
         builder: (context) => Directionality(
-          textDirection: _arabic ? TextDirection.rtl : TextDirection.ltr,
+          textDirection: _rtl ? TextDirection.rtl : TextDirection.ltr,
           child: Scaffold(
             body: Center(
               child: Padding(
@@ -177,8 +175,7 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
                     const Icon(Icons.lock_outline, size: 56),
                     const SizedBox(height: 20),
                     Text(
-                      _pick('Secure storage could not be opened.',
-                          'تعذّر فتح التخزين الآمن.'),
+                      _t('failure.title'),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18,
@@ -187,13 +184,7 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      _pick(
-                        'Your data was not changed. Restart the app first. If '
-                            'this keeps happening, you can start over and '
-                            'restore a backup.',
-                        'لم تتغير بياناتك. أعد تشغيل التطبيق أولًا، وإذا تكرر '
-                            'هذا يمكنك البدء من جديد واستعادة نسخة احتياطية.',
-                      ),
+                      _t('failure.body'),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 28),
@@ -203,7 +194,7 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
                       OutlinedButton.icon(
                         onPressed: () => _confirmReset(context),
                         icon: const Icon(Icons.restart_alt),
-                        label: Text(_pick('Start over', 'البدء من جديد')),
+                        label: Text(_t('failure.startOver')),
                       ),
                   ],
                 ),

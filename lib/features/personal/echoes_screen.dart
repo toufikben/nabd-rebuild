@@ -85,7 +85,7 @@ class _EchoCard extends StatelessWidget {
                         style: const TextStyle(fontSize: 20)),
                     SizedBox(width: 4),
                     Text(
-                      mood?.label(l10n.isArabic ? 'ar' : 'en') ??
+                      mood?.label(l10n.locale.languageCode) ??
                           l10n.unknownMood,
                       style: TextStyle(color: AppColors.textTertiary),
                     ),

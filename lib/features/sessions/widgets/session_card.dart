@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/app_localizations.dart';
 import '../../../services/monetization_service.dart';
 import '../models/session.dart';
 import '../session_access.dart';
@@ -76,7 +77,7 @@ class SessionCard extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                session.emotionLabel,
+                session.labelFor(AppLocalizations.of(context).locale.languageCode),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,

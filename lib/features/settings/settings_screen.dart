@@ -16,6 +16,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/data_revision.dart';
 import '../../core/backup_nudge.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/l10n/languages.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../features/lock/passcode_setup_sheet.dart';
@@ -428,11 +429,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   String _languageName(String code) {
-    const names = {
-      'ar': 'العربية',
-      'en': 'English',
-    };
-    return names[code] ?? code;
+    for (final language in appLanguages) {
+      if (language.code == code) return language.nativeName;
+    }
+    return code;
   }
 
   String _lockTimeoutLabel(int minutes, AppLocalizations l10n) {
@@ -660,9 +660,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _pickLanguage(String current) async {
-    const languages = [
-      {'code': 'ar', 'name': 'العربية'},
-      {'code': 'en', 'name': 'English'},
+    final languages = [
+      for (final language in appLanguages)
+        {'code': language.code, 'name': language.nativeName},
     ];
 
     final result = await showModalBottomSheet<String>(
