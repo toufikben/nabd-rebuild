@@ -2,6 +2,8 @@
 // Renders the main screens to PNG files for a visual review of the design.
 // Not part of the normal test run:
 //   flutter test tool/screenshots_test.dart --dart-define=SHOTS_DIR=/some/dir
+// With --dart-define=STORE=true it also composes the Play Store screenshots
+// (1080x1920, caption above a framed screen) into assets/store/output/.
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -33,10 +35,47 @@ import 'package:nabd/features/garden/seed_selection_screen.dart';
 import 'package:nabd/features/personal/letters_screen.dart';
 import 'package:nabd/features/today/today_screen.dart';
 import 'package:nabd/models/journal_entry.dart';
+import 'package:nabd/models/seed.dart';
 import 'package:nabd/services/database_service.dart';
 import 'package:nabd/services/monetization_service.dart';
 
 const _shotsDir = String.fromEnvironment('SHOTS_DIR', defaultValue: 'build/shots');
+const _store = bool.fromEnvironment('STORE');
+const _storeDir = 'assets/store/output';
+
+/// The store set: which screen, and the caption above it.
+const _storeShots = <(String, Map<String, (String, String)>)>[
+  ('today', {
+    'ar': ('مساحتك الخاصة كل يوم', 'سؤال اليوم، مزاجك، ولحظة هدوء'),
+    'en': ('Your private space, every day', "Today's question, your mood, a calm moment"),
+  }),
+  ('editor', {
+    'ar': ('اكتب بحرية، مشفّرًا في هاتفك', 'صور وصوت وإملاء، بلا حساب ولا سحابة'),
+    'en': ('Write freely, encrypted on your phone', 'Photos, voice and dictation. No account, no cloud.'),
+  }),
+  ('journal', {
+    'ar': ('كل أيامك في مكان واحد', 'ابحث بالكلمة أو بالمزاج'),
+    'en': ('All your days in one place', 'Search by word or by mood'),
+  }),
+  ('practice', {
+    'ar': ('جلسات تهدئة موجّهة', 'تنفّس، أصوات طبيعة، وتمارين قصيرة'),
+    'en': ('Guided calming sessions', 'Breathing, nature sounds and short exercises'),
+  }),
+  ('garden', {
+    'ar': ('حديقة تنمو مع كتابتك', 'حتى الأيام الصعبة تسقيها'),
+    'en': ('A garden that grows as you write', 'Even the hard days water it'),
+  }),
+  ('insights', {
+    'ar': ('افهم مشاعرك', 'إحصاءات وتحليل يجريان على هاتفك فقط'),
+    'en': ('Understand your feelings', 'Insights computed on your phone only'),
+  }),
+];
+
+const _emojiFamily = 'NotoColorEmoji';
+
+ThemeData _withEmoji(ThemeData theme) => theme.copyWith(
+      textTheme: theme.textTheme.apply(fontFamilyFallback: const [_emojiFamily]),
+    );
 
 Future<void> _loadFonts() async {
   final family = FontLoader(GenderThemes.fontFamily);
@@ -45,6 +84,13 @@ Future<void> _loadFonts() async {
     family.addFont(Future.value(ByteData.sublistView(bytes)));
   }
   await family.load();
+  // Colour emoji, so mood faces and seeds are not drawn as empty boxes.
+  final emoji = File('/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf');
+  if (emoji.existsSync()) {
+    final loader = FontLoader(_emojiFamily)
+      ..addFont(Future.value(ByteData.sublistView(emoji.readAsBytesSync())));
+    await loader.load();
+  }
   final flutterRoot = Platform.environment['FLUTTER_ROOT'] ??
       File(Platform.resolvedExecutable).parent.parent.parent.parent.parent.path;
   final icons = File(
@@ -80,9 +126,24 @@ Future<void> _seed() async {
     ).toMap());
   }
   DatabaseService.invalidate();
+  // A garden in mid-growth, so the garden and Today screens show it alive.
+  final garden = Hive.box(HiveBoxes.garden);
+  for (final (i, type, points) in const [(0, 'peace', 64), (1, 'joy', 38), (2, 'hope', 12)]) {
+    await garden.put('g$i', PlantedSeed(
+      id: 'g$i',
+      seedTypeId: type,
+      plantedAt: now.subtract(Duration(days: 20 - i * 6)),
+      growthPoints: points,
+      daysCared: points ~/ 4,
+      // The first two were watered today; the third still waits.
+      lastWateredDay: i < 2 ? now.year * 10000 + now.month * 100 + now.day : 0,
+    ).toMap());
+  }
+  await Hive.box(HiveBoxes.settings).put('onboarding_completed', true);
 }
 
-Widget _app(Widget home, {required Locale locale, required Brightness brightness, bool shell = false}) {
+Widget _app(Widget home,
+    {required Locale locale, required Brightness brightness, bool shell = false, bool pro = false}) {
   AppColors.brightness = brightness;
   final router = GoRouter(
     initialLocation: '/',
@@ -104,16 +165,18 @@ Widget _app(Widget home, {required Locale locale, required Brightness brightness
   return ProviderScope(
     overrides: [
       monetizationProvider.overrideWith(
-        (_) => MonetizationService.preset(const MonetizationState(
+        (_) => MonetizationService.preset(MonetizationState(
           storeAvailable: true,
           productsLoaded: true,
+          isPro: pro,
+          isLifetime: pro,
         )),
       ),
     ],
     child: MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.getTheme('light', GenderTheme.neutral),
-      darkTheme: AppTheme.getTheme('dark', GenderTheme.neutral),
+      theme: _withEmoji(AppTheme.getTheme('light', GenderTheme.neutral)),
+      darkTheme: _withEmoji(AppTheme.getTheme('dark', GenderTheme.neutral)),
       themeMode: brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -128,7 +191,7 @@ Widget _app(Widget home, {required Locale locale, required Brightness brightness
   );
 }
 
-Future<void> _capture(WidgetTester tester, String name) async {
+Future<void> _capture(WidgetTester tester, String name, {String dir = _shotsDir}) async {
   final element = tester.element(find.byType(MaterialApp));
   final boundary = element.findRenderObject()!;
   RenderObject? node = boundary;
@@ -139,7 +202,7 @@ Future<void> _capture(WidgetTester tester, String name) async {
       tester.renderObject<RenderRepaintBoundary>(find.byType(RepaintBoundary).first);
   final image = await repaint.toImage(pixelRatio: 1);
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-  final file = File('$_shotsDir/$name.png')..createSync(recursive: true);
+  final file = File('$dir/$name.png')..createSync(recursive: true);
   file.writeAsBytesSync(bytes!.buffer.asUint8List());
 }
 
@@ -198,7 +261,11 @@ void main() {
           addTearDown(tester.view.reset);
           await tester.pumpWidget(RepaintBoundary(
             child: _app(entry.value.$1,
-                locale: locale, brightness: brightness, shell: entry.value.$2),
+                locale: locale,
+                brightness: brightness,
+                shell: entry.value.$2,
+                // Store art shows the full app; the paywall shows the offer.
+                pro: _store && entry.key != 'paywall'),
           ));
           // Let async loads (platform mocks) finish, then run animations on
           // the test clock so entrance effects have played.
@@ -211,5 +278,132 @@ void main() {
         });
       }
     }
+  }
+
+  if (!_store) return;
+  for (final locale in const ['ar', 'en']) {
+    for (var i = 0; i < _storeShots.length; i++) {
+      final (screen, captions) = _storeShots[i];
+      final (title, subtitle) = captions[locale]!;
+      final name = '${(i + 1).toString().padLeft(2, '0')}_${screen}_$locale';
+      testWidgets('store $name', (tester) async {
+        tester.view.physicalSize = const Size(1080, 1920);
+        tester.view.devicePixelRatio = 2.75;
+        addTearDown(tester.view.reset);
+        final bytes = File('$_shotsDir/${screen}_${locale}_light.png').readAsBytesSync();
+        final image = MemoryImage(bytes);
+        await tester.pumpWidget(RepaintBoundary(
+          child: _StoreFrame(
+            title: title,
+            subtitle: subtitle,
+            rtl: locale == 'ar',
+            screen: image,
+          ),
+        ));
+        await tester.runAsync(() async {
+          await precacheImage(image, tester.element(find.byType(_StoreFrame)));
+        });
+        await tester.pump();
+        await tester.runAsync(() => _captureStore(tester, name));
+      });
+    }
+  }
+}
+
+Future<void> _captureStore(WidgetTester tester, String name) async {
+  final repaint = tester.renderObject<RenderRepaintBoundary>(
+      find.byType(RepaintBoundary).first);
+  final image = await repaint.toImage(pixelRatio: 2.75);
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  File('$_storeDir/$name.png')
+    ..createSync(recursive: true)
+    ..writeAsBytesSync(bytes!.buffer.asUint8List());
+}
+
+/// One store image: the caption on the brand gradient, the real screen below
+/// it in a rounded phone outline.
+class _StoreFrame extends StatelessWidget {
+  const _StoreFrame({
+    required this.title,
+    required this.subtitle,
+    required this.rtl,
+    required this.screen,
+  });
+
+  final String title;
+  final String subtitle;
+  final bool rtl;
+  final ImageProvider screen;
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(gradient: AppColors.brandGradient),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(28, 46, 28, 0),
+          child: Column(
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: GenderThemes.fontFamily,
+                  fontSize: 27,
+                  height: 1.3,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: GenderThemes.fontFamily,
+                  fontSize: 15.5,
+                  height: 1.5,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+              const SizedBox(height: 28),
+              // The phone runs off the bottom edge, as store art usually does,
+              // so the screen stays large enough to read.
+              Expanded(
+                child: OverflowBox(
+                  alignment: Alignment.topCenter,
+                  maxHeight: double.infinity,
+                  child: SizedBox(
+                    width: 300,
+                    height: 300 * 2340 / 1080,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.55),
+                          width: 5,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x55000000),
+                            blurRadius: 30,
+                            offset: Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(25),
+                        child: Image(image: screen, fit: BoxFit.cover),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -6,7 +6,7 @@
 - [ ] `assets/icons/app_icon_fg.png` موجود (1024×1024)
 - [ ] `assets/icons/splash.png` موجود (800×800)
 - [ ] `flutter test test/splash_sound_test.dart` ينجح (الأصوات المعلنة = الموجودة)
-- [ ] `assets/store/output/*.png` = 6 صور (1080×1920)
+- [x] `assets/store/output/*.png` = 12 صورة (6 عربي + 6 إنجليزي، 1080×1920) من الشاشات الحقيقية: `flutter test tool/screenshots_test.dart --dart-define=STORE=true`
 - [ ] `docs/SOUNDS_ATTRIBUTION.md` محدّث
 - [ ] `flutter_launcher_icons` نُفِّذ بنجاح
 - [ ] `flutter_native_splash:create` نُفِّذ بنجاح

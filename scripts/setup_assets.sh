@@ -19,7 +19,7 @@ echo ""
 # 1. المجلدات
 # ═══════════════════════════════════════════════════════════════
 echo "📁 إنشاء المجلدات..."
-mkdir -p assets/icons assets/sounds assets/store/screenshots assets/store/output assets/social
+mkdir -p assets/icons assets/sounds assets/store/output assets/social
 echo "  ✅"
 
 # ═══════════════════════════════════════════════════════════════
@@ -110,16 +110,8 @@ else
     convert_svg assets/icons/app_icon_fg.svg assets/icons/ic_launcher_foreground.png "432:432"
   }
 
-  # ─── Store Screenshots ───
-  if [ -d assets/store/screenshots ]; then
-    for svg in assets/store/screenshots/*.svg; do
-      [ -f "$svg" ] || continue
-      filename=$(basename "$svg" .svg)
-      echo "  → screenshots/$filename.png (1080×1920)"
-      svgexport "$svg" "assets/store/output/$filename.png" "1080:1920" 2>/dev/null || \
-        convert -background none -resize "1080x1920" "$svg" "assets/store/output/$filename.png"
-    done
-  fi
+  # Store screenshots are rendered from the real screens, not from SVG
+  # mockups: flutter test tool/screenshots_test.dart --dart-define=STORE=true
 
   echo "  ✅ SVG conversion complete"
 fi
@@ -162,7 +154,7 @@ echo "════════════════════════�
 echo ""
 echo "   الأيقونات:      $(ls assets/icons/*.png 2>/dev/null | wc -l) / 5 متوقع"
 echo "   الأصوات:        $(ls assets/sounds/*.mp3 2>/dev/null | wc -l) / 10 متوقع"
-echo "   Screenshots:    $(ls assets/store/output/*.png 2>/dev/null | wc -l) / 6 متوقع"
+echo "   Screenshots:    $(ls assets/store/output/*.png 2>/dev/null | wc -l) / 12 متوقع (6 عربي + 6 إنجليزي)"
 echo ""
 
 # فحص الملفات الحرجة
