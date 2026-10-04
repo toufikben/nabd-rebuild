@@ -1,14 +1,19 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/l10n/app_localizations.dart';
+import '../../core/mood_patterns.dart';
+import '../../core/streak.dart';
+import '../../services/monetization_service.dart';
+import '../../widgets/nabd_ui.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
+import '../../core/storage.dart';
 
 class StatsScreen extends ConsumerStatefulWidget {
   const StatsScreen({super.key});
@@ -27,7 +32,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     final summary = _StatsSummary.fromEntries(entries);
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context).t('nav.stats'))),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).t('insights.title'))),
       body: RefreshIndicator(
         onRefresh: () async => setState(() {}),
         child: ListView(
@@ -36,14 +41,71 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
           children: [
             _buildOverview(context, summary),
             const SizedBox(height: 24),
+            _buildExplore(context),
+            const SizedBox(height: 24),
             _buildTimeline(context, summary),
             const SizedBox(height: 24),
             _buildMoodDistribution(context, summary),
+            const SizedBox(height: 24),
+            _buildPatterns(context, MoodPatterns.compute(entries)),
             const SizedBox(height: 24),
             _buildWordCloud(context, summary),
           ],
         ),
       ),
+    );
+  }
+
+  /// The other insight screens, which used to hide behind a menu.
+  Widget _buildExplore(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final isPro = ref.watch(monetizationProvider.select((s) => s.isPro));
+    final pro = isPro ? null : l10n.t('pro.badge');
+    final tiles = <(IconData, String, String, String, Color, String?)>[
+      (Icons.wb_cloudy_outlined, 'hub.feature.weather.title',
+          'hub.feature.weather.subtitle', '/weather', AppColors.secondary, null),
+      (Icons.calendar_view_week_rounded, 'hub.feature.weeklyPulse.title',
+          'hub.feature.weeklyPulse.subtitle', '/weekly-pulse', AppColors.pulse,
+          null),
+      (Icons.grid_view_rounded, 'hub.feature.heatmap.title',
+          'hub.feature.heatmap.subtitle', '/heatmap', AppColors.success, null),
+      (Icons.wb_sunny_outlined, 'hub.feature.echoes.title',
+          'hub.feature.echoes.subtitle', '/echoes', AppColors.warning, null),
+      (Icons.auto_awesome, 'hub.feature.yearReview.title',
+          'hub.feature.yearReview.subtitle', '/year-review', AppColors.primary,
+          pro),
+      (Icons.radar_rounded, 'hub.feature.emotionRadar.title',
+          'hub.feature.emotionRadar.subtitle', '/emotion-radar',
+          AppColors.femininePrimary, pro),
+      (Icons.cloud_queue_rounded, 'hub.feature.wordCloud.title',
+          'hub.feature.wordCloud.subtitle', '/word-cloud',
+          AppColors.masculinePrimary, pro),
+      (Icons.sell_outlined, 'hub.feature.tags.title',
+          'hub.feature.tags.subtitle', '/tags', AppColors.primaryGlow, null),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(l10n.t('insights.explore')),
+        const SizedBox(height: 12),
+        EqualHeightGrid(
+          columns: MediaQuery.sizeOf(context).width >= 600 ? 4 : 2,
+          children: [
+            for (final (icon, title, subtitle, route, color, badge) in tiles)
+              FeatureTile(
+                icon: icon,
+                title: l10n.t(title),
+                subtitle: l10n.t(subtitle),
+                color: color,
+                badge: badge,
+                onTap: () async {
+                  await context.push(route);
+                  if (mounted) setState(() {});
+                },
+              ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -54,13 +116,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
       children: [
         _sectionTitle(l10n.t('stats.overview')),
         const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1.55,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+        EqualHeightGrid(
+          columns: 2,
+          spacing: 10,
           children: [
             _statCard(
               icon: Icons.menu_book_outlined,
@@ -202,6 +260,141 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     );
   }
 
+  Widget _buildPatterns(BuildContext context, MoodPatterns patterns) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final locale = l10n.locale.languageCode;
+    String weekdayName(int weekday) =>
+        DateFormat.EEEE(locale).format(DateTime(2026, 10, 4 + weekday));
+    String weekdayShort(int weekday) =>
+        DateFormat.E(locale).format(DateTime(2026, 10, 4 + weekday));
+    // Arabic calendars start the week on Saturday.
+    final order = l10n.isArabic ? const [6, 7, 1, 2, 3, 4, 5] : const [1, 2, 3, 4, 5, 6, 7];
+
+    final insights = <String>[
+      if (patterns.calmestWeekday case final day?)
+        l10n.t('stats.patterns.calmDay').replaceAll('{day}', weekdayName(day)),
+      if (patterns.hardestWeekday case final day?)
+        l10n.t('stats.patterns.hardDay').replaceAll('{day}', weekdayName(day)),
+      if (patterns.calmestDayPart case final part?)
+        l10n.t('stats.patterns.calmPart')
+            .replaceAll('{part}', l10n.t('daypart.${part.name}')),
+      if (patterns.hardestDayPart case final part?)
+        l10n.t('stats.patterns.hardPart')
+            .replaceAll('{part}', l10n.t('daypart.${part.name}')),
+      for (final tag in patterns.tags)
+        l10n
+            .t(tag.difference > 0 ? 'stats.patterns.tagUp' : 'stats.patterns.tagDown')
+            .replaceAll('{tag}', tag.tag),
+    ];
+
+    Color colorFor(double average) => Color.lerp(
+        AppColors.primary, AppColors.secondary, ((average - 2) / 7).clamp(0, 1))!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(l10n.t('stats.patterns')),
+        const SizedBox(height: 12),
+        if (!patterns.hasEnough)
+          _emptyPanel(
+            context,
+            l10n.t('stats.patterns.needMore').replaceAll(
+                '{n}', '${MoodPatterns.minEntries - patterns.overall.count}'),
+          )
+        else
+          _panel(
+            context,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final line in insights)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.insights_rounded,
+                            size: 18, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: Text(line, style: theme.textTheme.bodyMedium)),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 8),
+                Text(l10n.t('stats.patterns.weekday'),
+                    style: theme.textTheme.labelLarge),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 96,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      for (final day in order)
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Container(
+                                height: 6 +
+                                    58 * ((patterns.byWeekday[day]?.average ?? 0) / 10),
+                                margin: const EdgeInsets.symmetric(horizontal: 6),
+                                decoration: BoxDecoration(
+                                  color: patterns.byWeekday[day] == null
+                                      ? theme.colorScheme.surfaceContainerHighest
+                                      : colorFor(patterns.byWeekday[day]!.average),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                weekdayShort(day),
+                                maxLines: 1,
+                                overflow: TextOverflow.clip,
+                                style: theme.textTheme.labelSmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(l10n.t('stats.patterns.daypart'),
+                    style: theme.textTheme.labelLarge),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final part in DayPart.values)
+                      if (patterns.byDayPart[part] case final avg?)
+                        Chip(
+                          avatar: CircleAvatar(
+                            backgroundColor: colorFor(avg.average),
+                            radius: 6,
+                          ),
+                          label: Text(
+                            '${l10n.t('daypart.short.${part.name}')}  '
+                            '${avg.average.toStringAsFixed(1)}',
+                          ),
+                        ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.t('stats.patterns.note'),
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildWordCloud(BuildContext context, _StatsSummary summary) {
     final l10n = AppLocalizations.of(context);
     return Column(
@@ -255,8 +448,12 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
             child: Text(mood.emoji, style: const TextStyle(fontSize: 21)),
           ),
           SizedBox(
-            width: 64,
-            child: Text(mood.labelFor(AppLocalizations.of(context).isArabic)),
+            width: 84,
+            child: Text(
+              mood.labelFor(AppLocalizations.of(context).isArabic),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           Expanded(
             child: ClipRRect(
@@ -390,9 +587,9 @@ class _StatsSummary {
 
     final now = DateTime.now();
     final today = _dateOnly(now);
-    final currentStreak =
-        dates.contains(today) ? _streakEndingAt(dates, today) : 0;
-    final longestStreak = _longestStreak(dates);
+    final moments = entries.map((entry) => entry.createdAt);
+    final currentStreak = StreakCalculator.current(moments, now: now);
+    final longestStreak = StreakCalculator.longest(moments);
     final moodCounts = <String, int>{};
     for (final entry in entries) {
       if (Mood.journalMoods.any((mood) => mood.id == entry.mood)) {
@@ -433,34 +630,8 @@ class _StatsSummary {
   }
 
   static int _completedSessions() {
-    final raw = Hive.box('settings').get('sessions_completed_total');
+    final raw = contentBox().get(ContentKeys.sessionsCompleted);
     return raw is int ? raw : 0;
-  }
-
-  static int _streakEndingAt(List<DateTime> dates, DateTime end) {
-    final available = dates.toSet();
-    var length = 0;
-    var date = end;
-    while (available.contains(date)) {
-      length++;
-      date = date.subtract(const Duration(days: 1));
-    }
-    return length;
-  }
-
-  static int _longestStreak(List<DateTime> dates) {
-    if (dates.isEmpty) return 0;
-    var longest = 1;
-    var current = 1;
-    for (var i = 1; i < dates.length; i++) {
-      if (dates[i].difference(dates[i - 1]).inDays == 1) {
-        current++;
-        if (current > longest) longest = current;
-      } else {
-        current = 1;
-      }
-    }
-    return longest;
   }
 
   static Map<String, int> _countWords(List<JournalEntry> entries) {

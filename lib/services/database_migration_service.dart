@@ -1,9 +1,9 @@
-import 'dart:convert';
-
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'encryption_service.dart';
+import 'hive_value_equality.dart';
+import '../core/storage.dart';
 
 /// Migrates legacy plaintext Hive boxes to encrypted boxes without changing
 /// their public names. The source is retained until an encrypted target has
@@ -13,13 +13,7 @@ class DatabaseMigrationService {
   static const _marker = 'nabd_hive_schema_version';
   static const _temporarySuffix = '__encrypted_migration';
   static const _targetSuffix = '__encrypted_target';
-  static const _boxes = <String>[
-    'journal_entries',
-    'settings',
-    'moods',
-    'tags',
-    'garden',
-  ];
+  static const _boxes = HiveBoxes.all;
 
   final EncryptionService encryption;
 
@@ -207,34 +201,9 @@ class DatabaseMigrationService {
     }
     for (final entry in expected.entries) {
       if (!box.containsKey(entry.key) ||
-          !_valuesEqual(box.get(entry.key), entry.value)) {
+          !hiveValuesEqual(box.get(entry.key), entry.value)) {
         throw StateError('Migration key/value mismatch');
       }
-    }
-  }
-
-  bool _valuesEqual(Object? left, Object? right) {
-    if (left is Map && right is Map) {
-      if (left.length != right.length) return false;
-      for (final key in left.keys) {
-        if (!right.containsKey(key) || !_valuesEqual(left[key], right[key])) {
-          return false;
-        }
-      }
-      return true;
-    }
-    if (left is List && right is List) {
-      return left.length == right.length &&
-          List.generate(left.length, (i) => _valuesEqual(left[i], right[i]))
-              .every((value) => value);
-    }
-    if (left is DateTime && right is DateTime) return left == right;
-    if (left is num && right is num) return left == right;
-    if (left == null || right == null) return left == right;
-    try {
-      return jsonEncode(left) == jsonEncode(right);
-    } catch (_) {
-      return left == right;
     }
   }
 }

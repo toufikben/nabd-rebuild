@@ -117,8 +117,8 @@ class BreathingEngine {
     if (_disposed || phase == _lastCuePhase) return;
 
     final assetPath = switch (phase) {
-      BreathingPhase.inhale => 'assets/sounds/inhale.mp3',
-      BreathingPhase.exhale => 'assets/sounds/exhale.mp3',
+      BreathingPhase.inhale => 'assets/sounds/inhale.m4a',
+      BreathingPhase.exhale => 'assets/sounds/exhale.m4a',
       BreathingPhase.holdIn ||
       BreathingPhase.holdOut ||
       BreathingPhase.finished =>

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 /// The app never derives subscription expiry locally. Subscription entitlement
@@ -217,10 +218,84 @@ class MonetizationConfig {
     defaultValue: false,
   );
 
-  static Set<String> get productIds => {monthlyId, yearlyId, lifetimeId};
+  /// Subscriptions can only grant Pro through the verification backend, so
+  /// they are not offered for sale until that backend is configured. Selling
+  /// a plan that cannot unlock anything is what the store policies forbid.
+  static bool get subscriptionsEnabled =>
+      SubscriptionVerificationConfig.isConfigured;
+
+  /// The products the paywall may sell in this build.
+  static Set<String> get productIds => {
+        if (subscriptionsEnabled) ...{monthlyId, yearlyId},
+        lifetimeId,
+      };
+
+  /// Every product the app knows, so an older subscription bought before the
+  /// plans were hidden is still recognised when the store restores it.
+  static Set<String> get allProductIds => {monthlyId, yearlyId, lifetimeId};
 
   static bool get isReady =>
       monthlyId.isNotEmpty && yearlyId.isNotEmpty && lifetimeId.isNotEmpty;
+}
+
+/// The entitlement as last confirmed by the store or the backend, kept so Pro
+/// survives an app restart without waiting for the store to answer.
+class CachedEntitlement {
+  const CachedEntitlement({this.lifetime = false, this.proExpiry});
+
+  final bool lifetime;
+  final DateTime? proExpiry;
+
+  bool isActive(DateTime now) =>
+      lifetime || (proExpiry != null && proExpiry!.isAfter(now));
+
+  Map<String, dynamic> toJson() => {
+        'lifetime': lifetime,
+        'proExpiry': proExpiry?.toIso8601String(),
+      };
+
+  static CachedEntitlement? tryParse(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return null;
+      final expiry = decoded['proExpiry'];
+      return CachedEntitlement(
+        lifetime: decoded['lifetime'] == true,
+        proExpiry: expiry is String ? DateTime.tryParse(expiry) : null,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+/// Where the entitlement cache lives. Behind an interface so the policy can be
+/// tested without a platform channel.
+abstract class EntitlementStore {
+  Future<CachedEntitlement?> read();
+
+  Future<void> write(CachedEntitlement entitlement);
+}
+
+/// The OS keystore, not Hive: the cache must stay out of `.nabd` backups and
+/// survive Delete All, exactly like the entitlement keys the backup filters.
+class SecureEntitlementStore implements EntitlementStore {
+  const SecureEntitlementStore();
+
+  static const _key = 'nabd_entitlement';
+  static const _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+
+  @override
+  Future<CachedEntitlement?> read() async =>
+      CachedEntitlement.tryParse(await _storage.read(key: _key));
+
+  @override
+  Future<void> write(CachedEntitlement entitlement) =>
+      _storage.write(key: _key, value: jsonEncode(entitlement.toJson()));
 }
 
 class EntitlementService {
@@ -242,7 +317,7 @@ class EntitlementService {
     if (purchase.productID == MonetizationConfig.lifetimeId) {
       return EntitlementStatus.lifetime;
     }
-    if (MonetizationConfig.productIds.contains(purchase.productID)) {
+    if (MonetizationConfig.allProductIds.contains(purchase.productID)) {
       return EntitlementStatus.subscriptionUnverified;
     }
     return EntitlementStatus.error;
@@ -250,26 +325,43 @@ class EntitlementService {
 }
 
 class MonetizationService extends StateNotifier<MonetizationState> {
-  MonetizationService() : super(const MonetizationState()) {
+  MonetizationService({EntitlementStore store = const SecureEntitlementStore()})
+      : _store = store,
+        super(const MonetizationState()) {
     _init();
   }
+
+  /// A service frozen at [state] that never talks to the store, for tests.
+  @visibleForTesting
+  MonetizationService.preset(super.state)
+      : _store = const SecureEntitlementStore();
 
   static final InAppPurchase _iap = InAppPurchase.instance;
   static const String proMonthlyId = MonetizationConfig.monthlyId;
   static const String proYearlyId = MonetizationConfig.yearlyId;
   static const String lifetimeId = MonetizationConfig.lifetimeId;
 
+  /// How long a restore may stay silent before the paywall stops spinning.
+  /// The store sends nothing at all when there is nothing to restore.
+  static const restoreTimeout = Duration(seconds: 15);
+
+  /// A verified subscription without an expiry from the backend is trusted for
+  /// this long, then it has to be confirmed again.
+  static const _unknownExpiryGrace = Duration(days: 3);
+
+  final EntitlementStore _store;
   final EntitlementService _entitlements = const EntitlementService();
   StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
+  Timer? _restoreTimer;
 
   Future<void> _init() async {
+    await _loadCachedEntitlement();
+    if (!mounted) return;
     if (kReleaseMode && !MonetizationConfig.productionConfigured) {
-      if (mounted) {
-        state = state.copyWith(
-          error: 'Purchases are not configured for this release.',
-          entitlementStatus: EntitlementStatus.error,
-        );
-      }
+      state = state.copyWith(
+        error: 'Purchases are not configured for this release.',
+        entitlementStatus: state.isPro ? null : EntitlementStatus.error,
+      );
       return;
     }
     final available = await _iap.isAvailable();
@@ -278,6 +370,44 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     state = state.copyWith(storeAvailable: true);
     _purchaseSub = _iap.purchaseStream.listen(_onPurchaseUpdate);
     await _loadProducts();
+    // Re-confirm what the store knows without showing a spinner, so a
+    // purchase made on another device or a refund is picked up on launch.
+    try {
+      await _iap.restorePurchases();
+    } catch (error) {
+      debugPrint('Silent restore failed: $error');
+    }
+  }
+
+  /// Pro is granted from the cache straight away; the store only ever adds to
+  /// it or confirms it, so a slow or offline store never locks a buyer out.
+  Future<void> _loadCachedEntitlement() async {
+    try {
+      final cached = await _store.read();
+      if (cached == null || !mounted) return;
+      if (!cached.isActive(DateTime.now())) return;
+      state = state.copyWith(
+        isPro: true,
+        isLifetime: cached.lifetime,
+        proExpiry: cached.proExpiry,
+        entitlementStatus: cached.lifetime
+            ? EntitlementStatus.lifetime
+            : EntitlementStatus.subscriptionActive,
+      );
+    } catch (error) {
+      debugPrint('Entitlement cache unreadable: $error');
+    }
+  }
+
+  Future<void> _saveEntitlement() async {
+    try {
+      await _store.write(CachedEntitlement(
+        lifetime: state.isLifetime,
+        proExpiry: state.isLifetime ? null : state.proExpiry,
+      ));
+    } catch (error) {
+      debugPrint('Entitlement cache not written: $error');
+    }
   }
 
   Future<void> _loadProducts() async {
@@ -298,7 +428,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
         error: error is TimeoutException
             ? 'The store did not answer in time.'
             : '$error',
-        entitlementStatus: EntitlementStatus.error,
+        entitlementStatus: state.isPro ? null : EntitlementStatus.error,
       );
     }
   }
@@ -344,12 +474,27 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   Future<void> restorePurchases() async {
     state = state.copyWith(
       restoring: true,
+      nothingRestored: false,
       error: null,
       entitlementStatus: EntitlementStatus.pending,
     );
+    _restoreTimer?.cancel();
+    _restoreTimer = Timer(restoreTimeout, () {
+      if (!mounted || !state.restoring) return;
+      state = state.copyWith(
+        restoring: false,
+        nothingRestored: true,
+        entitlementStatus: state.isPro
+            ? (state.isLifetime
+                ? EntitlementStatus.lifetime
+                : EntitlementStatus.subscriptionActive)
+            : EntitlementStatus.unknown,
+      );
+    });
     try {
       await _iap.restorePurchases();
     } catch (error) {
+      _restoreTimer?.cancel();
       if (!mounted) return;
       state = state.copyWith(
         restoring: false,
@@ -361,6 +506,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   void _onPurchaseUpdate(List<PurchaseDetails> purchases) {
     if (!mounted) return;
+    if (purchases.isNotEmpty) _restoreTimer?.cancel();
     for (final purchase in purchases) {
       final status = _entitlements.statusFor(purchase);
       if (status == EntitlementStatus.lifetime) {
@@ -372,6 +518,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
           entitlementStatus: status,
           error: null,
         );
+        unawaited(_saveEntitlement());
       } else if (status == EntitlementStatus.subscriptionUnverified) {
         unawaited(_verifySubscriptionPurchase(purchase));
       } else {
@@ -417,22 +564,38 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     );
     if (!mounted) return;
 
+    // Network or backend trouble is not a verdict: Pro that the cache already
+    // granted stays, and only the status and the message change.
+    final isVerdict = result.status == EntitlementStatus.subscriptionActive ||
+        result.status == EntitlementStatus.lifetime ||
+        result.status == EntitlementStatus.expired;
+    if (!isVerdict) {
+      state = state.copyWith(
+        entitlementStatus: state.isPro ? null : result.status,
+        error: state.isPro ? null : result.errorMessage,
+      );
+      return;
+    }
+
+    // A lifetime purchase already owned is never taken away by the verdict on
+    // an unrelated subscription.
+    final keepsLifetime = state.isLifetime;
+    final verdictExpiry = result.isPro
+        ? (result.expiryDate ?? DateTime.now().add(_unknownExpiryGrace))
+        : null;
     state = state.copyWith(
-      isPro: result.isPro,
-      isLifetime: result.status == EntitlementStatus.lifetime,
-      proExpiry: result.expiryDate,
-      entitlementStatus: result.status,
-      error: result.isPro ? null : result.errorMessage,
+      isPro: result.isPro || keepsLifetime,
+      isLifetime: keepsLifetime || result.status == EntitlementStatus.lifetime,
+      proExpiry: verdictExpiry,
+      clearProExpiry: verdictExpiry == null,
+      entitlementStatus:
+          keepsLifetime ? EntitlementStatus.lifetime : result.status,
+      error: result.isPro || keepsLifetime ? null : result.errorMessage,
     );
+    await _saveEntitlement();
   }
 
   bool get isProActive => state.isPro;
-
-  bool canWriteEntry({required int currentMonthEntries}) =>
-      isProActive || currentMonthEntries < 7;
-
-  int remainingEntries({required int currentMonthEntries}) =>
-      isProActive ? -1 : (7 - currentMonthEntries).clamp(0, 7);
 
   String priceFor(String productId) {
     for (final item in state.products) {
@@ -443,6 +606,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   @override
   void dispose() {
+    _restoreTimer?.cancel();
     _purchaseSub?.cancel();
     super.dispose();
   }
@@ -457,6 +621,7 @@ class MonetizationState {
     this.proExpiry,
     this.purchasing = false,
     this.restoring = false,
+    this.nothingRestored = false,
     this.products = const [],
     this.error,
     this.entitlementStatus = EntitlementStatus.unknown,
@@ -469,6 +634,9 @@ class MonetizationState {
   final DateTime? proExpiry;
   final bool purchasing;
   final bool restoring;
+
+  /// True after a restore that the store answered with nothing to restore.
+  final bool nothingRestored;
   final List<ProductDetails> products;
   final String? error;
   final EntitlementStatus entitlementStatus;
@@ -479,8 +647,10 @@ class MonetizationState {
     bool? isPro,
     bool? isLifetime,
     DateTime? proExpiry,
+    bool clearProExpiry = false,
     bool? purchasing,
     bool? restoring,
+    bool? nothingRestored,
     List<ProductDetails>? products,
     String? error,
     EntitlementStatus? entitlementStatus,
@@ -490,9 +660,10 @@ class MonetizationState {
         productsLoaded: productsLoaded ?? this.productsLoaded,
         isPro: isPro ?? this.isPro,
         isLifetime: isLifetime ?? this.isLifetime,
-        proExpiry: proExpiry ?? this.proExpiry,
+        proExpiry: clearProExpiry ? null : (proExpiry ?? this.proExpiry),
         purchasing: purchasing ?? this.purchasing,
         restoring: restoring ?? this.restoring,
+        nothingRestored: nothingRestored ?? this.nothingRestored,
         products: products ?? this.products,
         error: error,
         entitlementStatus: entitlementStatus ?? this.entitlementStatus,

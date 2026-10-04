@@ -1,30 +1,18 @@
-# بناء Android تلقائي — Nabd
+# بناء Android في CI
 
-يوجد workflow في `.github/workflows/android-build.yml`. يعمل عند push إلى `main`، وعند Pull Request إلى `main`، ويمكن تشغيله يدويًا من تبويب Actions.
+الملف: `.github/workflows/android-build.yml`. يعمل عند الدفع إلى `main`، وعند Pull Request إلى `main`، ويدويًا.
 
-## ما يعمل دون أسرار
+1. **Analyze and test:** `flutter pub get` ثم `flutter analyze` (أي ملاحظة تُفشل البناء) ثم `flutter test`.
+2. **Build debug APK and AAB:** بعد نجاح الخطوة الأولى، APK لكل معالج (`--split-per-abi`). على Pull Requests لا يُرفع شيء. على `main` واليدوي يُرفع `nabd-debug-arm64-apk` لمدة 3 أيام.
+3. **Release موقّع:** اختياري عبر `NABD_RELEASE_ENABLED=true`؛ انظر `docs/RELEASE_CONFIGURATION.md`.
 
-ينشئ workflow بيئة Flutter 3.27 وJava 17، ويستكمل ملفات Android القياسية إذا لم توجد، ثم يشغل `flutter pub get` و`flutter gen-l10n` و`flutter analyze` و`flutter test`. بعد نجاح التحقق، يبني:
+### تنزيل نسخة للهاتف
 
-- Debug APK: `build/app/outputs/flutter-apk/app-debug.apk`
-- Debug AAB: `build/app/outputs/bundle/debug/app-debug.aab`
+شغّل الـ workflow يدويًا (Actions ← Android Build ← Run workflow واختر الفرع). عند انتهائه تظهر في صفحة **Releases** نسخة تجريبية `build-<رقم>` فيها:
 
-يتم رفع الملفين كـ GitHub Actions Artifacts باسمَي `nabd-debug-apk` و`nabd-debug-aab`. لا يحتاج هذا المسار إلى مفاتيح توقيع أو أسرار AdMob.
+- `nabd-debug-arm64.apk`: للاختبار (تسمح بلقطات adb).
+- `nabd-release.apk`: إن كان الإصدار الموقّع مفعّلًا.
 
-## Release لاحقًا
+تُفتح الصفحة من الهاتف ويُثبَّت الملف مباشرة. ملفات Releases لا تستهلك حصة تخزين Actions، لذلك تعمل حتى حين تمتلئ الحصة؛ فشل رفع Artifacts لا يُفشل البناء. احذف الإصدارات التجريبية القديمة من حين لآخر.
 
-لا ينبغي توقيع Release بمفاتيح داخل المستودع. عند الجاهزية، أضف Secrets التالية إلى GitHub:
-
-| Secret | الغرض |
-|---|---|
-| `ANDROID_KEYSTORE_BASE64` | keystore مشفر Base64 |
-| `KEYSTORE_PASSWORD` | كلمة مرور keystore |
-| `KEY_ALIAS` | اسم المفتاح |
-| `KEY_PASSWORD` | كلمة مرور المفتاح |
-| `ADMOB_ANDROID_REWARDED_ID` | Rewarded Ad Unit للإنتاج |
-
-يجب أيضًا توفير App ID الإنتاجي في Android Manifest عبر خطوة Native/CI منفصلة، لأن `--dart-define` يمرر قيم Dart ولا يعيد كتابة XML تلقائيًا. لا تُرفع ملفات keystore أو `key.properties` إلى Git.
-
-## ملاحظات
-
-بما أن ملفات المنصة الأصلية في هذا المستودع مستخرجة جزئيًا، يحتوي workflow على bootstrap آمن عبر `flutter create --platforms=android --org com.nabd .` عند غياب ملفات إعداد Android. يجب مراجعة الناتج في أول تشغيل فعلي قبل اعتماد Release.
+لا تُرفع ملفات keystore أو `key.properties` إلى Git.

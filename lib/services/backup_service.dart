@@ -2,49 +2,77 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../core/storage.dart';
+import 'database_service.dart';
 import 'encryption_service.dart';
+import 'media_vault.dart';
 
-/// BackupService — نسخ احتياطي محلي مع تشفير AES-256-GCM حقيقي.
+/// Encrypted `.nabd` backups.
 ///
-/// التنسيق:
-///   • كلمة المرور إلزامية
-///   • ZIP داخل غلاف AES-256-GCM موثق بـ MAC
+/// Format 2 (written now):
+///   `NABD` · 0x02 · salt[16] · chunkSize[u32] · chunk*
+///   chunk = length[u32] · nonce[12] · ciphertext · mac[16]
+/// Each chunk is AES-256-GCM with the chunk index and a "last chunk" flag as
+/// associated data, so chunks cannot be reordered, dropped or cut off. The
+/// key is PBKDF2-SHA256 of the password. Because it streams, a backup is no
+/// longer limited by memory: photos and voice notes of any amount fit.
 ///
-/// البنية داخل ZIP:
-///   entries.json     — المذكرات
-///   settings.json    — الإعدادات
-///   garden.json      — الحديقة
-///   achievements.json — الإنجازات
-///   metadata.json    — معلومات الإصدار
-///   images/          — الصور
-///   audio/           — التسجيلات
+/// Format 1 (one GCM block over the whole ZIP) is still read.
+///
+/// Inside, a ZIP holds one JSON file per box plus `media/<stored path>` with
+/// the plain bytes of every photo and voice note, so a backup opens on any
+/// phone and is re-encrypted there with that phone's media key.
 class BackupService {
-  final EncryptionService _encryption;
-  final Future<Directory> Function() _documentsDirectory;
-  final Future<Directory> Function() _temporaryDirectory;
-  static const _backupMagic = <int>[0x4E, 0x41, 0x42, 0x44]; // NABD
-  static const _backupFormatVersion = 1;
-  static const maxBackupBytes = 50 * 1024 * 1024;
-  static const maxExtractedBytes = 200 * 1024 * 1024;
-  static const maxFileBytes = 25 * 1024 * 1024;
-  static const maxFileCount = 500;
-
   BackupService({
     EncryptionService? encryption,
+    MediaVault? media,
     Future<Directory> Function()? documentsDirectory,
     Future<Directory> Function()? temporaryDirectory,
   })  : _encryption = encryption ?? EncryptionService(),
         _documentsDirectory =
             documentsDirectory ?? getApplicationDocumentsDirectory,
-        _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory;
+        _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory,
+        _mediaOverride = media;
 
-  /// إنشاء نسخة احتياطية.
+  final EncryptionService _encryption;
+  final Future<Directory> Function() _documentsDirectory;
+  final Future<Directory> Function() _temporaryDirectory;
+  final MediaVault? _mediaOverride;
+
+  MediaVault get _media =>
+      _mediaOverride ??
+      MediaVault(
+        encryption: _encryption,
+        documentsDirectory: _documentsDirectory,
+        temporaryDirectory: _temporaryDirectory,
+      );
+
+  static const _magic = <int>[0x4E, 0x41, 0x42, 0x44]; // NABD
+  static const formatVersion = 2;
+  static const _legacyFormatVersion = 1;
+  static const chunkSize = 1024 * 1024;
+  static const _saltLength = 16;
+  static const _nonceLength = 12;
+  static const _macLength = 16;
+
+  /// Format 1 was decrypted in memory, so it keeps its old ceiling.
+  static const maxLegacyBackupBytes = 50 * 1024 * 1024;
+  static const maxExtractedBytes = 4 * 1024 * 1024 * 1024;
+  static const maxFileBytes = 200 * 1024 * 1024;
+  static const maxFileCount = 20000;
+
+  static final _algorithm = AesGcm.with256bits();
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Create
+  // ═══════════════════════════════════════════════════════════════════
+
   Future<File> createBackup({
     required String password,
     void Function(double progress)? onProgress,
@@ -52,530 +80,704 @@ class BackupService {
     if (password.isEmpty) {
       throw const FormatException('Backup password is required');
     }
-    final docs = await _documentsDirectory();
-    final tempDir = await _temporaryDirectory();
-    final archive = Archive();
+    final temp = await _temporaryDirectory();
+    final stamp = DateTime.now().millisecondsSinceEpoch;
+    final zipFile = File(p.join(temp.path, 'nabd_backup_$stamp.zip'));
+    final output = File(p.join(temp.path, 'nabd_backup_$stamp.nabd'));
 
-    var step = 0;
-    const totalSteps = 8;
-
-    void reportProgress() {
-      step++;
-      onProgress?.call(step / totalSteps);
-    }
-
-    // 1. Journal entries
-    final entriesBox = Hive.box('journal_entries');
-    final entriesJson = entriesBox.values.toList();
-    _addJson(archive, 'entries.json', entriesJson);
-    reportProgress();
-
-    // 2. Settings
-    final settingsBox = Hive.box('settings');
-    final settingsJson = <String, dynamic>{};
-    for (final key in settingsBox.keys) {
-      final normalizedKey = key.toString();
-      if (!isEntitlementKey(normalizedKey)) {
-        settingsJson[normalizedKey] = settingsBox.get(key);
+    try {
+      final entries = Hive.box(HiveBoxes.journal);
+      final encoder = ZipFileEncoder()..create(zipFile.path);
+      void addJson(String name, Object? data) {
+        final bytes = utf8.encode(jsonEncode(data));
+        encoder.addArchiveFile(ArchiveFile(name, bytes.length, bytes));
       }
-    }
-    _addJson(archive, 'settings.json', settingsJson);
-    reportProgress();
 
-    // 3. Garden
-    final gardenBox = Hive.box('garden');
-    final gardenJson = <String, dynamic>{};
-    for (final key in gardenBox.keys) {
-      gardenJson[key.toString()] = gardenBox.get(key);
-    }
-    _addJson(archive, 'garden.json', gardenJson);
-    reportProgress();
+      addJson('entries.json', entries.values.toList());
+      addJson('settings.json', exportableSettings(Hive.box(HiveBoxes.settings)));
+      addJson('content.json', _stringKeys(Hive.box(HiveBoxes.content)));
+      addJson('garden.json', _stringKeys(Hive.box(HiveBoxes.garden)));
+      addJson('moods.json', _stringKeys(Hive.box(HiveBoxes.moods)));
+      addJson('tags.json', _stringKeys(Hive.box(HiveBoxes.tags)));
+      onProgress?.call(0.1);
 
-    // 4. Moods and tags
-    for (final name in ['moods', 'tags']) {
-      final box = Hive.box(name);
-      _addJson(archive, '$name.json', box.toMap());
-      reportProgress();
-    }
-
-    // 5. Achievements + Challenges
-    final achievementsJson = <String, dynamic>{
-      'unlocked': settingsBox.get('unlocked_achievements', defaultValue: []),
-      'joined_challenges':
-          settingsBox.get('joined_challenges', defaultValue: []),
-      'legacy_entries': settingsBox.get('legacy_entries', defaultValue: []),
-      'unsent_letters': settingsBox.get('unsent_letters', defaultValue: []),
-      'time_capsules': settingsBox.get('time_capsules', defaultValue: []),
-      'gratitude_items': settingsBox.get('gratitude_items', defaultValue: []),
-      'future_letters': settingsBox.get('future_letters', defaultValue: []),
-      'worry_box': settingsBox.get('worry_box', defaultValue: []),
-    };
-    _addJson(archive, 'achievements.json', achievementsJson);
-    reportProgress();
-
-    // 6. Media files
-    for (final dirName in ['images', 'audio']) {
-      final dir = Directory('${docs.path}/$dirName');
-      if (await dir.exists()) {
-        await for (final entity in dir.list()) {
-          if (entity is File) {
-            final name = p.basename(entity.path);
-            final bytes = await entity.readAsBytes();
-            if (bytes.length > maxFileBytes || archive.length >= maxFileCount) {
-              throw const FormatException('Backup exceeds file limits');
-            }
-            archive.addFile(
-              ArchiveFile('$dirName/$name', bytes.length, bytes),
-            );
-          }
+      final mediaPaths = _mediaPathsOf(entries.values);
+      var done = 0;
+      for (final stored in mediaPaths) {
+        try {
+          final bytes = await _media.read(stored);
+          encoder.addArchiveFile(
+            ArchiveFile('media/${_archiveName(stored)}', bytes.length, bytes),
+          );
+        } catch (_) {
+          // A photo that is already gone is not a reason to lose the journal.
         }
+        done++;
+        onProgress?.call(0.1 + 0.6 * done / mediaPaths.length);
       }
+
+      addJson('metadata.json', {
+        'app': 'nabd',
+        'formatVersion': formatVersion,
+        'encrypted': true,
+        'exportedAt': DateTime.now().toIso8601String(),
+        'entryCount': entries.length,
+        'mediaCount': mediaPaths.length,
+      });
+      await encoder.close();
+
+      await _encryptFile(zipFile, output, password, (fraction) {
+        onProgress?.call(0.7 + 0.3 * fraction);
+      });
+      return output;
+    } catch (_) {
+      if (await output.exists()) await output.delete();
+      rethrow;
+    } finally {
+      if (await zipFile.exists()) await zipFile.delete();
     }
-    reportProgress();
-
-    // 7. Metadata
-    final metadata = {
-      'version': 3,
-      'formatVersion': _backupFormatVersion,
-      'app': 'nabd',
-      'exportedAt': DateTime.now().toIso8601String(),
-      'encrypted': true,
-      'entryCount': entriesBox.length,
-      'gardenCount': gardenBox.length,
-    };
-    _addJson(archive, 'metadata.json', metadata);
-    reportProgress();
-
-    // 7. Encode ZIP
-    final zipBytes = ZipEncoder().encode(archive);
-    if (zipBytes == null) {
-      throw Exception('Failed to encode ZIP');
-    }
-
-    // 8. Always encrypt backups (using real AES-256-GCM).
-    final outputBytes =
-        await _encryptZip(Uint8List.fromList(zipBytes), password);
-    if (outputBytes.length > maxBackupBytes) {
-      throw const FormatException('Backup exceeds size limit');
-    }
-
-    // 9. Save
-    final filename =
-        'nabd_backup_${DateTime.now().millisecondsSinceEpoch}.nabd';
-    final backupFile = File('${tempDir.path}/$filename');
-    await backupFile.writeAsBytes(outputBytes);
-
-    return backupFile;
   }
 
-  /// استيراد نسخة احتياطية.
+  // ═══════════════════════════════════════════════════════════════════
+  // Restore
+  // ═══════════════════════════════════════════════════════════════════
+
   Future<ImportResult> restoreBackup(
     String backupPath, {
     String? password,
     RestoreMode mode = RestoreMode.merge,
+    void Function(double progress)? onProgress,
   }) async {
+    if (password == null || password.isEmpty) {
+      return const ImportResult.failed(BackupError.passwordRequired);
+    }
+    final input = File(backupPath);
+    if (!await input.exists()) {
+      return const ImportResult.failed(BackupError.unreadable);
+    }
+    // A file that is not even a Nabd backup is refused before anything else.
     try {
-      if (password == null || password.isEmpty) {
-        return const ImportResult(
-          ok: false,
-          error: 'Backup password is required',
-        );
-      }
-      final input = File(backupPath);
-      if (!await input.exists() || await input.length() > maxBackupBytes) {
-        return const ImportResult(
-            ok: false, error: 'Backup is missing or too large');
-      }
-      var bytes = await input.readAsBytes();
+      await _checkHeader(input);
+    } on BackupException catch (error) {
+      return ImportResult.failed(error.error);
+    } catch (_) {
+      return const ImportResult.failed(BackupError.unreadable);
+    }
 
-      // 1. Decrypt the mandatory authenticated envelope.
+    final Directory temp;
+    try {
+      temp = await _temporaryDirectory();
+    } catch (_) {
+      return const ImportResult.failed(BackupError.failed);
+    }
+    final zipFile = File(p.join(
+      temp.path,
+      'nabd_restore_${DateTime.now().microsecondsSinceEpoch}.zip',
+    ));
+    final storedMedia = <String>[];
+    try {
       try {
-        bytes = await _decryptZip(Uint8List.fromList(bytes), password);
+        await _decryptFile(input, zipFile, password);
+      } on BackupException catch (error) {
+        return ImportResult.failed(error.error);
       } catch (_) {
-        return const ImportResult(
-          ok: false,
-          error: 'فشل فك التشفير: كلمة المرور خاطئة أو الملف تالف',
-        );
+        return const ImportResult.failed(BackupError.wrongPasswordOrCorrupt);
       }
+      onProgress?.call(0.3);
 
-      // 2. Decode ZIP
-      final archive = ZipDecoder().decodeBytes(bytes);
+      final payload = await _readPayload(zipFile);
+      if (payload.error != null) return ImportResult.failed(payload.error!);
+      onProgress?.call(0.5);
+
+      return await _apply(payload, mode, storedMedia, onProgress);
+    } catch (_) {
+      await _deleteStored(storedMedia);
+      return const ImportResult.failed(BackupError.failed);
+    } finally {
+      if (await zipFile.exists()) await zipFile.delete();
+    }
+  }
+
+  /// Reads and validates every part before anything current is touched.
+  Future<_Payload> _readPayload(File zipFile) async {
+    final stream = InputFileStream(zipFile.path);
+    try {
+      final archive = ZipDecoder().decodeBuffer(stream);
       if (archive.length > maxFileCount) {
-        return const ImportResult(
-            ok: false, error: 'Backup contains too many files');
+        return const _Payload.error(BackupError.tooLarge);
       }
-      final metadataFile = archive.whereType<ArchiveFile>().firstWhere(
-            (file) => file.isFile && file.name == 'metadata.json',
-            orElse: () =>
-                throw const FormatException('Backup metadata is missing'),
-          );
-      final metadata = jsonDecode(
-        utf8.decode(metadataFile.content as List<int>),
-      );
-      if (metadata is! Map ||
-          metadata['formatVersion'] != _backupFormatVersion ||
-          metadata['version'] is! num ||
-          metadata['version'] > 3 ||
-          metadata['app'] != 'nabd' ||
-          metadata['encrypted'] != true) {
-        return const ImportResult(
-          ok: false,
-          error: 'Unsupported backup schema',
-        );
-      }
-      if (metadata['entryCount'] is! num || metadata['entryCount'] < 0) {
-        return const ImportResult(ok: false, error: 'Invalid backup metadata');
-      }
-      var extractedBytes = 0;
+      var extracted = 0;
       for (final file in archive) {
         if (!isSafeArchivePath(file.name) || file.size > maxFileBytes) {
-          return const ImportResult(
-              ok: false, error: 'Backup contains an unsafe file');
+          return const _Payload.error(BackupError.unsafe);
         }
-        extractedBytes += file.size;
-        if (extractedBytes > maxExtractedBytes) {
-          return const ImportResult(
-              ok: false, error: 'Backup expands beyond the limit');
+        extracted += file.size;
+        if (extracted > maxExtractedBytes) {
+          return const _Payload.error(BackupError.tooLarge);
         }
       }
 
-      final stagedEntries = <String, Map<String, dynamic>>{};
-      final stagedSettings = <Object?, Object?>{};
-      final stagedGarden = <Object?, Object?>{};
-      final stagedMoods = <Object?, Object?>{};
-      final stagedTags = <Object?, Object?>{};
-      final stagedFiles = <String, List<int>>{};
-      final seenPayloads = <String>{};
-
-      // 3. Decode and validate everything before touching current data.
+      final json = <String, Object?>{};
+      final media = <String, ArchiveFile>{};
       for (final file in archive) {
         if (!file.isFile) continue;
-
-        final name = file.name;
-        final content = file.content as List<int>;
-
-        if (name == 'metadata.json') {
-          if (!seenPayloads.add(name)) {
-            return const ImportResult(
-                ok: false, error: 'Duplicate backup payload');
+        final name = Uri.decodeFull(file.name).replaceAll('\\', '/');
+        if (_jsonParts.contains(name)) {
+          if (json.containsKey(name)) {
+            return const _Payload.error(BackupError.corrupt);
           }
-          continue;
-        } else if (name == 'entries.json') {
-          if (!seenPayloads.add(name)) {
-            return const ImportResult(
-                ok: false, error: 'Duplicate backup payload');
+          json[name] = jsonDecode(utf8.decode(file.content as List<int>));
+        } else if (name.startsWith('media/') ||
+            name.startsWith('images/') ||
+            name.startsWith('audio/')) {
+          if (media.containsKey(name)) {
+            return const _Payload.error(BackupError.corrupt);
           }
-          final decoded = jsonDecode(utf8.decode(content));
-          if (decoded is! List || !validateEntriesPayload(decoded)) {
-            return const ImportResult(ok: false, error: 'Invalid entries data');
-          }
-          for (final entry in decoded) {
-            final map = Map<String, dynamic>.from(entry as Map);
-            final id = map['id']?.toString() ?? '';
-            stagedEntries[id] = map;
-          }
-        } else if (name == 'settings.json') {
-          if (!seenPayloads.add(name)) {
-            return const ImportResult(
-                ok: false, error: 'Duplicate backup payload');
-          }
-          final settings = jsonDecode(utf8.decode(content));
-          if (settings is! Map) {
-            return const ImportResult(
-                ok: false, error: 'Invalid settings data');
-          }
-          stagedSettings.addAll(filterRestoredSettings(settings));
-        } else if (name == 'garden.json') {
-          if (!seenPayloads.add(name)) {
-            return const ImportResult(
-                ok: false, error: 'Duplicate backup payload');
-          }
-          final garden = jsonDecode(utf8.decode(content));
-          if (garden is! Map) {
-            return const ImportResult(ok: false, error: 'Invalid garden data');
-          }
-          stagedGarden.addAll(garden);
-        } else if (name == 'moods.json' || name == 'tags.json') {
-          if (!seenPayloads.add(name)) {
-            return const ImportResult(
-                ok: false, error: 'Duplicate backup payload');
-          }
-          final values = jsonDecode(utf8.decode(content));
-          if (values is! Map) {
-            return const ImportResult(ok: false, error: 'Invalid box data');
-          }
-          (name == 'moods.json' ? stagedMoods : stagedTags).addAll(values);
-        } else if (name == 'achievements.json') {
-          if (!seenPayloads.add(name)) {
-            return const ImportResult(
-                ok: false, error: 'Duplicate backup payload');
-          }
-          final data = jsonDecode(utf8.decode(content));
-          if (data is! Map) {
-            return const ImportResult(
-                ok: false, error: 'Invalid achievements data');
-          }
-          stagedSettings.addAll(filterRestoredSettings(data));
-        } else if (name.startsWith('images/')) {
-          final safeName = 'images/${p.basename(name.substring(7))}';
-          if (!seenPayloads.add(safeName) ||
-              p.basename(name.substring(7)).isEmpty ||
-              content.isEmpty) {
-            return const ImportResult(
-                ok: false, error: 'Duplicate or malformed media');
-          }
-          stagedFiles[safeName] = content;
-        } else if (name.startsWith('audio/')) {
-          final safeName = 'audio/${p.basename(name.substring(6))}';
-          if (!seenPayloads.add(safeName) ||
-              p.basename(name.substring(6)).isEmpty ||
-              content.isEmpty) {
-            return const ImportResult(
-                ok: false, error: 'Duplicate or malformed media');
-          }
-          stagedFiles[safeName] = content;
+          media[name] = file;
         }
       }
 
-      const requiredPayloads = {
-        'metadata.json',
-        'entries.json',
+      final metadata = json['metadata.json'];
+      if (metadata is! Map ||
+          metadata['app'] != 'nabd' ||
+          metadata['encrypted'] != true ||
+          metadata['formatVersion'] is! num ||
+          (metadata['formatVersion'] as num) > formatVersion) {
+        return const _Payload.error(BackupError.unsupported);
+      }
+      final legacy = metadata['formatVersion'] == _legacyFormatVersion;
+      final required = legacy ? _legacyRequired : _requiredParts;
+      if (!required.every(json.containsKey)) {
+        return const _Payload.error(BackupError.incomplete);
+      }
+
+      final entries = json['entries.json'];
+      if (entries is! List || !validateEntriesPayload(entries)) {
+        return const _Payload.error(BackupError.corrupt);
+      }
+      if (metadata['entryCount'] != entries.length) {
+        return const _Payload.error(BackupError.incomplete);
+      }
+      for (final part in [
         'settings.json',
         'garden.json',
         'moods.json',
         'tags.json',
-        'achievements.json',
-      };
-      if (!requiredPayloads.every(seenPayloads.contains) ||
-          metadata['entryCount'] != stagedEntries.length) {
-        return const ImportResult(
-          ok: false,
-          error: 'Backup payload is incomplete',
-        );
+        if (!legacy) 'content.json',
+        if (legacy) 'achievements.json',
+      ]) {
+        if (json[part] is! Map) return const _Payload.error(BackupError.corrupt);
       }
 
-      final tempRoot = Directory(
-        '${(await _temporaryDirectory()).path}/nabd_restore_${DateTime.now().microsecondsSinceEpoch}',
+      // Format 1 kept user content inside the settings dump and a second
+      // copy in achievements.json; split it the way format 2 stores it.
+      final settings = Map<Object?, Object?>.from(json['settings.json'] as Map);
+      final content = <Object?, Object?>{
+        if (!legacy) ...(json['content.json'] as Map),
+      };
+      if (legacy) {
+        for (final source in [settings, json['achievements.json'] as Map]) {
+          for (final entry in source.entries) {
+            final key = entry.key.toString();
+            if (key == 'unlocked') {
+              content[ContentKeys.unlockedAchievements] = entry.value;
+            } else if (ContentKeys.isContentKey(key)) {
+              content[key] = entry.value;
+            }
+          }
+        }
+        settings.removeWhere((key, _) => ContentKeys.isContentKey('$key'));
+      }
+
+      return _Payload(
+        entries: [
+          for (final entry in entries) Map<String, dynamic>.from(entry as Map),
+        ],
+        settings: filterRestoredSettings(settings),
+        content: content,
+        garden: Map<Object?, Object?>.from(json['garden.json'] as Map),
+        moods: Map<Object?, Object?>.from(json['moods.json'] as Map),
+        tags: Map<Object?, Object?>.from(json['tags.json'] as Map),
+        media: media,
+        legacy: legacy,
       );
-      final mediaStage = Directory('${tempRoot.path}/media');
-      final mediaRollback = Directory('${tempRoot.path}/rollback');
-      await mediaStage.create(recursive: true);
-      for (final entry in stagedFiles.entries) {
-        final stagedFile = File('${mediaStage.path}/${entry.key}');
-        await stagedFile.parent.create(recursive: true);
-        await stagedFile.writeAsBytes(entry.value, flush: true);
+    } on FormatException {
+      return const _Payload.error(BackupError.corrupt);
+    } finally {
+      await stream.close();
+    }
+  }
+
+  Future<ImportResult> _apply(
+    _Payload payload,
+    RestoreMode mode,
+    List<String> storedMedia,
+    void Function(double progress)? onProgress,
+  ) async {
+    final boxes = {for (final name in HiveBoxes.all) name: Hive.box(name)};
+    final snapshots = {
+      for (final entry in boxes.entries)
+        entry.key: Map<dynamic, dynamic>.from(entry.value.toMap()),
+    };
+    final journal = boxes[HiveBoxes.journal]!;
+    final previousMedia = _mediaPathsOf(journal.values);
+
+    // Decide which backup entries land, then move only their media.
+    final incoming = <String, Map<String, dynamic>>{};
+    for (final entry in payload.entries) {
+      final id = entry['id'].toString();
+      final current = journal.get(id);
+      if (mode == RestoreMode.merge && current is Map) {
+        final currentAt = DateTime.tryParse('${current['updatedAt']}');
+        final backupAt = DateTime.tryParse('${entry['updatedAt']}');
+        if (currentAt != null &&
+            (backupAt == null || !backupAt.isAfter(currentAt))) {
+          continue;
+        }
       }
+      incoming[id] = entry;
+    }
 
-      final entriesBox = Hive.box('journal_entries');
-      final settingsBox = Hive.box('settings');
-      final gardenBox = Hive.box('garden');
-      final moodsBox = Hive.box('moods');
-      final tagsBox = Hive.box('tags');
-      final docs = await _documentsDirectory();
-      final snapshots = {
-        entriesBox: Map<dynamic, dynamic>.from(entriesBox.toMap()),
-        settingsBox: Map<dynamic, dynamic>.from(settingsBox.toMap()),
-        gardenBox: Map<dynamic, dynamic>.from(gardenBox.toMap()),
-        moodsBox: Map<dynamic, dynamic>.from(moodsBox.toMap()),
-        tagsBox: Map<dynamic, dynamic>.from(tagsBox.toMap()),
-      };
-      var imported = 0;
-      var imagesRestored = 0;
-      var audioRestored = 0;
-      try {
-        for (final directoryName in ['images', 'audio']) {
-          final current = Directory('${docs.path}/$directoryName');
-          if (await current.exists()) {
-            await _copyDirectory(
-                current, Directory('${mediaRollback.path}/$directoryName'));
-          }
-        }
-        if (mode == RestoreMode.replace) {
-          await entriesBox.clear();
-          await settingsBox.clear();
-          await gardenBox.clear();
-          await moodsBox.clear();
-          await tagsBox.clear();
-        }
-        await entriesBox.putAll(stagedEntries);
-        await settingsBox.putAll(stagedSettings);
-        await gardenBox.putAll(stagedGarden);
-        await moodsBox.putAll(stagedMoods);
-        await tagsBox.putAll(stagedTags);
-        imported = stagedEntries.length;
-
-        if (mode == RestoreMode.replace) {
-          for (final directoryName in ['images', 'audio']) {
-            final current = Directory('${docs.path}/$directoryName');
-            if (await current.exists()) await current.delete(recursive: true);
-          }
-        }
-        for (final entry in stagedFiles.entries) {
-          final file = File('${docs.path}/${entry.key}');
-          await file.parent.create(recursive: true);
-          await File('${mediaStage.path}/${entry.key}').copy(file.path);
-          if (entry.key.startsWith('images/')) {
+    var imagesRestored = 0;
+    var audioRestored = 0;
+    try {
+      final total = incoming.length;
+      var done = 0;
+      for (final entry in incoming.values) {
+        final images = <String>[];
+        for (final path in _stringList(entry['imagePaths'])) {
+          final stored = await _restoreMedia(
+              payload, path, MediaVault.imagesDir, storedMedia);
+          if (stored != null) {
+            images.add(stored);
             imagesRestored++;
-          } else {
-            audioRestored++;
           }
         }
-      } catch (_) {
-        await entriesBox.clear();
-        await settingsBox.clear();
-        await gardenBox.clear();
-        await moodsBox.clear();
-        await tagsBox.clear();
-        await entriesBox.putAll(snapshots[entriesBox]!);
-        await settingsBox.putAll(snapshots[settingsBox]!);
-        await gardenBox.putAll(snapshots[gardenBox]!);
-        await moodsBox.putAll(snapshots[moodsBox]!);
-        await tagsBox.putAll(snapshots[tagsBox]!);
-        for (final directoryName in ['images', 'audio']) {
-          final current = Directory('${docs.path}/$directoryName');
-          if (await current.exists()) await current.delete(recursive: true);
-          final rollback = Directory('${mediaRollback.path}/$directoryName');
-          if (await rollback.exists()) {
-            await _copyDirectory(rollback, current);
-          }
+        entry['imagePaths'] = images;
+        final audio = entry['audioPath'];
+        if (audio is String) {
+          final stored = await _restoreMedia(
+              payload, audio, MediaVault.audioDir, storedMedia);
+          entry['audioPath'] = stored;
+          if (stored != null) audioRestored++;
         }
-        if (await tempRoot.exists()) await tempRoot.delete(recursive: true);
-        return const ImportResult(ok: false, error: 'Restore failed safely');
+        done++;
+        onProgress?.call(0.5 + 0.4 * done / (total == 0 ? 1 : total));
       }
 
-      if (await tempRoot.exists()) await tempRoot.delete(recursive: true);
+      if (mode == RestoreMode.replace) {
+        for (final name in HiveBoxes.all) {
+          if (name == HiveBoxes.settings) continue;
+          await boxes[name]!.clear();
+        }
+        await journal.putAll(incoming);
+        await boxes[HiveBoxes.settings]!.putAll(payload.settings);
+        await boxes[HiveBoxes.content]!.putAll(payload.content);
+        await boxes[HiveBoxes.garden]!.putAll(payload.garden);
+        await boxes[HiveBoxes.moods]!.putAll(payload.moods);
+        await boxes[HiveBoxes.tags]!.putAll(payload.tags);
+      } else {
+        await journal.putAll(incoming);
+        await _mergeInto(boxes[HiveBoxes.settings]!, payload.settings,
+            keepCurrent: true);
+        await _mergeContent(boxes[HiveBoxes.content]!, payload.content);
+        await _mergeInto(boxes[HiveBoxes.garden]!, payload.garden,
+            keepCurrent: true);
+        await _mergeInto(boxes[HiveBoxes.moods]!, payload.moods,
+            keepCurrent: true);
+        await _mergeInto(boxes[HiveBoxes.tags]!, payload.tags,
+            keepCurrent: true);
+      }
+      for (final box in boxes.values) {
+        await box.flush();
+      }
+    } catch (_) {
+      for (final entry in boxes.entries) {
+        await entry.value.clear();
+        await entry.value.putAll(snapshots[entry.key]!);
+      }
+      DatabaseService.invalidate();
+      await _deleteStored(storedMedia);
+      return const ImportResult.failed(BackupError.failed);
+    }
+    DatabaseService.invalidate();
 
-      return ImportResult(
-        ok: true,
-        entriesImported: imported,
-        imagesRestored: imagesRestored,
-        audioRestored: audioRestored,
+    // Only after the commit: media no entry points at any more goes away.
+    final stillUsed = _mediaPathsOf(journal.values);
+    await _deleteStored(previousMedia.where((path) => !stillUsed.contains(path)));
+    onProgress?.call(1);
+
+    return ImportResult(
+      ok: true,
+      entriesImported: incoming.length,
+      imagesRestored: imagesRestored,
+      audioRestored: audioRestored,
+    );
+  }
+
+  /// Puts one photo or voice note from the backup into this phone's vault and
+  /// returns the path to store, or null when the backup did not carry it.
+  Future<String?> _restoreMedia(
+    _Payload payload,
+    String storedPath,
+    String folder,
+    List<String> storedMedia,
+  ) async {
+    final file = payload.legacy
+        ? payload.media['$folder/${p.basename(storedPath)}']
+        : payload.media['media/${_archiveName(storedPath)}'];
+    if (file == null) return null;
+    final bytes = file.content as List<int>;
+    if (bytes.isEmpty) return null;
+    var extension = p.extension(
+      MediaVault.isEncrypted(storedPath)
+          ? storedPath.substring(
+              0, storedPath.length - MediaVault.encryptedExtension.length)
+          : storedPath,
+    );
+    if (extension.length > 6) extension = '';
+    final stored = await _media.store(
+      Uint8List.fromList(bytes),
+      folder: folder,
+      extension: extension,
+    );
+    storedMedia.add(stored);
+    return stored;
+  }
+
+  Future<void> _mergeInto(
+    Box box,
+    Map<Object?, Object?> incoming, {
+    required bool keepCurrent,
+  }) async {
+    final additions = <dynamic, dynamic>{
+      for (final entry in incoming.entries)
+        if (!keepCurrent || !box.containsKey(entry.key)) entry.key: entry.value,
+    };
+    if (additions.isNotEmpty) await box.putAll(additions);
+  }
+
+  Future<void> _mergeContent(Box box, Map<Object?, Object?> incoming) async {
+    final merged = <dynamic, dynamic>{};
+    for (final entry in incoming.entries) {
+      final key = entry.key;
+      if (!box.containsKey(key)) {
+        merged[key] = entry.value;
+        continue;
+      }
+      final value = mergeContentValue(box.get(key), entry.value);
+      if (value != null) merged[key] = value;
+    }
+    if (merged.isNotEmpty) await box.putAll(merged);
+  }
+
+  /// How a backup value joins the one already on the phone:
+  ///  • lists of records with an `id` are joined by id (the phone's copy of a
+  ///    record wins),
+  ///  • lists of plain values become their union,
+  ///  • counters keep the larger number,
+  ///  • anything else keeps what the phone has.
+  /// Returns null when nothing changes.
+  static Object? mergeContentValue(Object? current, Object? incoming) {
+    if (current is List && incoming is List) {
+      final hasIds = current.every((item) => item is Map && item['id'] != null) &&
+          incoming.every((item) => item is Map && item['id'] != null);
+      if (hasIds) {
+        final ids = current.map((item) => '${(item as Map)['id']}').toSet();
+        final added = incoming
+            .where((item) => !ids.contains('${(item as Map)['id']}'))
+            .toList();
+        return added.isEmpty ? null : [...current, ...added];
+      }
+      final seen = current.map(jsonEncode).toSet();
+      final added =
+          incoming.where((item) => !seen.contains(jsonEncode(item))).toList();
+      return added.isEmpty ? null : [...current, ...added];
+    }
+    if (current is num && incoming is num) {
+      return incoming > current ? incoming : null;
+    }
+    return null;
+  }
+
+  Future<void> _deleteStored(Iterable<String> paths) async {
+    for (final path in paths) {
+      try {
+        await _media.delete(path);
+      } catch (_) {}
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Streaming encryption
+  // ═══════════════════════════════════════════════════════════════════
+
+  Future<void> _encryptFile(
+    File plain,
+    File output,
+    String password,
+    void Function(double fraction) onProgress,
+  ) async {
+    final salt = _encryption.generateSalt(_saltLength);
+    final key = await _encryption.deriveKeyFromPassword(
+      password: password,
+      salt: salt,
+    );
+    final total = await plain.length();
+    final reader = await plain.open();
+    final sink = output.openWrite();
+    try {
+      sink.add([..._magic, formatVersion, ...salt, ..._u32(chunkSize)]);
+      var index = 0;
+      var position = 0;
+      do {
+        final chunk = await reader.read(chunkSize);
+        position += chunk.length;
+        final last = position >= total;
+        final box = await _algorithm.encrypt(
+          chunk,
+          secretKey: key,
+          nonce: _algorithm.newNonce(),
+          aad: _chunkAad(index, last),
+        );
+        sink.add(_u32(box.cipherText.length));
+        sink.add(box.nonce);
+        sink.add(box.cipherText);
+        sink.add(box.mac.bytes);
+        index++;
+        onProgress(total == 0 ? 1 : position / total);
+        if (last) break;
+      } while (true);
+      await sink.flush();
+    } finally {
+      await sink.close();
+      await reader.close();
+    }
+  }
+
+  /// Returns the format version after checking the magic bytes.
+  Future<int> _checkHeader(File input) async {
+    final header = <int>[
+      for (final part in await input.openRead(0, _magic.length + 1).toList())
+        ...part,
+    ];
+    if (header.length < _magic.length + 1) {
+      throw const BackupException(BackupError.corrupt);
+    }
+    for (var i = 0; i < _magic.length; i++) {
+      if (header[i] != _magic[i]) {
+        throw const BackupException(BackupError.unsupported);
+      }
+    }
+    final version = header[_magic.length];
+    if (version != _legacyFormatVersion && version != formatVersion) {
+      throw const BackupException(BackupError.unsupported);
+    }
+    return version;
+  }
+
+  Future<void> _decryptFile(File input, File output, String password) async {
+    if (await _checkHeader(input) == _legacyFormatVersion) {
+      return _decryptLegacy(input, output, password);
+    }
+
+    final reader = await input.open();
+    final sink = output.openWrite();
+    try {
+      await reader.setPosition(_magic.length + 1);
+      final salt = await reader.read(_saltLength);
+      final declaredChunk = _readU32(await reader.read(4));
+      if (salt.length != _saltLength ||
+          declaredChunk <= 0 ||
+          declaredChunk > 16 * chunkSize) {
+        throw const BackupException(BackupError.corrupt);
+      }
+      final key = await _encryption.deriveKeyFromPassword(
+        password: password,
+        salt: Uint8List.fromList(salt),
       );
-    } catch (e) {
-      return ImportResult(ok: false, error: '$e');
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // Internal — AES-256-GCM for ZIP files
-  // ═══════════════════════════════════════════════════════════════
-
-  Future<void> _copyDirectory(Directory source, Directory target) async {
-    await target.create(recursive: true);
-    await for (final entity in source.list()) {
-      final destination = '${target.path}/${p.basename(entity.path)}';
-      if (entity is Directory) {
-        await _copyDirectory(entity, Directory(destination));
-      } else if (entity is File) {
-        await entity.copy(destination);
+      final size = await reader.length();
+      var index = 0;
+      var sawLast = false;
+      while (await reader.position() < size) {
+        if (sawLast) throw const BackupException(BackupError.corrupt);
+        final length = _readU32(await reader.read(4));
+        if (length > declaredChunk) {
+          throw const BackupException(BackupError.corrupt);
+        }
+        final nonce = await reader.read(_nonceLength);
+        final cipherText = await reader.read(length);
+        final mac = await reader.read(_macLength);
+        if (nonce.length != _nonceLength ||
+            cipherText.length != length ||
+            mac.length != _macLength) {
+          throw const BackupException(BackupError.corrupt);
+        }
+        final last = await reader.position() >= size;
+        final plain = await _algorithm.decrypt(
+          SecretBox(cipherText, nonce: nonce, mac: Mac(mac)),
+          secretKey: key,
+          aad: _chunkAad(index, last),
+        );
+        sink.add(plain);
+        sawLast = last;
+        index++;
       }
+      if (!sawLast) throw const BackupException(BackupError.corrupt);
+      await sink.flush();
+    } finally {
+      await sink.close();
+      await reader.close();
     }
   }
 
-  /// تشفير ZIP بـ AES-256-GCM باستخدام مفتاح مشتق من كلمة المرور.
-  ///
-  /// التنسيق:
-  ///   [salt:16][nonce:12][ciphertext...][mac:16]
-  Future<Uint8List> _encryptZip(Uint8List zipBytes, String password) async {
-    final algorithm = AesGcm.with256bits();
-
-    // 1. Generate salt
-    final salt = _encryption.generateSalt(16);
-
-    // 2. Derive key from password
-    final key = await _encryption.deriveKeyFromPassword(
-      password: password,
-      salt: salt,
-    );
-
-    // 3. Encrypt
-    final nonce = algorithm.newNonce();
-    final secretBox = await algorithm.encrypt(
-      zipBytes,
-      secretKey: key,
-      nonce: nonce,
-    );
-
-    // 4. Combine: salt + nonce + ciphertext + mac
-    return Uint8List.fromList([
-      ..._backupMagic,
-      _backupFormatVersion,
-      ...salt,
-      ...secretBox.nonce,
-      ...secretBox.cipherText,
-      ...secretBox.mac.bytes,
-    ]);
-  }
-
-  /// فك تشفير ZIP.
-  Future<Uint8List> _decryptZip(Uint8List encrypted, String password) async {
-    final algorithm = AesGcm.with256bits();
-
+  /// Format 1: `NABD` · 0x01 · salt · nonce · ciphertext · mac, in memory.
+  Future<void> _decryptLegacy(File input, File output, String password) async {
+    if (await input.length() > maxLegacyBackupBytes) {
+      throw const BackupException(BackupError.tooLarge);
+    }
+    final bytes = await input.readAsBytes();
     const headerLength = 5;
-    const saltLength = 16;
-    const nonceLength = 12;
-    const macLength = 16;
-
-    if (encrypted.length <
-        headerLength + saltLength + nonceLength + macLength) {
-      throw const FormatException('Encrypted backup too short');
+    if (bytes.length < headerLength + _saltLength + _nonceLength + _macLength) {
+      throw const BackupException(BackupError.corrupt);
     }
-
-    for (var index = 0; index < _backupMagic.length; index++) {
-      if (encrypted[index] != _backupMagic[index]) {
-        throw const FormatException('Unsupported backup format');
-      }
-    }
-    if (encrypted[4] != _backupFormatVersion) {
-      throw const FormatException('Unsupported backup format version');
-    }
-
-    // 1. Extract parts
-    final salt = encrypted.sublist(headerLength, headerLength + saltLength);
-    final nonceStart = headerLength + saltLength;
-    final nonce = encrypted.sublist(nonceStart, nonceStart + nonceLength);
-    final macBytes = encrypted.sublist(encrypted.length - macLength);
-    final cipherText = encrypted.sublist(
-      nonceStart + nonceLength,
-      encrypted.length - macLength,
-    );
-
-    // 2. Derive key
+    final salt = bytes.sublist(headerLength, headerLength + _saltLength);
+    final nonceStart = headerLength + _saltLength;
     final key = await _encryption.deriveKeyFromPassword(
       password: password,
-      salt: salt,
+      salt: Uint8List.fromList(salt),
     );
-
-    // 3. Decrypt (throws if MAC verification fails)
-    final secretBox = SecretBox(
-      cipherText,
-      nonce: nonce,
-      mac: Mac(macBytes),
-    );
-
-    final plaintext = await algorithm.decrypt(
-      secretBox,
+    final plain = await _algorithm.decrypt(
+      SecretBox(
+        bytes.sublist(nonceStart + _nonceLength, bytes.length - _macLength),
+        nonce: bytes.sublist(nonceStart, nonceStart + _nonceLength),
+        mac: Mac(bytes.sublist(bytes.length - _macLength)),
+      ),
       secretKey: key,
     );
-
-    return Uint8List.fromList(plaintext);
+    await output.writeAsBytes(plain, flush: true);
   }
 
-  void _addJson(Archive archive, String name, dynamic data) {
-    final bytes = utf8.encode(jsonEncode(data));
-    archive.addFile(ArchiveFile(name, bytes.length, bytes));
+  static List<int> _chunkAad(int index, bool last) {
+    final data = ByteData(9)
+      ..setUint64(0, index)
+      ..setUint8(8, last ? 1 : 0);
+    return data.buffer.asUint8List();
   }
 
-  static const _entitlementKeys = {'is_pro', 'is_lifetime', 'pro_expiry'};
+  static List<int> _u32(int value) =>
+      (ByteData(4)..setUint32(0, value)).buffer.asUint8List();
+
+  static int _readU32(List<int> bytes) {
+    if (bytes.length != 4) throw const BackupException(BackupError.corrupt);
+    return ByteData.sublistView(Uint8List.fromList(bytes)).getUint32(0);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Helpers
+  // ═══════════════════════════════════════════════════════════════════
+
+  static const _jsonParts = {
+    'metadata.json',
+    'entries.json',
+    'settings.json',
+    'content.json',
+    'garden.json',
+    'moods.json',
+    'tags.json',
+    'achievements.json',
+  };
+
+  static const _requiredParts = {
+    'metadata.json',
+    'entries.json',
+    'settings.json',
+    'content.json',
+    'garden.json',
+    'moods.json',
+    'tags.json',
+  };
+
+  static const _legacyRequired = {
+    'metadata.json',
+    'entries.json',
+    'settings.json',
+    'garden.json',
+    'moods.json',
+    'tags.json',
+    'achievements.json',
+  };
+
+  /// Never travels in a backup: purchases are restored from the store, and
+  /// the lock, reminder and onboarding state belong to the phone they were
+  /// set on (the passcode itself lives in that phone's keystore).
+  static const _deviceKeys = {
+    'is_pro',
+    'is_lifetime',
+    'pro_expiry',
+    'lock_enabled',
+    'lock_timeout_minutes',
+    'last_activity',
+    'onboarding_completed',
+    'last_splash_id',
+    'reminder_enabled',
+    'reminder_hour',
+    'reminder_minute',
+    'reminder_title',
+    'reminder_body',
+    'weekly_review_enabled',
+    'weekly_review_title',
+    'weekly_review_body',
+    'garden_growth_day',
+    'garden_growth_today',
+    // Consent to the phone's speech service is given per device.
+    'dictation_notice_seen',
+    // A restored phone has not been backed up yet, whatever the source said.
+    'last_backup_at',
+    'backup_nudge_snoozed_until',
+  };
 
   static bool isEntitlementKey(String key) =>
-      _entitlementKeys.contains(key.toLowerCase());
+      const {'is_pro', 'is_lifetime', 'pro_expiry'}.contains(key.toLowerCase());
+
+  static bool isDeviceKey(String key) =>
+      _deviceKeys.contains(key.toLowerCase());
+
+  static Map<String, Object?> exportableSettings(Box settings) => {
+        for (final key in settings.keys)
+          if (!isDeviceKey('$key') && !ContentKeys.isContentKey('$key'))
+            '$key': settings.get(key),
+      };
 
   static Map<Object?, Object?> filterRestoredSettings(Map source) => {
         for (final entry in source.entries)
-          if (!isEntitlementKey(entry.key.toString()))
-            entry.key: entry.value,
+          if (!isDeviceKey(entry.key.toString())) entry.key: entry.value,
       };
+
+  static Map<String, Object?> _stringKeys(Box box) => {
+        for (final key in box.keys) '$key': box.get(key),
+      };
+
+  static List<String> _stringList(Object? value) => value is Iterable
+      ? value.map((item) => item.toString()).toList()
+      : <String>[];
+
+  static List<String> _mediaPathsOf(Iterable<dynamic> entries) {
+    final paths = <String>{};
+    for (final entry in entries) {
+      if (entry is! Map) continue;
+      paths.addAll(_stringList(entry['imagePaths']));
+      final audio = entry['audioPath'];
+      if (audio is String) paths.add(audio);
+    }
+    return paths.toList();
+  }
+
+  /// A stored path as an archive name: relative paths are kept, absolute
+  /// legacy paths keep their folder and file name.
+  static String _archiveName(String stored) => p.isAbsolute(stored)
+      ? '${p.basename(p.dirname(stored))}/${p.basename(stored)}'
+      : stored.replaceAll('\\', '/');
 
   static bool validateEntriesPayload(List entries) {
     final ids = <String>{};
@@ -594,14 +796,10 @@ class BackupService {
       return false;
     }
     final decoded = Uri.decodeFull(name).replaceAll('\\', '/');
+    if (decoded.startsWith('/')) return false;
     if (decoded.split('/').contains('..')) return false;
-    return decoded == 'metadata.json' ||
-        decoded == 'entries.json' ||
-        decoded == 'settings.json' ||
-        decoded == 'garden.json' ||
-        decoded == 'moods.json' ||
-        decoded == 'tags.json' ||
-        decoded == 'achievements.json' ||
+    return _jsonParts.contains(decoded) ||
+        decoded.startsWith('media/') ||
         decoded.startsWith('images/') ||
         decoded.startsWith('audio/');
   }
@@ -609,18 +807,86 @@ class BackupService {
 
 enum RestoreMode { merge, replace }
 
+/// Why a restore failed, as a string-table key for the screen.
+enum BackupError {
+  passwordRequired('backup.error.password'),
+  unreadable('backup.error.unreadable'),
+  wrongPasswordOrCorrupt('backup.error.wrongPassword'),
+  unsupported('backup.error.unsupported'),
+  corrupt('backup.error.corrupt'),
+  incomplete('backup.error.incomplete'),
+  unsafe('backup.error.unsafe'),
+  tooLarge('backup.error.tooLarge'),
+  failed('backup.error.failed');
+
+  const BackupError(this.messageKey);
+
+  final String messageKey;
+}
+
+class BackupException implements Exception {
+  const BackupException(this.error);
+
+  final BackupError error;
+
+  @override
+  String toString() => 'BackupException(${error.name})';
+}
+
 class ImportResult {
   final bool ok;
   final int entriesImported;
   final int imagesRestored;
   final int audioRestored;
-  final String? error;
+  final BackupError? failure;
 
   const ImportResult({
     required this.ok,
     this.entriesImported = 0,
     this.imagesRestored = 0,
     this.audioRestored = 0,
-    this.error,
+    this.failure,
   });
+
+  const ImportResult.failed(BackupError this.failure)
+      : ok = false,
+        entriesImported = 0,
+        imagesRestored = 0,
+        audioRestored = 0;
+
+  /// The string-table key describing the failure, if any.
+  String? get error => failure?.messageKey;
+}
+
+class _Payload {
+  const _Payload({
+    required this.entries,
+    required this.settings,
+    required this.content,
+    required this.garden,
+    required this.moods,
+    required this.tags,
+    required this.media,
+    required this.legacy,
+  }) : error = null;
+
+  const _Payload.error(BackupError this.error)
+      : entries = const [],
+        settings = const {},
+        content = const {},
+        garden = const {},
+        moods = const {},
+        tags = const {},
+        media = const {},
+        legacy = false;
+
+  final BackupError? error;
+  final List<Map<String, dynamic>> entries;
+  final Map<Object?, Object?> settings;
+  final Map<Object?, Object?> content;
+  final Map<Object?, Object?> garden;
+  final Map<Object?, Object?> moods;
+  final Map<Object?, Object?> tags;
+  final Map<String, ArchiveFile> media;
+  final bool legacy;
 }

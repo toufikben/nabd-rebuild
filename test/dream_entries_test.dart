@@ -69,7 +69,7 @@ void main() {
 
     test('editing an entry does not turn it into a dream', () async {
       final entry = _entry(id: 'keep');
-      await db.addEntry(entry, isPro: true);
+      await db.addEntry(entry);
       await db.updateEntry(entry.copyWith(content: 'edited'));
       final stored =
           JournalEntry.fromMap(Map<dynamic, dynamic>.from(box.get('keep') as Map));
@@ -81,21 +81,21 @@ void main() {
   group('dreams stay out of the journal', () {
     test('the journal lists only entries', () async {
       await box.put('dream-1', _dreamMap());
-      await db.addEntry(_entry(), isPro: true);
+      await db.addEntry(_entry());
 
       expect(db.getAllEntries().map((e) => e.content), ['an ordinary entry']);
     });
 
     test('the entry count excludes dreams', () async {
       await box.put('dream-1', _dreamMap());
-      await db.addEntry(_entry(), isPro: true);
+      await db.addEntry(_entry());
 
       expect(db.getEntryCount(), 1);
     });
 
     test('search never returns a dream', () async {
       await box.put('dream-1', _dreamMap());
-      await db.addEntry(_entry(), isPro: true);
+      await db.addEntry(_entry());
 
       expect(db.searchEntries('flew'), isEmpty);
       expect(db.searchEntries('ordinary'), hasLength(1));
@@ -103,7 +103,7 @@ void main() {
 
     test('word and monthly totals exclude dreams', () async {
       await box.put('dream-1', _dreamMap());
-      await db.addEntry(_entry(content: 'one two three'), isPro: true);
+      await db.addEntry(_entry(content: 'one two three'));
 
       expect(db.getWordCount(), 3);
       expect(db.getCurrentMonthEntryCount(DateTime(2026, 9, 15)), 1);
@@ -116,19 +116,11 @@ void main() {
       expect(db.getMoodDistribution(), isEmpty);
     });
 
-    test('the free monthly limit counts entries, not dreams', () async {
-      for (var i = 0; i < 7; i++) {
-        await box.put('dream-$i', _dreamMap(id: 'dream-$i'));
-      }
-
-      expect(db.canCreateFreeEntry(), isTrue);
-
-      for (var i = 0; i < 7; i++) {
+    test('writing is never limited, dreams or not', () async {
+      for (var i = 0; i < 40; i++) {
         await db.addEntry(_entry(id: 'entry-$i'));
       }
-      expect(db.canCreateFreeEntry(), isFalse);
-      await expectLater(db.addEntry(_entry(id: 'entry-8')),
-          throwsA(isA<EntryLimitExceededException>()));
+      expect(db.getEntryCount(), 40);
     });
   });
 }

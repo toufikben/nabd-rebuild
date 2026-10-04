@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">نبض</string>
+    <string name="shortcut_new_entry">مدخل جديد</string>
+    <string name="shortcut_new_entry_long">اكتب مدخلًا جديدًا</string>
+    <string name="shortcut_garden">حديقتي</string>
+    <string name="shortcut_garden_long">شاهد كيف تنمو بذورك</string>
+    <string name="shortcut_calendar">التقويم</string>
+    <string name="shortcut_calendar_long">تصفّح مذكرتك حسب التاريخ</string>
+    <string name="shortcut_stats">رؤى</string>
+    <string name="shortcut_stats_long">شاهد رؤى مزاجك وكتابتك</string>
+    <string name="widget_description">سلسلة كتابتك واقتراح لطيف للكتابة</string>
+    <string name="widget_title">نبض</string>
+    <string name="widget_subtitle">اضغط لتكتب</string>
+    <string name="widget_mood_happy">اكتب: سعيد</string>
+    <string name="widget_mood_peaceful">اكتب: هادئ</string>
+    <string name="widget_mood_neutral">اكتب: محايد</string>
+    <string name="widget_mood_anxious">اكتب: قلق</string>
+    <string name="widget_mood_sad">اكتب: حزين</string>
+</resources>

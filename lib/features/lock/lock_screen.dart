@@ -21,7 +21,8 @@ class LockScreen extends StatefulWidget {
 class _LockScreenState extends State<LockScreen> {
   final BiometricService _bio = BiometricService();
   final PasscodeService _passcodes = PasscodeService.secure();
-  final PasscodeAttempts _attempts = PasscodeAttempts();
+  final PasscodeAttempts _attempts =
+      PasscodeAttempts(store: const SecureStoragePasscodeStore());
 
   String? _error;
   bool _busy = false;
@@ -44,10 +45,24 @@ class _LockScreenState extends State<LockScreen> {
   /// The lock opens with a biometric prompt when one is enrolled, and leaves
   /// the pad on screen for every other case.
   Future<void> _open() async {
+    await _attempts.load();
     final hasPasscode = await _passcodes.hasPasscode();
     final available = await _bio.isAvailable();
+    // A lock switched on before passcodes existed, on a phone that cannot
+    // authenticate its owner at all, can never be opened. There is nothing
+    // to protect with, so the lock is switched off instead of bricking the
+    // journal.
+    if (!hasPasscode && !await _bio.canAuthenticate()) {
+      await _bio.setLockEnabled(false);
+      await _enter();
+      return;
+    }
     if (!mounted) return;
-    setState(() => _hasPasscode = hasPasscode);
+    setState(() {
+      _hasPasscode = hasPasscode;
+      _remaining = _attempts.remainingSeconds();
+    });
+    if (_remaining > 0) _startCooldownTick();
     if (hasPasscode && available) await _authenticate();
   }
 
@@ -83,7 +98,8 @@ class _LockScreenState extends State<LockScreen> {
       await _enter();
       return;
     }
-    _attempts.recordFailure();
+    await _attempts.recordFailure();
+    if (!mounted) return;
     setState(() {
       _busy = false;
       _error = wrong;
@@ -111,6 +127,9 @@ class _LockScreenState extends State<LockScreen> {
     }
     final saved = await showModalBottomSheet<bool>(
       context: context,
+      // Without this the sheet is capped at 9/16 of the screen and the last
+      // row of the pad is cut off.
+      isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
       builder: (_) => const PasscodeSetupSheet(),
@@ -119,11 +138,19 @@ class _LockScreenState extends State<LockScreen> {
     await _enter();
   }
 
+  /// Back to where the user was: the screen underneath when the lock was
+  /// pushed over it, or the place a cold start or link was heading.
   Future<void> _enter() async {
-    _attempts.recordSuccess();
+    await _attempts.recordSuccess();
     await _bio.updateLastActivity();
     if (!mounted) return;
-    context.go('/home');
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    final target = BiometricService.pendingLocation;
+    BiometricService.pendingLocation = null;
+    context.go(target == null || target == '/lock' ? '/today' : target);
   }
 
   void _startCooldownTick() {
@@ -150,11 +177,7 @@ class _LockScreenState extends State<LockScreen> {
       child: Scaffold(
         body: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: AppColors.brandGradient,
           ),
           child: SafeArea(
             child: Center(

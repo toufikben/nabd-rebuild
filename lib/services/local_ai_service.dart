@@ -26,12 +26,16 @@ class LocalAIService {
     var score = 0.0;
     var matches = 0;
 
-    for (final word in words) {
-      final wordScore = _wordSentiment(word);
-      if (wordScore != 0) {
-        score += wordScore;
-        matches++;
-      }
+    for (var i = 0; i < words.length; i++) {
+      var wordScore = _wordSentiment(words[i]);
+      if (wordScore == 0) continue;
+      // "لست سعيدًا" / "not happy": a negator up to two words back flips the
+      // sense, softened because negated praise is rarely as strong as blame.
+      final negated = (i > 0 && _negators.contains(words[i - 1])) ||
+          (i > 1 && _negators.contains(words[i - 2]));
+      if (negated) wordScore = -wordScore * 0.7;
+      score += wordScore;
+      matches++;
     }
 
     if (matches == 0) return 0.0;
@@ -297,13 +301,66 @@ class LocalAIService {
   // ═══════════════════════════════════════════════════════════
 
   List<String> _tokenize(String text) {
-    return text
-        .toLowerCase()
+    return normalizeArabic(text.toLowerCase())
         .replaceAll(RegExp(r'[^\w\s\u0600-\u06FF]'), ' ')
         .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty && w.length > 2)
+        // Arabic carries meaning in two letters ("حب"), English rarely does.
+        .where((w) =>
+            w.isNotEmpty && (w.length > 2 || RegExp(r'[\u0600-\u06FF]').hasMatch(w)))
         .toList();
   }
+
+  /// Folds the spellings Arabic writers use interchangeably so the lexicon
+  /// matches them all: diacritics and tatweel go, hamza forms of alef become
+  /// a bare alef, taa marbuta becomes haa and alef maqsura becomes yaa.
+  static String normalizeArabic(String text) => text
+      .replaceAll(RegExp('[\u064B-\u0652\u0670\u0640]'), '')
+      .replaceAll(RegExp('[أإآٱ]'), 'ا')
+      .replaceAll('ة', 'ه')
+      .replaceAll('ى', 'ي')
+      .replaceAll('ؤ', 'و')
+      .replaceAll('ئ', 'ي');
+
+  /// Clitics that attach to the front of an Arabic word, longest first so
+  /// "وال" is tried before "و".
+  static const _prefixes = [
+    'وبال', 'وال', 'بال', 'فال', 'كال', 'لل', 'ال', 'و', 'ف', 'ب', 'ل', 'ك',
+  ];
+
+  /// Common endings: feminine, plural, and attached pronouns.
+  static const _suffixes = [
+    'ا', 'ات', 'ون', 'ين', 'ها', 'هم', 'كم', 'نا', 'ني', 'ه', 'ي', 'ك',
+  ];
+
+  /// The word and the stems it may stand for, most specific first.
+  static Iterable<String> _candidates(String word) sync* {
+    yield word;
+    for (final prefix in _prefixes) {
+      if (word.length - prefix.length >= 2 && word.startsWith(prefix)) {
+        final stem = word.substring(prefix.length);
+        yield stem;
+        for (final suffix in _suffixes) {
+          if (stem.length - suffix.length >= 2 && stem.endsWith(suffix)) {
+            yield stem.substring(0, stem.length - suffix.length);
+          }
+        }
+      }
+    }
+    for (final suffix in _suffixes) {
+      if (word.length - suffix.length >= 2 && word.endsWith(suffix)) {
+        yield word.substring(0, word.length - suffix.length);
+      }
+    }
+  }
+
+  static const _negators = {
+    // Arabic
+    'لا', 'لم', 'لن', 'ليس', 'لست', 'ليست', 'لسنا', 'ما', 'مش', 'مو', 'غير',
+    'بدون', 'ماكان', 'ماكنت',
+    // English (apostrophes are split off by the tokenizer)
+    'not', 'never', 'don', 'didn', 'doesn', 'isn', 'wasn', 'aren', 'weren',
+    'cannot', 'nothing', 'without',
+  };
 
   List<String> _splitSentences(String text) {
     return text
@@ -314,30 +371,42 @@ class LocalAIService {
   }
 
   double _wordSentiment(String word) {
-    const positive = {
-      // English
-      'happy', 'joy', 'love', 'great', 'amazing', 'wonderful', 'excellent',
-      'fantastic', 'beautiful', 'awesome', 'perfect', 'good', 'best', 'success',
-      'proud', 'grateful', 'blessed', 'thankful', 'excited', 'peaceful',
-      // Arabic
-      'سعيد', 'فرح', 'حب', 'رائع', 'جميل', 'ممتاز', 'نجاح', 'فخور',
-      'ممتن', 'هادئ', 'متحمس', 'سعادة', 'بهجة', 'خير',
-    };
-
-    const negative = {
-      // English
-      'sad', 'angry', 'hate', 'terrible', 'awful', 'bad', 'worst', 'fail',
-      'failure', 'hurt', 'pain', 'depressed', 'anxious', 'worried', 'afraid',
-      'scared', 'tired', 'exhausted', 'lonely', 'frustrated',
-      // Arabic
-      'حزين', 'غاضب', 'كره', 'سيء', 'فظيع', 'فشل', 'ألم', 'قلق',
-      'خوف', 'متعب', 'وحيد', 'محبط', 'يائس', 'حزن',
-    };
-
-    if (positive.contains(word)) return 1.0;
-    if (negative.contains(word)) return -1.0;
+    for (final candidate in _candidates(word)) {
+      if (_positive.contains(candidate)) return 1.0;
+      if (_negative.contains(candidate)) return -1.0;
+    }
     return 0.0;
   }
+
+  /// Folded through [normalizeArabic] once, so entries can be written with
+  /// their usual spelling.
+  static final Set<String> _positive = <String>{
+    // English
+    'happy', 'joy', 'love', 'loved', 'great', 'amazing', 'wonderful',
+    'excellent', 'fantastic', 'beautiful', 'awesome', 'perfect', 'good',
+    'best', 'success', 'proud', 'grateful', 'blessed', 'thankful', 'excited',
+    'peaceful', 'calm', 'hopeful', 'relaxed', 'glad', 'smile', 'laughed',
+    // Arabic
+    'سعيد', 'سعاده', 'فرح', 'فرحان', 'فرحه', 'حب', 'احب', 'حبيت', 'جميل',
+    'رائع', 'ممتاز', 'نجاح', 'ناجح', 'نجحت', 'فخور', 'ممتن', 'امتنان', 'شكر',
+    'الحمد', 'حمد', 'هادي', 'هدوء', 'مرتاح', 'راحه', 'ارتحت', 'متحمس', 'بهجه',
+    'خير', 'امل', 'متفايل', 'تفاول', 'طمانينه', 'سلام', 'ضحك', 'ضحكت',
+    'ابتسام', 'ابتسمت', 'مبسوط', 'انجاز', 'انجزت', 'نعمه', 'سكينه',
+  }.map(normalizeArabic).toSet();
+
+  static final Set<String> _negative = <String>{
+    // English
+    'sad', 'angry', 'hate', 'terrible', 'awful', 'bad', 'worst', 'fail',
+    'failed', 'failure', 'hurt', 'pain', 'depressed', 'anxious', 'worried',
+    'afraid', 'scared', 'tired', 'exhausted', 'lonely', 'frustrated',
+    'stressed', 'cried', 'upset', 'hopeless',
+    // Arabic
+    'حزين', 'حزن', 'غاضب', 'غضب', 'كره', 'اكره', 'سيي', 'فظيع', 'فشل',
+    'فاشل', 'فشلت', 'الم', 'وجع', 'قلق', 'قلقان', 'خوف', 'خايف', 'خفت', 'متعب',
+    'تعب', 'تعبان', 'وحيد', 'وحده', 'محبط', 'احباط', 'يايس', 'ياس', 'اكتياب',
+    'مكتيب', 'ضيق', 'مخنوق', 'بكاء', 'بكيت', 'توتر', 'متوتر', 'ارهاق',
+    'مرهق', 'ندم', 'ضايع', 'زعلان', 'زعل', 'مكسور',
+  }.map(normalizeArabic).toSet();
 
   String _formatHour(int hour) {
     if (hour == 0) return 'midnight';

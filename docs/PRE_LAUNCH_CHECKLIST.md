@@ -5,38 +5,16 @@
 - [ ] `assets/icons/app_icon.png` موجود (1024×1024)
 - [ ] `assets/icons/app_icon_fg.png` موجود (1024×1024)
 - [ ] `assets/icons/splash.png` موجود (800×800)
-- [ ] `assets/sounds/*.mp3` = 18 ملفات (>5KB لكل)
-- [ ] `assets/store/output/*.png` = 6 صور (1080×1920)
+- [ ] `flutter test test/splash_sound_test.dart` ينجح (الأصوات المعلنة = الموجودة)
+- [x] `assets/store/output/*.png` = 12 صورة (6 عربي + 6 إنجليزي، 1080×1920) من الشاشات الحقيقية: `flutter test tool/screenshots_test.dart --dart-define=STORE=true`
 - [ ] `docs/SOUNDS_ATTRIBUTION.md` محدّث
 - [ ] `flutter_launcher_icons` نُفِّذ بنجاح
 - [ ] `flutter_native_splash:create` نُفِّذ بنجاح
 
-## 2. AdMob
-
-### Test IDs (للتطوير)
-- [x] Android Test App ID: `ca-app-pub-3940256099942544~3347511713`
-- [x] iOS Test App ID: `ca-app-pub-3940256099942544~1458002511`
-- [x] Rewarded Test IDs في `AdMobConfig`
-
-### Production IDs (قبل النشر)
-- [ ] إنشاء حساب AdMob
-- [ ] إنشاء تطبيق Android في AdMob
-- [ ] إنشاء تطبيق iOS في AdMob
-- [ ] نسخ **Android App ID** الإنتاجي
-- [ ] نسخ **iOS App ID** الإنتاجي
-- [ ] إنشاء **Rewarded Ad Unit** لـ Android
-- [ ] إنشاء **Rewarded Ad Unit** لـ iOS
-- [ ] استبدال App ID في `android/app/src/main/AndroidManifest.xml`
-- [ ] استبدال App ID في `ios/Runner/Info.plist`
-- [ ] بناء APK بـ `--dart-define=ADMOB_ANDROID_REWARDED_ID=...`
-- [ ] بناء IPA بـ `--dart-define=ADMOB_IOS_REWARDED_ID=...`
-- [ ] اختبار الإعلان على جهاز حقيقي
-
 ## 3. IAP (In-App Purchase)
 
 - [ ] إنشاء حساب Google Play Console
-- [ ] إنشاء منتج `nabd_pro_monthly` (4.99$)
-- [ ] إنشاء منتج `nabd_pro_yearly` (29.99$)
+- [ ] (لاحقًا، بعد خادم التحقق) إنشاء `nabd_pro_monthly` و`nabd_pro_yearly`
 - [ ] إنشاء منتج `nabd_lifetime` (79.99$)
 - [ ] إنشاء حساب App Store Connect
 - [ ] تكرار المنتجات في App Store
@@ -49,7 +27,6 @@
 - [ ] Flutter 3.27.0 مثبت
 - [ ] Dart 3.6.0 مثبت
 - [ ] `flutter pub get` نجح
-- [ ] `flutter gen-l10n` نجح
 - [ ] `flutter analyze` = 0 errors
 - [ ] `flutter test` = كل الاختبارات تنجح
 - [ ] `flutter build apk --debug` نجح
@@ -69,7 +46,6 @@
 ## 6. Android
 
 - [ ] `AndroidManifest.xml` مكتمل
-- [ ] AdMob App ID موجود
 - [ ] `applicationId = "com.nabd.journal"`
 - [ ] `namespace = "com.nabd.journal"`
 - [ ] `minSdk = 23` (يتطلبه record_android)
@@ -81,10 +57,7 @@
 ## 7. iOS
 
 - [ ] `Info.plist` مكتمل
-- [ ] AdMob App ID موجود
 - [ ] ضبط `PRODUCT_BUNDLE_IDENTIFIER` الفعلي في مشروع iOS قبل نشر iOS
-- [ ] `SKAdNetworkItems` موجودة
-- [ ] `NSUserTrackingUsageDescription` موجود
 - [ ] `InfoPlist.strings` للغات المختلفة
 - [ ] `Runner.entitlements` موجود
 - [ ] `Podfile` محدّث
@@ -97,7 +70,7 @@
 - [ ] 6 صور (1080×1920)
 - [ ] Feature Graphic (1024×500)
 - [ ] أيقونة (512×512)
-- [ ] Data Safety Form (None)
+- [ ] Data Safety Form: لا جمع ولا مشاركة بيانات (لا إعلانات ولا تحليلات)
 - [ ] Content Rating (3+)
 - [ ] Privacy Policy URL
 - [ ] Internal Testing → Closed → Open → Production
@@ -129,7 +102,6 @@
 | العلامة | الإجراء |
 | :--- | :--- |
 | "YOUR_ORG" في الكود | استبدلها |
-| AdMob ID يحتوي "XXXX" | استبدله بالإنتاجي |
 | `flutter analyze` فيه errors | أصلحها قبل البناء |
 | APK > 100 MB | راجع الحجم |
 | Crashes في Internal Testing | أصلح قبل Closed |

@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../services/database_service.dart';
 
 /// DreamJournalScreen — مذكرة أحلام بألوان حالمة.
 class DreamJournalScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
     );
 
     await _box.put(dream.id, dream.toMap());
+    DatabaseService.invalidate();
     if (!mounted) return;
     _controller.clear();
     _titleController.clear();

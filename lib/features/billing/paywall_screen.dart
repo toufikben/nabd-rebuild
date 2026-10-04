@@ -45,11 +45,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: AppColors.brandGradient,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Column(
@@ -76,13 +72,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             const SizedBox(height: 24),
 
             // Features
-            _featureRow('📝', AppLocalizations.of(context).t('paywall.f1')),
-            _featureRow('🌱', AppLocalizations.of(context).t('paywall.f2')),
-            _featureRow('🔒', AppLocalizations.of(context).t('paywall.f3')),
-            _featureRow('📊', AppLocalizations.of(context).t('paywall.f4')),
-            _featureRow('💌', AppLocalizations.of(context).t('paywall.f5')),
-            _featureRow('📤', AppLocalizations.of(context).t('paywall.f6')),
-            _featureRow('🚫', AppLocalizations.of(context).t('paywall.f7')),
+            // Only what Pro really unlocks in this build. Everything else in
+            // the app is free, so it is not listed as a paid feature.
+            _featureRow('🧘', AppLocalizations.of(context).t('paywall.f1')),
+            _featureRow('🔭', AppLocalizations.of(context).t('paywall.f2')),
+            _featureRow('📄', AppLocalizations.of(context).t('paywall.f3')),
+            _featureRow('💜', AppLocalizations.of(context).t('paywall.f4')),
 
             const SizedBox(height: 32),
 
@@ -110,6 +105,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 onRetry: () => service.retryLoadProducts(),
               )
             else ...[
+              if (MonetizationConfig.subscriptionsEnabled) ...[
               _PlanCard(
                 title: AppLocalizations.of(context).t('paywall.monthly'),
                 price: service.priceFor(MonetizationService.proMonthlyId),
@@ -126,12 +122,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 onTap: () => _buy(MonetizationService.proYearlyId),
               ),
               const SizedBox(height: 12),
+              ],
               _PlanCard(
                 title: AppLocalizations.of(context).t('paywall.lifetime'),
                 price: service.priceFor(MonetizationService.lifetimeId),
                 subtitle: AppLocalizations.of(context).t('paywall.lifetimeSub'),
                 badge: AppLocalizations.of(context).t('paywall.best'),
+                highlighted: !MonetizationConfig.subscriptionsEnabled,
                 onTap: () => _buy(MonetizationService.lifetimeId),
+              ),
+            ],
+
+            if (monetization.nothingRestored) ...[
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context).t('paywall.restoreNothing'),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                textAlign: TextAlign.center,
               ),
             ],
 
@@ -146,6 +153,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
             SizedBox(height: 24),
 
+            if (MonetizationConfig.subscriptionsEnabled)
             Text(
               AppLocalizations.of(context).t('paywall.renewNote'),
               style: TextStyle(
@@ -226,7 +234,7 @@ class _PlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: highlighted
               ? const LinearGradient(
-                  colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
+                  colors: [AppColors.primaryDark, AppColors.primaryGlow],
                 )
               : null,
           color: highlighted ? null : Theme.of(context).cardColor,

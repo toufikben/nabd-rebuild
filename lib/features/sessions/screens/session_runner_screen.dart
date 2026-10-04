@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import '../../../core/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
 
 import '../../../services/monetization_service.dart';
 import '../data/sessions_data.dart';
@@ -29,6 +28,8 @@ import '../session_access.dart';
 import '../widgets/breathing_circle.dart';
 import '../widgets/runner_controls.dart';
 import '../../../services/audio_service.dart';
+import '../../../services/ui_sounds.dart';
+import '../../../core/storage.dart';
 
 const Map<String, Color> _sessionAccentMap = <String, Color>{
   'red': Color(0xFFE74C3C),
@@ -152,6 +153,7 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
 
     await _stopSessionAmbient(_ambientRequestId);
     if (!mounted) return;
+    unawaited(UiSounds.play(UiSound.complete));
 
     setState(() {
       _showSuccess = true;
@@ -170,7 +172,7 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
 
   Future<void> _incrementCompletedTotal() async {
     try {
-      final box = Hive.box('settings');
+      final box = contentBox();
       final Object? raw = box.get('sessions_completed_total');
       final int current = raw is int ? raw : 0;
 

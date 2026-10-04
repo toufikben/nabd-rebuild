@@ -13,10 +13,10 @@ android/local.properties
 ios/Pods/
 
 # Local-only generated artifacts (never part of the CI build)
-lib/l10n/generated/
 ios/Flutter/
 ios/Runner/GeneratedPluginRegistrant.h
 ios/Runner/GeneratedPluginRegistrant.m
-l10n_untranslated.txt
 apk-out/
 flutter_01.log
+device-test-output/
+__pycache__/

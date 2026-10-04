@@ -34,8 +34,6 @@ jobs:
           cache: true
       - name: Install dependencies
         run: flutter pub get
-      - name: Generate localization
-        run: flutter gen-l10n
       - name: Analyze
         run: flutter analyze
       - name: Test
@@ -45,6 +43,8 @@ jobs:
     name: Build debug APK and AAB
     needs: verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # only used on manual runs, to attach the APK to a release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -61,40 +61,58 @@ jobs:
           cache: true
       - name: Install dependencies
         run: flutter pub get
-      - name: Build debug APK
-        run: flutter build apk --debug
+      # One APK per ABI: the arm64 one is what real phones install, and it is
+      # less than half the size of a universal debug APK.
+      - name: Build debug APKs
+        run: flutter build apk --debug --split-per-abi
       - name: Build debug AAB
         run: flutter build appbundle --debug
+      # A pull request only needs to prove the app builds. Artifacts count
+      # against the account's storage quota; when it is full the upload fails
+      # although the build succeeded, so an upload failure never fails the job.
       - name: Upload debug APK
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: nabd-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: nabd-debug-arm64-apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
           if-no-files-found: error
-      - name: Upload debug AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: nabd-debug-aab
-          path: build/app/outputs/bundle/debug/app-debug.aab
-          if-no-files-found: error
+          retention-days: 3
+      # Release assets do not use the artifact quota and give a stable link
+      # that opens on a phone, so manual runs also publish a pre-release.
+      - name: Attach debug APK to a test release
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: build-${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk nabd-debug-arm64.apk
+          gh release create "$TAG" --target "$GITHUB_SHA" --prerelease \
+            --title "Nabd test build #${{ github.run_number }} (${GITHUB_REF_NAME})" \
+            --notes "Built from ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}. Not for the store." \
+            || true  # the release job may have created it first
+          gh release upload "$TAG" nabd-debug-arm64.apk --clobber
 
   release-build:
     name: Build signed release APK and AAB
     needs: verify
-    # The release job is opt-in. It needs the keystore secrets plus the AdMob
-    # and Play product ids, so it must not turn every push red while the store
+    # The release job is opt-in. It needs the keystore secrets plus the Play
+    # product ids, so it must not turn every push red while the store
     # configuration is still being set up.
     if: >-
       ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
           && vars.NABD_RELEASE_ENABLED == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # only used on manual runs, to attach the APK to a release
     env:
       ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-      ADMOB_ANDROID_APP_ID: ${{ secrets.ADMOB_ANDROID_APP_ID }}
-      ADMOB_ANDROID_REWARDED_ID: ${{ secrets.ADMOB_ANDROID_REWARDED_ID }}
       NABD_PRO_MONTHLY_ID: ${{ vars.NABD_PRO_MONTHLY_ID }}
       NABD_PRO_YEARLY_ID: ${{ vars.NABD_PRO_YEARLY_ID }}
       NABD_LIFETIME_ID: ${{ vars.NABD_LIFETIME_ID }}
@@ -127,8 +145,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$ADMOB_ANDROID_APP_ID"
-          test -n "$ADMOB_ANDROID_REWARDED_ID"
           test -n "$NABD_PRO_MONTHLY_ID"
           test -n "$NABD_PRO_YEARLY_ID"
           test -n "$NABD_LIFETIME_ID"
@@ -153,8 +169,6 @@ jobs:
       - name: Build signed release APK
         run: >-
           flutter build apk --release
-          --dart-define=ADMOB_ANDROID_APP_ID=$ADMOB_ANDROID_APP_ID
-          --dart-define=ADMOB_ANDROID_REWARDED_ID=$ADMOB_ANDROID_REWARDED_ID
           --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
           --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
           --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
@@ -163,22 +177,38 @@ jobs:
       - name: Build signed release AAB
         run: >-
           flutter build appbundle --release
-          --dart-define=ADMOB_ANDROID_APP_ID=$ADMOB_ANDROID_APP_ID
-          --dart-define=ADMOB_ANDROID_REWARDED_ID=$ADMOB_ANDROID_REWARDED_ID
           --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
           --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
           --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
           --dart-define=SUBSCRIPTION_VERIFICATION_BACKEND_URL=$SUBSCRIPTION_VERIFICATION_BACKEND_URL
           --dart-define=NABD_PRODUCTION_CONFIGURED=true
       - name: Upload release APK
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: nabd-release-apk
+          retention-days: 14
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
       - name: Upload release AAB
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: nabd-release-aab
+          retention-days: 14
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+      - name: Attach release APK to the test release
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: build-${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          cp build/app/outputs/flutter-apk/app-release.apk nabd-release.apk
+          gh release create "$TAG" --target "$GITHUB_SHA" --prerelease \
+            --title "Nabd test build #${{ github.run_number }} (${GITHUB_REF_NAME})" \
+            --notes "Built from ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}. Not for the store." \
+            || true  # the debug job may have created it first
+          gh release upload "$TAG" nabd-release.apk --clobber

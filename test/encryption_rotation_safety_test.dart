@@ -28,8 +28,14 @@ void main() {
       expect(MonetizationConfig.lifetimeId, isNotEmpty);
     });
 
-    test('exposes exactly three product ids', () {
-      expect(MonetizationConfig.productIds, hasLength(3));
+    test('knows exactly three product ids', () {
+      expect(MonetizationConfig.allProductIds, hasLength(3));
+    });
+
+    test('does not sell subscriptions without a verification backend', () {
+      // Tests build without SUBSCRIPTION_VERIFICATION_BACKEND_URL.
+      expect(MonetizationConfig.subscriptionsEnabled, isFalse);
+      expect(MonetizationConfig.productIds, {MonetizationConfig.lifetimeId});
     });
   });
 

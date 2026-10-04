@@ -67,10 +67,10 @@ class AudioService {
   factory AudioService() => instance;
 
   static const _defaultAmbientAssets = <AmbientSource, String>{
-    AmbientSource.silent: 'assets/sounds/silent_river_water.mp3',
-    AmbientSource.garden: 'assets/sounds/عصافير.mp3',
-    AmbientSource.session: 'assets/sounds/flute_dawn.mp3',
-    AmbientSource.soundscape: 'assets/sounds/rain_soft.mp3',
+    AmbientSource.silent: 'assets/sounds/silent_river_water.m4a',
+    AmbientSource.garden: 'assets/sounds/garden_birds.m4a',
+    AmbientSource.session: 'assets/sounds/flute_dawn.m4a',
+    AmbientSource.soundscape: 'assets/sounds/rain_soft.m4a',
   };
 
   final just_audio.AudioPlayer _ambientPlayer = just_audio.AudioPlayer();

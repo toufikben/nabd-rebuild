@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/database_service.dart';
+import '../../core/storage.dart';
 
 /// LegacyJournalScreen — إرث رقمي للأحفاد.
 ///
@@ -18,7 +19,7 @@ class LegacyJournalScreen extends StatefulWidget {
 
 class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
   final DatabaseService _db = DatabaseService();
-  final Box _settings = Hive.box('settings');
+  final Box _settings = contentBox();
 
   Set<String> get _legacyIds {
     final raw = _settings.get('legacy_entries', defaultValue: <dynamic>[]) as List;

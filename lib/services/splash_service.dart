@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../core/app_settings.dart';
@@ -9,24 +8,26 @@ import '../core/app_settings.dart';
 /// SplashService - drives the launch cue.
 ///
 /// The sound id is stored without an extension, so the extension has to be
-/// resolved at load time. An earlier revision hard-coded `.mp3`, which silently
-/// failed for the synthesised `.wav` cue.
+/// resolved at load time; hard-coding one extension once made the cue silent.
 class SplashService {
-  /// Number of distinct splash animations. The sound is shared, but the
-  /// animation still rotates so the launch is not identical every time.
-  static const _splashCount = 5;
+  /// The default launch cue: a soft chord that swells in like a breath and
+  /// settles (3 s), chosen by the owner after listening on a phone.
+  /// Synthesised by `scripts/synth_ambience.py`, so it is original.
+  static const signatureSound = 'splash_breath';
 
-  /// The signature launch cue: a water drop with two slap-backs, then four
-  /// rising songbird notes (about 600 Hz up to 1.5 kHz) over a breath of
-  /// outdoor air — 1.1s, so it finishes inside the splash rather than trailing it.
-  static const signatureSound = 'splash_dawn';
+  /// The launch sounds a person can pick in Settings, default first.
+  static const choices = <String>[
+    'splash_breath',
+    'splash_chime',
+    'splash_heart_bowl',
+    'splash_kalimba',
+    'nabd_pulse',
+  ];
 
-  /// Preferred cue first, then the older drop and a proven MP3 so the launch is
-  /// never silent. The rejected `splash_nabd` is deliberately not a fallback:
-  /// a failing dawn should go to the drop, not back to the bell.
+  /// If the chosen cue cannot be decoded, fall back to the default, then to
+  /// a bowl, the gentlest sound the app has.
   static const _candidates = <String>[
-    'splash_dawn',
-    'splash_drop',
+    signatureSound,
     'tibetan_bowl',
   ];
 
@@ -47,7 +48,7 @@ class SplashService {
       if (path == null) continue;
       try {
         await _player.setAsset(path);
-        await _player.setVolume(0.9);
+        await _player.setVolume(0.8);
         unawaited(_player.play());
         return;
       } catch (error) {
@@ -58,8 +59,8 @@ class SplashService {
     debugPrint('Splash sound: no candidate could be played. $lastError');
   }
 
-  /// Resolves a sound id to a bundled asset, preferring `.mp3` and falling back
-  /// to `.wav`. Returns null when neither exists.
+  /// Resolves a sound id to a bundled asset (see [AppSettings.resolveSoundFile]).
+  /// Returns null when none exists.
   String? _assetPathFor(String soundId) {
     final file = AppSettings.resolveSoundFile(soundId);
     return file == null ? null : 'assets/sounds/$file';
@@ -76,22 +77,4 @@ class SplashService {
   Future<void> dispose() async {
     await _player.dispose();
   }
-
-  /// Returns the next splash id, never the same one twice in a row.
-  static int getNextSplash() {
-    final box = Hive.box('settings');
-    final last = box.get('last_splash_id', defaultValue: 0) as int;
-
-    int next;
-    do {
-      next = DateTime.now().microsecondsSinceEpoch % _splashCount + 1;
-    } while (next == last && _splashCount > 1);
-
-    unawaited(box.put('last_splash_id', next));
-    return next;
-  }
-
-  /// Every splash variant shares one cue so the launch is repeatable. The
-  /// splashId is still accepted so callers keep working.
-  static String defaultSoundFor(int splashId) => signatureSound;
 }

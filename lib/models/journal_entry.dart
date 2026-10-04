@@ -77,6 +77,7 @@ class JournalEntry {
   JournalEntry copyWith({
     String? title,
     String? content,
+    DateTime? createdAt,
     DateTime? updatedAt,
     String? mood,
     List<String>? tags,
@@ -90,7 +91,7 @@ class JournalEntry {
       id: id,
       title: title ?? this.title,
       content: content ?? this.content,
-      createdAt: createdAt,
+      createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
       mood: mood ?? this.mood,
       tags: tags ?? this.tags,

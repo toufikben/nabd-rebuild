@@ -12,7 +12,8 @@ void main() {
     await Hive.close();
     directory = await Directory.systemTemp.createTemp('nabd_achievements');
     Hive.init(directory.path);
-    settings = await Hive.openBox<dynamic>('settings');
+    // Gratitude days and unlocked achievements live in the content box.
+    settings = await Hive.openBox<dynamic>('content');
   });
 
   tearDown(() async {

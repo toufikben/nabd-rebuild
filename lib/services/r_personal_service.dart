@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/journal_entry.dart';
 import '../models/mood.dart';
 import 'database_service.dart';
+import '../core/storage.dart';
 
 class PersonalLetter {
   const PersonalLetter({
@@ -126,7 +127,7 @@ class RPersonalService {
   };
 
   final DatabaseService _database;
-  Box get _settings => Hive.box('settings');
+  Box get _settings => contentBox();
 
   List<PersonalLetter> getLetters() {
     final future = _readLetters(futureLettersKey, PersonalLetterKind.future);

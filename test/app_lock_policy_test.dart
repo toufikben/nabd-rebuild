@@ -144,4 +144,20 @@ void main() {
       );
     });
   });
+
+  test('an immediate timeout locks on any return from the background', () {
+    var now = DateTime(2026, 10, 3, 12);
+    final policy = AppLockPolicy(now: () => now)..markColdStartComplete();
+    policy.markBackgrounded();
+    now = now.add(const Duration(seconds: 2));
+    expect(
+      policy.shouldShowLock(enabled: true, timeoutMinutes: lockImmediately),
+      isTrue,
+    );
+    policy.clearBackgrounded();
+    expect(
+      policy.shouldShowLock(enabled: true, timeoutMinutes: lockImmediately),
+      isFalse,
+    );
+  });
 }

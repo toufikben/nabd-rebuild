@@ -14,7 +14,7 @@ void main() {
   test('restore rejects missing password without reading a backup', () async {
     final result = await BackupService().restoreBackup('/does/not/exist');
     expect(result.ok, isFalse);
-    expect(result.error, 'Backup password is required');
+    expect(result.failure, BackupError.passwordRequired);
   });
 
   test('restore rejects corrupted and unsupported encrypted envelopes',

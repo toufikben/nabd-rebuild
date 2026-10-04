@@ -1,13 +1,20 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/data_revision.dart';
+import '../../core/backup_nudge.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
@@ -19,6 +26,16 @@ import '../../services/passcode_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
+import '../../services/ui_sounds.dart';
+import '../../services/database_service.dart';
+import '../../services/garden_service.dart';
+import '../../services/journal_export_service.dart';
+import '../../services/monetization_service.dart';
+import '../../services/splash_service.dart';
+import '../lock/passcode_verify_sheet.dart';
+import '../../widgets/nabd_ui.dart';
+import '../../widgets/vault_image.dart';
+import 'backup_password_dialog.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -32,28 +49,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final BackupService _backup = BackupService();
   final BiometricService _biometric = BiometricService();
 
-  // These must outlive the dialog that borrows them. `showDialog` returns as
-  // soon as the route starts closing, so disposing a controller in a `finally`
-  // tears down the EditableText/Focus structure while the exit animation is
-  // still mounted. That trips `_dependents.isEmpty` and paints a red screen.
-  // Owning them as State fields means disposal only happens in dispose(),
-  // which the framework guarantees runs after teardown.
-  final TextEditingController _exportPasswordController =
-      TextEditingController();
-  final TextEditingController _restorePasswordController =
-      TextEditingController();
-
-  bool _notificationsEnabled = true;
+  bool _notificationsEnabled = false;
+  bool _weeklyReview = false;
+  bool _launchSound = true;
+  bool _uiSounds = true;
   bool _lockEnabled = false;
   int _lockTimeoutMinutes = 5;
-  int _reminderHour = 20;
-  int _reminderMinute = 0;
+  int _reminderHour = NotificationService.defaultHour;
+  int _reminderMinute = NotificationService.defaultMinute;
   bool _hasPasscode = false;
   bool _biometricsAvailable = false;
+  String _version = '';
 
   @override
   void initState() {
     super.initState();
+    _notificationsEnabled = NotificationService.isEnabled;
+    _weeklyReview = NotificationService.isWeeklyReviewEnabled;
+    _launchSound =
+        Hive.box('settings').get('splash_sound_enabled', defaultValue: true) ==
+            true;
+    _uiSounds = UiSounds.enabled;
+    _reminderHour = NotificationService.hour;
+    _reminderMinute = NotificationService.minute;
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
     _loadLockState();
@@ -64,17 +82,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _loadLockState() async {
     final hasPasscode = await PasscodeService.secure().hasPasscode();
     final available = await _biometric.isAvailable();
+    var version = '';
+    try {
+      final info = await PackageInfo.fromPlatform();
+      version = '${info.version} (${info.buildNumber})';
+    } catch (_) {}
     if (!mounted) return;
     setState(() {
       _hasPasscode = hasPasscode;
       _biometricsAvailable = available;
+      _version = version;
     });
   }
 
   @override
   void dispose() {
-    _exportPasswordController.dispose();
-    _restorePasswordController.dispose();
     super.dispose();
   }
 
@@ -90,151 +112,181 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         children: [
           // ─── Appearance ───
-          _section(l10n.t('settings.section.appearance')),
+          _group(l10n.t('settings.section.appearance'), [
+            // Theme
+            _tile(
+              icon: Icons.brightness_6,
+              title: l10n.t('settings.theme'),
+              subtitle: _themeName(themeMode, l10n),
+              onTap: () => _pickTheme(themeMode, l10n),
+            ),
 
-          // Theme
-          _tile(
-            icon: Icons.brightness_6,
-            title: l10n.t('settings.theme'),
-            subtitle: _themeName(themeMode, l10n),
-            onTap: () => _pickTheme(themeMode, l10n),
-          ),
+            // Gender Theme
+            _tile(
+              icon: Icons.palette_outlined,
+              title: l10n.t('settings.themeStyle'),
+              subtitle: _genderThemeName(genderTheme, l10n),
+              onTap: () => _pickGenderTheme(genderTheme, l10n),
+            ),
 
-          // Gender Theme
-          _tile(
-            icon: Icons.person_outline,
-            title: l10n.t('settings.themeStyle'),
-            subtitle: _genderThemeName(genderTheme, l10n),
-            onTap: () => _pickGenderTheme(genderTheme, l10n),
-          ),
+            // Language
+            _tile(
+              icon: Icons.language,
+              title: l10n.t('settings.language'),
+              subtitle: _languageName(locale.languageCode),
+              onTap: () => _pickLanguage(locale.languageCode),
+            ),
+          ]),
 
-          // Language
-          _tile(
-            icon: Icons.language,
-            title: l10n.t('settings.language'),
-            subtitle: _languageName(locale.languageCode),
-            onTap: () => _pickLanguage(locale.languageCode),
-          ),
+          // ─── Sounds ───
+          _group(l10n.t('settings.section.sound'), [
+            SwitchListTile(
+              secondary: _iconBadge(Icons.favorite_outline, AppColors.pulse),
+              title: Text(l10n.t('settings.sound.launch')),
+              subtitle: Text(l10n.t('settings.sound.launchHint')),
+              value: _launchSound,
+              onChanged: (value) async {
+                await Hive.box('settings').put('splash_sound_enabled', value);
+                if (mounted) setState(() => _launchSound = value);
+              },
+            ),
+            if (_launchSound)
+              _tile(
+                icon: Icons.graphic_eq_rounded,
+                title: l10n.t('settings.sound.launchChoice'),
+                subtitle: l10n.t('sound.${_launchSoundId()}'),
+                onTap: () => _pickLaunchSound(l10n),
+              ),
+            SwitchListTile(
+              secondary: _iconBadge(Icons.music_note_outlined, AppColors.secondary),
+              title: Text(l10n.t('settings.sound.ui')),
+              subtitle: Text(l10n.t('settings.sound.uiHint')),
+              value: _uiSounds,
+              onChanged: (value) async {
+                await UiSounds.setEnabled(value);
+                if (mounted) setState(() => _uiSounds = value);
+                if (value) unawaited(UiSounds.play(UiSound.bloom));
+              },
+            ),
+          ]),
 
           // ─── Lock ───
-          _section(l10n.t('settings.section.lock')),
-
-          SwitchListTile(
-            secondary: const Icon(Icons.lock_outline, color: AppColors.primary),
-            title: Text(l10n.t('settings.lock.appLock')),
-            subtitle: Text(l10n.t('settings.lock.appLockHint')),
-            value: _lockEnabled,
-            onChanged: (value) => _setLockEnabled(value, l10n),
-          ),
-
-          if (_lockEnabled) ...[
-            _tile(
-              icon: Icons.timer_outlined,
-              title: l10n.t('settings.lock.timeout'),
-              subtitle: _lockTimeoutLabel(_lockTimeoutMinutes, l10n),
-              onTap: () => _pickLockTimeout(l10n),
+          _group(l10n.t('settings.section.lock'), [
+            SwitchListTile(
+              secondary: _iconBadge(Icons.lock_outline, AppColors.primary),
+              title: Text(l10n.t('settings.lock.appLock')),
+              subtitle: Text(l10n.t('settings.lock.appLockHint')),
+              value: _lockEnabled,
+              onChanged: (value) => _setLockEnabled(value, l10n),
             ),
-            _tile(
-              icon: Icons.numbers,
-              title: l10n.t('settings.lock.passcode'),
-              subtitle: _hasPasscode
-                  ? l10n.t('settings.lock.passcodeSet')
-                  : l10n.t('settings.lock.passcodeUnset'),
-              onTap: _changePasscode,
-            ),
-            if (_hasPasscode)
+            if (_lockEnabled) ...[
               _tile(
-                icon: Icons.lock_open_outlined,
-                title: l10n.t('settings.lock.removeTitle'),
-                subtitle: _lockRemovalNote(l10n),
-                onTap: () => _removePasscode(l10n),
-                danger: true,
+                icon: Icons.timer_outlined,
+                title: l10n.t('settings.lock.timeout'),
+                subtitle: _lockTimeoutLabel(_lockTimeoutMinutes, l10n),
+                onTap: () => _pickLockTimeout(l10n),
               ),
-          ],
+              _tile(
+                icon: Icons.numbers,
+                title: l10n.t('settings.lock.passcode'),
+                subtitle: _hasPasscode
+                    ? l10n.t('settings.lock.passcodeSet')
+                    : l10n.t('settings.lock.passcodeUnset'),
+                onTap: _changePasscode,
+              ),
+              if (_hasPasscode)
+                _tile(
+                  icon: Icons.lock_open_outlined,
+                  title: l10n.t('settings.lock.removeTitle'),
+                  subtitle: _lockRemovalNote(l10n),
+                  onTap: () => _removePasscode(l10n),
+                  danger: true,
+                ),
+            ],
+          ]),
 
           // ─── Notifications ───
-          _section(l10n.t('settings.section.notifications')),
-
-          SwitchListTile(
-            secondary: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.primary,
+          _group(l10n.t('settings.section.notifications'), [
+            SwitchListTile(
+              secondary: const Icon(
+                Icons.notifications_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(l10n.t('settings.notify.daily')),
+              subtitle: Text(l10n.t('settings.notify.dailyHint')),
+              value: _notificationsEnabled,
+              onChanged: (v) => _setReminderEnabled(v, l10n),
             ),
-            title: Text(l10n.t('settings.notify.daily')),
-            subtitle: Text(l10n.t('settings.notify.dailyHint')),
-            value: _notificationsEnabled,
-            onChanged: (v) {
-              setState(() => _notificationsEnabled = v);
-              if (v) {
-                NotificationService.scheduleDailyReminder(
-                  hour: _reminderHour,
-                  minute: _reminderMinute,
-                );
-              } else {
-                NotificationService.cancelAll();
-              }
-            },
-          ),
-
-          if (_notificationsEnabled)
-            _tile(
-              icon: Icons.access_time,
-              title: l10n.t('settings.notify.time'),
-              subtitle:
-                  '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
-              onTap: _pickReminderTime,
+            if (_notificationsEnabled)
+              _tile(
+                icon: Icons.access_time,
+                title: l10n.t('settings.notify.time'),
+                subtitle:
+                    '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
+                onTap: _pickReminderTime,
+              ),
+            SwitchListTile(
+              secondary: _iconBadge(
+                  Icons.calendar_view_week_outlined, AppColors.secondary),
+              title: Text(l10n.t('settings.notify.weekly')),
+              subtitle: Text(l10n.t('settings.notify.weeklyHint')),
+              value: _weeklyReview,
+              onChanged: (value) => _setWeeklyReview(value, l10n),
             ),
+          ]),
 
           // ─── Data ───
-          _section(l10n.t('settings.section.data')),
-
-          _tile(
-            icon: Icons.download_outlined,
-            title: l10n.t('settings.data.export'),
-            subtitle: l10n.t('settings.data.exportHint'),
-            onTap: _exportData,
-          ),
-
-          _tile(
-            icon: Icons.upload_outlined,
-            title: l10n.t('settings.data.restore'),
-            subtitle: l10n.t('settings.data.restoreHint'),
-            onTap: _restoreData,
-          ),
-
-          _tile(
-            icon: Icons.key_outlined,
-            title: l10n.t('settings.data.rotateKey'),
-            subtitle: l10n.t('settings.data.rotateKeyHint'),
-            onTap: () => _confirmRotateKey(l10n),
-          ),
-
-          _tile(
-            icon: Icons.delete_outline,
-            title: l10n.t('settings.data.deleteAll'),
-            subtitle: l10n.t('settings.data.deleteAllHint'),
-            danger: true,
-            onTap: () => _confirmDeleteAll(l10n),
-          ),
+          _group(l10n.t('settings.section.data'), [
+            _tile(
+              icon: Icons.download_outlined,
+              title: l10n.t('settings.data.export'),
+              subtitle: l10n.t('settings.data.exportHint'),
+              onTap: _exportData,
+            ),
+            _tile(
+              icon: Icons.picture_as_pdf_outlined,
+              title: l10n.t('settings.data.exportDoc'),
+              subtitle: l10n.t('settings.data.exportDocHint'),
+              onTap: _exportDocument,
+            ),
+            _tile(
+              icon: Icons.upload_outlined,
+              title: l10n.t('settings.data.restore'),
+              subtitle: l10n.t('settings.data.restoreHint'),
+              onTap: _restoreData,
+            ),
+            _tile(
+              icon: Icons.key_outlined,
+              title: l10n.t('settings.data.rotateKey'),
+              subtitle: l10n.t('settings.data.rotateKeyHint'),
+              onTap: () => _confirmRotateKey(l10n),
+            ),
+            _tile(
+              icon: Icons.delete_outline,
+              title: l10n.t('settings.data.deleteAll'),
+              subtitle: l10n.t('settings.data.deleteAllHint'),
+              danger: true,
+              onTap: () => _confirmDeleteAll(l10n),
+            ),
+          ]),
 
           // ─── About ───
-          _section(l10n.t('settings.section.about')),
-
-          _tile(
-            icon: Icons.share_outlined,
-            title: l10n.t('settings.about.share'),
-            subtitle: l10n.t('settings.about.shareHint'),
-            onTap: () {
-              Share.share(l10n.t('settings.about.shareBody'));
-            },
-          ),
-
-          _tile(
-            icon: Icons.info_outline,
-            title: l10n.t('settings.about.version'),
-            subtitle: '1.0.0',
-            onTap: null,
-          ),
+          _group(l10n.t('settings.section.about'), [
+            _tile(
+              icon: Icons.share_outlined,
+              title: l10n.t('settings.about.share'),
+              subtitle: l10n.t('settings.about.shareHint'),
+              onTap: () {
+                Share.share(l10n.t('settings.about.shareBody'));
+              },
+            ),
+            _tile(
+              icon: Icons.info_outline,
+              title: l10n.t('settings.about.version'),
+              subtitle: _version,
+              onTap: null,
+            ),
+          ]),
 
           SizedBox(height: 40),
         ],
@@ -246,18 +298,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // Helpers
   // ═══════════════════════════════════════════════════════════
 
-  Widget _section(String title) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-        child: Text(
-          title.toUpperCase(),
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textTertiary,
-            letterSpacing: 1,
+  /// A titled group of settings on one rounded card.
+  Widget _group(String title, List<Widget> children) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+          child: Text(
+            title,
+            style: theme.textTheme.labelLarge
+                ?.copyWith(color: theme.colorScheme.primary),
           ),
         ),
-      );
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: NabdCard(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Column(children: children),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _tile({
     required IconData icon,
@@ -266,19 +330,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required VoidCallback? onTap,
     bool danger = false,
   }) {
+    final scheme = Theme.of(context).colorScheme;
+    final tint = danger ? scheme.error : scheme.primary;
     return ListTile(
-      leading: Icon(icon, color: danger ? AppColors.danger : AppColors.primary),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: danger ? AppColors.danger : AppColors.textPrimary,
-        ),
-      ),
+      leading: _iconBadge(icon, tint),
+      title: Text(title, style: danger ? TextStyle(color: scheme.error) : null),
       subtitle: Text(subtitle),
       trailing: onTap != null
-          ? Icon(Icons.chevron_right, color: AppColors.textTertiary)
+          ? Icon(Icons.chevron_right, color: scheme.onSurfaceVariant)
           : null,
       onTap: onTap,
+    );
+  }
+
+  Widget _iconBadge(IconData icon, Color tint) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, color: tint, size: 20),
     );
   }
 
@@ -304,6 +377,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  String _launchSoundId() {
+    final saved = Hive.box('settings').get('splash_sound') as String?;
+    return SplashService.choices.contains(saved)
+        ? saved!
+        : SplashService.signatureSound;
+  }
+
+  /// Lists the launch sounds; tapping one plays it and makes it the cue.
+  Future<void> _pickLaunchSound(AppLocalizations l10n) async {
+    final preview = SplashService();
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (sheetContext) => StatefulBuilder(
+          builder: (sheetContext, setSheetState) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final id in SplashService.choices)
+                  ListTile(
+                    leading: Icon(
+                      id == _launchSoundId()
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color: AppColors.pulse,
+                    ),
+                    title: Text(l10n.t('sound.$id')),
+                    trailing: const Icon(Icons.play_arrow_rounded),
+                    onTap: () async {
+                      await Hive.box('settings').put('splash_sound', id);
+                      setSheetState(() {});
+                      if (mounted) setState(() {});
+                      await preview.stopSplashSound();
+                      await preview.playSplashSound(id);
+                    },
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      );
+    } finally {
+      await preview.stopSplashSound();
+      await preview.dispose();
+    }
+  }
+
   String _languageName(String code) {
     const names = {
       'ar': 'العربية',
@@ -314,6 +437,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   String _lockTimeoutLabel(int minutes, AppLocalizations l10n) {
     switch (minutes) {
+      case lockImmediately:
+        return l10n.t('settings.lock.immediately');
       case 1:
         return l10n.t('settings.lock.1m');
       case 5:
@@ -357,6 +482,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<bool> _openPasscodeSetup() async {
     final saved = await showModalBottomSheet<bool>(
       context: context,
+      // Without this the sheet is capped at 9/16 of the screen and the last
+      // row of the pad is cut off.
+      isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
       builder: (_) => const PasscodeSetupSheet(),
@@ -365,6 +493,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _changePasscode() async {
+    if (_hasPasscode && !await PasscodeVerifySheet.confirm(context)) return;
+    if (!mounted) return;
     final saved = await _openPasscodeSetup();
     if (!saved || !mounted) return;
     setState(() => _hasPasscode = true);
@@ -402,7 +532,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
     );
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
+    if (!await PasscodeVerifySheet.confirm(context)) return;
     await PasscodeService.secure().removePasscode();
     if (!mounted) return;
     setState(() => _hasPasscode = false);
@@ -412,9 +543,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _pickLockTimeout(AppLocalizations l10n) async {
-    const options = <int>[1, 5, 15, 30, 0];
+    const options = <int>[lockImmediately, 1, 5, 15, 30, lockNever];
     final result = await showModalBottomSheet<int>(
       context: context,
+      isScrollControlled: true,
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -478,7 +610,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _pickGenderTheme(GenderTheme current, AppLocalizations l10n) async {
+  Future<void> _pickGenderTheme(
+      GenderTheme current, AppLocalizations l10n) async {
     final result = await showModalBottomSheet<String>(
       context: context,
       builder: (_) => Column(
@@ -567,14 +700,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       initialTime: TimeOfDay(hour: _reminderHour, minute: _reminderMinute),
     );
 
-    if (time != null) {
-      setState(() {
-        _reminderHour = time.hour;
-        _reminderMinute = time.minute;
-      });
-      await NotificationService.scheduleDailyReminder(
-        hour: time.hour,
-        minute: time.minute,
+    if (time == null || !mounted) return;
+    setState(() {
+      _reminderHour = time.hour;
+      _reminderMinute = time.minute;
+    });
+    await _scheduleReminder(AppLocalizations.of(context));
+  }
+
+  /// The reminder is only shown as on once the OS has granted permission and
+  /// the schedule is stored, so the switch never claims what is not true.
+  Future<void> _setReminderEnabled(bool value, AppLocalizations l10n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (!value) {
+      await NotificationService.disableDailyReminder();
+      if (mounted) setState(() => _notificationsEnabled = false);
+      return;
+    }
+    final granted = await NotificationService.requestPermission();
+    if (!mounted) return;
+    if (!granted) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.notify.denied'))),
+      );
+      return;
+    }
+    await _scheduleReminder(l10n);
+  }
+
+  Future<void> _setWeeklyReview(bool value, AppLocalizations l10n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (!value) {
+      await NotificationService.disableWeeklyReview();
+      if (mounted) setState(() => _weeklyReview = false);
+      return;
+    }
+    if (!await NotificationService.requestPermission()) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.notify.denied'))),
+      );
+      return;
+    }
+    try {
+      await NotificationService.enableWeeklyReview(
+        title: l10n.t('notify.weekly.title'),
+        body: l10n.t('notify.weekly.body'),
+      );
+      if (mounted) setState(() => _weeklyReview = true);
+    } catch (error) {
+      debugPrint('Weekly review could not be scheduled: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.notify.failed'))),
+      );
+    }
+  }
+
+  Future<void> _scheduleReminder(AppLocalizations l10n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await NotificationService.enableDailyReminder(
+        hour: _reminderHour,
+        minute: _reminderMinute,
+        title: l10n.t('notify.title'),
+        body: l10n.t('notify.body'),
+      );
+      if (mounted) setState(() => _notificationsEnabled = true);
+    } catch (error) {
+      debugPrint('Daily reminder could not be scheduled: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('settings.notify.failed'))),
       );
     }
   }
@@ -582,63 +776,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Exports an encrypted backup. The user picks where the `.nabd` file goes,
   /// so a copy survives even if the app is uninstalled.
   Future<void> _exportData() async {
-    final passwordController = _exportPasswordController;
-    passwordController.clear();
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
-    String? destination;
-    var saved = false;
+    final password = await showDialog<String>(
+      context: context,
+      builder: (_) => const BackupPasswordDialog(confirm: true),
+    );
+    if (password == null || password.isEmpty || !mounted) return;
+
+    File? backup;
     try {
-      final password = await showDialog<String>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l10n.t('dialog.export.title')),
-          content: TextField(
-            controller: passwordController,
-            obscureText: true,
-            autofocus: true,
-            decoration: InputDecoration(labelText: l10n.t('dialog.export.password')),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.t('dialog.cancel')),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, passwordController.text),
-              child: Text(l10n.t('dialog.continue')),
-            ),
-          ],
-        ),
+      final created = await _withProgress(
+        l10n.t('dialog.save.creating'),
+        (onProgress) =>
+            _backup.createBackup(password: password, onProgress: onProgress),
       );
-      if (password == null || password.isEmpty || !mounted) return;
-
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.t('dialog.save.creating'))),
-      );
-      final backup = await _backup.createBackup(password: password);
+      backup = created;
       if (!mounted) return;
-
       // On Android and iOS the picker cannot hand back a writable path, so it
-      // requires the bytes up front. Reading them here also lets us drop the
-      // temp file straight after the save.
-      final bytes = await File(backup.path).readAsBytes();
-      destination = await FilePicker.platform.saveFile(
+      // requires the bytes up front.
+      final bytes = await created.readAsBytes();
+      final destination = await FilePicker.platform.saveFile(
         dialogTitle: l10n.t('dialog.save.title'),
-        fileName: p.basename(backup.path),
+        fileName: p.basename(created.path),
         type: FileType.any,
         bytes: bytes,
       );
       if (destination == null) {
-        await backup.delete().catchError((_) => backup);
         messenger.showSnackBar(
           SnackBar(content: Text(l10n.t('dialog.save.cancelled'))),
         );
         return;
       }
-
-      // Desktop and web return a path, so finish the write ourselves there.
+      // Desktop returns a path, so finish the write ourselves there.
       if (!kIsWeb && destination.isNotEmpty) {
         final target = File(destination);
         if (!await target.exists()) {
@@ -646,32 +816,103 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           await target.writeAsBytes(bytes, flush: true);
         }
       }
-      await backup.delete().catchError((_) => backup);
-
-      saved = true;
-      messenger.hideCurrentSnackBar();
+      await BackupNudge.recordBackup();
       messenger.showSnackBar(
         SnackBar(
-          content: Text('${l10n.t('dialog.save.done')}: ${p.basename(destination)}'),
+          content: Text(
+            '${l10n.t('dialog.save.done')}: ${p.basename(destination)}',
+          ),
           duration: const Duration(seconds: 5),
         ),
       );
-    } catch (e) {
-      messenger.hideCurrentSnackBar();
+    } catch (error) {
+      debugPrint('Export failed: $error');
       messenger.showSnackBar(
-        SnackBar(content: Text('${l10n.t('dialog.save.failed')}: $e')),
+        SnackBar(content: Text(l10n.t('dialog.save.failed'))),
       );
-      if (!saved) {
-        debugPrint('Export did not complete; destination=$destination');
+    } finally {
+      final file = backup;
+      if (file != null && await file.exists()) await file.delete();
+    }
+  }
+
+  /// Exports the journal as a readable PDF or Markdown file (a Pro extra).
+  Future<void> _exportDocument() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (!ref.read(monetizationProvider).isPro) {
+      await context.push('/paywall');
+      return;
+    }
+    final entries = DatabaseService().getAllEntries();
+    if (entries.isEmpty) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('export.doc.empty'))),
+      );
+      return;
+    }
+    final format = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.t('export.doc.title')),
+        content: Text(l10n.t('export.doc.warning')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'md'),
+            child: Text(l10n.t('export.doc.markdown')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'pdf'),
+            child: Text(l10n.t('export.doc.pdf')),
+          ),
+        ],
+      ),
+    );
+    if (format == null || !mounted) return;
+    try {
+      final exporter = JournalExportService();
+      final title = l10n.t('export.doc.name');
+      final language = l10n.locale.languageCode;
+      final Uint8List bytes = format == 'pdf'
+          ? await exporter.toPdf(entries, title: title, languageCode: language)
+          : Uint8List.fromList(utf8.encode(exporter.toMarkdown(
+              entries,
+              title: title,
+              languageCode: language,
+            )));
+      final stamp = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final destination = await FilePicker.platform.saveFile(
+        dialogTitle: l10n.t('dialog.save.title'),
+        fileName: 'nabd_journal_$stamp.$format',
+        type: FileType.any,
+        bytes: bytes,
+      );
+      if (destination == null) return;
+      if (!kIsWeb && destination.isNotEmpty) {
+        final target = File(destination);
+        if (!await target.exists()) {
+          await target.writeAsBytes(bytes, flush: true);
+        }
       }
+      messenger.showSnackBar(SnackBar(
+        content:
+            Text('${l10n.t('dialog.save.done')}: ${p.basename(destination)}'),
+      ));
+    } catch (error) {
+      debugPrint('Document export failed: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('dialog.save.failed'))),
+      );
     }
   }
 
   /// Restores an encrypted `.nabd` backup, letting the user merge with the
   /// current data or replace it wholesale.
   Future<void> _restoreData() async {
-    final passwordController = _restorePasswordController;
-    passwordController.clear();
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
     try {
@@ -685,72 +926,85 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
       final password = await showDialog<String>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l10n.t('dialog.restore.title')),
-          content: TextField(
-            controller: passwordController,
-            obscureText: true,
-            autofocus: true,
-            decoration: InputDecoration(labelText: l10n.t('dialog.export.password')),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.t('dialog.cancel')),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, passwordController.text),
-              child: Text(l10n.t('dialog.continue')),
-            ),
-          ],
-        ),
+        builder: (_) => const BackupPasswordDialog(confirm: false),
       );
       if (password == null || password.isEmpty || !mounted) return;
 
-      if (!mounted) return;
       final mode = await _askRestoreMode(l10n);
       if (mode == null || !mounted) return;
 
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.t('dialog.restore.restoring'))),
-      );
-      final result = await _backup.restoreBackup(
-        path,
-        password: password,
-        mode: mode,
+      final result = await _withProgress(
+        l10n.t('dialog.restore.restoring'),
+        (onProgress) => _backup.restoreBackup(
+          path,
+          password: password,
+          mode: mode,
+          onProgress: onProgress,
+        ),
       );
       if (!mounted) return;
-
-      messenger.hideCurrentSnackBar();
       if (!result.ok) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('${l10n.t('dialog.restore.failed')}: ${result.error ?? ''}')),
-        );
+        messenger.showSnackBar(SnackBar(
+          content: Text(l10n.t(result.error ?? 'backup.error.failed')),
+        ));
         return;
       }
 
+      final counts =
+          '${result.entriesImported} ${l10n.t('dialog.restore.unit')} '
+          '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
+          '${result.audioRestored} ${l10n.t('dialog.restore.audio')})';
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            mode == RestoreMode.merge
-                ? '${l10n.t('dialog.restore.merged')} ${result.entriesImported}'
-                    ' ${l10n.t('dialog.restore.unit')} '
-                    '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
-                    '${result.audioRestored} ${l10n.t('dialog.restore.audio')})'
-                : '${l10n.t('dialog.restore.replaced')} ${result.entriesImported}'
-                    ' ${l10n.t('dialog.restore.unit')} '
-                    '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
-                    '${result.audioRestored} ${l10n.t('dialog.restore.audio')})',
+            '${l10n.t(mode == RestoreMode.merge ? 'dialog.restore.merged' : 'dialog.restore.replaced')} $counts',
           ),
           duration: const Duration(seconds: 5),
         ),
       );
+      VaultImage.clearCache();
       // Data changed underneath every screen, so ask listeners to refetch.
       ref.read(dataRevisionProvider.notifier).bump();
-    } catch (e) {
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(SnackBar(content: Text('${l10n.t('dialog.restore.failed')}: $e')));
+    } catch (error) {
+      debugPrint('Restore failed: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('backup.error.failed'))),
+      );
+    }
+  }
+
+  /// Runs [task] behind a modal progress dialog that cannot be dismissed.
+  Future<T> _withProgress<T>(
+    String label,
+    Future<T> Function(void Function(double) onProgress) task,
+  ) async {
+    final progress = ValueNotifier<double>(0);
+    final navigator = Navigator.of(context);
+    unawaited(showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: ValueListenableBuilder<double>(
+            valueListenable: progress,
+            builder: (_, value, __) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(value: value == 0 ? null : value),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ));
+    try {
+      return await task((value) => progress.value = value);
+    } finally {
+      navigator.pop();
+      progress.dispose();
     }
   }
 
@@ -842,12 +1096,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
 
-    if (ok == true) {
+    if (ok != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    try {
       await _privacy.deleteEverything();
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.t('dialog.delete.done'))));
-      }
+    } catch (error) {
+      debugPrint('Delete All failed: $error');
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('dialog.delete.failed'))),
+      );
+      return;
     }
+    // Everything that lives outside the boxes goes too: the passcode and its
+    // attempt record, the scheduled reminder and the in-memory caches.
+    await PasscodeService.secure().removePasscode();
+    await _biometric.setLockEnabled(false);
+    try {
+      await NotificationService.disableDailyReminder();
+      await NotificationService.disableWeeklyReview();
+    } catch (_) {}
+    DatabaseService.invalidate();
+    VaultImage.clearCache();
+    ref.invalidate(gardenProvider);
+    ref.invalidate(themeModeProvider);
+    ref.invalidate(localeProvider);
+    ref.invalidate(genderThemeProvider);
+    ref.read(dataRevisionProvider.notifier).bump();
+    messenger
+        .showSnackBar(SnackBar(content: Text(l10n.t('dialog.delete.done'))));
+    // A fresh start: splash, then choosing a first seed.
+    router.go('/');
   }
 }

@@ -7,6 +7,7 @@ import 'core/router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'services/biometric_service.dart';
+import 'services/home_widget_service.dart';
 import 'services/settings_service.dart';
 
 class NabdApp extends ConsumerStatefulWidget {
@@ -23,6 +24,7 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshWidget());
   }
 
   @override
@@ -33,19 +35,39 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Only a real trip to the background counts. `inactive` also fires for
+    // the notification shade and for the biometric prompt itself, which
+    // would make an immediate lock loop on its own dialog.
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+        state == AppLifecycleState.hidden) {
       _biometric.markBackgrounded();
       return;
     }
     if (state == AppLifecycleState.resumed) {
+      _refreshWidget();
       final shouldLock = _biometric.shouldShowLock();
       if (shouldLock) {
-        if (router.state.uri.path != '/lock') router.go('/lock');
+        // Pushed on top, so whatever was open (a half-written entry) is
+        // still there after unlocking.
+        if (router.state.uri.path != '/lock') router.push('/lock');
       } else {
         _biometric.clearBackgrounded();
       }
     }
+  }
+
+  /// Keeps the home-screen widget's streak and prompt current; a new day
+  /// changes both even when nothing was written.
+  void _refreshWidget() {
+    final context = router.routerDelegate.navigatorKey.currentContext;
+    if (context == null) return;
+    HomeWidgetService.refresh(AppLocalizations.of(context));
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    // AppColors follows the theme; in "system" mode that means the phone.
+    if (mounted) setState(() {});
   }
 
   @override

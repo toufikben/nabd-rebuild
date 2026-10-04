@@ -125,6 +125,7 @@ class PasscodeService {
   Future<void> removePasscode() async {
     await _store.delete(saltKey);
     await _store.delete(hashKey);
+    await _store.delete(PasscodeAttempts.storageKey);
   }
 }
 
@@ -143,18 +144,30 @@ bool _matches(List<int> expected, List<int> actual) {
 
 /// Counts failed unlock attempts and locks the pad for a cooldown, so a stolen
 /// phone cannot be picked by trying every four-digit combination.
+///
+/// With a [store] the count survives the app being killed: otherwise closing
+/// and reopening the app would hand out a fresh set of tries every time. Each
+/// lockout in a row doubles the wait, up to [maxCooldown].
 class PasscodeAttempts {
   PasscodeAttempts({
     this.maxFailures = 5,
     this.cooldown = const Duration(seconds: 30),
+    this.maxCooldown = const Duration(hours: 1),
+    PasscodeStore? store,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now;
+  })  : _store = store,
+        _now = now ?? DateTime.now;
+
+  static const storageKey = 'nabd_passcode_attempts';
 
   final int maxFailures;
   final Duration cooldown;
+  final Duration maxCooldown;
+  final PasscodeStore? _store;
   final DateTime Function() _now;
 
   int _failures = 0;
+  int _lockouts = 0;
   DateTime? _lockedUntil;
 
   int get failures {
@@ -174,26 +187,85 @@ class PasscodeAttempts {
     return remaining > 0 ? remaining : 0;
   }
 
-  void recordFailure() {
+  /// Reads the persisted count. A lock that ends further away than the longest
+  /// possible wait means the clock was moved back, so it is capped instead of
+  /// trapping the owner for longer than the policy allows.
+  Future<void> load() async {
+    final store = _store;
+    if (store == null) return;
+    try {
+      final raw = await store.read(storageKey);
+      if (raw == null) return;
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return;
+      _failures = (decoded['failures'] as num?)?.toInt() ?? 0;
+      _lockouts = (decoded['lockouts'] as num?)?.toInt() ?? 0;
+      final until = (decoded['lockedUntil'] as num?)?.toInt();
+      _lockedUntil =
+          until == null ? null : DateTime.fromMillisecondsSinceEpoch(until);
+      final latest = _now().add(maxCooldown);
+      if (_lockedUntil != null && _lockedUntil!.isAfter(latest)) {
+        _lockedUntil = latest;
+      }
+    } catch (_) {
+      // An unreadable record is treated as no record; the pad still throttles.
+    }
+  }
+
+  Future<void> recordFailure() async {
     _settle();
     if (_lockedUntil != null) return;
     _failures += 1;
     if (_failures >= maxFailures) {
-      _lockedUntil = _now().add(cooldown);
+      _lockouts += 1;
+      _lockedUntil = _now().add(_cooldownFor(_lockouts));
     }
+    await _save();
   }
 
-  void recordSuccess() {
+  Future<void> recordSuccess() async {
     _failures = 0;
+    _lockouts = 0;
     _lockedUntil = null;
+    await _save();
   }
 
-  /// An expired lock is over: the user gets a full set of tries again.
+  Duration _cooldownFor(int lockouts) {
+    var wait = cooldown;
+    for (var i = 1; i < lockouts && wait < maxCooldown; i++) {
+      wait *= 2;
+    }
+    return wait > maxCooldown ? maxCooldown : wait;
+  }
+
+  /// An expired lock is over: the user gets a full set of tries again, but the
+  /// next lockout in the same streak waits longer.
   void _settle() {
     final lockedUntil = _lockedUntil;
     if (lockedUntil != null && !_now().isBefore(lockedUntil)) {
       _lockedUntil = null;
       _failures = 0;
+    }
+  }
+
+  Future<void> _save() async {
+    final store = _store;
+    if (store == null) return;
+    try {
+      if (_failures == 0 && _lockouts == 0 && _lockedUntil == null) {
+        await store.delete(storageKey);
+        return;
+      }
+      await store.write(
+        storageKey,
+        jsonEncode({
+          'failures': _failures,
+          'lockouts': _lockouts,
+          'lockedUntil': _lockedUntil?.millisecondsSinceEpoch,
+        }),
+      );
+    } catch (_) {
+      // The in-memory throttle still applies for this session.
     }
   }
 }

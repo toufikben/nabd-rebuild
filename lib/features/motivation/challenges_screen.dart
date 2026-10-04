@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/storage.dart';
 
 /// ChallengesScreen — تحديات أسبوعية/شهرية.
 class ChallengesScreen extends StatefulWidget {
@@ -14,7 +15,7 @@ class ChallengesScreen extends StatefulWidget {
 
 class _ChallengesScreenState extends State<ChallengesScreen> {
   late AppLocalizations l10n;
-  final Box _box = Hive.box('settings');
+  final Box _box = contentBox();
 
   List<_Challenge> _catalog() => [
         _Challenge(
@@ -88,7 +89,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
             decoration: BoxDecoration(
               gradient: joined
                   ? const LinearGradient(
-                      colors: [Color(0xFF6C5CE7), Color(0xFF8B7BFF)],
+                      colors: [AppColors.primaryDark, AppColors.primaryGlow],
                     )
                   : null,
               color: joined ? null : Theme.of(context).cardColor,

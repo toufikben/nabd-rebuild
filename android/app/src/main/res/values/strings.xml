@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Pulse</string>
-    <string name="shortcut_new_entry">New Entry</string>
+    <string name="shortcut_new_entry">New entry</string>
     <string name="shortcut_new_entry_long">Write a new journal entry</string>
-    <string name="shortcut_garden">My Garden</string>
-    <string name="shortcut_garden_long">Check your seed growth</string>
+    <string name="shortcut_garden">My garden</string>
+    <string name="shortcut_garden_long">See how your seeds are growing</string>
     <string name="shortcut_calendar">Calendar</string>
-    <string name="shortcut_calendar_long">View your journal calendar</string>
-    <string name="shortcut_stats">Statistics</string>
-    <string name="shortcut_stats_long">View your mood stats</string>
-    <string name="widget_description">اكتب مذكرة سريعة في Pulse</string>
+    <string name="shortcut_calendar_long">Browse your journal by date</string>
+    <string name="shortcut_stats">Insights</string>
+    <string name="shortcut_stats_long">See your mood and writing insights</string>
+    <string name="widget_description">Your writing streak and a gentle prompt</string>
     <string name="widget_title">Pulse</string>
-    <string name="widget_subtitle">اكتب الآن</string>
+    <string name="widget_subtitle">Tap to write</string>
+    <string name="widget_mood_happy">Write: happy</string>
+    <string name="widget_mood_peaceful">Write: peaceful</string>
+    <string name="widget_mood_neutral">Write: neutral</string>
+    <string name="widget_mood_anxious">Write: anxious</string>
+    <string name="widget_mood_sad">Write: sad</string>
 </resources>

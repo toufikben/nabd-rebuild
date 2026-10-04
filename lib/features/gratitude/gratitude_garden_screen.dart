@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/storage.dart';
 
 /// GratitudeGardenScreen — كل امتنان يزرع زهرة.
 ///
@@ -16,7 +17,7 @@ class GratitudeGardenScreen extends StatefulWidget {
 }
 
 class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
-  final Box _box = Hive.box('settings');
+  final Box _box = contentBox();
   final TextEditingController _controller = TextEditingController();
 
   List<GratitudeItem> get _items {

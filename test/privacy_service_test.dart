@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:nabd/core/storage.dart';
 import 'package:nabd/services/encryption_service.dart';
 import 'package:nabd/services/privacy_service.dart';
 
@@ -22,6 +23,11 @@ class _RotatingEncryption extends EncryptionService {
   Future<void> restoreKeyBytes(List<int> bytes) async {
     key = List<int>.from(bytes);
   }
+
+  final secrets = <String, String>{'nabd_media_key_v1': 'stale'};
+
+  @override
+  Future<void> deleteSecret(String key) async => secrets.remove(key);
 }
 
 void main() {
@@ -35,13 +41,7 @@ void main() {
 
     final oldKey = List<int>.generate(32, (index) => index + 1);
     final oldCipher = HiveAesCipher(oldKey);
-    for (final name in [
-      'journal_entries',
-      'settings',
-      'moods',
-      'tags',
-      'garden',
-    ]) {
+    for (final name in HiveBoxes.all) {
       await Hive.openBox<dynamic>(name, encryptionCipher: oldCipher);
     }
     await Hive.box('journal_entries').put('entry', 'private');
@@ -56,13 +56,7 @@ void main() {
 
     expect(encryption.key, isNot(equals(oldKey)));
     final newCipher = HiveAesCipher(encryption.key);
-    for (final name in [
-      'journal_entries',
-      'settings',
-      'moods',
-      'tags',
-      'garden',
-    ]) {
+    for (final name in HiveBoxes.all) {
       final box = Hive.box(name);
       expect(box.isEmpty, isTrue);
       await box.close();
@@ -73,5 +67,6 @@ void main() {
       expect(reopened.isEmpty, isTrue);
     }
     expect(await media.exists(), isFalse);
+    expect(encryption.secrets.containsKey('nabd_media_key_v1'), isFalse);
   });
 }

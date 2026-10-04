@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/motivation_service.dart';
+import '../../core/storage.dart';
 
 class WisdomScreen extends StatefulWidget {
   const WisdomScreen({super.key});
@@ -18,7 +19,7 @@ class _WisdomScreenState extends State<WisdomScreen> {
   late AppLocalizations l10n;
   static const _wisdomStorageKey = 'wisdom_state';
 
-  final Box _settings = Hive.box('settings');
+  final Box _settings = contentBox();
   (String, String)? _wisdom;
   bool _pendingDefault = false;
 
