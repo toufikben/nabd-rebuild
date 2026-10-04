@@ -8,8 +8,7 @@ import '../core/app_settings.dart';
 /// SplashService - drives the launch cue.
 ///
 /// The sound id is stored without an extension, so the extension has to be
-/// resolved at load time. An earlier revision hard-coded `.mp3`, which silently
-/// failed for the synthesised `.wav` cue.
+/// resolved at load time; hard-coding one extension once made the cue silent.
 class SplashService {
   /// The signature launch cue: two soft heartbeats that bloom into a warm
   /// chord over a breath of air (2.6 s). Synthesised by
@@ -50,8 +49,8 @@ class SplashService {
     debugPrint('Splash sound: no candidate could be played. $lastError');
   }
 
-  /// Resolves a sound id to a bundled asset, preferring `.mp3` and falling back
-  /// to `.wav`. Returns null when neither exists.
+  /// Resolves a sound id to a bundled asset (see [AppSettings.resolveSoundFile]).
+  /// Returns null when none exists.
   String? _assetPathFor(String soundId) {
     final file = AppSettings.resolveSoundFile(soundId);
     return file == null ? null : 'assets/sounds/$file';

@@ -9,10 +9,10 @@ import 'package:just_audio/just_audio.dart';
 /// achievement, a bowl when a session ends. Quiet by design and switchable
 /// off in Settings.
 enum UiSound {
-  save('paper_turn.mp3', 0.45),
+  save('paper_turn.m4a', 0.45),
   water('ui_drop.m4a', 0.6),
   bloom('ui_bloom.m4a', 0.55),
-  complete('tibetan_bowl.mp3', 0.5);
+  complete('tibetan_bowl.m4a', 0.5);
 
   const UiSound(this.file, this.volume);
 

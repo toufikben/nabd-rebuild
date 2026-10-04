@@ -489,7 +489,7 @@ class S {
     'garden.sounds.birds': 'طيور بعيدة',
     'garden.sounds.harp': 'قيثارة هادئة',
     'garden.sounds.ocean': 'محيط',
-    'garden.sounds.cafe': 'مقهى',
+    'garden.sounds.night': 'ليل هادئ',
     'garden.sounds.oud': 'عود هادئ',
 
     'challenges.gratitude7': '٧ أيام من الامتنان',
@@ -1312,7 +1312,7 @@ class S {
     'garden.sounds.birds': 'Distant birds',
     'garden.sounds.harp': 'Soft harp',
     'garden.sounds.ocean': 'Ocean',
-    'garden.sounds.cafe': 'Cafe',
+    'garden.sounds.night': 'Quiet night',
     'garden.sounds.oud': 'Soft oud',
 
     // ── Analytics extras ───────────────────────────────────────────────

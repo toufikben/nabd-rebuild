@@ -19,3 +19,4 @@ ios/Runner/GeneratedPluginRegistrant.m
 apk-out/
 flutter_01.log
 device-test-output/
+__pycache__/

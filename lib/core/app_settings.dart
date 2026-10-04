@@ -9,34 +9,34 @@ class AppSettings {
 
   /// Reflects the files that actually exist in assets/sounds.
   static const Set<String> availableSounds = {
-    'birds_distant.mp3',
-    'cafe_ambience.mp3',
-    'exhale.mp3',
-    'fireplace_crackle.mp3',
-    'flute_dawn.mp3',
-    'garden_birds.mp3',
-    'harp_soft.mp3',
-    'inhale.mp3',
+    'birds_distant.m4a',
+    'exhale.m4a',
+    'fireplace_crackle.m4a',
+    'flute_dawn.m4a',
+    'garden_birds.m4a',
+    'harp_soft.m4a',
+    'inhale.m4a',
     'nabd_pulse.m4a',
-    'ocean_soft.mp3',
-    'oud_soft.mp3',
-    'paper_turn.mp3',
-    'rain_soft.mp3',
-    'silent_river_water.mp3',
-    'tibetan_bowl.mp3',
+    'night_crickets.m4a',
+    'ocean_soft.m4a',
+    'oud_soft.m4a',
+    'paper_turn.m4a',
+    'rain_soft.m4a',
+    'silent_river_water.m4a',
+    'tibetan_bowl.m4a',
     'ui_bloom.m4a',
     'ui_drop.m4a',
-    'wind_gentle.mp3',
+    'wind_gentle.m4a',
   };
 
   /// True when the given asset file name (with extension) is bundled.
   static bool hasSoundFile(String fileName) =>
       availableSounds.contains(fileName);
 
-  /// Resolves a bare sound id to a bundled file, preferring mp3, then the
-  /// app's own synthesised m4a, then wav.
+  /// Resolves a bare sound id to a bundled file. Every bundled sound is now a
+  /// synthesised m4a; mp3 and wav are still accepted for older stored ids.
   static String? resolveSoundFile(String soundId) {
-    for (final ext in const ['.mp3', '.m4a', '.wav']) {
+    for (final ext in const ['.m4a', '.mp3', '.wav']) {
       if (availableSounds.contains('$soundId$ext')) return '$soundId$ext';
     }
     return null;
