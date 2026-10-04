@@ -39,6 +39,7 @@ import '../features/motivation/challenges_screen.dart';
 import '../features/personal/letters_screen.dart';
 import '../features/personal/echoes_screen.dart';
 import '../features/personal/weekly_pulse_screen.dart';
+import '../models/mood.dart';
 import '../services/biometric_service.dart';
 import '../widgets/pro_gate.dart';
 
@@ -49,27 +50,41 @@ String? _entryIdFromState(GoRouterState state) {
   return extra;
 }
 
+/// Maps a link from outside the app (shortcut, widget, App Link) to a route,
+/// or null when [uri] is already an in-app location. From the home-screen
+/// widget, `nabd://editor?mood=sad` opens a new entry with that mood; only a
+/// known mood id is passed on.
+@visibleForTesting
+String? externalLocation(Uri uri) {
+  final route = switch (uri.host) {
+    'editor' => '/editor',
+    'garden' => '/garden',
+    'calendar' => '/calendar',
+    'stats' => '/stats',
+    _ => null,
+  };
+  if (route == '/editor') {
+    final mood = uri.queryParameters['mood'];
+    final known = mood != null && Mood.journalMoods.any((m) => m.id == mood);
+    return known ? '/editor?mood=$mood' : route;
+  }
+  if (route != null) return route;
+  if (uri.host == 'nabd.app') {
+    return switch (uri.path) {
+      '/journal' => '/editor',
+      '/garden' => '/garden',
+      _ => null,
+    };
+  }
+  return null;
+}
+
 final router = GoRouter(
   initialLocation: '/',
   redirect: (_, state) {
     final location = state.uri.path;
-    final externalHost = state.uri.host;
-    final externalRoute = switch (externalHost) {
-      'editor' => '/editor',
-      'garden' => '/garden',
-      'calendar' => '/calendar',
-      'stats' => '/stats',
-      _ => null,
-    };
-    if (externalRoute != null) return externalRoute;
-    if (state.uri.host == 'nabd.app') {
-      final webRoute = switch (location) {
-        '/journal' => '/editor',
-        '/garden' => '/garden',
-        _ => null,
-      };
-      if (webRoute != null) return webRoute;
-    }
+    final external = externalLocation(state.uri);
+    if (external != null) return external;
     final onboardingComplete =
         Hive.box('settings').get('onboarding_completed', defaultValue: false) ==
             true;

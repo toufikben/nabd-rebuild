@@ -12,4 +12,9 @@
     <string name="widget_description">سلسلة كتابتك واقتراح لطيف للكتابة</string>
     <string name="widget_title">نبض</string>
     <string name="widget_subtitle">اضغط لتكتب</string>
+    <string name="widget_mood_happy">اكتب: سعيد</string>
+    <string name="widget_mood_peaceful">اكتب: هادئ</string>
+    <string name="widget_mood_neutral">اكتب: محايد</string>
+    <string name="widget_mood_anxious">اكتب: قلق</string>
+    <string name="widget_mood_sad">اكتب: حزين</string>
 </resources>

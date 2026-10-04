@@ -12,4 +12,9 @@
     <string name="widget_description">Your writing streak and a gentle prompt</string>
     <string name="widget_title">Nabd</string>
     <string name="widget_subtitle">Tap to write</string>
+    <string name="widget_mood_happy">Write: happy</string>
+    <string name="widget_mood_peaceful">Write: peaceful</string>
+    <string name="widget_mood_neutral">Write: neutral</string>
+    <string name="widget_mood_anxious">Write: anxious</string>
+    <string name="widget_mood_sad">Write: sad</string>
 </resources>
