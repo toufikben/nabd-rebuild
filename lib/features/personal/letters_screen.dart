@@ -136,10 +136,12 @@ class _LettersScreenState extends State<LettersScreen> {
       ),
       body: _letters.isEmpty
           ? Center(
-              child: EmptyState(
+              child: SingleChildScrollView(
+                child: EmptyState(
                 emoji: '💌',
                 title: l10n.t('letters.privacyNote'),
                 body: l10n.t('letters.subtitle'),
+              ),
               ),
             )
           : ListView.builder(

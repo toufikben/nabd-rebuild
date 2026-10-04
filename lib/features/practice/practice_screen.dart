@@ -48,20 +48,18 @@ class PracticeScreen extends StatelessWidget {
           ),
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid.count(
-              crossAxisCount:
-                  MediaQuery.sizeOf(context).width >= 600 ? 4 : 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1.1,
-              children: [
+            sliver: SliverToBoxAdapter(
+              child: EqualHeightGrid(
+                columns: MediaQuery.sizeOf(context).width >= 600 ? 4 : 2,
+                children: [
                 for (final session in sessions)
                   SessionCard(
                     session: session,
                     onTap: () =>
                         context.push('/sessions/run?id=${session.id}'),
                   ),
-              ],
+                ],
+              ),
             ),
           ),
           SliverToBoxAdapter(child: SectionHeader(l10n.t('practice.tools'))),

@@ -184,21 +184,51 @@ class FeatureGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 600 ? 4 : 2;
-        return GridView.count(
-          crossAxisCount: columns,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.25,
-          children: children,
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: EqualHeightGrid(
+        columns: MediaQuery.sizeOf(context).width >= 600 ? 4 : 2,
+        children: children,
+      ),
     );
+  }
+}
+
+/// A grid whose rows are as tall as their tallest cell. Unlike a GridView
+/// with a fixed aspect ratio, nothing is clipped when the system font is
+/// large, and cells in a row still line up.
+class EqualHeightGrid extends StatelessWidget {
+  const EqualHeightGrid({
+    super.key,
+    required this.columns,
+    required this.children,
+    this.spacing = 12,
+  });
+
+  final int columns;
+  final double spacing;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (var start = 0; start < children.length; start += columns) {
+      final cells = <Widget>[];
+      for (var i = start; i < start + columns; i++) {
+        if (cells.isNotEmpty) cells.add(SizedBox(width: spacing));
+        cells.add(Expanded(
+          child: i < children.length ? children[i] : const SizedBox.shrink(),
+        ));
+      }
+      if (rows.isNotEmpty) rows.add(SizedBox(height: spacing));
+      rows.add(IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: cells,
+        ),
+      ));
+    }
+    return Column(mainAxisSize: MainAxisSize.min, children: rows);
   }
 }
 

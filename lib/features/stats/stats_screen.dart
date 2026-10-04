@@ -88,13 +88,8 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
       children: [
         _sectionTitle(l10n.t('insights.explore')),
         const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: MediaQuery.sizeOf(context).width >= 600 ? 4 : 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.25,
+        EqualHeightGrid(
+          columns: MediaQuery.sizeOf(context).width >= 600 ? 4 : 2,
           children: [
             for (final (icon, title, subtitle, route, color, badge) in tiles)
               FeatureTile(
@@ -121,13 +116,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
       children: [
         _sectionTitle(l10n.t('stats.overview')),
         const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1.55,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+        EqualHeightGrid(
+          columns: 2,
+          spacing: 10,
           children: [
             _statCard(
               icon: Icons.menu_book_outlined,

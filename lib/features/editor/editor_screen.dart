@@ -1091,21 +1091,32 @@ class _Toolbar extends StatelessWidget {
           ),
           const Spacer(),
           if (isRecording)
-            Row(
-              children: [
-                Icon(Icons.fiber_manual_record, size: 12, color: scheme.error),
-                const SizedBox(width: 4),
-                Text(
-                  '${l10n.t('editor.recording')} $minutes:$seconds',
-                  style: theme.textTheme.labelMedium,
-                ),
-              ],
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.fiber_manual_record, size: 12, color: scheme.error),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      '${l10n.t('editor.recording')} $minutes:$seconds',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelMedium,
+                    ),
+                  ),
+                ],
+              ),
             )
           else
-            Text(
-              '$wordCount ${l10n.t('editor.words')}',
-              style: theme.textTheme.labelMedium
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+            Flexible(
+              child: Text(
+                '$wordCount ${l10n.t('editor.words')}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelMedium
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
             ),
           const SizedBox(width: 12),
         ],

@@ -127,12 +127,14 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                           const Icon(Icons.auto_awesome,
                               color: Colors.white70, size: 18),
                           const SizedBox(width: 6),
-                          Text(
-                            wroteToday
-                                ? l10n.t('today.wrote')
-                                : l10n.t('today.promptLabel'),
-                            style: theme.textTheme.labelLarge
-                                ?.copyWith(color: Colors.white70),
+                          Flexible(
+                            child: Text(
+                              wroteToday
+                                  ? l10n.t('today.wrote')
+                                  : l10n.t('today.promptLabel'),
+                              style: theme.textTheme.labelLarge
+                                  ?.copyWith(color: Colors.white70),
+                            ),
                           ),
                         ],
                       ),
@@ -270,7 +272,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             SliverToBoxAdapter(child: SectionHeader(l10n.t('today.feel'))),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 84,
+                // Emoji and label; both grow with the system font size.
+                height: 20 + MediaQuery.textScalerOf(context).scale(64),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -282,7 +285,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                       borderRadius: BorderRadius.circular(18),
                       onTap: () => _open('/editor?mood=${mood.id}'),
                       child: Container(
-                        width: 70,
+                        width: 20 + MediaQuery.textScalerOf(context).scale(50),
                         decoration: BoxDecoration(
                           color: mood.color.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(18),

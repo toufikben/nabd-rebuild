@@ -161,7 +161,8 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
           SliverToBoxAdapter(child: SectionHeader(l10n.t('journal.spaces'))),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 92,
+              // Icon and padding, plus two lines that grow with the font size.
+              height: 24 + 24 + 6 + MediaQuery.textScalerOf(context).scale(36),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -182,6 +183,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
                           Text(
                             l10n.t(title),
                             maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.labelMedium,
                           ),
                         ],
