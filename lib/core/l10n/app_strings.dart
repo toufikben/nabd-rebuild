@@ -869,6 +869,11 @@ class S {
     'daypart.short.afternoon': 'الظهيرة',
     'daypart.short.evening': 'المساء',
     'daypart.short.night': 'الليل',
+    'backupNudge.title': 'احمِ يومياتك',
+    'backupNudge.never': 'يومياتك محفوظة على هذا الهاتف فقط، ولم تنشئ نسخة احتياطية بعد. إن ضاع الهاتف تضيع معه.',
+    'backupNudge.days': 'آخر نسخة احتياطية قبل {n} يومًا. يومياتك محفوظة على هذا الهاتف فقط.',
+    'backupNudge.action': 'نسخة احتياطية الآن',
+    'backupNudge.later': 'لاحقًا',
   };
 
   static const Map<String, String> en = <String, String>{
@@ -1737,6 +1742,11 @@ class S {
     'daypart.short.afternoon': 'Afternoon',
     'daypart.short.evening': 'Evening',
     'daypart.short.night': 'Night',
+    'backupNudge.title': 'Keep your journal safe',
+    'backupNudge.never': 'Your journal lives only on this phone, and you haven\'t made a backup yet. If the phone is lost, so is the journal.',
+    'backupNudge.days': 'Your last backup was {n} days ago. Your journal lives only on this phone.',
+    'backupNudge.action': 'Back up now',
+    'backupNudge.later': 'Later',
   };
 
   /// Every key known to the table, used by the parity test.

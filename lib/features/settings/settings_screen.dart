@@ -14,6 +14,7 @@ import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/data_revision.dart';
+import '../../core/backup_nudge.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
@@ -757,6 +758,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           await target.writeAsBytes(bytes, flush: true);
         }
       }
+      await BackupNudge.recordBackup();
       messenger.showSnackBar(
         SnackBar(
           content: Text(

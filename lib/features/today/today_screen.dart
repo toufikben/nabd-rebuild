@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/backup_nudge.dart';
 import '../../core/data_revision.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/memories.dart';
@@ -64,6 +65,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         ? 0
         : garden.seeds.map((s) => s.growthPoints).reduce((a, b) => a > b ? a : b);
     final memories = Memories.onThisDay(entries, now);
+    final showBackupNudge = BackupNudge.shouldShowNow(entries.length, now);
+    final lastBackup = BackupNudge.lastBackup;
     _quote ??= MotivationService.getTodayQuoteFor(l10n.isArabic);
     final quote = _quote!;
 
@@ -190,6 +193,56 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 ),
               ),
             ),
+
+            // ── Backup reminder ───────────────────────────────────────
+            if (showBackupNudge)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: NabdCard(
+                    color: scheme.tertiaryContainer.withValues(alpha: 0.6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.shield_outlined, color: scheme.tertiary),
+                            const SizedBox(width: 8),
+                            Text(l10n.t('backupNudge.title'),
+                                style: theme.textTheme.titleSmall),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          lastBackup == null
+                              ? l10n.t('backupNudge.never')
+                              : l10n.t('backupNudge.days').replaceAll(
+                                  '{n}', '${now.difference(lastBackup).inDays}'),
+                          style: theme.textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () async {
+                                await BackupNudge.snoozeNow();
+                                if (mounted) setState(() {});
+                              },
+                              child: Text(l10n.t('backupNudge.later')),
+                            ),
+                            const SizedBox(width: 4),
+                            FilledButton.tonal(
+                              onPressed: () => _open('/settings'),
+                              child: Text(l10n.t('backupNudge.action')),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
             // ── On this day ───────────────────────────────────────────
             if (memories.isNotEmpty) ...[

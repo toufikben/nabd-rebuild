@@ -75,6 +75,10 @@ const _emojiFamily = 'NotoColorEmoji';
 
 ThemeData _withEmoji(ThemeData theme) => theme.copyWith(
       textTheme: theme.textTheme.apply(fontFamilyFallback: const [_emojiFamily]),
+      chipTheme: theme.chipTheme.copyWith(
+        labelStyle: (theme.chipTheme.labelStyle ?? theme.textTheme.labelLarge ?? const TextStyle())
+            .copyWith(fontFamilyFallback: const [_emojiFamily]),
+      ),
     );
 
 Future<void> _loadFonts() async {
@@ -135,10 +139,17 @@ Future<void> _seed() async {
     final (mood, tags, hour) = history[i];
     final day = now.subtract(Duration(days: 6 + i * 3));
     final at = DateTime(day.year, day.month, day.day, hour);
+    const notes = [
+      ('غداء العائلة', 'جلسنا طويلًا حول الطاولة وضحكنا على ذكريات قديمة.'),
+      ('نزهة قصيرة', 'مشيت بعد العصر وشعرت أن رأسي صار أخف.'),
+      ('موعد التسليم', 'العمل كثير هذا الأسبوع، وأحاول ألا أحمله معي إلى البيت.'),
+      ('ليلة طويلة', 'لم أنم جيدًا. كتبت ما يقلقني حتى يهدأ.'),
+    ];
+    final (title, content) = notes[i % notes.length];
     await journal.put('h$i', JournalEntry(
       id: 'h$i',
-      title: '',
-      content: '.',
+      title: title,
+      content: content,
       mood: mood,
       tags: tags,
       createdAt: at,
@@ -170,6 +181,12 @@ Future<void> _seed() async {
     ).toMap());
   }
   await Hive.box(HiveBoxes.settings).put('onboarding_completed', true);
+  // Store art shows a journal that is backed up; the review run shows the
+  // reminder card.
+  if (_store) {
+    await Hive.box(HiveBoxes.settings)
+        .put('last_backup_at', now.toIso8601String());
+  }
 }
 
 Widget _app(Widget home,

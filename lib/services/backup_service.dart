@@ -732,6 +732,9 @@ class BackupService {
     'garden_growth_today',
     // Consent to the phone's speech service is given per device.
     'dictation_notice_seen',
+    // A restored phone has not been backed up yet, whatever the source said.
+    'last_backup_at',
+    'backup_nudge_snoozed_until',
   };
 
   static bool isEntitlementKey(String key) =>
