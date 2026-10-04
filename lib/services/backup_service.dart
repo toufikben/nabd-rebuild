@@ -725,6 +725,7 @@ class BackupService {
     'reminder_minute',
     'reminder_title',
     'reminder_body',
+    'reminder_smart',
     'weekly_review_enabled',
     'weekly_review_title',
     'weekly_review_body',
@@ -732,6 +733,7 @@ class BackupService {
     'garden_growth_today',
     // Consent to the phone's speech service is given per device.
     'dictation_notice_seen',
+    'dictation_allow_online',
     // A restored phone has not been backed up yet, whatever the source said.
     'last_backup_at',
     'backup_nudge_snoozed_until',

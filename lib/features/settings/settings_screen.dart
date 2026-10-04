@@ -29,6 +29,7 @@ import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/ui_sounds.dart';
 import '../../services/database_service.dart';
+import '../../services/voice_to_text_service.dart';
 import '../../services/garden_service.dart';
 import '../../services/journal_export_service.dart';
 import '../../services/monetization_service.dart';
@@ -59,6 +60,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _reminderHour = NotificationService.defaultHour;
   int _reminderMinute = NotificationService.defaultMinute;
   bool _smartReminder = true;
+  bool _onlineDictation = false;
   bool _hasPasscode = false;
   bool _biometricsAvailable = false;
   String _version = '';
@@ -75,6 +77,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _reminderHour = NotificationService.hour;
     _reminderMinute = NotificationService.minute;
     _smartReminder = NotificationService.isSmart;
+    _onlineDictation = VoiceToTextService.onlineAllowed;
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
     _loadLockState();
@@ -249,6 +252,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           // ─── Data ───
           _group(l10n.t('settings.section.data'), [
+            SwitchListTile(
+              secondary: _iconBadge(Icons.mic_none_rounded, AppColors.secondary),
+              title: Text(l10n.t('settings.dictation.online')),
+              subtitle: Text(l10n.t('settings.dictation.onlineHint')),
+              value: _onlineDictation,
+              onChanged: (value) async {
+                await VoiceToTextService.setOnlineAllowed(value);
+                if (mounted) setState(() => _onlineDictation = value);
+              },
+            ),
             _tile(
               icon: Icons.download_outlined,
               title: l10n.t('settings.data.export'),
