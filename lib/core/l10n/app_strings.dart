@@ -824,6 +824,9 @@ class S {
     'settings.sound.launchHint': 'نبضتان ونغمة هادئة عند فتح التطبيق',
     'settings.sound.ui': 'أصوات اللحظات',
     'settings.sound.uiHint': 'صوت خفيف عند الحفظ والسقي والإنجاز',
+    'editor.dictation.noticeTitle': 'قبل الإملاء الصوتي',
+    'editor.dictation.noticeBody': 'يحوّل الإملاء كلامك إلى نص عبر خدمة التعرّف على الكلام في هاتفك (مثل Google). قد ترسل هذه الخدمة الصوت إلى خوادمها إن لم تكن حزمة اللغة مثبّتة على الجهاز. نبض لا يحتفظ بالصوت، والنص يُحفظ مشفّرًا في هاتفك فقط.',
+    'editor.dictation.noticeOk': 'متابعة',
   };
 
   static const Map<String, String> en = <String, String>{
@@ -1647,6 +1650,9 @@ class S {
     'settings.sound.launchHint': 'Two heartbeats and a calm chord when the app opens',
     'settings.sound.ui': 'Moment sounds',
     'settings.sound.uiHint': 'A soft sound when you save, water the garden or earn an achievement',
+    'editor.dictation.noticeTitle': 'Before you dictate',
+    'editor.dictation.noticeBody': 'Dictation turns your speech into text using your phone\'s speech service (such as Google). That service may send the audio to its servers unless the language is installed for offline use. Nabd keeps no audio, and the text is stored encrypted on your phone only.',
+    'editor.dictation.noticeOk': 'Continue',
   };
 
   /// Every key known to the table, used by the parity test.

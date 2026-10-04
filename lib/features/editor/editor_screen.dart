@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -614,6 +615,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     if (_isRecording) await _stopRecording();
+    if (!await _acceptDictationNotice(l10n)) return;
     if (!await _voice.initialize()) {
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.t('editor.dictation.unavailable'))),
@@ -636,6 +638,38 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       },
     );
   }
+
+  /// Dictation is the one feature whose input may leave the phone: the
+  /// system speech service can send audio to its servers. Say so once,
+  /// before the first use, and respect a "no".
+  Future<bool> _acceptDictationNotice(AppLocalizations l10n) async {
+    final settings = Hive.box(HiveBoxes.settings);
+    if (settings.get(_dictationNoticeKey, defaultValue: false) == true) {
+      return true;
+    }
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.t('editor.dictation.noticeTitle')),
+        content: Text(l10n.t('editor.dictation.noticeBody')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.t('editor.dictation.noticeOk')),
+          ),
+        ],
+      ),
+    );
+    if (accepted != true) return false;
+    await settings.put(_dictationNoticeKey, true);
+    return true;
+  }
+
+  static const _dictationNoticeKey = 'dictation_notice_seen';
 
   Future<void> _stopDictation() async {
     if (!_isDictating) return;

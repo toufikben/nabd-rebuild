@@ -730,6 +730,8 @@ class BackupService {
     'weekly_review_body',
     'garden_growth_day',
     'garden_growth_today',
+    // Consent to the phone's speech service is given per device.
+    'dictation_notice_seen',
   };
 
   static bool isEntitlementKey(String key) =>
