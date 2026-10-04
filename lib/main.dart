@@ -74,7 +74,9 @@ Future<void> _initializeDeferredServices() async {
     return 0;
   }));
   await NotificationService.init();
-  await NotificationService.restoreScheduledReminder();
+  await NotificationService.restoreScheduledReminder(
+    writtenAt: DatabaseService().getAllEntries().map((e) => e.createdAt),
+  );
   await SettingsService.init();
   await EncryptionService().initialize();
 }

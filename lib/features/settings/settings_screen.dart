@@ -58,6 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _lockTimeoutMinutes = 5;
   int _reminderHour = NotificationService.defaultHour;
   int _reminderMinute = NotificationService.defaultMinute;
+  bool _smartReminder = true;
   bool _hasPasscode = false;
   bool _biometricsAvailable = false;
   String _version = '';
@@ -73,6 +74,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _uiSounds = UiSounds.enabled;
     _reminderHour = NotificationService.hour;
     _reminderMinute = NotificationService.minute;
+    _smartReminder = NotificationService.isSmart;
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
     _loadLockState();
@@ -218,14 +220,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               value: _notificationsEnabled,
               onChanged: (v) => _setReminderEnabled(v, l10n),
             ),
-            if (_notificationsEnabled)
+            if (_notificationsEnabled) ...[
+              SwitchListTile(
+                secondary: _iconBadge(Icons.auto_awesome_outlined, AppColors.primary),
+                title: Text(l10n.t('settings.notify.smart')),
+                subtitle: Text(l10n.t('settings.notify.smartHint')),
+                value: _smartReminder,
+                onChanged: _setSmartReminder,
+              ),
               _tile(
                 icon: Icons.access_time,
                 title: l10n.t('settings.notify.time'),
-                subtitle:
-                    '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
-                onTap: _pickReminderTime,
+                subtitle: _reminderTimeLabel(l10n),
+                // With smart timing the time follows the habit; picking one
+                // by hand means turning it off first.
+                onTap: _smartReminder ? null : _pickReminderTime,
               ),
+            ],
             SwitchListTile(
               secondary: _iconBadge(
                   Icons.calendar_view_week_outlined, AppColors.secondary),
@@ -694,6 +705,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  List<DateTime> get _writtenAt =>
+      DatabaseService().getAllEntries().map((e) => e.createdAt).toList();
+
+  String _reminderTimeLabel(AppLocalizations l10n) {
+    final time = MaterialLocalizations.of(context).formatTimeOfDay(
+      TimeOfDay(hour: _reminderHour, minute: _reminderMinute),
+    );
+    if (!_smartReminder) return time;
+    final learned = NotificationService.suggestedTime(_writtenAt) != null;
+    return l10n
+        .t(learned ? 'settings.notify.learned' : 'settings.notify.learning')
+        .replaceAll('{time}', time);
+  }
+
+  Future<void> _setSmartReminder(bool value) async {
+    await NotificationService.setSmart(value, writtenAt: _writtenAt);
+    if (!mounted) return;
+    setState(() {
+      _smartReminder = value;
+      _reminderHour = NotificationService.hour;
+      _reminderMinute = NotificationService.minute;
+    });
+  }
+
   Future<void> _pickReminderTime() async {
     final time = await showTimePicker(
       context: context,
@@ -763,8 +798,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         minute: _reminderMinute,
         title: l10n.t('notify.title'),
         body: l10n.t('notify.body'),
+        writtenAt: _writtenAt,
       );
-      if (mounted) setState(() => _notificationsEnabled = true);
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = true;
+          _reminderHour = NotificationService.hour;
+          _reminderMinute = NotificationService.minute;
+        });
+      }
     } catch (error) {
       debugPrint('Daily reminder could not be scheduled: $error');
       messenger.showSnackBar(
