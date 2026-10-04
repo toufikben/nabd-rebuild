@@ -125,6 +125,16 @@ Future<void> _seed() async {
       tags: i == 0 ? const ['travel'] : const [],
     ).toMap());
   }
+  // A year-old entry, so "On this day" has something to show.
+  final yearAgo = DateTime(now.year - 1, now.month, now.day, 20);
+  await journal.put('memory', JournalEntry(
+    id: 'memory',
+    title: 'أول يوم في العمل الجديد',
+    content: 'كنت متوترًا جدًا في الصباح، ثم وجدت زملاء لطفاء. قلت لنفسي: خطوة خطوة.',
+    mood: 'hopeful',
+    createdAt: yearAgo,
+    updatedAt: yearAgo,
+  ).toMap());
   DatabaseService.invalidate();
   // A garden in mid-growth, so the garden and Today screens show it alive.
   final garden = Hive.box(HiveBoxes.garden);

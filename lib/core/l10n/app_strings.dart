@@ -827,6 +827,13 @@ class S {
     'editor.dictation.noticeTitle': 'قبل الإملاء الصوتي',
     'editor.dictation.noticeBody': 'يحوّل الإملاء كلامك إلى نص عبر خدمة التعرّف على الكلام في هاتفك (مثل Google). قد ترسل هذه الخدمة الصوت إلى خوادمها إن لم تكن حزمة اللغة مثبّتة على الجهاز. نبض لا يحتفظ بالصوت، والنص يُحفظ مشفّرًا في هاتفك فقط.',
     'editor.dictation.noticeOk': 'متابعة',
+    'today.memories': 'في مثل هذا اليوم',
+    'memories.1m': 'قبل شهر',
+    'memories.6m': 'قبل ستة أشهر',
+    'memories.1y': 'قبل سنة',
+    'memories.2y': 'قبل سنتين',
+    'memories.ny': 'قبل {n} سنوات',
+    'memories.untitled': 'بلا عنوان',
   };
 
   static const Map<String, String> en = <String, String>{
@@ -1653,6 +1660,13 @@ class S {
     'editor.dictation.noticeTitle': 'Before you dictate',
     'editor.dictation.noticeBody': 'Dictation turns your speech into text using your phone\'s speech service (such as Google). That service may send the audio to its servers unless the language is installed for offline use. Nabd keeps no audio, and the text is stored encrypted on your phone only.',
     'editor.dictation.noticeOk': 'Continue',
+    'today.memories': 'On this day',
+    'memories.1m': 'A month ago',
+    'memories.6m': 'Six months ago',
+    'memories.1y': 'A year ago',
+    'memories.2y': 'Two years ago',
+    'memories.ny': '{n} years ago',
+    'memories.untitled': 'Untitled',
   };
 
   /// Every key known to the table, used by the parity test.

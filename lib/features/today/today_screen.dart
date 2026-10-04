@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 
 import '../../core/data_revision.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/memories.dart';
 import '../../core/streak.dart';
+import '../../core/text_direction.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/writing_prompts.dart';
 import '../../models/mood.dart';
@@ -61,6 +63,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     final growth = garden.seeds.isEmpty
         ? 0
         : garden.seeds.map((s) => s.growthPoints).reduce((a, b) => a > b ? a : b);
+    final memories = Memories.onThisDay(entries, now);
     _quote ??= MotivationService.getTodayQuoteFor(l10n.isArabic);
     final quote = _quote!;
 
@@ -187,6 +190,28 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 ),
               ),
             ),
+
+            // ── On this day ───────────────────────────────────────────
+            if (memories.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                  child: SectionHeader(l10n.t('today.memories'))),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 132,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: memories.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (_, i) => _MemoryCard(
+                      memory: memories[i],
+                      onTap: () =>
+                          _open('/editor?id=${memories[i].entry.id}'),
+                    ),
+                  ),
+                ),
+              ),
+            ],
 
             // ── Mood check-in ─────────────────────────────────────────
             SliverToBoxAdapter(child: SectionHeader(l10n.t('today.feel'))),
@@ -327,6 +352,67 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 ]),
               ),
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MemoryCard extends StatelessWidget {
+  const _MemoryCard({required this.memory, required this.onTap});
+
+  final Memory memory;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final entry = memory.entry;
+    final title = entry.title.trim().isEmpty
+        ? l10n.t('memories.untitled')
+        : entry.title.trim();
+    final excerpt = entry.content.trim().replaceAll(RegExp(r'\s+'), ' ');
+    final fallback = Directionality.of(context);
+    return SizedBox(
+      width: 250,
+      child: NabdCard(
+        onTap: onTap,
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.history_rounded, size: 16, color: AppColors.pulse),
+                const SizedBox(width: 6),
+                Text(
+                  l10n
+                      .t(memory.age.labelKey)
+                      .replaceAll('{n}', '${memory.age.years}'),
+                  style: theme.textTheme.labelMedium
+                      ?.copyWith(color: AppColors.pulse),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textDirection: textDirectionOf(title, fallback),
+              style: theme.textTheme.titleSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              excerpt,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textDirection: textDirectionOf(excerpt, fallback),
+              style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant),
+            ),
           ],
         ),
       ),
