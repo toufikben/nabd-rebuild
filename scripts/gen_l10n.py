@@ -17,6 +17,7 @@ keeps every {placeholder}, and that these outputs match the JSON.
 
 import json
 import os
+import re
 import sys
 from xml.sax.saxutils import escape
 
@@ -47,6 +48,12 @@ def main():
         extra = sorted(set(table) - set(reference))
         if missing or extra:
             sys.exit(f'{code}.json: missing {missing[:5]} extra {extra[:5]}')
+        holes = re.compile(r'\{[a-zA-Z_]+\}')
+        broken = [k for k in reference
+                  if set(holes.findall(reference[k])) != set(holes.findall(table[k]))
+                  or not table[k].strip()]
+        if broken:
+            sys.exit(f'{code}.json: blank or placeholders differ in {broken[:5]}')
         lines = [HEADER, f'const Map<String, String> {ident(code)} = <String, String>{{']
         for key in reference:  # English order keeps diffs readable
             lines.append(f'  {dart_string(key)}: {dart_string(table[key])},')
