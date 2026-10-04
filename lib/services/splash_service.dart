@@ -10,14 +10,24 @@ import '../core/app_settings.dart';
 /// The sound id is stored without an extension, so the extension has to be
 /// resolved at load time; hard-coding one extension once made the cue silent.
 class SplashService {
-  /// The signature launch cue: two soft heartbeats that bloom into a warm
-  /// chord over a breath of air (2.6 s). Synthesised by
-  /// `scripts/synth_sounds.py`, so it is original and reproducible.
-  static const signatureSound = 'nabd_pulse';
+  /// The default launch cue: a soft chord that swells in like a breath and
+  /// settles (3 s), chosen by the owner after listening on a phone.
+  /// Synthesised by `scripts/synth_ambience.py`, so it is original.
+  static const signatureSound = 'splash_breath';
 
-  /// If the signature cue cannot be decoded, a bowl is the gentlest fallback.
-  static const _candidates = <String>[
+  /// The launch sounds a person can pick in Settings, default first.
+  static const choices = <String>[
+    'splash_breath',
+    'splash_chime',
+    'splash_heart_bowl',
+    'splash_kalimba',
     'nabd_pulse',
+  ];
+
+  /// If the chosen cue cannot be decoded, fall back to the default, then to
+  /// a bowl, the gentlest sound the app has.
+  static const _candidates = <String>[
+    signatureSound,
     'tibetan_bowl',
   ];
 

@@ -66,7 +66,7 @@ class JournalExportService {
     );
     final rtl = languageCode == 'ar';
     final dateFormat = DateFormat.yMMMMEEEEd(languageCode);
-    final document = pw.Document(title: title, creator: 'Nabd');
+    final document = pw.Document(title: title, creator: 'Pulse');
 
     pw.TextDirection directionOf(String text) =>
         isArabicText(text) ? pw.TextDirection.rtl : pw.TextDirection.ltr;

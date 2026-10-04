@@ -17,6 +17,7 @@ import 'package:nabd/core/theme/app_theme.dart';
 import 'package:nabd/core/theme/gender_themes.dart';
 import 'package:nabd/features/editor/editor_screen.dart';
 import 'package:nabd/features/garden/garden_screen.dart';
+import 'package:nabd/features/garden/seed_selection_screen.dart';
 import 'package:nabd/features/journal/journal_screen.dart';
 import 'package:nabd/features/personal/letters_screen.dart';
 import 'package:nabd/features/practice/practice_screen.dart';
@@ -26,9 +27,10 @@ import 'package:nabd/features/today/today_screen.dart';
 import 'package:nabd/models/journal_entry.dart';
 import 'package:nabd/services/database_service.dart';
 import 'package:nabd/services/monetization_service.dart';
+import 'package:nabd/widgets/nabd_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-Widget _app(Widget home, Locale locale) {
+Widget _app(Widget home, Locale locale, {double scale = 2.0}) {
   final router = GoRouter(routes: [GoRoute(path: '/', builder: (_, __) => home)]);
   return ProviderScope(
     overrides: [
@@ -47,7 +49,7 @@ Widget _app(Widget home, Locale locale) {
       ],
       routerConfig: router,
       builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(2.0)),
+        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
         child: child!,
       ),
     ),
@@ -60,7 +62,7 @@ void main() {
   setUpAll(() async {
     FlutterSecureStorage.setMockInitialValues({});
     PackageInfo.setMockInitialValues(
-      appName: 'Nabd',
+      appName: 'Pulse',
       packageName: 'com.nabd.journal',
       version: '1.0.0',
       buildNumber: '1',
@@ -135,6 +137,32 @@ void main() {
           visit(tester.renderObject(find.byType(MaterialApp)));
         }
         expect(error, isNull);
+      });
+    }
+  }
+
+  // The seed cards: a real phone clipped the "Hope" card by 2 px at normal
+  // text size, so check the grid at 100% as well as 200%.
+  for (final locale in const [Locale('ar'), Locale('en')]) {
+    for (final scale in const [1.0, 2.0]) {
+      testWidgets('seed choice lays out at ${(scale * 100).round()}% text '
+          '(${locale.languageCode})', (tester) async {
+        tester.view.physicalSize = const Size(1080, 2220);
+        tester.view.devicePixelRatio = 3;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+            _app(const SeedSelectionScreen(), locale, scale: scale));
+        for (var i = 0; i < 20; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        await tester.ensureVisible(find.byType(FilledButton).first);
+        await tester.pump();
+        await tester.tap(find.byType(FilledButton).first);
+        for (var i = 0; i < 10; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(find.byType(EqualHeightGrid), findsOneWidget);
+        expect(tester.takeException(), isNull);
       });
     }
   }

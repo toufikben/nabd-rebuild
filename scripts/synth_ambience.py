@@ -555,6 +555,78 @@ def exhale():
     return breath(3.0, 0.75, 0.1, 25)  # darkens as the air leaves
 
 
+# ── launch cues (Settings → launch sound) ──────────────────────────────────
+# The default is splash_breath; nabd_pulse (synth_sounds.py) stays a choice.
+
+def _bell(freq, seconds, rng, decay=1.6, bright=0.2):
+    n = secs(seconds); t = np.arange(n)/RATE
+    tone = (np.sin(2*np.pi*freq*t) + 0.5*bright*np.sin(2*np.pi*freq*2.0*t)*np.exp(-t/0.6)
+            + 0.15*np.sin(2*np.pi*freq*3.01*t)*np.exp(-t/0.25))
+    return tone * env_adsr(n, 0.01, 0.3) * np.exp(-t/decay)
+
+def _finish_cue(l, r, rms=-20):
+    st = np.stack([l, r], axis=1)
+    fade = secs(0.25); st[-fade:] *= np.linspace(1, 0, fade)[:, None]**2
+    return normalise(st, rms, -2)
+
+def dawn_chime():
+    """Three soft bells rising (D major: D5, F#5, A5), then a quiet octave."""
+    rng = np.random.default_rng(31); n = secs(3.0)
+    l, r = np.zeros(n), np.zeros(n)
+    for i, (note, at, lvl, pan) in enumerate([(74, 0.0, 1.0, 0.4), (78, 0.32, 0.85, 0.55), (81, 0.64, 0.8, 0.65), (86, 1.05, 0.35, 0.5)]):
+        b = _bell(midi(note), 2.4, rng, decay=1.1 - i*0.1) * lvl
+        place(l, b*(1-pan), at); place(r, b*pan, at)
+    l, r = (reverb(rng, c, 0.35, 2.4, 6000) for c in (l, r))
+    return _finish_cue(l, r)
+
+def warm_breath():
+    """A soft chord that swells in like a breath and settles: no attack at all."""
+    rng = np.random.default_rng(32); length = 3.0; n = secs(length); t = np.arange(n)/RATE
+    env = np.sin(np.pi*np.clip(t/length, 0, 1))**1.6
+    chord = [50, 57, 62, 66, 69]  # D3 A3 D4 F#4 A4
+    l, r = np.zeros(n), np.zeros(n)
+    for i, note in enumerate(chord):
+        f = midi(note)
+        for det, side in ((-0.15, 0), (0.15, 1)):
+            tone = np.sin(2*np.pi*f*(1+det/100)*t) + 0.3*np.sin(2*np.pi*2*f*t)
+            (l if side == 0 else r)[:] += tone * (0.9 - i*0.1)
+    air = bandpass(rng.standard_normal(n), 900, 5000); air /= np.abs(air).max()
+    l = (l + air*0.12) * env; r = (r + air[::-1]*0.12) * env
+    l, r = lowpass(l, 2500), lowpass(r, 2500)
+    l, r = (reverb(rng, c, 0.4, 2.6, 4000) for c in (l, r))
+    return _finish_cue(l, r, -22)
+
+def heart_bowl():
+    """One gentle heartbeat, then a singing bowl blooms out of it."""
+    rng = np.random.default_rng(33); n = secs(3.2); t = np.arange(n)/RATE
+    l, r = np.zeros(n), np.zeros(n)
+    bt = np.arange(secs(0.35))/RATE
+    f = 150 + (95-150)*(1-np.exp(-bt/0.05)); ph = 2*np.pi*np.cumsum(f)/RATE
+    beat = (np.sin(ph)+0.6*np.sin(2*ph)+0.35*np.sin(3*ph)) * np.exp(-bt/0.07) * np.minimum(bt/0.008, 1) * 0.8
+    place(l, beat, 0.02); place(r, beat, 0.02)
+    f0 = 293.66; bt2 = np.arange(secs(2.8))/RATE
+    bowl = np.zeros_like(bt2)
+    for ratio, amp, tau, beatf in ((1, 1, 2.2, 0.8), (2.71, 0.4, 1.4, 1.5), (5.15, 0.15, 0.8, 2.2)):
+        bowl += amp*(np.sin(2*np.pi*f0*ratio*bt2)+np.sin(2*np.pi*(f0*ratio+beatf)*bt2))*np.exp(-bt2/tau)
+    bowl *= np.minimum(bt2/0.03, 1) * env_adsr(len(bt2), 0.0, 0.6) * 0.5
+    place(l, bowl, 0.3); place(r, bowl*0.95, 0.31)
+    l, r = (reverb(rng, c, 0.3, 2.4, 5000) for c in (l, r))
+    return _finish_cue(l, r)
+
+def kalimba():
+    """Two warm kalimba notes, a fifth apart, and a small sparkle."""
+    rng = np.random.default_rng(34); n = secs(2.6)
+    l, r = np.zeros(n), np.zeros(n)
+    def tine(note, seconds, lvl):
+        m = secs(seconds); tt = np.arange(m)/RATE; f = midi(note)
+        x = np.sin(2*np.pi*f*tt) + 0.25*np.sin(2*np.pi*f*5.4*tt)*np.exp(-tt/0.05) + 0.1*np.sin(2*np.pi*f*2*tt)
+        return x * np.exp(-tt/0.7) * np.minimum(tt/0.003, 1) * env_adsr(m, 0.0, 0.4) * lvl
+    for note, at, lvl, pan in ((69, 0.0, 1.0, 0.45), (76, 0.28, 0.9, 0.55), (81, 0.75, 0.4, 0.6)):
+        k = tine(note, 2.0, lvl); place(l, k*(1-pan), at); place(r, k*pan, at)
+    l, r = (reverb(rng, c, 0.3, 2.0, 6000) for c in (l, r))
+    return _finish_cue(l, r)
+
+
 SOUNDS = {
     'rain_soft': (rain_soft, '96k', False),
     'ocean_soft': (ocean_soft, '96k', False),
@@ -571,6 +643,10 @@ SOUNDS = {
     'paper_turn': (paper_turn, '96k', True),
     'inhale': (inhale, '80k', True),
     'exhale': (exhale, '80k', True),
+    'splash_chime': (dawn_chime, '128k', True),
+    'splash_breath': (warm_breath, '128k', True),
+    'splash_heart_bowl': (heart_bowl, '128k', True),
+    'splash_kalimba': (kalimba, '128k', True),
 }
 
 

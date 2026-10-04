@@ -259,7 +259,7 @@ void main() {
   setUpAll(() async {
     FlutterSecureStorage.setMockInitialValues({});
     PackageInfo.setMockInitialValues(
-      appName: 'Nabd',
+      appName: 'Pulse',
       packageName: 'com.nabd.journal',
       version: '1.0.0',
       buildNumber: '1',

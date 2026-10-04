@@ -31,6 +31,7 @@ import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
 import '../../services/journal_export_service.dart';
 import '../../services/monetization_service.dart';
+import '../../services/splash_service.dart';
 import '../lock/passcode_verify_sheet.dart';
 import '../../widgets/nabd_ui.dart';
 import '../../widgets/vault_image.dart';
@@ -149,6 +150,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 if (mounted) setState(() => _launchSound = value);
               },
             ),
+            if (_launchSound)
+              _tile(
+                icon: Icons.graphic_eq_rounded,
+                title: l10n.t('settings.sound.launchChoice'),
+                subtitle: l10n.t('sound.${_launchSoundId()}'),
+                onTap: () => _pickLaunchSound(l10n),
+              ),
             SwitchListTile(
               secondary: _iconBadge(Icons.music_note_outlined, AppColors.secondary),
               title: Text(l10n.t('settings.sound.ui')),
@@ -366,6 +374,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return l10n.t('settings.themeStyle.masculine');
       default:
         return l10n.t('settings.themeStyle.neutral');
+    }
+  }
+
+  String _launchSoundId() {
+    final saved = Hive.box('settings').get('splash_sound') as String?;
+    return SplashService.choices.contains(saved)
+        ? saved!
+        : SplashService.signatureSound;
+  }
+
+  /// Lists the launch sounds; tapping one plays it and makes it the cue.
+  Future<void> _pickLaunchSound(AppLocalizations l10n) async {
+    final preview = SplashService();
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (sheetContext) => StatefulBuilder(
+          builder: (sheetContext, setSheetState) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final id in SplashService.choices)
+                  ListTile(
+                    leading: Icon(
+                      id == _launchSoundId()
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color: AppColors.pulse,
+                    ),
+                    title: Text(l10n.t('sound.$id')),
+                    trailing: const Icon(Icons.play_arrow_rounded),
+                    onTap: () async {
+                      await Hive.box('settings').put('splash_sound', id);
+                      setSheetState(() {});
+                      if (mounted) setState(() {});
+                      await preview.stopSplashSound();
+                      await preview.playSplashSound(id);
+                    },
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      );
+    } finally {
+      await preview.stopSplashSound();
+      await preview.dispose();
     }
   }
 

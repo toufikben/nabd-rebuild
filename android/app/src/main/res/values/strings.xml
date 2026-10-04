@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Nabd</string>
+    <string name="app_name">Pulse</string>
     <string name="shortcut_new_entry">New entry</string>
     <string name="shortcut_new_entry_long">Write a new journal entry</string>
     <string name="shortcut_garden">My garden</string>
@@ -10,7 +10,7 @@
     <string name="shortcut_stats">Insights</string>
     <string name="shortcut_stats_long">See your mood and writing insights</string>
     <string name="widget_description">Your writing streak and a gentle prompt</string>
-    <string name="widget_title">Nabd</string>
+    <string name="widget_title">Pulse</string>
     <string name="widget_subtitle">Tap to write</string>
     <string name="widget_mood_happy">Write: happy</string>
     <string name="widget_mood_peaceful">Write: peaceful</string>

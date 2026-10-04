@@ -32,10 +32,14 @@ class _SplashScreenState extends State<SplashScreen> {
     _soundEnabled =
         box.get('splash_sound_enabled', defaultValue: true) as bool &&
         AppSettings.splashSoundEnabled;
+    // A choice from Settings, if it still names a bundled sound; anything
+    // else (an id from an older version) falls back to the default cue.
     final customSound = box.get('splash_sound') as String?;
-    _sound = AppSettings.fallbackSound(
-      customSound ?? SplashService.signatureSound,
-    );
+    _sound = customSound != null &&
+            SplashService.choices.contains(customSound) &&
+            AppSettings.resolveSoundFile(customSound) != null
+        ? customSound
+        : SplashService.signatureSound;
     _boot();
   }
 

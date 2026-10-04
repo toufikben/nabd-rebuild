@@ -2,14 +2,23 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nabd/core/app_settings.dart';
+import 'package:nabd/core/l10n/app_strings.dart';
 import 'package:nabd/features/sessions/data/sessions_data.dart';
 import 'package:nabd/services/splash_service.dart';
 import 'package:nabd/services/ui_sounds.dart';
 
 void main() {
-  test('the launch cue is the synthesised pulse', () {
-    expect(SplashService.signatureSound, 'nabd_pulse');
-    expect(AppSettings.resolveSoundFile('nabd_pulse'), 'nabd_pulse.m4a');
+  test('the default launch cue is the warm breath the owner chose', () {
+    expect(SplashService.signatureSound, 'splash_breath');
+    expect(SplashService.choices.first, SplashService.signatureSound);
+  });
+
+  test('every launch sound offered in Settings is bundled and named', () {
+    for (final id in SplashService.choices) {
+      expect(AppSettings.resolveSoundFile(id), '$id.m4a', reason: id);
+      expect(S.ar['sound.$id'], isNotNull, reason: id);
+      expect(S.en['sound.$id'], isNotNull, reason: id);
+    }
   });
 
   test('every declared sound really is bundled on disk', () {
