@@ -20,6 +20,7 @@ import '../features/stats/stats_screen.dart';
 import '../features/stats/weather_screen.dart';
 import '../features/stats/heatmap_screen.dart';
 import '../features/stats/monthly_summary_screen.dart';
+import '../features/practice/habits_screen.dart';
 import '../features/stats/advanced/word_cloud_screen.dart';
 import '../features/stats/advanced/emotion_radar_screen.dart';
 import '../features/stats/advanced/year_review_screen.dart';
@@ -225,6 +226,7 @@ final router = GoRouter(
       builder: (_, __) => const WorryReleaseScreen(),
     ),
     GoRoute(path: '/breathing', builder: (_, __) => const BreathingScreen()),
+    GoRoute(path: '/habits', builder: (_, __) => const HabitsScreen()),
     GoRoute(
       path: '/dream-journal',
       builder: (_, __) => const DreamJournalScreen(),

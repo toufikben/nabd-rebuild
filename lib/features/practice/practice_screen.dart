@@ -66,6 +66,13 @@ class PracticeScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: FeatureGrid(children: [
               FeatureTile(
+                icon: Icons.checklist_rounded,
+                title: l10n.t('hub.feature.habits.title'),
+                subtitle: l10n.t('hub.feature.habits.subtitle'),
+                color: AppColors.success,
+                onTap: () => context.push('/habits'),
+              ),
+              FeatureTile(
                 icon: Icons.air_rounded,
                 title: l10n.t('hub.feature.breathing.title'),
                 subtitle: l10n.t('hub.feature.breathing.subtitle'),

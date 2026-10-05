@@ -35,6 +35,8 @@ class ContentKeys {
   static const echoResolutions = 'echo_resolutions';
   static const sessionsCompleted = 'sessions_completed_total';
   static const wisdom = 'wisdom_state';
+  static const habits = 'habits';
+  static const habitChecks = 'habit_checks';
 
   /// Day keys of the gratitude journal (`gratitude_<y>_<m>_<d>`) and the
   /// weekly pulse snapshots.
@@ -53,6 +55,8 @@ class ContentKeys {
     echoResolutions,
     sessionsCompleted,
     wisdom,
+    habits,
+    habitChecks,
   };
 
   static bool isContentKey(String key) =>

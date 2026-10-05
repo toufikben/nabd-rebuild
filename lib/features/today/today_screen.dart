@@ -15,6 +15,7 @@ import '../../core/writing_prompts.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
+import '../../services/habit_service.dart';
 import '../../services/motivation_service.dart';
 import '../../widgets/entry_card.dart';
 import '../../widgets/nabd_ui.dart';
@@ -39,6 +40,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     if (hour >= 17 && hour < 22) return l10n.t('today.evening');
     return l10n.t('today.night');
   }
+
+  final _habits = HabitService();
 
   Future<void> _open(String route) async {
     await context.push(route);
@@ -66,6 +69,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         ? 0
         : garden.seeds.map((s) => s.growthPoints).reduce((a, b) => a > b ? a : b);
     final memories = Memories.onThisDay(entries, now);
+    final habits = _habits.active();
     final offerMonthly = MonthlySummary.offerLastMonth(entries, now);
     final lastMonth = DateTime(now.year, now.month - 1);
     final showBackupNudge = BackupNudge.shouldShowNow(entries.length, now);
@@ -198,6 +202,40 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 ),
               ),
             ),
+
+            // ── Today's small habits ──────────────────────────────────
+            if (habits.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  l10n.t('habits.today'),
+                  actionLabel: l10n.t('hub.feature.habits.title'),
+                  onAction: () => _open('/habits'),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final habit in habits)
+                        FilterChip(
+                          avatar: Text(habit.emoji),
+                          label: Text(habit.presetId == null
+                              ? habit.name
+                              : l10n.t(habit.nameKey())),
+                          selected: _habits.isDone(habit.id, now),
+                          onSelected: (_) async {
+                            await _habits.toggle(habit.id, now);
+                            if (mounted) setState(() {});
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
 
             // ── Last month's summary ──────────────────────────────────
             if (offerMonthly)
