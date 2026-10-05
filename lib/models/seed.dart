@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../core/l10n/app_strings.dart';
+
 /// Seed — بذرة نفسية يمكن زراعتها.
 class Seed {
   final String id;
-  final String nameEn;
-  final String nameAr;
   final String emoji;
   final String sproutEmoji;
   final String saplingEmoji;
@@ -12,13 +12,9 @@ class Seed {
   final String flowerEmoji;
   final List<Color> colors;
   final List<String> relatedMoods;
-  final String description;
-  final String descriptionAr;
 
   const Seed({
     required this.id,
-    required this.nameEn,
-    required this.nameAr,
     required this.emoji,
     required this.sproutEmoji,
     required this.saplingEmoji,
@@ -26,18 +22,22 @@ class Seed {
     required this.flowerEmoji,
     required this.colors,
     required this.relatedMoods,
-    required this.description,
-    required this.descriptionAr,
   });
 
-  String nameFor(bool arabic) => arabic ? nameAr : nameEn;
-  String descriptionFor(bool arabic) => arabic ? descriptionAr : description;
+  /// Name and description in [languageCode], from the string tables
+  /// (`seed.<id>.name|description`), falling back to English.
+  String nameFor(String languageCode) =>
+      S.of(languageCode)['seed.$id.name'] ?? S.en['seed.$id.name']!;
+  String descriptionFor(String languageCode) =>
+      S.of(languageCode)['seed.$id.description'] ??
+      S.en['seed.$id.description']!;
+
+  String get nameEn => nameFor('en');
+  String get nameAr => nameFor('ar');
 
   static const all = <Seed>[
     Seed(
       id: 'love',
-      nameEn: 'Love',
-      nameAr: 'الحب',
       emoji: '🌹',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -45,13 +45,9 @@ class Seed {
       flowerEmoji: '🌹',
       colors: [Color(0xFFE91E63), Color(0xFFEC407A)],
       relatedMoods: ['loved', 'in_love', 'grateful', 'happy'],
-      description: 'Nurture love in your life',
-      descriptionAr: 'اروِ الحب في حياتك',
     ),
     Seed(
       id: 'joy',
-      nameEn: 'Joy',
-      nameAr: 'الفرح',
       emoji: '☀️',
       sproutEmoji: '🌱',
       saplingEmoji: '🌻',
@@ -59,13 +55,9 @@ class Seed {
       flowerEmoji: '🌻',
       colors: [Color(0xFFFFD54F), Color(0xFFFFB300)],
       relatedMoods: ['joyful', 'happy', 'excited'],
-      description: 'Cultivate everyday joy',
-      descriptionAr: 'ازرع الفرح في تفاصيل يومك',
     ),
     Seed(
       id: 'peace',
-      nameEn: 'Peace',
-      nameAr: 'السلام',
       emoji: '🌲',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -73,13 +65,9 @@ class Seed {
       flowerEmoji: '🍃',
       colors: [Color(0xFF4DD0E1), Color(0xFF26A69A)],
       relatedMoods: ['peaceful', 'calm', 'grateful'],
-      description: 'Find inner peace',
-      descriptionAr: 'اعثر على السلام الداخلي',
     ),
     Seed(
       id: 'hope',
-      nameEn: 'Hope',
-      nameAr: 'الأمل',
       emoji: '🌸',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -87,13 +75,9 @@ class Seed {
       flowerEmoji: '🌸',
       colors: [Color(0xFFF48FB1), Color(0xFFF06292)],
       relatedMoods: ['hopeful', 'proud', 'excited'],
-      description: 'Nurture hope and optimism',
-      descriptionAr: 'اروِ الأمل والتفاؤل',
     ),
     Seed(
       id: 'gratitude',
-      nameEn: 'Gratitude',
-      nameAr: 'الامتنان',
       emoji: '🌻',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -101,13 +85,9 @@ class Seed {
       flowerEmoji: '🌻',
       colors: [Color(0xFFFFB74D), Color(0xFFFB8C00)],
       relatedMoods: ['grateful', 'happy', 'peaceful'],
-      description: 'Practice gratitude daily',
-      descriptionAr: 'تمرّن على الامتنان كل يوم',
     ),
     Seed(
       id: 'courage',
-      nameEn: 'Courage',
-      nameAr: 'الشجاعة',
       emoji: '💪',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -115,13 +95,9 @@ class Seed {
       flowerEmoji: '🍁',
       colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
       relatedMoods: ['proud', 'excited', 'hopeful'],
-      description: 'Build courage and strength',
-      descriptionAr: 'ابنِ الشجاعة والقوة',
     ),
     Seed(
       id: 'patience',
-      nameEn: 'Patience',
-      nameAr: 'الصبر',
       emoji: '🌿',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -129,13 +105,9 @@ class Seed {
       flowerEmoji: '🌰',
       colors: [Color(0xFF7CB342), Color(0xFF558B2F)],
       relatedMoods: ['calm', 'peaceful', 'tired'],
-      description: 'Develop patience',
-      descriptionAr: 'طوّر الصبر',
     ),
     Seed(
       id: 'wisdom',
-      nameEn: 'Wisdom',
-      nameAr: 'الحكمة',
       emoji: '🌙',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -143,13 +115,9 @@ class Seed {
       flowerEmoji: '🪷',
       colors: [Color(0xFF6A1B9A), Color(0xFF9C27B0)],
       relatedMoods: ['peaceful', 'grateful', 'proud'],
-      description: 'Seek wisdom',
-      descriptionAr: 'ابغِ الحكمة',
     ),
     Seed(
       id: 'creativity',
-      nameEn: 'Creativity',
-      nameAr: 'الإبداع',
       emoji: '🌺',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -157,13 +125,9 @@ class Seed {
       flowerEmoji: '🌺',
       colors: [Color(0xFFEC407A), Color(0xFFAB47BC)],
       relatedMoods: ['excited', 'joyful', 'hopeful'],
-      description: 'Spark creativity',
-      descriptionAr: 'أشعل الإبداع',
     ),
     Seed(
       id: 'growth',
-      nameEn: 'Growth',
-      nameAr: 'النمو',
       emoji: '🌳',
       sproutEmoji: '🌱',
       saplingEmoji: '🌿',
@@ -171,8 +135,6 @@ class Seed {
       flowerEmoji: '🍀',
       colors: [Color(0xFF00B88A), Color(0xFF00897B)],
       relatedMoods: ['proud', 'hopeful', 'excited'],
-      description: 'Embrace personal growth',
-      descriptionAr: 'اعتنِق نموّك الشخصي',
     ),
   ];
 

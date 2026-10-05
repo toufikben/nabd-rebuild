@@ -19,6 +19,8 @@ import '../features/billing/paywall_screen.dart';
 import '../features/stats/stats_screen.dart';
 import '../features/stats/weather_screen.dart';
 import '../features/stats/heatmap_screen.dart';
+import '../features/stats/monthly_summary_screen.dart';
+import '../features/practice/habits_screen.dart';
 import '../features/stats/advanced/word_cloud_screen.dart';
 import '../features/stats/advanced/emotion_radar_screen.dart';
 import '../features/stats/advanced/year_review_screen.dart';
@@ -42,6 +44,15 @@ import '../features/personal/weekly_pulse_screen.dart';
 import '../models/mood.dart';
 import '../services/biometric_service.dart';
 import '../widgets/pro_gate.dart';
+
+/// `yyyy-mm`, as the Today card links last month's summary.
+DateTime? _monthFromQuery(String? value) {
+  final match = RegExp(r'^(\d{4})-(\d{1,2})$').firstMatch(value ?? '');
+  if (match == null) return null;
+  final month = int.parse(match.group(2)!);
+  if (month < 1 || month > 12) return null;
+  return DateTime(int.parse(match.group(1)!), month);
+}
 
 String? _entryIdFromState(GoRouterState state) {
   final extra = state.extra;
@@ -173,6 +184,12 @@ final router = GoRouter(
     GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
     GoRoute(path: '/paywall', builder: (_, __) => const PaywallScreen()),
     GoRoute(path: '/heatmap', builder: (_, __) => const HeatmapScreen()),
+    GoRoute(
+      path: '/monthly',
+      builder: (_, state) => MonthlySummaryScreen(
+        initialMonth: _monthFromQuery(state.uri.queryParameters['month']),
+      ),
+    ),
     GoRoute(path: '/weather', builder: (_, __) => const WeatherScreen()),
     GoRoute(
       path: '/word-cloud',
@@ -209,6 +226,7 @@ final router = GoRouter(
       builder: (_, __) => const WorryReleaseScreen(),
     ),
     GoRoute(path: '/breathing', builder: (_, __) => const BreathingScreen()),
+    GoRoute(path: '/habits', builder: (_, __) => const HabitsScreen()),
     GoRoute(
       path: '/dream-journal',
       builder: (_, __) => const DreamJournalScreen(),

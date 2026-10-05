@@ -131,7 +131,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          a.titleFor(AppLocalizations.of(context).isArabic),
+                          a.titleFor(AppLocalizations.of(context).locale.languageCode),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -142,7 +142,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                         ),
                         SizedBox(height: 2),
                         Text(
-                          a.descriptionFor(AppLocalizations.of(context).isArabic),
+                          a.descriptionFor(AppLocalizations.of(context).locale.languageCode),
                           style: TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary,

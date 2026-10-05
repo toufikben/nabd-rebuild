@@ -64,6 +64,8 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     final tiles = <(IconData, String, String, String, Color, String?)>[
       (Icons.wb_cloudy_outlined, 'hub.feature.weather.title',
           'hub.feature.weather.subtitle', '/weather', AppColors.secondary, null),
+      (Icons.calendar_month_rounded, 'hub.feature.monthly.title',
+          'hub.feature.monthly.subtitle', '/monthly', AppColors.primary, null),
       (Icons.calendar_view_week_rounded, 'hub.feature.weeklyPulse.title',
           'hub.feature.weeklyPulse.subtitle', '/weekly-pulse', AppColors.pulse,
           null),
@@ -268,8 +270,11 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
         DateFormat.EEEE(locale).format(DateTime(2026, 10, 4 + weekday));
     String weekdayShort(int weekday) =>
         DateFormat.E(locale).format(DateTime(2026, 10, 4 + weekday));
-    // Arabic calendars start the week on Saturday.
-    final order = l10n.isArabic ? const [6, 7, 1, 2, 3, 4, 5] : const [1, 2, 3, 4, 5, 6, 7];
+    // Start the week where the locale's calendar does (Saturday in Arabic,
+    // Monday in most of Europe, Sunday in English).
+    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final first = firstDay == 0 ? 7 : firstDay;
+    final order = [for (var i = 0; i < 7; i++) (first - 1 + i) % 7 + 1];
 
     final insights = <String>[
       if (patterns.calmestWeekday case final day?)
@@ -450,7 +455,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
           SizedBox(
             width: 84,
             child: Text(
-              mood.labelFor(AppLocalizations.of(context).isArabic),
+              mood.label(AppLocalizations.of(context).locale.languageCode),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

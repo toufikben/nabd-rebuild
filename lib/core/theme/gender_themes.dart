@@ -1,49 +1,82 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// The palette a user picks in Settings. The stored names are kept for
-/// existing users; the labels shown are colour names (Dusk, Rose, Ocean).
-enum GenderTheme { neutral, feminine, masculine }
+/// The palette a user picks in Settings. The stored names of the first three
+/// are kept for existing users; the labels shown are colour names.
+enum GenderTheme { neutral, feminine, masculine, forest, sunset, lavender, ink }
+
+/// The colours behind one palette.
+class Palette {
+  const Palette(this.primary, this.secondary, this.lightBackground,
+      this.darkBackground);
+
+  final Color primary;
+  final Color secondary;
+  final Color lightBackground;
+  final Color darkBackground;
+}
 
 class GenderThemes {
+  /// The default family; covers Arabic and Latin.
   static const fontFamily = 'IBMPlexSansArabic';
 
+  /// Bundled families tried, in order, for letters the chosen family lacks
+  /// (an Arabic word in an English entry, a Cyrillic name...). Anything
+  /// left over falls to the phone's own fonts.
+  static const fallbackFamilies = ['IBMPlexSansArabic', 'Nunito'];
+
+  static const palettes = <GenderTheme, Palette>{
+    GenderTheme.neutral: Palette(AppColors.primary, AppColors.secondary,
+        Color(0xFFFAF8F5), AppColors.darkBackground),
+    GenderTheme.feminine: Palette(AppColors.femininePrimary,
+        AppColors.feminineSecondary, AppColors.feminineBackground,
+        Color(0xFF171116)),
+    GenderTheme.masculine: Palette(AppColors.masculinePrimary,
+        AppColors.masculineSecondary, AppColors.masculineBackground,
+        Color(0xFF0F151B)),
+    GenderTheme.forest: Palette(Color(0xFF3F7D58), Color(0xFFB08D57),
+        Color(0xFFF6F8F3), Color(0xFF101511)),
+    GenderTheme.sunset: Palette(Color(0xFFD0643F), Color(0xFFC2486F),
+        Color(0xFFFFF7F2), Color(0xFF1A1210)),
+    GenderTheme.lavender: Palette(Color(0xFF8A6FC9), Color(0xFF5FA8B5),
+        Color(0xFFF8F6FD), Color(0xFF141220)),
+    GenderTheme.ink: Palette(Color(0xFF3E4A5C), Color(0xFF8C7A5B),
+        Color(0xFFF7F6F3), Color(0xFF111215)),
+  };
+
+  /// One palette in one brightness, set in [family] (null: the system font).
+  static ThemeData build(
+    GenderTheme palette, {
+    Brightness brightness = Brightness.light,
+    String? family = fontFamily,
+  }) {
+    final colours = palettes[palette]!;
+    return _theme(
+      colours.primary,
+      colours.secondary,
+      brightness,
+      brightness == Brightness.dark
+          ? colours.darkBackground
+          : colours.lightBackground,
+      family,
+    );
+  }
+
   static ThemeData neutralTheme({Brightness brightness = Brightness.light}) =>
-      _theme(
-        AppColors.primary,
-        AppColors.secondary,
-        brightness,
-        brightness == Brightness.dark
-            ? AppColors.darkBackground
-            : const Color(0xFFFAF8F5),
-      );
-
-  static ThemeData feminineTheme({Brightness brightness = Brightness.light}) =>
-      _theme(
-        AppColors.femininePrimary,
-        AppColors.feminineSecondary,
-        brightness,
-        brightness == Brightness.dark
-            ? const Color(0xFF171116)
-            : AppColors.feminineBackground,
-      );
-
-  static ThemeData masculineTheme({Brightness brightness = Brightness.light}) =>
-      _theme(
-        AppColors.masculinePrimary,
-        AppColors.masculineSecondary,
-        brightness,
-        brightness == Brightness.dark
-            ? const Color(0xFF0F151B)
-            : AppColors.masculineBackground,
-      );
+      build(GenderTheme.neutral, brightness: brightness);
 
   /// Arabic needs more line height than Latin to keep its marks clear of the
   /// line above, so the whole scale breathes a little more than Material's.
-  static TextTheme _textTheme(TextTheme base, ColorScheme scheme) {
+  static TextTheme _textTheme(
+      TextTheme base, ColorScheme scheme, String? family) {
+    final fallback = [
+      for (final f in fallbackFamilies)
+        if (f != family) f,
+    ];
     TextStyle? tune(TextStyle? style, {FontWeight? weight, double? height}) =>
         style?.copyWith(
-          fontFamily: fontFamily,
+          fontFamily: family,
+          fontFamilyFallback: fallback,
           fontWeight: weight ?? style.fontWeight,
           height: height ?? 1.45,
           letterSpacing: 0,
@@ -72,6 +105,7 @@ class GenderThemes {
     Color secondary,
     Brightness brightness,
     Color background,
+    String? family,
   ) {
     final dark = brightness == Brightness.dark;
     final scheme = ColorScheme.fromSeed(
@@ -96,9 +130,13 @@ class GenderThemes {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      fontFamily: fontFamily,
+      fontFamily: family,
+      fontFamilyFallback: [
+        for (final f in fallbackFamilies)
+          if (f != family) f,
+      ],
     );
-    final text = _textTheme(base.textTheme, scheme);
+    final text = _textTheme(base.textTheme, scheme, family);
     final radius = BorderRadius.circular(20);
 
     return base.copyWith(

@@ -281,7 +281,7 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
               onPressed: _onExit,
             ),
       title: Text(
-        session.emotionLabel,
+        session.labelFor(AppLocalizations.of(context).locale.languageCode),
         style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w700,
           color: theme.colorScheme.onSurface,

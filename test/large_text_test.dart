@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nabd/core/l10n/app_localizations.dart';
+import 'package:nabd/core/l10n/languages.dart';
 import 'package:nabd/core/storage.dart';
 import 'package:nabd/core/theme/app_theme.dart';
 import 'package:nabd/core/theme/gender_themes.dart';
@@ -20,12 +21,15 @@ import 'package:nabd/features/garden/garden_screen.dart';
 import 'package:nabd/features/garden/seed_selection_screen.dart';
 import 'package:nabd/features/journal/journal_screen.dart';
 import 'package:nabd/features/personal/letters_screen.dart';
+import 'package:nabd/features/practice/habits_screen.dart';
 import 'package:nabd/features/practice/practice_screen.dart';
 import 'package:nabd/features/settings/settings_screen.dart';
+import 'package:nabd/features/stats/monthly_summary_screen.dart';
 import 'package:nabd/features/stats/stats_screen.dart';
 import 'package:nabd/features/today/today_screen.dart';
 import 'package:nabd/models/journal_entry.dart';
 import 'package:nabd/services/database_service.dart';
+import 'package:nabd/services/habit_service.dart';
 import 'package:nabd/services/monetization_service.dart';
 import 'package:nabd/widgets/nabd_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -91,6 +95,8 @@ void main() {
         updatedAt: at,
       ).toMap());
     }
+    await HabitService(box: Hive.box(HiveBoxes.content))
+        .add(Habit(presetId: 'breathe', emoji: '🌬️'));
     DatabaseService.invalidate();
   });
 
@@ -109,17 +115,28 @@ void main() {
     'settings': () => const SettingsScreen(),
     'garden': () => const GardenScreen(),
     'letters': () => const LettersScreen(),
+    'habits': () => const HabitsScreen(),
+    'monthly': () => const MonthlySummaryScreen(),
   };
 
-  for (final locale in const [Locale('ar'), Locale('en')]) {
+  // Arabic and English at the largest size; every other language at a
+  // moderately large size, where long words (German, Malay...) bite first.
+  final runs = [
+    for (final code in const ['ar', 'en']) (Locale(code), 2.0),
+    for (final language in appLanguages)
+      if (language.code != 'ar' && language.code != 'en')
+        (Locale(language.code), 1.3),
+  ];
+
+  for (final (locale, scale) in runs) {
     for (final MapEntry(key: name, value: build) in screens.entries) {
-      testWidgets('$name lays out at 200% text (${locale.languageCode})',
-          (tester) async {
+      testWidgets('$name lays out at ${(scale * 100).round()}% text '
+          '(${locale.languageCode})', (tester) async {
         // A small phone: 360 x 740 dp.
         tester.view.physicalSize = const Size(1080, 2220);
         tester.view.devicePixelRatio = 3;
         addTearDown(tester.view.reset);
-        await tester.pumpWidget(_app(build(), locale));
+        await tester.pumpWidget(_app(build(), locale, scale: scale));
         await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 200)));
         for (var i = 0; i < 20; i++) {

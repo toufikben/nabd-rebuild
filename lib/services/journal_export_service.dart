@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../core/l10n/languages.dart';
 import '../models/journal_entry.dart';
 import '../models/mood.dart';
 
@@ -58,13 +59,28 @@ class JournalExportService {
     required String title,
     required String languageCode,
   }) async {
+    final language = appLanguages.firstWhere(
+      (l) => l.code == languageCode,
+      orElse: () => appLanguages.firstWhere((l) => l.code == 'en'),
+    );
+    // A PDF cannot borrow the phone's fonts, so it uses the bundled family
+    // that draws the language, with Plex for any Arabic in the entries.
+    final family =
+        language.fonts.isEmpty ? 'IBMPlexSansArabic' : language.fonts.first;
     final regular = pw.Font.ttf(
-      await _loadAsset('assets/fonts/IBMPlexSansArabic-Regular.ttf'),
+      await _loadAsset('assets/fonts/$family-Regular.ttf'),
     );
     final bold = pw.Font.ttf(
-      await _loadAsset('assets/fonts/IBMPlexSansArabic-Bold.ttf'),
+      await _loadAsset('assets/fonts/$family-Bold.ttf'),
     );
-    final rtl = languageCode == 'ar';
+    final arabic = family == 'IBMPlexSansArabic'
+        ? <pw.Font>[]
+        : [
+            pw.Font.ttf(
+              await _loadAsset('assets/fonts/IBMPlexSansArabic-Regular.ttf'),
+            ),
+          ];
+    final rtl = language.rtl;
     final dateFormat = DateFormat.yMMMMEEEEd(languageCode);
     final document = pw.Document(title: title, creator: 'Pulse');
 
@@ -75,7 +91,11 @@ class JournalExportService {
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(40),
       textDirection: rtl ? pw.TextDirection.rtl : pw.TextDirection.ltr,
-      theme: pw.ThemeData.withFont(base: regular, bold: bold),
+      theme: pw.ThemeData.withFont(
+        base: regular,
+        bold: bold,
+        fontFallback: arabic,
+      ),
       header: (context) => context.pageNumber == 1
           ? pw.SizedBox()
           : pw.Text(

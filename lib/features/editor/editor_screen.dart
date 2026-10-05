@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -618,17 +617,24 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     if (_isRecording) await _stopRecording();
-    if (!await _acceptDictationNotice(l10n)) return;
     if (!await _voice.initialize()) {
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.t('editor.dictation.unavailable'))),
       );
       return;
     }
+    await _startDictation(l10n);
+  }
+
+  /// Offline first: the phone's on-device recogniser keeps speech on the
+  /// phone. Online is used only after the user agreed to it once.
+  Future<void> _startDictation(AppLocalizations l10n) async {
+    final offline = !VoiceToTextService.onlineAllowed;
     _dictationBase = _contentController.text.trimRight();
     setState(() => _isDictating = true);
     await _voice.startListening(
-      localeId: l10n.isArabic ? 'ar-SA' : 'en-US',
+      localeId: l10n.language.speechLocale,
+      offline: offline,
       onResult: (words) {
         if (!mounted) return;
         final joiner = _dictationBase.isEmpty ? '' : ' ';
@@ -639,7 +645,64 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           ),
         );
       },
+      onDone: () {
+        if (mounted && _isDictating) setState(() => _isDictating = false);
+      },
+      onProblem: (problem) => _onDictationProblem(problem, l10n),
     );
+  }
+
+  Future<void> _onDictationProblem(
+    DictationProblem problem,
+    AppLocalizations l10n,
+  ) async {
+    if (!mounted) return;
+    setState(() => _isDictating = false);
+    final messenger = ScaffoldMessenger.of(context);
+    switch (problem) {
+      case DictationProblem.silence:
+        return;
+      case DictationProblem.network:
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.t('editor.dictation.network'))),
+        );
+      case DictationProblem.other:
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.t('editor.dictation.unavailable'))),
+        );
+      case DictationProblem.noOfflinePack:
+        if (await _allowOnlineDictation(l10n) && mounted) {
+          await _startDictation(l10n);
+        }
+    }
+  }
+
+  /// Asked only when the offline voice pack is missing: install it, or let
+  /// the phone's online speech service do the work from now on.
+  Future<bool> _allowOnlineDictation(AppLocalizations l10n) async {
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.t('editor.dictation.noPackTitle')),
+        content: Text(
+          '${l10n.t('editor.dictation.noPackBody').replaceAll('{language}', l10n.language.nativeName)}'
+          '\n\n${l10n.t('editor.dictation.noticeBody')}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.t('editor.dictation.useOnline')),
+          ),
+        ],
+      ),
+    );
+    if (accepted != true) return false;
+    await VoiceToTextService.setOnlineAllowed(true);
+    return true;
   }
 
   Future<void> _chooseTemplate() async {
@@ -684,38 +747,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     );
     _contentFocus.requestFocus();
   }
-
-  /// Dictation is the one feature whose input may leave the phone: the
-  /// system speech service can send audio to its servers. Say so once,
-  /// before the first use, and respect a "no".
-  Future<bool> _acceptDictationNotice(AppLocalizations l10n) async {
-    final settings = Hive.box(HiveBoxes.settings);
-    if (settings.get(_dictationNoticeKey, defaultValue: false) == true) {
-      return true;
-    }
-    final accepted = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.t('editor.dictation.noticeTitle')),
-        content: Text(l10n.t('editor.dictation.noticeBody')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.t('dialog.cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.t('editor.dictation.noticeOk')),
-          ),
-        ],
-      ),
-    );
-    if (accepted != true) return false;
-    await settings.put(_dictationNoticeKey, true);
-    return true;
-  }
-
-  static const _dictationNoticeKey = 'dictation_notice_seen';
 
   Future<void> _stopDictation() async {
     if (!_isDictating) return;

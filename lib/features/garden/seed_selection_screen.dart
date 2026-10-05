@@ -204,7 +204,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                                 const SizedBox(height: 10),
                                 Text(
                                   seed.nameFor(
-                                      AppLocalizations.of(context).isArabic),
+                                      AppLocalizations.of(context).locale.languageCode),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -214,7 +214,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   seed.descriptionFor(
-                                      AppLocalizations.of(context).isArabic),
+                                      AppLocalizations.of(context).locale.languageCode),
                                   style: const TextStyle(
                                     color: Colors.white70,
                                     fontSize: 10,
@@ -322,7 +322,7 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                 ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
                 const SizedBox(height: 24),
                 Text(
-                  _selectedSeed!.nameFor(AppLocalizations.of(context).isArabic),
+                  _selectedSeed!.nameFor(AppLocalizations.of(context).locale.languageCode),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,

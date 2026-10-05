@@ -27,7 +27,7 @@
 
 ## خدمات خارجية
 
-- **الإملاء الصوتي:** يستعمل خدمة التعرّف على الكلام في هاتفك (مثل Google). قد ترسل هذه الخدمة الصوت إلى خوادم مزوّدها إن لم تكن حزمة اللغة مثبّتة للعمل دون اتصال. يُنبّهك نبض إلى ذلك قبل أول استعمال، ولا يحتفظ بالصوت. الميزة اختيارية.
+- **الإملاء الصوتي:** يعمل افتراضيًا داخل الهاتف فقط عبر التعرّف على الكلام دون اتصال، فلا يغادر الصوت هاتفك. إن لم تكن حزمة اللغة مثبّتة، يسألك نبض قبل استعمال خدمة الكلام عبر الإنترنت في هاتفك (مثل Google)، التي قد ترسل الصوت إلى خوادم مزوّدها. يمكنك سحب هذه الموافقة من الإعدادات، ولا يحتفظ نبض بالصوت. الميزة اختيارية.
 - **الشراء:** يتمّ شراء Pro عبر Google Play، وتخضع عملية الدفع لسياسة Google. لا يرى نبض بيانات الدفع.
 
 ## الأطفال
@@ -73,7 +73,7 @@ Nothing. Pulse has no servers and no accounts, and contains no analytics, advert
 
 ## Third-party services
 
-- **Dictation** uses your phone's speech recognition service (such as Google). That service may send audio to its provider's servers unless the language is installed for offline use. Pulse tells you this before the first use and keeps no audio. The feature is optional.
+- **Dictation** runs on the phone by default, using offline speech recognition, so audio never leaves your phone. If the language's offline pack is not installed, Pulse asks before using your phone's online speech service (such as Google), which may send audio to its provider's servers. You can withdraw that consent in Settings. Pulse keeps no audio. The feature is optional.
 - **Purchases** of Pro go through Google Play, under Google's policy. Pulse never sees payment details.
 
 ## Children

@@ -16,6 +16,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/data_revision.dart';
 import '../../core/backup_nudge.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/l10n/languages.dart';
+import '../../core/theme/app_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../features/lock/passcode_setup_sheet.dart';
@@ -28,6 +30,7 @@ import '../../services/backup_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/ui_sounds.dart';
 import '../../services/database_service.dart';
+import '../../services/voice_to_text_service.dart';
 import '../../services/garden_service.dart';
 import '../../services/journal_export_service.dart';
 import '../../services/monetization_service.dart';
@@ -57,6 +60,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _lockTimeoutMinutes = 5;
   int _reminderHour = NotificationService.defaultHour;
   int _reminderMinute = NotificationService.defaultMinute;
+  bool _smartReminder = true;
+  bool _onlineDictation = false;
   bool _hasPasscode = false;
   bool _biometricsAvailable = false;
   String _version = '';
@@ -72,6 +77,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _uiSounds = UiSounds.enabled;
     _reminderHour = NotificationService.hour;
     _reminderMinute = NotificationService.minute;
+    _smartReminder = NotificationService.isSmart;
+    _onlineDictation = VoiceToTextService.onlineAllowed;
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
     _loadLockState();
@@ -127,6 +134,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: l10n.t('settings.themeStyle'),
               subtitle: _genderThemeName(genderTheme, l10n),
               onTap: () => _pickGenderTheme(genderTheme, l10n),
+            ),
+            _tile(
+              icon: Icons.text_fields_rounded,
+              title: l10n.t('settings.font'),
+              subtitle: _fontName(ref.watch(appFontProvider), l10n),
+              onTap: () => _pickFont(ref.read(appFontProvider), l10n),
             ),
 
             // Language
@@ -217,14 +230,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               value: _notificationsEnabled,
               onChanged: (v) => _setReminderEnabled(v, l10n),
             ),
-            if (_notificationsEnabled)
+            if (_notificationsEnabled) ...[
+              SwitchListTile(
+                secondary: _iconBadge(Icons.auto_awesome_outlined, AppColors.primary),
+                title: Text(l10n.t('settings.notify.smart')),
+                subtitle: Text(l10n.t('settings.notify.smartHint')),
+                value: _smartReminder,
+                onChanged: _setSmartReminder,
+              ),
               _tile(
                 icon: Icons.access_time,
                 title: l10n.t('settings.notify.time'),
-                subtitle:
-                    '$_reminderHour:${_reminderMinute.toString().padLeft(2, '0')}',
-                onTap: _pickReminderTime,
+                subtitle: _reminderTimeLabel(l10n),
+                // With smart timing the time follows the habit; picking one
+                // by hand means turning it off first.
+                onTap: _smartReminder ? null : _pickReminderTime,
               ),
+            ],
             SwitchListTile(
               secondary: _iconBadge(
                   Icons.calendar_view_week_outlined, AppColors.secondary),
@@ -237,6 +259,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           // ─── Data ───
           _group(l10n.t('settings.section.data'), [
+            SwitchListTile(
+              secondary: _iconBadge(Icons.mic_none_rounded, AppColors.secondary),
+              title: Text(l10n.t('settings.dictation.online')),
+              subtitle: Text(l10n.t('settings.dictation.onlineHint')),
+              value: _onlineDictation,
+              onChanged: (value) async {
+                await VoiceToTextService.setOnlineAllowed(value);
+                if (mounted) setState(() => _onlineDictation = value);
+              },
+            ),
             _tile(
               icon: Icons.download_outlined,
               title: l10n.t('settings.data.export'),
@@ -366,16 +398,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  String _genderThemeName(GenderTheme theme, AppLocalizations l10n) {
-    switch (theme) {
-      case GenderTheme.feminine:
-        return l10n.t('settings.themeStyle.feminine');
-      case GenderTheme.masculine:
-        return l10n.t('settings.themeStyle.masculine');
-      default:
-        return l10n.t('settings.themeStyle.neutral');
-    }
-  }
+  String _genderThemeName(GenderTheme theme, AppLocalizations l10n) =>
+      l10n.t('settings.themeStyle.${theme.name}');
+
+  String _fontName(AppFont font, AppLocalizations l10n) =>
+      l10n.t('settings.font.${font.name}');
+
 
   String _launchSoundId() {
     final saved = Hive.box('settings').get('splash_sound') as String?;
@@ -428,11 +456,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   String _languageName(String code) {
-    const names = {
-      'ar': 'العربية',
-      'en': 'English',
-    };
-    return names[code] ?? code;
+    for (final language in appLanguages) {
+      if (language.code == code) return language.nativeName;
+    }
+    return code;
   }
 
   String _lockTimeoutLabel(int minutes, AppLocalizations l10n) {
@@ -612,57 +639,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _pickGenderTheme(
       GenderTheme current, AppLocalizations l10n) async {
-    final result = await showModalBottomSheet<String>(
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final result = await showModalBottomSheet<GenderTheme>(
       context: context,
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.person_outline),
-            title: Text(l10n.t('settings.themeStyle.neutral')),
-            trailing: current == GenderTheme.neutral
-                ? const Icon(Icons.check, color: AppColors.success)
-                : null,
-            onTap: () => Navigator.pop(context, 'neutral'),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 16,
+            alignment: WrapAlignment.center,
+            children: [
+              for (final theme in GenderTheme.values)
+                _PaletteSwatch(
+                  palette: GenderThemes.palettes[theme]!,
+                  dark: dark,
+                  label: _genderThemeName(theme, l10n),
+                  selected: theme == current,
+                  onTap: () => Navigator.pop(sheetContext, theme),
+                ),
+            ],
           ),
-          ListTile(
-            leading: const Icon(
-              Icons.favorite,
-              color: AppColors.femininePrimary,
-            ),
-            title: Text(l10n.t('settings.themeStyle.feminine')),
-            subtitle: Text(l10n.t('settings.themeStyle.feminineHint')),
-            trailing: current == GenderTheme.feminine
-                ? const Icon(Icons.check, color: AppColors.success)
-                : null,
-            onTap: () => Navigator.pop(context, 'feminine'),
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.shield,
-              color: AppColors.masculinePrimary,
-            ),
-            title: Text(l10n.t('settings.themeStyle.masculine')),
-            subtitle: Text(l10n.t('settings.themeStyle.masculineHint')),
-            trailing: current == GenderTheme.masculine
-                ? const Icon(Icons.check, color: AppColors.success)
-                : null,
-            onTap: () => Navigator.pop(context, 'masculine'),
-          ),
-          const SizedBox(height: 20),
-        ],
+        ),
       ),
     );
-
     if (result != null) {
-      await ref.read(genderThemeProvider.notifier).setGenderTheme(result);
+      await ref.read(genderThemeProvider.notifier).setGenderTheme(result.name);
     }
   }
 
+  Future<void> _pickFont(AppFont current, AppLocalizations l10n) async {
+    final language = l10n.language;
+    final result = await showModalBottomSheet<AppFont>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final font in AppFontFamily.choicesFor(language))
+                ListTile(
+                  title: Text(_fontName(font, l10n)),
+                  subtitle: Text(
+                    font == AppFont.auto
+                        ? l10n
+                            .t('settings.font.autoHint')
+                            .replaceAll('{language}', language.nativeName)
+                        : l10n.t('settings.font.sample'),
+                    style: TextStyle(
+                      fontFamily: font.familyFor(language),
+                      fontSize: 16,
+                    ),
+                  ),
+                  trailing: font == current
+                      ? const Icon(Icons.check, color: AppColors.success)
+                      : null,
+                  onTap: () => Navigator.pop(sheetContext, font),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (result != null) await ref.read(appFontProvider.notifier).set(result);
+  }
+
   Future<void> _pickLanguage(String current) async {
-    const languages = [
-      {'code': 'ar', 'name': 'العربية'},
-      {'code': 'en', 'name': 'English'},
+    final languages = [
+      for (final language in appLanguages)
+        {'code': language.code, 'name': language.nativeName},
     ];
 
     final result = await showModalBottomSheet<String>(
@@ -692,6 +737,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (result != null) {
       await ref.read(localeProvider.notifier).setLanguage(result);
     }
+  }
+
+  List<DateTime> get _writtenAt =>
+      DatabaseService().getAllEntries().map((e) => e.createdAt).toList();
+
+  String _reminderTimeLabel(AppLocalizations l10n) {
+    final time = MaterialLocalizations.of(context).formatTimeOfDay(
+      TimeOfDay(hour: _reminderHour, minute: _reminderMinute),
+    );
+    if (!_smartReminder) return time;
+    final learned = NotificationService.suggestedTime(_writtenAt) != null;
+    return l10n
+        .t(learned ? 'settings.notify.learned' : 'settings.notify.learning')
+        .replaceAll('{time}', time);
+  }
+
+  Future<void> _setSmartReminder(bool value) async {
+    await NotificationService.setSmart(value, writtenAt: _writtenAt);
+    if (!mounted) return;
+    setState(() {
+      _smartReminder = value;
+      _reminderHour = NotificationService.hour;
+      _reminderMinute = NotificationService.minute;
+    });
   }
 
   Future<void> _pickReminderTime() async {
@@ -763,8 +832,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         minute: _reminderMinute,
         title: l10n.t('notify.title'),
         body: l10n.t('notify.body'),
+        writtenAt: _writtenAt,
       );
-      if (mounted) setState(() => _notificationsEnabled = true);
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = true;
+          _reminderHour = NotificationService.hour;
+          _reminderMinute = NotificationService.minute;
+        });
+      }
     } catch (error) {
       debugPrint('Daily reminder could not be scheduled: $error');
       messenger.showSnackBar(
@@ -1127,5 +1203,79 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         .showSnackBar(SnackBar(content: Text(l10n.t('dialog.delete.done'))));
     // A fresh start: splash, then choosing a first seed.
     router.go('/');
+  }
+}
+
+/// A palette as two overlapping circles over its own background.
+class _PaletteSwatch extends StatelessWidget {
+  const _PaletteSwatch({
+    required this.palette,
+    required this.dark,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Palette palette;
+  final bool dark;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      selected: selected,
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: SizedBox(
+          width: 92,
+          child: Column(
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: dark ? palette.darkBackground : palette.lightBackground,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? scheme.primary : scheme.outlineVariant,
+                    width: selected ? 3 : 1,
+                  ),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Transform.translate(
+                      offset: const Offset(-8, 0),
+                      child: CircleAvatar(
+                          radius: 16, backgroundColor: palette.primary),
+                    ),
+                    Transform.translate(
+                      offset: const Offset(10, 0),
+                      child: CircleAvatar(
+                          radius: 12, backgroundColor: palette.secondary),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
+              ExcludeSemantics(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

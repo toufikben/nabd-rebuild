@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/data_revision.dart';
@@ -100,7 +101,7 @@ class WeatherScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 Text(
                   todayWeather.labelFor(
-                    AppLocalizations.of(context).isArabic,
+                    AppLocalizations.of(context).locale.languageCode,
                   ),
                   style: const TextStyle(
                     color: Colors.white,
@@ -146,7 +147,7 @@ class WeatherScreen extends ConsumerWidget {
                 SizedBox(height: 12),
                 Text(
                   monthlyWeather.labelFor(
-                    AppLocalizations.of(context).isArabic,
+                    AppLocalizations.of(context).locale.languageCode,
                   ),
                   style: TextStyle(
                     fontSize: 18,
@@ -175,30 +176,9 @@ class WeatherScreen extends ConsumerWidget {
   }
 
   String _dayLabel(int weekday, BuildContext context) {
-    final locale = AppLocalizations.of(context).locale;
-    // Use ARB files based on locale
-    if (locale.languageCode == 'ar') {
-      const arLabels = [
-        'الأحد',
-        'الإثنين',
-        'الثلاثاء',
-        'الأربعاء',
-        'الخميس',
-        'الجمعة',
-        'السبت',
-      ];
-      return arLabels[(weekday - 1) % 7];
-    } else {
-      const enLabels = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-      ];
-      return enLabels[(weekday - 1) % 7];
-    }
+    final code = AppLocalizations.of(context).locale.languageCode;
+    // 2026-10-05 is a Monday, so adding weekday - 1 lands on the right day.
+    return DateFormat.EEEE(code).format(DateTime(2026, 10, 4 + weekday));
   }
+
 }

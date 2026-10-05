@@ -7,6 +7,7 @@ import '../../core/backup_nudge.dart';
 import '../../core/data_revision.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/memories.dart';
+import '../../core/monthly_summary.dart';
 import '../../core/streak.dart';
 import '../../core/text_direction.dart';
 import '../../core/theme/app_colors.dart';
@@ -14,6 +15,7 @@ import '../../core/writing_prompts.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
+import '../../services/habit_service.dart';
 import '../../services/motivation_service.dart';
 import '../../widgets/entry_card.dart';
 import '../../widgets/nabd_ui.dart';
@@ -38,6 +40,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     if (hour >= 17 && hour < 22) return l10n.t('today.evening');
     return l10n.t('today.night');
   }
+
+  final _habits = HabitService();
 
   Future<void> _open(String route) async {
     await context.push(route);
@@ -65,9 +69,12 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         ? 0
         : garden.seeds.map((s) => s.growthPoints).reduce((a, b) => a > b ? a : b);
     final memories = Memories.onThisDay(entries, now);
+    final habits = _habits.active();
+    final offerMonthly = MonthlySummary.offerLastMonth(entries, now);
+    final lastMonth = DateTime(now.year, now.month - 1);
     final showBackupNudge = BackupNudge.shouldShowNow(entries.length, now);
     final lastBackup = BackupNudge.lastBackup;
-    _quote ??= MotivationService.getTodayQuoteFor(l10n.isArabic);
+    _quote ??= MotivationService.getTodayQuoteFor(l10n.locale.languageCode);
     final quote = _quote!;
 
     return Scaffold(
@@ -195,6 +202,78 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 ),
               ),
             ),
+
+            // ── Today's small habits ──────────────────────────────────
+            if (habits.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  l10n.t('habits.today'),
+                  actionLabel: l10n.t('hub.feature.habits.title'),
+                  onAction: () => _open('/habits'),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final habit in habits)
+                        FilterChip(
+                          avatar: Text(habit.emoji),
+                          label: Text(habit.presetId == null
+                              ? habit.name
+                              : l10n.t(habit.nameKey())),
+                          selected: _habits.isDone(habit.id, now),
+                          onSelected: (_) async {
+                            await _habits.toggle(habit.id, now);
+                            if (mounted) setState(() {});
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
+            // ── Last month's summary ──────────────────────────────────
+            if (offerMonthly)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: NabdCard(
+                    onTap: () => _open(
+                        '/monthly?month=${lastMonth.year}-${lastMonth.month}'),
+                    color: scheme.primaryContainer.withValues(alpha: 0.55),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_month_rounded, color: scheme.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.t('monthly.ready').replaceAll(
+                                    '{month}',
+                                    DateFormat.MMMM(l10n.locale.languageCode)
+                                        .format(lastMonth)),
+                                style: theme.textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(l10n.t('monthly.readyHint'),
+                                  style: theme.textTheme.bodySmall),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded,
+                            color: scheme.onSurfaceVariant),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
             // ── Backup reminder ───────────────────────────────────────
             if (showBackupNudge)
@@ -352,7 +431,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 l10n.t('today.quote'),
                 actionLabel: l10n.t('today.anotherQuote'),
                 onAction: () => setState(() => _quote =
-                    MotivationService.getRandomQuoteFor(l10n.isArabic,
+                    MotivationService.getRandomQuoteFor(l10n.locale.languageCode,
                         excludingQuote: quote.$1)),
               ),
             ),

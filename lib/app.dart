@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,9 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/router.dart';
 import 'core/theme/app_colors.dart';
+import 'core/theme/app_fonts.dart';
 import 'core/theme/app_theme.dart';
 import 'services/biometric_service.dart';
+import 'services/database_service.dart';
 import 'services/home_widget_service.dart';
+import 'services/notification_service.dart';
 import 'services/settings_service.dart';
 
 class NabdApp extends ConsumerStatefulWidget {
@@ -41,6 +46,8 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _biometric.markBackgrounded();
+      // A day that just got an entry should not be nudged later.
+      _refreshReminder();
       return;
     }
     if (state == AppLifecycleState.resumed) {
@@ -53,6 +60,16 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
       } else {
         _biometric.clearBackgrounded();
       }
+    }
+  }
+
+  void _refreshReminder() {
+    try {
+      final writtenAt =
+          DatabaseService().getAllEntries().map((e) => e.createdAt).toList();
+      unawaited(NotificationService.refreshDaily(writtenAt));
+    } catch (error) {
+      debugPrint('Reminder refresh skipped: $error');
     }
   }
 
@@ -85,8 +102,11 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
         WidgetsBinding.instance.platformDispatcher.platformBrightness,
     };
 
-    final lightTheme = AppTheme.getTheme('light', genderTheme);
-    final darkTheme = AppTheme.getTheme('dark', genderTheme);
+    final language = AppLocalizations(locale).language;
+    final family = ref.watch(appFontProvider).familyFor(language);
+    final lightTheme =
+        AppTheme.getTheme('light', genderTheme, fontFamily: family);
+    final darkTheme = AppTheme.getTheme('dark', genderTheme, fontFamily: family);
 
     return MaterialApp.router(
       title: 'نبض',

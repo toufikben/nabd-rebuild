@@ -1,138 +1,74 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../core/l10n/app_strings.dart';
+
 import '../core/streak.dart';
 import '../models/journal_entry.dart';
 import '../core/storage.dart';
 
 /// MotivationService — الاقتباسات + الإنجازات + التحديات.
 class MotivationService {
-  /// اقتباسات محلية.
-  static const _quotes = [
-    ('The unexamined life is not worth living.', 'Socrates'),
-    (
-      'We are what we repeatedly do. Excellence, then, is not an act, but a habit.',
-      'Aristotle'
-    ),
-    (
-      'The best time to plant a tree was 20 years ago. The second best time is now.',
-      'Chinese Proverb'
-    ),
-    ('Write hard and clear about what hurts.', 'Ernest Hemingway'),
-    (
-      'You don\'t have to be great to start, but you have to start to be great.',
-      'Zig Ziglar'
-    ),
-    (
-      'Almost everything will work again if you unplug it for a few minutes, including you.',
-      'Anne Lamott'
-    ),
-    (
-      'Feelings are much like waves. We can\'t stop them from coming, but we can choose which one to surf.',
-      'Jonatan Mårtensson'
-    ),
-    ('The wound is the place where the light enters you.', 'Rumi'),
-    (
-      'Nothing is impossible. The word itself says "I\'m possible!"',
-      'Audrey Hepburn'
-    ),
-    (
-      'You are allowed to be both a masterpiece and a work in progress.',
-      'Sophia Bush'
-    ),
-    ('The only way out is through.', 'Robert Frost'),
-    ('Wherever you are, be there totally.', 'Eckhart Tolle'),
-    ('The journey of a thousand miles begins with a single step.', 'Lao Tzu'),
-    ('What you seek is seeking you.', 'Rumi'),
-    ('Be gentle with yourself. You are a child of the universe.', 'Desiderata'),
-  ];
+  /// The quote library: `quote.<n>.text|author` in every language's
+  /// string table, so each language reads the same 15 quotes in its own words.
+  static const quoteCount = 15;
 
-  static const _arabicQuotes = [
-    ('الحياة التي لا نفحصها لا تستحق أن نعيشها.', 'سقراط'),
-    ('نحن ما نكرره باستمرار؛ فالتميّز ليس فعلًا بل عادة.', 'أرسطو'),
-    (
-      'أفضل وقت لزرع شجرة كان قبل عشرين عامًا، وثاني أفضل وقت هو الآن.',
-      'مثل صيني'
-    ),
-    ('اكتب بصدق ووضوح عمّا يؤلمك.', 'إرنست همنغواي'),
-    (
-      'لست بحاجة إلى أن تكون عظيمًا كي تبدأ، لكن عليك أن تبدأ كي تصبح عظيمًا.',
-      'زيغ زيغلر'
-    ),
-    (
-      'كل شيء تقريبًا سيعمل مجددًا إذا منحته بضع دقائق من الراحة، بما في ذلك أنت.',
-      'آن لاموت'
-    ),
-    (
-      'المشاعر تشبه الأمواج؛ لا نستطيع منعها من الوصول، لكن يمكننا اختيار الموجة التي نركبها.',
-      'جوناثان مارتنسون'
-    ),
-    ('الجرح هو المكان الذي يدخل منه النور إليك.', 'الرومي'),
-    ('لا شيء مستحيل؛ فالكلمة نفسها تقول: أنا ممكن.', 'أودري هيبورن'),
-    ('يسمح لك أن تكون تحفة فنية وعملًا قيد التطور في الوقت نفسه.', 'صوفيا بوش'),
-    ('الطريق الوحيد للخروج هو العبور من خلاله.', 'روبرت فروست'),
-    ('أينما كنت، كن حاضرًا بكل كيانك.', 'إيكهارت تول'),
-    ('رحلة الألف ميل تبدأ بخطوة واحدة.', 'لاو تزو'),
-    ('ما تبحث عنه يبحث عنك أيضًا.', 'الرومي'),
-    ('كن لطيفًا مع نفسك؛ فأنت ابن هذا الكون.', 'ديسيديراتا'),
-  ];
-
-  /// مكتبة الاقتباسات حسب اللغة.
-  static List<(String, String)> _library(bool arabic) =>
-      arabic ? _arabicQuotes : _quotes;
-
-  /// اقتباس اليوم (ثابت خلال اليوم) حسب لغة الواجهة.
-  static (String, String) getTodayQuoteFor(bool arabic) {
-    final list = _library(arabic);
-    final day = DateTime.now().difference(DateTime(2025)).inDays;
-    return list[day % list.length];
+  static (String, String) _quote(String languageCode, int n) {
+    final table = S.of(languageCode);
+    return (
+      table['quote.$n.text'] ?? S.en['quote.$n.text']!,
+      table['quote.$n.author'] ?? S.en['quote.$n.author']!,
+    );
   }
 
-  /// اقتباس عشوائي حسب لغة الواجهة، مع استبعاد الاقتباس المعروض إن طُلب.
-  static (String, String) getRandomQuoteFor(bool arabic,
+  /// Today's quote (stable for the day) in [languageCode].
+  static (String, String) getTodayQuoteFor(String languageCode) {
+    final day = DateTime.now().difference(DateTime(2025)).inDays;
+    return _quote(languageCode, day % quoteCount + 1);
+  }
+
+  /// A random quote in [languageCode], not the one shown, if asked.
+  static (String, String) getRandomQuoteFor(String languageCode,
       {String? excludingQuote}) {
-    final list = _library(arabic);
-    final start = DateTime.now().microsecondsSinceEpoch % list.length;
-    if (excludingQuote == null || list.length < 2) {
-      return list[start];
-    }
-    for (var offset = 0; offset < list.length; offset++) {
-      final candidate = list[(start + offset) % list.length];
+    final start = DateTime.now().microsecondsSinceEpoch % quoteCount;
+    for (var offset = 0; offset < quoteCount; offset++) {
+      final candidate = _quote(languageCode, (start + offset) % quoteCount + 1);
       if (candidate.$1 != excludingQuote) return candidate;
     }
-    return list[start];
+    return _quote(languageCode, start + 1);
   }
 
-  static (String, String) getTodayQuote() => getTodayQuoteFor(false);
+  static (String, String) getTodayQuote() => getTodayQuoteFor('en');
 
-  static (String, String) getRandomQuote() => getRandomQuoteFor(false);
+  static (String, String) getRandomQuote() => getRandomQuoteFor('en');
 
-  static (String, String) getTodayQuoteArabic() => getTodayQuoteFor(true);
+  static (String, String) getTodayQuoteArabic() => getTodayQuoteFor('ar');
 
   static (String, String) getRandomQuoteArabic({String? excludingQuote}) =>
-      getRandomQuoteFor(true, excludingQuote: excludingQuote);
+      getRandomQuoteFor('ar', excludingQuote: excludingQuote);
 }
 
 /// Achievement — إنجاز يفتحه المستخدم.
 class Achievement {
   final String id;
   final String emoji;
-  final String titleEn;
-  final String titleAr;
-  final String description;
-  final String descriptionAr;
   final int requirement;
   final String requirementType;
 
-  String titleFor(bool arabic) => arabic ? titleAr : titleEn;
-  String descriptionFor(bool arabic) => arabic ? descriptionAr : description;
+  /// Title and description in [languageCode]
+  /// (`achievement.<id>.title|description`), falling back to English.
+  String titleFor(String languageCode) =>
+      S.of(languageCode)['achievement.$id.title'] ??
+      S.en['achievement.$id.title']!;
+  String descriptionFor(String languageCode) =>
+      S.of(languageCode)['achievement.$id.description'] ??
+      S.en['achievement.$id.description']!;
+
+  String get titleEn => titleFor('en');
+  String get titleAr => titleFor('ar');
 
   const Achievement({
     required this.id,
     required this.emoji,
-    required this.titleEn,
-    required this.titleAr,
-    required this.description,
-    required this.descriptionAr,
     required this.requirement,
     required this.requirementType,
   });
@@ -141,100 +77,60 @@ class Achievement {
     Achievement(
       id: 'first_entry',
       emoji: '🌱',
-      titleEn: 'First Seed',
-      titleAr: 'أول بذرة',
-      description: 'Write your first entry',
-      descriptionAr: 'اكتب أول مدخلة',
       requirement: 1,
       requirementType: 'entries',
     ),
     Achievement(
       id: 'seven_entries',
       emoji: '🌿',
-      titleEn: 'Growing',
-      titleAr: 'تنمو',
-      description: 'Write 7 entries',
-      descriptionAr: 'اكتب 7 مدخلات',
       requirement: 7,
       requirementType: 'entries',
     ),
     Achievement(
       id: 'thirty_entries',
       emoji: '🌳',
-      titleEn: 'Strong Writer',
-      titleAr: 'كاتب قوي',
-      description: 'Write 30 entries',
-      descriptionAr: 'اكتب 30 مدخلة',
       requirement: 30,
       requirementType: 'entries',
     ),
     Achievement(
       id: 'streak_3',
       emoji: '🔥',
-      titleEn: 'On Fire',
-      titleAr: 'ملتهب',
-      description: '3-day streak',
-      descriptionAr: '٣ أيام متتالية',
       requirement: 3,
       requirementType: 'streak',
     ),
     Achievement(
       id: 'streak_7',
       emoji: '⭐',
-      titleEn: 'Week Warrior',
-      titleAr: 'محارب الأسبوع',
-      description: '7-day streak',
-      descriptionAr: '٧ أيام متتالية',
       requirement: 7,
       requirementType: 'streak',
     ),
     Achievement(
       id: 'streak_30',
       emoji: '🏆',
-      titleEn: 'Month Master',
-      titleAr: 'سيد الشهر',
-      description: '30-day streak',
-      descriptionAr: '٣٠ يوماً متتالية',
       requirement: 30,
       requirementType: 'streak',
     ),
     Achievement(
       id: 'words_1000',
       emoji: '✍️',
-      titleEn: 'Storyteller',
-      titleAr: 'راوي',
-      description: 'Write 1,000 words',
-      descriptionAr: 'اكتب ١٠٠٠ كلمة',
       requirement: 1000,
       requirementType: 'words',
     ),
     Achievement(
       id: 'words_10000',
       emoji: '📚',
-      titleEn: 'Author',
-      titleAr: 'مؤلف',
-      description: 'Write 10,000 words',
-      descriptionAr: 'اكتب ١٠٠٠٠ كلمة',
       requirement: 10000,
       requirementType: 'words',
     ),
     Achievement(
       id: 'moods_variety',
       emoji: '🎨',
-      titleEn: 'Emotional Rainbow',
-      titleAr: 'قوس قزح عاطفي',
-      description: 'Use 10 different moods',
-      descriptionAr: 'استعمل ١٠ مزاجات مختلفة',
       requirement: 10,
       requirementType: 'moods',
     ),
     Achievement(
       id: 'gratitude_7',
       emoji: '🙏',
-      titleEn: 'Grateful Heart',
-      titleAr: 'قلب ممتن',
-      description: '7 days of gratitude',
-      descriptionAr: '٧ أيام من الامتنان',
       requirement: 7,
       requirementType: 'gratitude',
     ),
