@@ -10,6 +10,7 @@ class AppLanguage {
     required this.nativeName,
     required this.rtl,
     required this.speechLocale,
+    required this.fonts,
   });
 
   /// ISO 639-1 code, the key of [stringTables].
@@ -21,11 +22,15 @@ class AppLanguage {
 
   /// The locale id handed to the speech recogniser for dictation.
   final String speechLocale;
+
+  /// Bundled font families that draw every letter of this language, in the
+  /// order the automatic font choice prefers. Empty means the system font.
+  final List<String> fonts;
 }
 
 const List<AppLanguage> appLanguages = <AppLanguage>[
-  AppLanguage(code: 'ar', nativeName: 'العربية', rtl: true, speechLocale: 'ar-SA'),
-  AppLanguage(code: 'en', nativeName: 'English', rtl: false, speechLocale: 'en-US'),
+  AppLanguage(code: 'ar', nativeName: 'العربية', rtl: true, speechLocale: 'ar-SA', fonts: ['IBMPlexSansArabic']),
+  AppLanguage(code: 'en', nativeName: 'English', rtl: false, speechLocale: 'en-US', fonts: ['IBMPlexSansArabic', 'Nunito', 'Lora']),
 ];
 
 const Map<String, Map<String, String>> stringTables = <String, Map<String, String>>{

@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 from xml.sax.saxutils import escape
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -37,7 +38,22 @@ def ident(code):
     return 'strings' + ''.join(p.capitalize() for p in code.replace('-', '_').split('_'))
 
 
+# Bundled families, in the order "automatic" prefers them. A language lists
+# only the families that draw every letter of its strings; the rest of the
+# scripts (CJK, Indic...) use the phone's own fonts.
+FONT_FAMILIES = ['IBMPlexSansArabic', 'Nunito', 'Lora']
+
+
+def font_coverage():
+    from fontTools.ttLib import TTFont  # pip install fonttools
+    fonts = os.path.join(ROOT, 'assets', 'fonts')
+    return {family: set(TTFont(os.path.join(fonts, f'{family}-Regular.ttf')).getBestCmap())
+            for family in FONT_FAMILIES}
+
+
 def main():
+    coverage = font_coverage()
+    covering = {}
     languages = json.load(open(os.path.join(L10N, 'languages.json'), encoding='utf-8'))
     reference = json.load(open(os.path.join(L10N, 'en.json'), encoding='utf-8'))
     os.makedirs(os.path.join(OUT, 'strings'), exist_ok=True)
@@ -54,6 +70,9 @@ def main():
                   or not table[k].strip()]
         if broken:
             sys.exit(f'{code}.json: blank or placeholders differ in {broken[:5]}')
+        letters = {ord(c) for v in table.values() for c in v
+                   if unicodedata.category(c).startswith('L')}
+        covering[code] = [f for f in FONT_FAMILIES if letters <= coverage[f]]
         lines = [HEADER, f'const Map<String, String> {ident(code)} = <String, String>{{']
         for key in reference:  # English order keeps diffs readable
             lines.append(f'  {dart_string(key)}: {dart_string(table[key])},')
@@ -76,7 +95,8 @@ def main():
     imports = '\n'.join(f"import 'strings/{l['code']}.dart';" for l in languages)
     entries = '\n'.join(
         f"  AppLanguage(code: {dart_string(l['code'])}, nativeName: {dart_string(l['name'])}, "
-        f"rtl: {'true' if l['rtl'] else 'false'}, speechLocale: {dart_string(l['speech'])}),"
+        f"rtl: {'true' if l['rtl'] else 'false'}, speechLocale: {dart_string(l['speech'])}, "
+        f"fonts: [{', '.join(dart_string(x) for x in covering[l['code']])}]),"
         for l in languages)
     tables = '\n'.join(f"  {dart_string(l['code'])}: {ident(l['code'])}," for l in languages)
     with open(os.path.join(OUT, 'languages.dart'), 'w', encoding='utf-8') as f:
@@ -90,6 +110,7 @@ class AppLanguage {{
     required this.nativeName,
     required this.rtl,
     required this.speechLocale,
+    required this.fonts,
   }});
 
   /// ISO 639-1 code, the key of [stringTables].
@@ -101,6 +122,10 @@ class AppLanguage {{
 
   /// The locale id handed to the speech recogniser for dictation.
   final String speechLocale;
+
+  /// Bundled font families that draw every letter of this language, in the
+  /// order the automatic font choice prefers. Empty means the system font.
+  final List<String> fonts;
 }}
 
 const List<AppLanguage> appLanguages = <AppLanguage>[
