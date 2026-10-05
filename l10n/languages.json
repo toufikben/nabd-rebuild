@@ -1,4 +1,22 @@
 [
   {"code": "ar", "name": "العربية", "rtl": true, "speech": "ar-SA", "android": "ar"},
-  {"code": "en", "name": "English", "rtl": false, "speech": "en-US", "android": ""}
+  {"code": "en", "name": "English", "rtl": false, "speech": "en-US", "android": ""},
+  {"code": "fr", "name": "Français", "rtl": false, "speech": "fr-FR", "android": "fr"},
+  {"code": "es", "name": "Español", "rtl": false, "speech": "es-ES", "android": "es"},
+  {"code": "pt", "name": "Português", "rtl": false, "speech": "pt-BR", "android": "pt"},
+  {"code": "de", "name": "Deutsch", "rtl": false, "speech": "de-DE", "android": "de"},
+  {"code": "it", "name": "Italiano", "rtl": false, "speech": "it-IT", "android": "it"},
+  {"code": "tr", "name": "Türkçe", "rtl": false, "speech": "tr-TR", "android": "tr"},
+  {"code": "id", "name": "Bahasa Indonesia", "rtl": false, "speech": "id-ID", "android": "in"},
+  {"code": "ms", "name": "Bahasa Melayu", "rtl": false, "speech": "ms-MY", "android": "ms"},
+  {"code": "vi", "name": "Tiếng Việt", "rtl": false, "speech": "vi-VN", "android": "vi"},
+  {"code": "ru", "name": "Русский", "rtl": false, "speech": "ru-RU", "android": "ru"},
+  {"code": "uk", "name": "Українська", "rtl": false, "speech": "uk-UA", "android": "uk"},
+  {"code": "fa", "name": "فارسی", "rtl": true, "speech": "fa-IR", "android": "fa"},
+  {"code": "ur", "name": "اردو", "rtl": true, "speech": "ur-PK", "android": "ur"},
+  {"code": "hi", "name": "हिन्दी", "rtl": false, "speech": "hi-IN", "android": "hi"},
+  {"code": "bn", "name": "বাংলা", "rtl": false, "speech": "bn-BD", "android": "bn"},
+  {"code": "zh", "name": "简体中文", "rtl": false, "speech": "zh-CN", "android": "zh"},
+  {"code": "ja", "name": "日本語", "rtl": false, "speech": "ja-JP", "android": "ja"},
+  {"code": "ko", "name": "한국어", "rtl": false, "speech": "ko-KR", "android": "ko"}
 ]
