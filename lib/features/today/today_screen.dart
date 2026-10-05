@@ -7,6 +7,7 @@ import '../../core/backup_nudge.dart';
 import '../../core/data_revision.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/memories.dart';
+import '../../core/monthly_summary.dart';
 import '../../core/streak.dart';
 import '../../core/text_direction.dart';
 import '../../core/theme/app_colors.dart';
@@ -65,6 +66,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         ? 0
         : garden.seeds.map((s) => s.growthPoints).reduce((a, b) => a > b ? a : b);
     final memories = Memories.onThisDay(entries, now);
+    final offerMonthly = MonthlySummary.offerLastMonth(entries, now);
+    final lastMonth = DateTime(now.year, now.month - 1);
     final showBackupNudge = BackupNudge.shouldShowNow(entries.length, now);
     final lastBackup = BackupNudge.lastBackup;
     _quote ??= MotivationService.getTodayQuoteFor(l10n.locale.languageCode);
@@ -195,6 +198,44 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 ),
               ),
             ),
+
+            // ── Last month's summary ──────────────────────────────────
+            if (offerMonthly)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: NabdCard(
+                    onTap: () => _open(
+                        '/monthly?month=${lastMonth.year}-${lastMonth.month}'),
+                    color: scheme.primaryContainer.withValues(alpha: 0.55),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_month_rounded, color: scheme.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.t('monthly.ready').replaceAll(
+                                    '{month}',
+                                    DateFormat.MMMM(l10n.locale.languageCode)
+                                        .format(lastMonth)),
+                                style: theme.textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(l10n.t('monthly.readyHint'),
+                                  style: theme.textTheme.bodySmall),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded,
+                            color: scheme.onSurfaceVariant),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
             // ── Backup reminder ───────────────────────────────────────
             if (showBackupNudge)

@@ -64,6 +64,8 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     final tiles = <(IconData, String, String, String, Color, String?)>[
       (Icons.wb_cloudy_outlined, 'hub.feature.weather.title',
           'hub.feature.weather.subtitle', '/weather', AppColors.secondary, null),
+      (Icons.calendar_month_rounded, 'hub.feature.monthly.title',
+          'hub.feature.monthly.subtitle', '/monthly', AppColors.primary, null),
       (Icons.calendar_view_week_rounded, 'hub.feature.weeklyPulse.title',
           'hub.feature.weeklyPulse.subtitle', '/weekly-pulse', AppColors.pulse,
           null),
