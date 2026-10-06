@@ -168,9 +168,12 @@ jobs:
             "$detected_alias" \
             "$(pwd)/android/nabd-release.jks" > android/key.properties
           chmod 600 android/nabd-release.jks android/key.properties
+      # Play refuses an upload whose versionCode is not higher than the last
+      # one, so every release build takes the workflow run number.
       - name: Build signed release APK
         run: >-
           flutter build apk --release
+          --build-number=${{ github.run_number }}
           --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
           --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
           --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
@@ -180,6 +183,7 @@ jobs:
       - name: Build signed release AAB
         run: >-
           flutter build appbundle --release
+          --build-number=${{ github.run_number }}
           --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
           --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
           --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
