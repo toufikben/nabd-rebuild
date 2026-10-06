@@ -206,7 +206,7 @@ jobs:
           retention-days: 14
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
-      - name: Attach release APK to the test release
+      - name: Attach release APK and AAB to the test release
         if: github.event_name == 'workflow_dispatch'
         shell: bash
         env:
@@ -215,8 +215,11 @@ jobs:
         run: |
           set -euo pipefail
           cp build/app/outputs/flutter-apk/app-release.apk nabd-release.apk
+          # The AAB is what Play Console takes; artifacts expire and count
+          # against the quota, a release asset does neither.
+          cp build/app/outputs/bundle/release/app-release.aab nabd-release.aab
           gh release create "$TAG" --target "$GITHUB_SHA" --prerelease \
             --title "Nabd test build #${{ github.run_number }} (${GITHUB_REF_NAME})" \
             --notes "Built from ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}. Not for the store." \
             || true  # the debug job may have created it first
-          gh release upload "$TAG" nabd-release.apk --clobber
+          gh release upload "$TAG" nabd-release.apk nabd-release.aab --clobber
