@@ -24,7 +24,7 @@
 
 ## 4. Flutter
 
-- [ ] Flutter 3.27.0 مثبت
+- [ ] Flutter 3.47.6 مثبت (CI يستعمله تلقائيًا)
 - [ ] Dart 3.6.0 مثبت
 - [ ] `flutter pub get` نجح
 - [ ] `flutter analyze` = 0 errors

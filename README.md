@@ -38,7 +38,7 @@ flutter test
 flutter build apk --debug
 ```
 
-- Flutter 3.27.0 / Dart 3.6.
+- Flutter 3.47.6 / Dart 3.13 (Play needs Billing Library 8 and target API 36).
 - النصوص كلها في `lib/core/l10n/app_strings.dart` (عربي + إنجليزي)، واختبار يمنع نقص أي مفتاح أو كتابة نص مباشرة داخل الشاشات.
 - لقطات تصميم للشاشات الرئيسية: `flutter test tool/screenshots_test.dart --dart-define=SHOTS_DIR=build/shots`.
 - أصوات التطبيق الأصلية: `python3 scripts/synth_sounds.py` (انظر [`docs/SOUNDS_ATTRIBUTION.md`](docs/SOUNDS_ATTRIBUTION.md)).
