@@ -20,5 +20,9 @@ flutter build appbundle --release --dart-define=NABD_PRODUCTION_CONFIGURED=true 
   - Is all of the user data collected by your app encrypted in transit? لا ينطبق (لا جمع).
   - Do you provide a way for users to request that their data is deleted? **Yes**: «حذف كل البيانات» في الإعدادات وإلغاء التثبيت.
   - الإملاء يمرّ عبر خدمة التعرّف في النظام، لا عبر نبض؛ لا يُعدّ جمعًا من التطبيق، لكنه مذكور في السياسة.
-- **إن أُضيف خادم تحقق للاشتراكات لاحقًا** (`SUBSCRIPTION_VERIFICATION_BACKEND_URL`): سيُرسل رمز الشراء إليه، فيجب حينها تحديث السياسة وإجابة Data Safety (Purchase history → collected, not shared).
+- **مع تفعيل الاشتراكات عبر RevenueCat** (`REVENUECAT_ANDROID_KEY`، انظر `docs/REVENUECAT_SETUP.md`): عند شراء اشتراك يُرسَل رمز الشراء ومعرّف عشوائي إلى RevenueCat للتحقق. أجوبة Data Safety تصبح:
+  - Does your app collect or share any of the required user data types? **Yes.**
+  - **Financial info → Purchase history**: Collected, **not** shared (RevenueCat معالج بيانات نيابة عنك)، غير اختياري للمشترك، الغرض **App functionality**. مشفّر أثناء النقل: **Yes** (HTTPS).
+  - **App info and performance / Device or other IDs**: لا (المعرّف عشوائي يولّده التطبيق، لا معرّف إعلاني ولا معرّف جهاز).
+  - لا شيء مما يُكتب في اليوميات يغادر الهاتف.
 - **Ads:** لا. **Target audience:** 13+ (أو 18+ إن فضّلت لتطبيق يوميات).

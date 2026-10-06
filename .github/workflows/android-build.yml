@@ -117,6 +117,8 @@ jobs:
       NABD_PRO_YEARLY_ID: ${{ vars.NABD_PRO_YEARLY_ID }}
       NABD_LIFETIME_ID: ${{ vars.NABD_LIFETIME_ID }}
       SUBSCRIPTION_VERIFICATION_BACKEND_URL: ${{ vars.SUBSCRIPTION_VERIFICATION_BACKEND_URL }}
+      # RevenueCat's public Google key (goog_...): verifies subscriptions.
+      REVENUECAT_ANDROID_KEY: ${{ vars.REVENUECAT_ANDROID_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -166,21 +168,27 @@ jobs:
             "$detected_alias" \
             "$(pwd)/android/nabd-release.jks" > android/key.properties
           chmod 600 android/nabd-release.jks android/key.properties
+      # Play refuses an upload whose versionCode is not higher than the last
+      # one, so every release build takes the workflow run number.
       - name: Build signed release APK
         run: >-
           flutter build apk --release
+          --build-number=${{ github.run_number }}
           --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
           --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
           --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
           --dart-define=SUBSCRIPTION_VERIFICATION_BACKEND_URL=$SUBSCRIPTION_VERIFICATION_BACKEND_URL
+          --dart-define=REVENUECAT_ANDROID_KEY=$REVENUECAT_ANDROID_KEY
           --dart-define=NABD_PRODUCTION_CONFIGURED=true
       - name: Build signed release AAB
         run: >-
           flutter build appbundle --release
+          --build-number=${{ github.run_number }}
           --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
           --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
           --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
           --dart-define=SUBSCRIPTION_VERIFICATION_BACKEND_URL=$SUBSCRIPTION_VERIFICATION_BACKEND_URL
+          --dart-define=REVENUECAT_ANDROID_KEY=$REVENUECAT_ANDROID_KEY
           --dart-define=NABD_PRODUCTION_CONFIGURED=true
       - name: Upload release APK
         continue-on-error: true

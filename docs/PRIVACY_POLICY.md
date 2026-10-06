@@ -1,12 +1,12 @@
 # سياسة الخصوصية — نبض
 
-**آخر تحديث:** 2026-10-04
+**آخر تحديث:** 2026-10-06
 
 نبض يوميات خاصة. صُمّم كي لا يغادر ما تكتبه هاتفك.
 
 ## ما الذي يجمعه نبض؟
 
-لا شيء. نبض لا يملك خوادم ولا حسابات، ولا يحتوي على أدوات تحليلات أو إعلانات أو تتبّع. لا يُرسل التطبيق أي محتوى تكتبه أو تسجّله إلى أي جهة.
+لا شيء مما تكتبه أو تسجّله. نبض لا يملك حسابات، ولا يحتوي على أدوات تحليلات أو إعلانات أو تتبّع. الاستثناء الوحيد هو التحقق من الاشتراك إن اشتركت (انظر «خدمات خارجية»).
 
 ## أين تُحفظ بياناتك؟
 
@@ -29,6 +29,7 @@
 
 - **الإملاء الصوتي:** يعمل افتراضيًا داخل الهاتف فقط عبر التعرّف على الكلام دون اتصال، فلا يغادر الصوت هاتفك. إن لم تكن حزمة اللغة مثبّتة، يسألك نبض قبل استعمال خدمة الكلام عبر الإنترنت في هاتفك (مثل Google)، التي قد ترسل الصوت إلى خوادم مزوّدها. يمكنك سحب هذه الموافقة من الإعدادات، ولا يحتفظ نبض بالصوت. الميزة اختيارية.
 - **الشراء:** يتمّ شراء Pro عبر Google Play، وتخضع عملية الدفع لسياسة Google. لا يرى نبض بيانات الدفع.
+- **التحقق من الاشتراك:** إن اشتركت شهريًا أو سنويًا، يُرسل نبض رمز الشراء الذي يعطيه Google ومعرّفًا عشوائيًا يُنشأ على هاتفك إلى خدمة RevenueCat، لتتأكد من Google أن الاشتراك فعّال وحتى متى. لا يُرسل اسمك ولا بريدك ولا أي شيء من يومياتك. شراء «مدى الحياة» لا يمرّ بهذه الخدمة.
 
 ## الأطفال
 
@@ -46,13 +47,13 @@
 
 # Privacy Policy — Pulse
 
-**Last updated:** 2026-10-04
+**Last updated:** 2026-10-06
 
 Pulse is a private journal, built so that what you write never leaves your phone.
 
 ## What does Pulse collect?
 
-Nothing. Pulse has no servers and no accounts, and contains no analytics, advertising or tracking SDKs. The app sends nothing you write or record to anyone.
+Nothing you write or record. Pulse has no accounts, and contains no analytics, advertising or tracking SDKs. The one exception is checking a subscription, if you subscribe (see "Third-party services").
 
 ## Where is your data kept?
 
@@ -75,6 +76,7 @@ Nothing. Pulse has no servers and no accounts, and contains no analytics, advert
 
 - **Dictation** runs on the phone by default, using offline speech recognition, so audio never leaves your phone. If the language's offline pack is not installed, Pulse asks before using your phone's online speech service (such as Google), which may send audio to its provider's servers. You can withdraw that consent in Settings. Pulse keeps no audio. The feature is optional.
 - **Purchases** of Pro go through Google Play, under Google's policy. Pulse never sees payment details.
+- **Subscription checks:** if you take a monthly or yearly plan, Pulse sends the purchase token Google issues, together with a random id created on your phone, to RevenueCat, which confirms with Google that the subscription is active and until when. Your name, email and anything from your journal are never sent. A lifetime purchase does not use this service.
 
 ## Children
 

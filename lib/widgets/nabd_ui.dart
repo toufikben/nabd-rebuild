@@ -89,8 +89,15 @@ class SectionHeader extends StatelessWidget {
               style: theme.textTheme.titleMedium?.copyWith(fontSize: 17),
             ),
           ),
+          // A long action label (some languages run long) wraps rather than
+          // pushing the row past the screen edge.
           if (actionLabel != null)
-            TextButton(onPressed: onAction, child: Text(actionLabel!)),
+            Flexible(
+              child: TextButton(
+                onPressed: onAction,
+                child: Text(actionLabel!, textAlign: TextAlign.end),
+              ),
+            ),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -97,7 +98,80 @@ class SubscriptionVerificationConfig {
     'SUBSCRIPTION_VERIFICATION_BACKEND_URL',
   );
 
-  static bool get isConfigured => backendUrl.trim().isNotEmpty;
+  /// A backend of our own, or RevenueCat acting as one.
+  static bool get isConfigured =>
+      backendUrl.trim().isNotEmpty || RevenueCatConfig.isConfigured;
+}
+
+/// RevenueCat, used only as the subscription verification backend through
+/// its REST API: the app keeps buying through `in_app_purchase`, and
+/// RevenueCat checks each purchase token with Google and reports whether the
+/// entitlement is active and until when. No RevenueCat SDK, so there is one
+/// billing client in the app.
+class RevenueCatConfig {
+  const RevenueCatConfig._();
+
+  /// The project's public Google Play SDK key (`goog_...`). Public by design:
+  /// it can only post receipts and read entitlements for an app user id.
+  static const apiKey = String.fromEnvironment('REVENUECAT_ANDROID_KEY');
+
+  /// The entitlement that means Pro in the RevenueCat dashboard.
+  static const entitlement = String.fromEnvironment(
+    'REVENUECAT_ENTITLEMENT',
+    defaultValue: 'pro',
+  );
+
+  static const receiptsUrl = 'https://api.revenuecat.com/v1/receipts';
+
+  /// A secret key (`sk_`) must never ship in an app; refusing it here keeps a
+  /// misconfigured build from leaking one.
+  static bool get isConfigured {
+    final key = apiKey.trim();
+    return key.isNotEmpty && !key.startsWith('sk_');
+  }
+}
+
+/// Reads RevenueCat's subscriber answer for [entitlement].
+///
+/// An entitlement that is missing altogether is a configuration problem (the
+/// product is not attached to it), not a verdict, so it never takes Pro away.
+VerificationResult revenueCatVerdict(
+  Map<String, dynamic> body, {
+  required String entitlement,
+  required DateTime now,
+}) {
+  final subscriber = body['subscriber'];
+  final entitlements = subscriber is Map ? subscriber['entitlements'] : null;
+  final granted = entitlements is Map ? entitlements[entitlement] : null;
+  if (granted is! Map) {
+    return VerificationResult(
+      status: EntitlementStatus.error,
+      errorMessage:
+          'RevenueCat has no "$entitlement" entitlement for this purchase.',
+    );
+  }
+  DateTime? read(String key) {
+    final value = granted[key];
+    return value is String ? DateTime.tryParse(value)?.toLocal() : null;
+  }
+
+  final expires = read('expires_date');
+  if (expires == null) {
+    // Never expires: a non-consumable attached to the entitlement.
+    return const VerificationResult(status: EntitlementStatus.lifetime);
+  }
+  final grace = read('grace_period_expires_date');
+  final until = grace != null && grace.isAfter(expires) ? grace : expires;
+  if (until.isAfter(now)) {
+    return VerificationResult(
+      status: EntitlementStatus.subscriptionActive,
+      expiryDate: until,
+    );
+  }
+  return VerificationResult(
+    status: EntitlementStatus.expired,
+    expiryDate: until,
+  );
 }
 
 /// Asks the trusted backend whether a purchase grants entitlement.
@@ -108,9 +182,10 @@ class SubscriptionVerificationConfig {
 Future<VerificationResult> verifySubscription({
   required String purchaseToken,
   required String productId,
+  String? appUserId,
 }) async {
   final backendUrl = SubscriptionVerificationConfig.backendUrl.trim();
-  if (backendUrl.isEmpty) {
+  if (backendUrl.isEmpty && !RevenueCatConfig.isConfigured) {
     return const VerificationResult(
       status: EntitlementStatus.subscriptionUnverified,
       errorMessage:
@@ -125,6 +200,13 @@ Future<VerificationResult> verifySubscription({
   }
 
   try {
+    if (backendUrl.isEmpty) {
+      return await _postRevenueCatReceipt(
+        appUserId: appUserId ?? await RevenueCatUser.id(),
+        purchaseToken: purchaseToken,
+        productId: productId,
+      );
+    }
     return await _postVerificationRequest(
       backendUrl: backendUrl,
       purchaseToken: purchaseToken,
@@ -155,6 +237,73 @@ Future<VerificationResult> verifySubscription({
       status: EntitlementStatus.error,
       errorMessage: 'Verification error: $error',
     );
+  }
+}
+
+/// The anonymous id RevenueCat files purchases under. Random, made on this
+/// phone, kept in the keystore; it identifies nothing about the person.
+class RevenueCatUser {
+  const RevenueCatUser._();
+
+  static const _key = 'nabd_revenuecat_user';
+  static const _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+
+  static Future<String> id() async {
+    final stored = await _storage.read(key: _key);
+    if (stored != null && stored.isNotEmpty) return stored;
+    final random = Random.secure();
+    final fresh = 'nabd_${List.generate(16, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+    await _storage.write(key: _key, value: fresh);
+    return fresh;
+  }
+}
+
+/// Posts the Google Play purchase token to RevenueCat, which checks it with
+/// Google and answers with the subscriber's entitlements.
+Future<VerificationResult> _postRevenueCatReceipt({
+  required String appUserId,
+  required String purchaseToken,
+  required String productId,
+}) async {
+  final client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
+  try {
+    final request = await client
+        .postUrl(Uri.parse(RevenueCatConfig.receiptsUrl))
+        .timeout(const Duration(seconds: 15));
+    request.headers
+      ..contentType = ContentType.json
+      ..set(HttpHeaders.authorizationHeader,
+          'Bearer ${RevenueCatConfig.apiKey.trim()}')
+      ..set('X-Platform', 'android');
+    request.write(jsonEncode({
+      'app_user_id': appUserId,
+      'fetch_token': purchaseToken,
+      'product_id': productId,
+    }));
+    final response = await request.close().timeout(const Duration(seconds: 20));
+    final body = await utf8.decoder.bind(response).join();
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      return VerificationResult(
+        status: EntitlementStatus.error,
+        errorMessage: 'RevenueCat answered HTTP ${response.statusCode}.',
+      );
+    }
+    final decoded = jsonDecode(body);
+    if (decoded is! Map<String, dynamic>) {
+      return const VerificationResult(
+        status: EntitlementStatus.error,
+        errorMessage: 'RevenueCat response was not a JSON object.',
+      );
+    }
+    return revenueCatVerdict(
+      decoded,
+      entitlement: RevenueCatConfig.entitlement,
+      now: DateTime.now(),
+    );
+  } finally {
+    client.close(force: true);
   }
 }
 
@@ -201,18 +350,17 @@ Future<VerificationResult> _postVerificationRequest({
 class MonetizationConfig {
   const MonetizationConfig._();
 
-  static const monthlyId = String.fromEnvironment(
-    'NABD_PRO_MONTHLY_ID',
-    defaultValue: 'nabd_pro_monthly',
-  );
-  static const yearlyId = String.fromEnvironment(
-    'NABD_PRO_YEARLY_ID',
-    defaultValue: 'nabd_pro_yearly',
-  );
-  static const lifetimeId = String.fromEnvironment(
-    'NABD_LIFETIME_ID',
-    defaultValue: 'nabd_lifetime',
-  );
+  // CI passes these even when the variable is unset, as an empty string,
+  // which would otherwise replace the default id.
+  static const _monthlyIdEnv = String.fromEnvironment('NABD_PRO_MONTHLY_ID');
+  static const _yearlyIdEnv = String.fromEnvironment('NABD_PRO_YEARLY_ID');
+  static const _lifetimeIdEnv = String.fromEnvironment('NABD_LIFETIME_ID');
+
+  static const monthlyId =
+      _monthlyIdEnv == '' ? 'nabd_pro_monthly' : _monthlyIdEnv;
+  static const yearlyId = _yearlyIdEnv == '' ? 'nabd_pro_yearly' : _yearlyIdEnv;
+  static const lifetimeId =
+      _lifetimeIdEnv == '' ? 'nabd_lifetime' : _lifetimeIdEnv;
   static const productionConfigured = bool.fromEnvironment(
     'NABD_PRODUCTION_CONFIGURED',
     defaultValue: false,
