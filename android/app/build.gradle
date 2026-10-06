@@ -60,4 +60,8 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"
+    // in_app_purchase_android ships Billing 8.0.0; Gradle takes the highest
+    // version on the classpath, so this lifts the whole app to the newest
+    // Play Billing. 9.x removed nothing the plugin calls (release notes).
+    implementation "com.android.billingclient:billing:9.1.0"
 }
