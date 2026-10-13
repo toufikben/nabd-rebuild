@@ -12,7 +12,10 @@ import '../../services/database_service.dart';
 import '../../widgets/entry_card.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({super.key});
+  const SearchScreen({super.key, this.initialTag});
+
+  /// Opens with this tag already selected, from the Tags screen.
+  final String? initialTag;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -31,7 +34,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   String _query = '';
   String? _selectedMood;
-  List<String> _selectedTags = [];
+  late List<String> _selectedTags = [
+    if (widget.initialTag case final tag?) tag,
+  ];
   bool _favoritesOnly = false;
   String _sortBy = _sortNewest;
 
@@ -277,7 +282,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     // Tags
     if (_selectedTags.isNotEmpty) {
       results = results
-          .where((e) => _selectedTags.any((t) => e.tags.contains(t)))
+          .where((e) => _selectedTags.any((t) =>
+              e.tags.any((tag) => Tag.keyOf(tag) == Tag.keyOf(t))))
           .toList();
     }
 

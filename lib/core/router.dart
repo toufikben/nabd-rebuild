@@ -179,7 +179,11 @@ final router = GoRouter(
       ),
     ),
     GoRoute(path: '/calendar', builder: (_, __) => const CalendarScreen()),
-    GoRoute(path: '/search', builder: (_, __) => const SearchScreen()),
+    GoRoute(
+      path: '/search',
+      builder: (_, state) =>
+          SearchScreen(initialTag: state.uri.queryParameters['tag']),
+    ),
     GoRoute(path: '/tags', builder: (_, __) => const TagsScreen()),
     GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
     GoRoute(path: '/paywall', builder: (_, __) => const PaywallScreen()),

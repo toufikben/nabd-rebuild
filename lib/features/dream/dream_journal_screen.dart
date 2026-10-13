@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -22,6 +24,9 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
   bool _isNightmare = false;
   int _clarity = 3; // 1-5
 
+  /// The dream being edited, or null while writing a new one.
+  DreamEntry? _editing;
+
   List<DreamEntry> get _dreams {
     return _box.values
         .map((e) => Map<dynamic, dynamic>.from(e as Map))
@@ -32,13 +37,21 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
   }
 
   Future<void> _saveDream() async {
-    if (_controller.text.trim().isEmpty) return;
+    if (_controller.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).t('dream.needText')),
+        ),
+      );
+      return;
+    }
 
+    final editing = _editing;
     final dream = DreamEntry(
-      id: const Uuid().v4(),
+      id: editing?.id ?? const Uuid().v4(),
       title: _titleController.text.trim(),
       content: _controller.text.trim(),
-      createdAt: DateTime.now(),
+      createdAt: editing?.createdAt ?? DateTime.now(),
       isLucid: _isLucid,
       isNightmare: _isNightmare,
       clarity: _clarity,
@@ -47,9 +60,58 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
     await _box.put(dream.id, dream.toMap());
     DatabaseService.invalidate();
     if (!mounted) return;
+    _resetForm();
+  }
+
+  void _resetForm() {
     _controller.clear();
     _titleController.clear();
-    setState(() {});
+    setState(() {
+      _editing = null;
+      _isLucid = false;
+      _isNightmare = false;
+      _clarity = 3;
+    });
+  }
+
+  void _edit(DreamEntry dream) {
+    _titleController.text = dream.title;
+    _controller.text = dream.content;
+    setState(() {
+      _editing = dream;
+      _isLucid = dream.isLucid;
+      _isNightmare = dream.isNightmare;
+      _clarity = dream.clarity;
+    });
+  }
+
+  Future<void> _delete(DreamEntry dream) async {
+    final l10n = AppLocalizations.of(context);
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        content: Text(l10n.t('dream.deleteConfirm')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.t('dialog.delete.action')),
+          ),
+        ],
+      ),
+    );
+    if (sure != true) return;
+    await _box.delete(dream.id);
+    DatabaseService.invalidate();
+    if (!mounted) return;
+    if (_editing?.id == dream.id) {
+      _resetForm();
+    } else {
+      setState(() {});
+    }
   }
 
   @override
@@ -71,11 +133,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF1A1F3A),
-              Color(0xFF2A1F3A),
-              Color(0xFF0A0D14),
-            ],
+            colors: [Color(0xFF1A1F3A), Color(0xFF2A1F3A), Color(0xFF0A0D14)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -89,7 +147,11 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: dreams.length,
-                  itemBuilder: (_, i) => _DreamCard(dream: dreams[i]),
+                  itemBuilder: (_, i) => _DreamCard(
+                    dream: dreams[i],
+                    onEdit: () => _edit(dreams[i]),
+                    onDelete: () => _delete(dreams[i]),
+                  ),
                 ),
               )
             else
@@ -119,7 +181,14 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                 left: 16,
                 right: 16,
                 top: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                // Above the keyboard when it is up, above the system
+                // navigation bar otherwise.
+                bottom:
+                    math.max(
+                      MediaQuery.viewInsetsOf(context).bottom,
+                      MediaQuery.viewPaddingOf(context).bottom,
+                    ) +
+                    16,
               ),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.3),
@@ -130,19 +199,45 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    AppLocalizations.of(context).t('dream.record'),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context).t(
+                            _editing == null ? 'dream.record' : 'dream.editing',
+                          ),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (_editing != null)
+                        IconButton(
+                          tooltip: AppLocalizations.of(
+                            context,
+                          ).t('dialog.cancel'),
+                          onPressed: _resetForm,
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white70,
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _titleController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context).t('dream.titleHint'),
+                      labelText: AppLocalizations.of(
+                        context,
+                      ).t('dream.titleHint'),
+                      labelStyle: const TextStyle(color: Colors.white54),
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      hintText: AppLocalizations.of(
+                        context,
+                      ).t('dream.titleHint'),
                       hintStyle: const TextStyle(color: Colors.white38),
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.1),
@@ -158,6 +253,9 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                     maxLines: 4,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context).t('dream.hint'),
+                      labelStyle: const TextStyle(color: Colors.white54),
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
                       hintText: AppLocalizations.of(context).t('dream.hint'),
                       hintStyle: const TextStyle(color: Colors.white38),
                       filled: true,
@@ -174,13 +272,17 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                   Row(
                     children: [
                       ChoiceChip(
-                        label: Text(AppLocalizations.of(context).t('dream.lucid')),
+                        label: Text(
+                          AppLocalizations.of(context).t('dream.lucid'),
+                        ),
                         selected: _isLucid,
                         onSelected: (v) => setState(() => _isLucid = v),
                       ),
                       const SizedBox(width: 8),
                       ChoiceChip(
-                        label: Text(AppLocalizations.of(context).t('dream.nightmare')),
+                        label: Text(
+                          AppLocalizations.of(context).t('dream.nightmare'),
+                        ),
                         selected: _isNightmare,
                         onSelected: (v) => setState(() => _isNightmare = v),
                       ),
@@ -194,17 +296,23 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                       ),
                       const SizedBox(width: 8),
                       ...List.generate(5, (i) {
-                        return GestureDetector(
-                          onTap: () => setState(() => _clarity = i + 1),
-                          child: Container(
-                            margin: const EdgeInsets.only(left: 2),
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: i < _clarity
-                                  ? AppColors.primary
-                                  : Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
+                        return Semantics(
+                          button: true,
+                          selected: i < _clarity,
+                          label:
+                              '${AppLocalizations.of(context).t('dream.clarity')} ${i + 1}/5',
+                          child: GestureDetector(
+                            onTap: () => setState(() => _clarity = i + 1),
+                            child: Container(
+                              margin: const EdgeInsets.only(left: 2),
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: i < _clarity
+                                    ? AppColors.primary
+                                    : Colors.white.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
                         );
@@ -237,64 +345,92 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
 
 class _DreamCard extends StatelessWidget {
   final DreamEntry dream;
-  const _DreamCard({required this.dream});
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  const _DreamCard({
+    required this.dream,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
         color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onEdit,
+          onLongPress: onDelete,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 6, 4, 14),
+            child: _content(context, l10n),
+          ),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                dream.isNightmare ? '😱' : dream.isLucid ? '✨' : '🌙',
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  dream.title.isEmpty
-                      ? AppLocalizations.of(context).t('dream.untitled')
-                      : dream.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Text(
-                '${dream.createdAt.day}/${dream.createdAt.month}',
-                style: const TextStyle(
-                  color: Colors.white38,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            dream.content,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-              height: 1.5,
+    );
+  }
+
+  Widget _content(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              dream.isNightmare
+                  ? '😱'
+                  : dream.isLucid
+                  ? '✨'
+                  : '🌙',
+              style: const TextStyle(fontSize: 20),
             ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                dream.title.isEmpty
+                    ? AppLocalizations.of(context).t('dream.untitled')
+                    : dream.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Text(
+              '${dream.createdAt.day}/${dream.createdAt.month}',
+              style: const TextStyle(color: Colors.white38, fontSize: 11),
+            ),
+            IconButton(
+              tooltip: l10n.t('dream.delete'),
+              onPressed: onDelete,
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                color: Colors.white54,
+                size: 20,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          dream.content,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+            height: 1.5,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -319,24 +455,24 @@ class DreamEntry {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'title': title,
-        'content': content,
-        'createdAt': createdAt.toIso8601String(),
-        'isDream': true,
-        'isLucid': isLucid,
-        'isNightmare': isNightmare,
-        'clarity': clarity,
-      };
+    'id': id,
+    'title': title,
+    'content': content,
+    'createdAt': createdAt.toIso8601String(),
+    'isDream': true,
+    'isLucid': isLucid,
+    'isNightmare': isNightmare,
+    'clarity': clarity,
+  };
 
   factory DreamEntry.fromMap(Map<dynamic, dynamic> m) => DreamEntry(
-        id: m['id']?.toString() ?? '',
-        title: m['title']?.toString() ?? '',
-        content: m['content']?.toString() ?? '',
-        createdAt:
-            DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
-        isLucid: m['isLucid'] == true,
-        isNightmare: m['isNightmare'] == true,
-        clarity: (m['clarity'] as num?)?.toInt() ?? 3,
-      );
+    id: m['id']?.toString() ?? '',
+    title: m['title']?.toString() ?? '',
+    content: m['content']?.toString() ?? '',
+    createdAt:
+        DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
+    isLucid: m['isLucid'] == true,
+    isNightmare: m['isNightmare'] == true,
+    clarity: (m['clarity'] as num?)?.toInt() ?? 3,
+  );
 }

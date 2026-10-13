@@ -23,7 +23,8 @@ class _MotivationScreenState extends State<MotivationScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    _quote ??= MotivationService.getTodayQuoteFor(_language);
+    _quote ??= MotivationService.getTodayQuoteFor(_language,
+        offset: MotivationService.motivationOffset);
     final quote = _quote!;
     return Scaffold(
       appBar: AppBar(

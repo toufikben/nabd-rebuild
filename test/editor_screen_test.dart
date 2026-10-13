@@ -131,6 +131,27 @@ void main() {
     });
   });
 
+  testWidgets('a short autosaved draft is not kept without asking',
+      (tester) async {
+    await tester.runAsync(() async {
+      await pumpEditor(tester);
+      await tester.enterText(find.byType(TextField).at(1), 'drafttest');
+      await Future<void>.delayed(const Duration(milliseconds: 3500));
+      await tester.pump();
+      expect(entries().length, 1);
+
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator).last);
+      await navigator.maybePop();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Discard'));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      expect(entries().length, 0);
+      expect(find.text('home'), findsOneWidget);
+    });
+  });
+
   testWidgets('a missing entry shows a notice instead of a blank editor',
       (tester) async {
     await pumpEditor(tester, id: 'gone');

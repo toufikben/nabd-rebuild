@@ -20,11 +20,18 @@ class MotivationService {
     );
   }
 
-  /// Today's quote (stable for the day) in [languageCode].
-  static (String, String) getTodayQuoteFor(String languageCode) {
+  /// Today's quote (stable for the day) in [languageCode]. Screens that
+  /// show a quote of the day on the same visit pass different [offset]s so
+  /// they do not all repeat the same one.
+  static (String, String) getTodayQuoteFor(String languageCode,
+      {int offset = 0}) {
     final day = DateTime.now().difference(DateTime(2025)).inDays;
-    return _quote(languageCode, day % quoteCount + 1);
+    return _quote(languageCode, (day + offset) % quoteCount + 1);
   }
+
+  /// Offsets per screen for [getTodayQuoteFor].
+  static const motivationOffset = 7;
+  static const wisdomOffset = 19;
 
   /// A random quote in [languageCode], not the one shown, if asked.
   static (String, String) getRandomQuoteFor(String languageCode,

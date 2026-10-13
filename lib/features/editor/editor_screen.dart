@@ -333,20 +333,21 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     await _stopCapture();
     if (_missing) return _leave();
 
-    if (!_hasUnsavedChanges) {
+    // A new entry with only a few characters may be a stray draft that
+    // autosave already stored: it is never kept without asking. An empty
+    // one simply goes.
+    final length = _title.trim().length + _content.trim().length;
+    final bare = _isNewEntry && _imagePaths.isEmpty && _audioPath == null;
+    if (bare && length == 0) {
+      await _discard();
+      return;
+    }
+    final doubtful = bare && length < 20;
+
+    if (!_hasUnsavedChanges && !doubtful) {
       // Autosave already holds everything; finishing still counts.
       await _rewardIfNew();
       return _leave();
-    }
-
-    // A few stray characters with nothing attached are not worth a dialog.
-    final length = _title.length + _content.length;
-    if (_isNewEntry &&
-        length < 20 &&
-        _imagePaths.isEmpty &&
-        _audioPath == null) {
-      await _discard();
-      return;
     }
 
     if (!mounted) return;
@@ -401,7 +402,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     await _db.discardDraftMedia(_sessionMedia.toList());
     if (!mounted) return;
     unawaited(HomeWidgetService.refresh(AppLocalizations.of(context)));
-    context.pop();
+    // Opened from a link or the widget, the editor is the only page: there
+    // is nothing to pop back to, so it hands over to Today.
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/today');
+    }
   }
 
   // ─── Entry actions ────────────────────────────────────────────────────
@@ -501,8 +508,12 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       context: context,
       builder: (_) => const _AddTagDialog(),
     );
-    if (mounted && tag != null && tag.isNotEmpty && !_tags.contains(tag)) {
-      _update(() => _tags = [..._tags, tag]);
+    // "#work" and "Work" are the same tag; the leading # is display only.
+    final name = tag?.trim().replaceFirst(RegExp(r'^#+'), '').trim() ?? '';
+    if (mounted &&
+        name.isNotEmpty &&
+        !_tags.any((t) => Tag.keyOf(t) == Tag.keyOf(name))) {
+      _update(() => _tags = [..._tags, name]);
     }
   }
 
@@ -964,11 +975,13 @@ class _DetailsBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final mood = this.mood;
-    return SizedBox(
-      height: 56,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    // Wraps instead of scrolling sideways: with a tag or two a scrolling row
+    // pushed "Add tag" past the edge, out of sight and out of TalkBack.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
           ActionChip(
             avatar: const Icon(Icons.event_outlined, size: 18),
@@ -976,7 +989,6 @@ class _DetailsBar extends StatelessWidget {
             tooltip: l10n.t('editor.date'),
             onPressed: onDate,
           ),
-          const SizedBox(width: 8),
           ActionChip(
             avatar: Text(mood?.emoji ?? '🙂',
                 style: const TextStyle(fontSize: 16)),
@@ -987,15 +999,12 @@ class _DetailsBar extends StatelessWidget {
                 : BorderSide(color: mood.color.withValues(alpha: 0.4)),
             onPressed: onMood,
           ),
-          for (final tag in tags) ...[
-            const SizedBox(width: 8),
+          for (final tag in tags)
             InputChip(
               label: Text('#${localizedTagName(l10n, tag)}'),
               onDeleted: () => onRemoveTag(tag),
               backgroundColor: scheme.secondaryContainer.withValues(alpha: 0.6),
             ),
-          ],
-          const SizedBox(width: 8),
           ActionChip(
             avatar: const Icon(Icons.sell_outlined, size: 18),
             label: Text(l10n.t('editor.tag.add')),

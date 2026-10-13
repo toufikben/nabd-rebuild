@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
@@ -14,6 +15,20 @@ class PaywallScreen extends ConsumerStatefulWidget {
 }
 
 class _PaywallScreenState extends ConsumerState<PaywallScreen> {
+  /// "Save N%" from the real prices, or a plain description when the store
+  /// gives no comparable monthly price.
+  String _yearlySubtitle(BuildContext context, MonetizationService service) {
+    final l10n = AppLocalizations.of(context);
+    final percent = service.yearlySavingPercent();
+    if (percent == null) return l10n.t('paywall.yearlySub');
+    return l10n
+        .t('paywall.yearlySave')
+        .replaceAll(
+          '{p}',
+          NumberFormat.decimalPattern(l10n.locale.languageCode).format(percent),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     final monetization = ref.watch(monetizationProvider);
@@ -38,7 +53,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        // The renewal note is the last line: keep it above the system
+        // navigation bar, which the app draws behind.
+        padding: EdgeInsets.fromLTRB(
+          20,
+          20,
+          20,
+          20 + MediaQuery.viewPaddingOf(context).bottom,
+        ),
         child: Column(
           children: [
             // Header
@@ -50,15 +72,17 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.workspace_premium,
-                      size: 64, color: Colors.white),
+                  const Icon(
+                    Icons.workspace_premium,
+                    size: 64,
+                    color: Colors.white,
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     AppLocalizations.of(context).t('paywall.brand'),
-                    style: Theme.of(context)
-                        .textTheme
-                        .displayLarge
-                        ?.copyWith(color: Colors.white),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.displayLarge?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -100,28 +124,31 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               )
             else if (monetization.products.isEmpty)
               _LoadFailedCard(
-                message: monetization.error ??
+                message:
+                    monetization.error ??
                     AppLocalizations.of(context).t('paywall.loadFailed'),
                 onRetry: () => service.retryLoadProducts(),
               )
             else ...[
               if (MonetizationConfig.subscriptionsEnabled) ...[
-              _PlanCard(
-                title: AppLocalizations.of(context).t('paywall.monthly'),
-                price: service.priceFor(MonetizationService.proMonthlyId),
-                subtitle: AppLocalizations.of(context).t('paywall.monthlySub'),
-                onTap: () => _buy(MonetizationService.proMonthlyId),
-              ),
-              const SizedBox(height: 12),
-              _PlanCard(
-                title: AppLocalizations.of(context).t('paywall.yearly'),
-                price: service.priceFor(MonetizationService.proYearlyId),
-                subtitle: AppLocalizations.of(context).t('paywall.yearlySub'),
-                badge: AppLocalizations.of(context).t('paywall.bestValue'),
-                highlighted: true,
-                onTap: () => _buy(MonetizationService.proYearlyId),
-              ),
-              const SizedBox(height: 12),
+                _PlanCard(
+                  title: AppLocalizations.of(context).t('paywall.monthly'),
+                  price: service.priceFor(MonetizationService.proMonthlyId),
+                  subtitle: AppLocalizations.of(
+                    context,
+                  ).t('paywall.monthlySub'),
+                  onTap: () => _buy(MonetizationService.proMonthlyId),
+                ),
+                const SizedBox(height: 12),
+                _PlanCard(
+                  title: AppLocalizations.of(context).t('paywall.yearly'),
+                  price: service.priceFor(MonetizationService.proYearlyId),
+                  subtitle: _yearlySubtitle(context, service),
+                  badge: AppLocalizations.of(context).t('paywall.bestValue'),
+                  highlighted: true,
+                  onTap: () => _buy(MonetizationService.proYearlyId),
+                ),
+                const SizedBox(height: 12),
               ],
               _PlanCard(
                 title: AppLocalizations.of(context).t('paywall.lifetime'),
@@ -154,14 +181,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             SizedBox(height: 24),
 
             if (MonetizationConfig.subscriptionsEnabled)
-            Text(
-              AppLocalizations.of(context).t('paywall.renewNote'),
-              style: TextStyle(
-                color: AppColors.textTertiary,
-                fontSize: 11,
+              Text(
+                AppLocalizations.of(context).t('paywall.renewNote'),
+                style: TextStyle(color: AppColors.textTertiary, fontSize: 11),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),
@@ -179,10 +203,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-          content: Text(
-            '${AppLocalizations.of(context).t('common.error')}: $e',
+            content: Text(
+              '${AppLocalizations.of(context).t('common.error')}: $e',
+            ),
           ),
-        ),
         );
       }
     }
@@ -227,79 +251,86 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: highlighted
-              ? const LinearGradient(
-                  colors: [AppColors.primaryDark, AppColors.primaryGlow],
-                )
-              : null,
-          color: highlighted ? null : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(20),
-          border: highlighted
-              ? null
-              : Border.all(color: AppColors.border, width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (badge != null) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: highlighted
-                            ? Colors.white.withValues(alpha: 0.2)
-                            : AppColors.warning.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        badge!,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: highlighted
+                ? const LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.primaryGlow],
+                  )
+                : null,
+            color: highlighted ? null : Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(20),
+            border: highlighted
+                ? null
+                : Border.all(color: AppColors.border, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (badge != null) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
                           color: highlighted
-                              ? Colors.white
-                              : AppColors.warning,
+                              ? Colors.white.withValues(alpha: 0.2)
+                              : AppColors.warning.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          badge!,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: highlighted
+                                ? Colors.white
+                                : AppColors.warning,
+                          ),
                         ),
                       ),
+                      SizedBox(height: 8),
+                    ],
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: highlighted ? Colors.white : null,
+                      ),
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: highlighted
+                            ? Colors.white70
+                            : AppColors.textSecondary,
+                      ),
+                    ),
                   ],
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: highlighted ? Colors.white : null,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: highlighted ? Colors.white70 : AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            Text(
-              price,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: highlighted ? Colors.white : AppColors.primary,
+              Text(
+                price,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: highlighted ? Colors.white : AppColors.primary,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -333,10 +364,7 @@ class _LoadFailedCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             message,
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -365,8 +393,11 @@ class _StoreUnavailableCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.store_mall_directory_outlined,
-              size: 40, color: AppColors.textTertiary),
+          Icon(
+            Icons.store_mall_directory_outlined,
+            size: 40,
+            color: AppColors.textTertiary,
+          ),
           SizedBox(height: 12),
           Text(
             AppLocalizations.of(context).t('paywall.unavailable'),

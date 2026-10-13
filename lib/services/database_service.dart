@@ -28,13 +28,21 @@ class DatabaseService {
   /// the dream journal) call it so the next read is fresh immediately.
   static void invalidate() => _cache = null;
 
+  /// Ticks after every change to the journal box, whoever made it, so
+  /// screens kept alive in other tabs refresh instead of showing entries
+  /// that were deleted elsewhere.
+  static final changes = ValueNotifier<int>(0);
+
   List<JournalEntry> _allIncludingDreams() {
     final box = entriesBox;
     if (!identical(_watched, box)) {
       unawaited(_watch?.cancel());
       _watched = box;
       _cache = null;
-      _watch = box.watch().listen((_) => _cache = null);
+      _watch = box.watch().listen((_) {
+        _cache = null;
+        changes.value++;
+      });
     }
     return _cache ??= List.unmodifiable(
       box.values
@@ -183,14 +191,21 @@ class DatabaseService {
         'usageCount': tag.usageCount
       });
 
+  /// Removes a tag from every entry. A default tag is remembered as hidden
+  /// so it does not come back by itself.
   Future<void> deleteTag(String tagName, String tagId) async {
-    await tagsBox.delete(tagId);
+    final key = Tag.keyOf(tagName);
+    if (Tag.defaultTags.any((tag) => tag.id == tagId)) {
+      await tagsBox.put(tagId, {'id': tagId, 'name': tagName, 'hidden': true});
+    } else {
+      await tagsBox.delete(tagId);
+    }
     final updated = <String, Map<String, dynamic>>{
       for (final entry in getAllEntries())
-        if (entry.tags.contains(tagName))
+        if (entry.tags.any((tag) => Tag.keyOf(tag) == key))
           entry.id: entry
               .copyWith(
-                tags: entry.tags.where((tag) => tag != tagName).toList(),
+                tags: entry.tags.where((tag) => Tag.keyOf(tag) != key).toList(),
                 updatedAt: entry.updatedAt,
               )
               .toMap(),
@@ -200,16 +215,56 @@ class DatabaseService {
     await entriesBox.putAll(updated);
   }
 
-  List<Tag> getAllTags() => tagsBox.isEmpty
-      ? Tag.defaultTags
-      : tagsBox.values.map((e) {
-          final m = Map<dynamic, dynamic>.from(e as Map);
-          return Tag(
-              id: m['id']?.toString() ?? '',
-              name: m['name']?.toString() ?? '',
-              color: (m['color'] as num?)?.toInt() ?? 0xFF6C5CE7,
-              usageCount: (m['usageCount'] as num?)?.toInt() ?? 0);
-        }).toList();
+  /// Every tag in use or on offer: the defaults nobody deleted, the tags
+  /// created on the Tags screen and every tag written on an entry, each
+  /// with the number of entries that carry it. Most used first.
+  List<Tag> getAllTags() {
+    final hidden = <String>{};
+    final byKey = <String, Tag>{};
+    final stored = <Tag>[];
+    for (final raw in tagsBox.values) {
+      if (raw is! Map) continue;
+      final id = raw['id']?.toString() ?? '';
+      if (raw['hidden'] == true) {
+        hidden.add(id);
+        continue;
+      }
+      stored.add(Tag(
+        id: id,
+        name: raw['name']?.toString() ?? '',
+        color: (raw['color'] as num?)?.toInt() ?? 0xFF6C5CE7,
+      ));
+    }
+    for (final tag in Tag.defaultTags) {
+      if (!hidden.contains(tag.id)) byKey[Tag.keyOf(tag.name)] = tag;
+    }
+    for (final tag in stored) {
+      if (Tag.keyOf(tag.name).isNotEmpty) byKey[Tag.keyOf(tag.name)] = tag;
+    }
+    final counts = <String, int>{};
+    for (final entry in getAllEntries()) {
+      for (final name in entry.tags.map(Tag.keyOf).toSet()) {
+        if (name.isEmpty) continue;
+        counts[name] = (counts[name] ?? 0) + 1;
+      }
+      for (final name in entry.tags) {
+        final key = Tag.keyOf(name);
+        if (key.isEmpty || byKey.containsKey(key)) continue;
+        byKey[key] = Tag(id: key, name: name.trim(), color: 0xFF6C5CE7);
+      }
+    }
+    final tags = [
+      for (final entry in byKey.entries)
+        entry.value.withCount(counts[entry.key] ?? 0),
+    ]..sort((a, b) {
+        final byUse = b.usageCount.compareTo(a.usageCount);
+        return byUse != 0
+            ? byUse
+            : a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      });
+    return tags;
+  }
+
   Map<String, int> getMoodDistribution() {
     final out = <String, int>{};
     for (final e in getAllEntries()) {
