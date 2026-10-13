@@ -745,6 +745,29 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   bool get isProActive => state.isPro;
 
+  /// What the yearly plan saves against twelve months, in whole percent,
+  /// from the store's own prices. Null when either price is missing, the
+  /// currencies differ, or there is no saving to speak of.
+  int? yearlySavingPercent() =>
+      savingPercent(_product(proMonthlyId), _product(proYearlyId));
+
+  @visibleForTesting
+  static int? savingPercent(ProductDetails? monthly, ProductDetails? yearly) {
+    if (monthly == null || yearly == null) return null;
+    if (monthly.currencyCode != yearly.currencyCode) return null;
+    if (monthly.rawPrice <= 0 || yearly.rawPrice <= 0) return null;
+    final percent = ((1 - yearly.rawPrice / (monthly.rawPrice * 12)) * 100)
+        .floor();
+    return percent >= 5 ? percent : null;
+  }
+
+  ProductDetails? _product(String productId) {
+    for (final item in state.products) {
+      if (item.id == productId) return item;
+    }
+    return null;
+  }
+
   String priceFor(String productId) {
     for (final item in state.products) {
       if (item.id == productId) return item.price;

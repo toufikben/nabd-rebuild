@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/app_localizations.dart';
 import '../engine/breathing_state.dart';
 
 class BreathingCircle extends StatelessWidget {
@@ -18,19 +19,14 @@ class BreathingCircle extends StatelessWidget {
     return accentColor ?? Theme.of(context).colorScheme.primary;
   }
 
-  String _phaseLabel(BreathingPhase phase) {
-    switch (phase) {
-      case BreathingPhase.inhale:
-        return 'شهيق';
-      case BreathingPhase.holdIn:
-        return 'احبس';
-      case BreathingPhase.exhale:
-        return 'زفير';
-      case BreathingPhase.holdOut:
-        return 'توقف';
-      case BreathingPhase.finished:
-        return 'تم';
-    }
+  String _phaseLabel(AppLocalizations l10n, BreathingPhase phase) {
+    return l10n.t(switch (phase) {
+      BreathingPhase.inhale => 'breathing.in',
+      BreathingPhase.holdIn => 'breathing.hold',
+      BreathingPhase.exhale => 'breathing.out',
+      BreathingPhase.holdOut => 'breathing.rest',
+      BreathingPhase.finished => 'breathing.done',
+    });
   }
 
   @override
@@ -66,7 +62,7 @@ class BreathingCircle extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  _phaseLabel(state.phase),
+                  _phaseLabel(AppLocalizations.of(context), state.phase),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.w600,

@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../services/review_prompt.dart';
 
 /// BreathingScreen — تمرين تنفس قبل الكتابة.
 ///
@@ -53,6 +56,8 @@ class _BreathingScreenState extends State<BreathingScreen>
     }
 
     if (mounted) {
+      // A whole session done is a good moment to ask for a rating.
+      unawaited(ReviewPrompt().recordWin());
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) Navigator.pop(context, true);
     }

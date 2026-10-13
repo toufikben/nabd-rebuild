@@ -61,6 +61,14 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
   Future<void> _save() async {
     final values =
         _controllers.map((controller) => controller.text.trim()).toList();
+    if (values.every((value) => value.isEmpty)) {
+      // Nothing written: no blank day saved, and no "saved" either.
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text(AppLocalizations.of(context).t('gratitudeJournal.needOne')),
+      ));
+      return;
+    }
     await _box.put(_todayKey, values);
     if (!mounted) return;
     setState(() {});
@@ -203,6 +211,10 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
               controller: _controllers[index],
               maxLines: 3,
               decoration: InputDecoration(
+                // A label stays announced once the field has text; a hint
+                // alone goes silent.
+                labelText: hints[index],
+                floatingLabelBehavior: FloatingLabelBehavior.never,
                 hintText: hints[index],
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),

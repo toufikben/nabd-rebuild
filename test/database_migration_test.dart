@@ -110,16 +110,89 @@ void main() {
 
     final encryption = _TestEncryptionService(key);
     Object? asyncFailure;
-    await runZonedGuarded(() async {
-      try {
-        await DatabaseMigrationService(encryption: encryption).migrate();
-      } catch (error) {
+    await runZonedGuarded(
+      () async {
+        try {
+          await DatabaseMigrationService(encryption: encryption).migrate();
+        } catch (error) {
+          asyncFailure = error;
+        }
+      },
+      (error, _) {
         asyncFailure = error;
-      }
-    }, (error, _) {
-      asyncFailure = error;
-    });
+      },
+    );
     expect(asyncFailure, isNotNull);
     expect(await Hive.boxExists('journal_entries'), isFalse);
+  });
+
+  group('a migrated box whose last write was cut short', () {
+    late Directory directory;
+    late _TestEncryptionService encryption;
+
+    setUp(() async {
+      directory = await Directory.systemTemp.createTemp('nabd_torn');
+      await _initHive(directory);
+      encryption = _TestEncryptionService(key)
+        ..metadata['nabd_hive_schema_version'] =
+            '${DatabaseMigrationService.schemaVersion}'
+        ..metadata['box_journal_entries'] =
+            '${DatabaseMigrationService.schemaVersion}';
+      final box = await Hive.openBox<dynamic>(
+        'journal_entries',
+        encryptionCipher: HiveAesCipher(key),
+      );
+      await box.put('kept', {'content': 'whole'});
+      await box.put('torn', {'content': 'cut short'});
+      await box.close();
+      // A kill mid-write leaves the last frame incomplete.
+      final file = File('${directory.path}/journal_entries.hive');
+      final bytes = file.readAsBytesSync();
+      file.writeAsBytesSync(bytes.sublist(0, bytes.length - 5));
+    });
+
+    tearDown(() async {
+      await Hive.close();
+      if (await directory.exists()) await directory.delete(recursive: true);
+    });
+
+    test('is kept, losing only the torn write', () async {
+      await DatabaseMigrationService(
+        encryption: encryption,
+        hiveDirectory: directory,
+      ).migrate();
+
+      final box = await Hive.openBox<dynamic>(
+        'journal_entries',
+        encryptionCipher: HiveAesCipher(key),
+      );
+      expect(box.get('kept'), {'content': 'whole'});
+      expect(box.containsKey('torn'), isFalse);
+      expect(
+        directory.listSync().where((f) => f.path.contains('probe')),
+        isEmpty,
+      );
+    });
+
+    test('is not truncated when the key is wrong', () async {
+      final wrong = List<int>.generate(32, (index) => 200 - index);
+      final length = File(
+        '${directory.path}/journal_entries.hive',
+      ).lengthSync();
+
+      await expectLater(
+        DatabaseMigrationService(
+          encryption: _TestEncryptionService(wrong)
+            ..metadata.addAll(encryption.metadata),
+          hiveDirectory: directory,
+        ).migrate(),
+        throwsA(anything),
+      );
+
+      expect(
+        File('${directory.path}/journal_entries.hive').lengthSync(),
+        length,
+      );
+    });
   });
 }

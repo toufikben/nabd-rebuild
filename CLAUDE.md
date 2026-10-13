@@ -19,6 +19,24 @@ running on that machine:
 
 Cloud sessions (Linux containers) may build and test freely.
 
+## Working with the owner (applies to every task, old or new)
+
+- Answer the owner in Arabic.
+- At the start of every task, before doing it, tell the owner in one or two
+  lines:
+  - which model and effort level suit the task (high, e.g. Opus at high
+    effort, for architecture, upgrades, release blockers and wide reviews;
+    medium, e.g. Sonnet, for routine edits, translation and docs; low for
+    lookups). Use that level for any subagents you start. If the session's
+    own model or effort should change, say so; only the owner can switch it
+    (`/model`, `/effort`).
+  - whether a plugin, MCP connector or skill would help (for example a
+    device-testing tool on the owner's PC, a browser connector for Play
+    Console), and what the owner must install or connect.
+- When a task needs the owner's computer or phone (adb, a local tool, the
+  Play Console in their browser), say so plainly: a cloud session cannot
+  reach them.
+
 ## Device testing
 
 Follow `docs/DEVICE_TEST_PLAN.md`. Do not edit app code from a device-test

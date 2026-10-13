@@ -1,6 +1,6 @@
 name: nabd
 description: Pulse — your private fully local journal
-version: 1.0.1+1
+version: 1.0.2+1
 publish_to: 'none'
 
 environment:
@@ -60,6 +60,10 @@ dependencies:
   intl: ^0.20.3
   uuid: ^4.5.1
   package_info_plus: ^8.1.1
+
+  # Store rating: Google Play's own in-app review sheet. Play decides
+  # whether it actually shows, and caps how often.
+  in_app_review: ^2.0.12
 
 dev_dependencies:
   flutter_test:

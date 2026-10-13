@@ -289,6 +289,36 @@ class NotificationService {
   static Future<void> cancelLetterUnlock(String letterId) =>
       _plugin.cancel(letterNotificationId(letterId));
 
+  /// Makes the scheduled letter announcements match [letters], after a
+  /// restore replaced or merged them: announcements for letters that are
+  /// gone are dropped, and every sealed letter gets one.
+  static Future<void> syncLetterUnlocks({
+    required Iterable<({String id, DateTime? opensAt})> letters,
+    required String title,
+    required String body,
+  }) async {
+    final keep = {for (final l in letters) letterNotificationId(l.id)};
+    for (final pending in await _plugin.pendingNotificationRequests()) {
+      if (pending.id >= 1000 && !keep.contains(pending.id)) {
+        await _plugin.cancel(pending.id);
+      }
+    }
+    for (final letter in letters) {
+      final opensAt = letter.opensAt;
+      if (opensAt == null) continue;
+      await scheduleLetterUnlock(
+        letterId: letter.id,
+        opensAt: opensAt,
+        title: title,
+        body: body,
+      );
+    }
+  }
+
+  /// Drops every scheduled notification, after all data was erased: none of
+  /// them refers to anything that still exists.
+  static Future<void> cancelEverything() => _plugin.cancelAll();
+
   // ─── Weekly review ─────────────────────────────────────────────────────
 
   static bool get isWeeklyReviewEnabled =>

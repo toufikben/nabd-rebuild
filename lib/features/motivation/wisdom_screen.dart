@@ -74,7 +74,8 @@ class _WisdomScreenState extends State<WisdomScreen> {
     l10n = AppLocalizations.of(context);
     if (_pendingDefault) {
       _pendingDefault = false;
-      _wisdom = MotivationService.getTodayQuoteFor(l10n.locale.languageCode);
+      _wisdom = MotivationService.getTodayQuoteFor(l10n.locale.languageCode,
+          offset: MotivationService.wisdomOffset);
       _persistWisdom(_wisdom, deleted: false);
     }
     return Scaffold(

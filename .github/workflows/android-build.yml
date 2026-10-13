@@ -64,9 +64,11 @@ jobs:
       # One APK per ABI: the arm64 one is what real phones install, and it is
       # less than half the size of a universal debug APK.
       - name: Build debug APKs
-        run: flutter build apk --debug --split-per-abi
+        # The run number as build number, so the phone shows which test
+        # build it has (arm64 splits add 2000: build 230 reads 2230).
+        run: flutter build apk --debug --split-per-abi --build-number=${{ github.run_number }}
       - name: Build debug AAB
-        run: flutter build appbundle --debug
+        run: flutter build appbundle --debug --build-number=${{ github.run_number }}
       # A pull request only needs to prove the app builds. Artifacts count
       # against the account's storage quota; when it is full the upload fails
       # although the build succeeded, so an upload failure never fails the job.

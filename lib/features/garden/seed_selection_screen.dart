@@ -91,7 +91,10 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                     .fadeIn(),
                 const SizedBox(height: 40),
                 Text(
-                  AppLocalizations.of(context).t('garden.emptyHint'),
+                  AppLocalizations.of(context).t(
+                      ref.read(gardenProvider).seeds.isEmpty
+                          ? 'garden.emptyHint'
+                          : 'garden.plantNew'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,

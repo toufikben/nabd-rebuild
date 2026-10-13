@@ -28,6 +28,7 @@ import '../session_access.dart';
 import '../widgets/breathing_circle.dart';
 import '../widgets/runner_controls.dart';
 import '../../../services/audio_service.dart';
+import '../../../services/review_prompt.dart';
 import '../../../services/ui_sounds.dart';
 import '../../../core/storage.dart';
 
@@ -160,6 +161,7 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
     });
 
     await _incrementCompletedTotal();
+    unawaited(ReviewPrompt().recordWin());
 
     await Future<void>.delayed(
       const Duration(milliseconds: 800),
@@ -333,7 +335,11 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 40),
+              // Clear of the system navigation bar, which the app draws
+              // behind on recent Android versions.
+              padding: EdgeInsets.only(
+                bottom: 40 + MediaQuery.viewPaddingOf(context).bottom,
+              ),
               child: RunnerControls(
                 isPaused: state.isPaused,
                 onPauseToggle: _onPauseToggle,

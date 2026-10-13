@@ -15,6 +15,19 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final onToday = navigationShell.currentIndex == 0;
+    // Each section is its own branch with no history between them, so Back
+    // on any section but Today would close the app. It goes to Today first.
+    return PopScope(
+      canPop: onToday,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) navigationShell.goBranch(0);
+      },
+      child: _scaffold(l10n),
+    );
+  }
+
+  Widget _scaffold(AppLocalizations l10n) {
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: NavigationBar(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
@@ -27,6 +28,7 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
         title: Text(l10n.t('tags.title')),
         actions: [
           IconButton(
+            tooltip: l10n.t('tags.create'),
             icon: const Icon(Icons.add),
             onPressed: () => _showAddDialog(),
           ),
@@ -54,7 +56,12 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                16 + MediaQuery.viewPaddingOf(context).bottom,
+              ),
               itemCount: tags.length,
               itemBuilder: (_, i) {
                 final tag = tags[i];
@@ -65,6 +72,12 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: ListTile(
+                    // The entries that carry this tag.
+                    onTap: () async {
+                      await context.push(
+                          '/search?tag=${Uri.encodeQueryComponent(tag.name)}');
+                      if (mounted) setState(() {});
+                    },
                     leading: Container(
                       width: 36,
                       height: 36,
@@ -82,6 +95,7 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
                     subtitle:
                         Text('${tag.usageCount} ${l10n.t('tags.entriesUnit')}'),
                     trailing: IconButton(
+                      tooltip: l10n.t('tags.delete.action'),
                       icon: const Icon(Icons.delete_outline, size: 20),
                       color: AppColors.danger,
                       onPressed: () => _deleteTag(tag),
@@ -102,7 +116,7 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(hintText: l10n.t('tags.name')),
+          decoration: InputDecoration(labelText: l10n.t('tags.name')),
         ),
         actions: [
           TextButton(
@@ -118,10 +132,11 @@ class _TagsScreenState extends ConsumerState<TagsScreen> {
     );
     controller.dispose();
 
-    if (mounted && result != null && result.isNotEmpty) {
+    final name = result?.trim().replaceFirst(RegExp(r'^#+'), '').trim();
+    if (mounted && name != null && name.isNotEmpty) {
       await _db.saveTag(Tag(
-        id: result.toLowerCase().replaceAll(' ', '_'),
-        name: result,
+        id: Tag.keyOf(name).replaceAll(' ', '_'),
+        name: name,
         color: 0xFF6C5CE7,
       ));
       if (mounted) setState(() {});

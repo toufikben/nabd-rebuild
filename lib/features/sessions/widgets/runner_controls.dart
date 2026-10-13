@@ -51,34 +51,44 @@ class _ControlButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Material(
-          color: theme.colorScheme.surfaceContainerHighest
-              .withValues(alpha: 0.4),
-          shape: const CircleBorder(),
-          child: InkWell(
-            onTap: onTap,
-            customBorder: const CircleBorder(),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Icon(
-                icon,
-                size: 24,
-                color: theme.colorScheme.onSurface,
+    // Icon and label are one button: the label is tappable too, and a
+    // screen reader hears "Pause, button" rather than an unnamed icon.
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Material(
+                color: theme.colorScheme.surfaceContainerHighest
+                    .withValues(alpha: 0.4),
+                shape: const CircleBorder(),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Icon(
+                    icon,
+                    size: 24,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

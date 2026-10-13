@@ -183,8 +183,10 @@ class PasscodeAttempts {
   int remainingSeconds() {
     final lockedUntil = _lockedUntil;
     if (lockedUntil == null) return 0;
-    final remaining = lockedUntil.difference(_now()).inSeconds;
-    return remaining > 0 ? remaining : 0;
+    // Rounded up: a lock with half a second left is still a lock, and
+    // showing "0 seconds" for it is what left the pad stuck.
+    final remaining = lockedUntil.difference(_now()).inMilliseconds;
+    return remaining > 0 ? (remaining + 999) ~/ 1000 : 0;
   }
 
   /// Reads the persisted count. A lock that ends further away than the longest

@@ -40,6 +40,7 @@ class PrivacyService {
         }
       }
 
+      EncryptionService.forgetRotations(await _documentsDirectory());
       await encryption.createFreshKeyAfterDataDeletion();
       final newKey = HiveAesCipher(await encryption.currentKeyBytes());
       await _openAll(newKey);

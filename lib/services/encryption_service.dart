@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'hive_strict_open.dart';
 import 'hive_value_equality.dart';
 import '../core/storage.dart';
 
@@ -96,10 +97,7 @@ class EncryptionService {
   /// إظهار مسار استعادة آمن بدل الكتابة فوق البيانات القديمة.
   Future<void> initialize({bool hasExistingData = false}) async {
     final stored = await readSecret(_keyAlias);
-    switch (keyAction(
-      storedValue: stored,
-      hasExistingData: hasExistingData,
-    )) {
+    switch (keyAction(storedValue: stored, hasExistingData: hasExistingData)) {
       case EncryptionKeyAction.useStored:
         _cachedKey = SecretKey(base64Decode(stored!));
         return;
@@ -193,20 +191,15 @@ class EncryptionService {
     }
 
     final nonce = combined.sublist(0, nonceLength);
-    final cipherText =
-        combined.sublist(nonceLength, combined.length - macLength);
+    final cipherText = combined.sublist(
+      nonceLength,
+      combined.length - macLength,
+    );
     final macBytes = combined.sublist(combined.length - macLength);
 
-    final secretBox = SecretBox(
-      cipherText,
-      nonce: nonce,
-      mac: Mac(macBytes),
-    );
+    final secretBox = SecretBox(cipherText, nonce: nonce, mac: Mac(macBytes));
 
-    final plaintext = await _algorithm.decrypt(
-      secretBox,
-      secretKey: key,
-    );
+    final plaintext = await _algorithm.decrypt(secretBox, secretKey: key);
 
     return utf8.decode(plaintext);
   }
@@ -218,29 +211,37 @@ class EncryptionService {
 
   static const _boxNames = HiveBoxes.all;
 
-  /// The key a rotation is moving to. It is stored before any box is
-  /// rewritten, so a crash at any point leaves enough on disk to finish or to
-  /// undo the rotation on the next launch.
-  static const _pendingKeyAlias = 'nabd_master_key_pending';
+  /// Left by the rotation design before the journal. Only ever cleaned up.
+  static const _legacyPendingKeyAlias = 'nabd_master_key_pending';
   static const _backupSuffix = '.rotating';
   static const _partialSuffix = '.rotating.partial';
+
+  /// The rotation journal, next to the box files. The keystore cannot be
+  /// trusted to order writes: on Android it saves with `apply()`, which
+  /// returns before the value reaches the disk, so a process killed a moment
+  /// later can lose it while the box files it describes were already
+  /// rewritten. The journal is written and flushed by the app itself, before
+  /// the step it describes, and the keystore is only ever brought in line
+  /// with it.
+  static const rotationJournalName = 'nabd_key_rotation.json';
 
   /// Rotates the master key and re-encrypts every open Hive box, so that it
   /// survives being interrupted at any step.
   ///
   /// Sequence:
   ///  1. Snapshot every open box, then close Hive.
-  ///  2. Store the new key under a pending alias (the old key stays current).
+  ///  2. Add a `staging` step to the journal: the new key sealed with the
+  ///     current one, and the fingerprints of both.
   ///  3. Copy every box file aside as `.rotating` (written as `.partial` and
   ///     renamed, so a half-written copy is never mistaken for a backup).
   ///  4. Rewrite each box from the snapshot under the new key.
   ///  5. Close and reopen every box from disk and compare it with the snapshot.
-  ///  6. Commit: make the new key current, delete the backups, then the
-  ///     pending key.
-  /// Any failure restores the backups and the old key. Backups are only ever
-  /// deleted once the data they protect is known to be readable.
-  /// [recoverInterruptedRotation] finishes or undoes a rotation the process
-  /// did not survive.
+  ///  6. Commit: mark the step `committed` in the journal, store the new key
+  ///     in the keystore, delete the backups.
+  /// Any failure before the keystore holds the new key restores the backups.
+  /// The journal stays until a later launch reads the new key back from the
+  /// keystore, which proves the keystore write reached the disk.
+  /// [recoverInterruptedRotation] finishes or undoes whatever was cut short.
   Future<void> rotateKey() async {
     final snapshot = <String, Map<dynamic, dynamic>>{};
     final boxFiles = <String, File>{};
@@ -253,12 +254,15 @@ class EncryptionService {
       if (boxPath != null) boxFiles[name] = File(boxPath);
     }
 
-    if (snapshot.isEmpty) {
+    if (snapshot.isEmpty || boxFiles.isEmpty) {
       throw const KeyRotationException(
         'No encrypted Hive box is open, so there is nothing to rotate.',
       );
     }
 
+    final journal = _RotationJournal(
+      File('${boxFiles.values.first.parent.path}/$rotationJournalName'),
+    );
     final previousKey = await currentKeyBytes();
     final newKey = await _algorithm.newSecretKey();
     final newKeyBytes = await newKey.extractBytes();
@@ -267,7 +271,14 @@ class EncryptionService {
     }
 
     await Hive.close();
-    await writeSecret(_pendingKeyAlias, base64Encode(newKeyBytes));
+    final steps = journal.read();
+    steps.add({
+      'from': await _fingerprint(previousKey),
+      'to': await _fingerprint(newKeyBytes),
+      'sealed': await _seal(previousKey, newKeyBytes),
+      'state': _staging,
+    });
+    await journal.write(steps);
 
     final backups = <File>[];
     try {
@@ -290,29 +301,33 @@ class EncryptionService {
 
       // Read every box back from disk, not from Hive's memory cache.
       for (final entry in snapshot.entries) {
-        final box = await Hive.openBox<dynamic>(
-          entry.key,
-          encryptionCipher: newCipher,
-          crashRecovery: false,
-        );
+        final box = await openBoxStrict(entry.key, cipher: newCipher);
         _verifySnapshot(entry.key, box, entry.value);
       }
+
+      steps.last['state'] = _committed;
+      await journal.write(steps);
     } catch (_) {
-      await _rollbackRotation(previousKey, snapshot.keys, backups);
+      await _rollbackRotation(previousKey, snapshot.keys, backups, journal);
       rethrow;
     }
 
     try {
       await writeSecret(_keyAlias, base64Encode(newKeyBytes));
     } catch (_) {
-      await _rollbackRotation(previousKey, snapshot.keys, backups);
+      // Back to staging first, so a crash during the rollback is undone by
+      // recovery instead of being finished half way.
+      steps.last['state'] = _staging;
+      await journal.write(steps);
+      await _rollbackRotation(previousKey, snapshot.keys, backups, journal);
       rethrow;
     }
     _cachedKey = newKey;
-    // Backups first, pending key last: recovery relies on that order.
     await _deleteFiles(backups);
-    await deleteSecret(_pendingKeyAlias);
   }
+
+  static const _staging = 'staging';
+  static const _committed = 'committed';
 
   void _verifySnapshot(
     String name,
@@ -328,39 +343,43 @@ class EncryptionService {
     for (final entry in expected.entries) {
       if (!box.containsKey(entry.key) ||
           !hiveValuesEqual(box.get(entry.key), entry.value)) {
-        throw KeyRotationException('Box "$name" changed the record '
-            '"${entry.key}" during rotation.');
+        throw KeyRotationException(
+          'Box "$name" changed the record '
+          '"${entry.key}" during rotation.',
+        );
       }
     }
   }
 
   Future<File> _stageBackup(File boxFile) async {
     final partial = File('${boxFile.path}$_partialSuffix');
-    await boxFile.copy(partial.path);
+    await partial.writeAsBytes(await boxFile.readAsBytes(), flush: true);
     return partial.rename('${boxFile.path}$_backupSuffix');
   }
 
-  /// Undoes a failed rotation: puts the staged files back under the previous
-  /// key and reopens the boxes. If that fails as well, the backups and the
-  /// pending key stay where they are for [recoverInterruptedRotation].
+  /// Undoes a rotation that never reached the keystore: puts the staged
+  /// files back, drops the step from the journal and reopens the boxes under
+  /// the previous key. If that fails as well, the backups and the journal
+  /// stay where they are for [recoverInterruptedRotation].
   Future<void> _rollbackRotation(
     List<int> previousKey,
     Iterable<String> boxNames,
     List<File> backups,
+    _RotationJournal journal,
   ) async {
     try {
       await Hive.close();
       for (final backup in backups) {
         await _restoreBackup(backup);
       }
-      await writeSecret(_keyAlias, base64Encode(previousKey));
+      final steps = journal.read()..removeLast();
+      await journal.write(steps);
       _cachedKey = SecretKey(previousKey);
       final restoredCipher = HiveAesCipher(previousKey);
       for (final name in boxNames) {
         await Hive.openBox<dynamic>(name, encryptionCipher: restoredCipher);
       }
       await _deleteFiles(backups);
-      await deleteSecret(_pendingKeyAlias);
     } catch (_) {
       // The original failure is the one reported. Next launch recovers from
       // the backups, which are deliberately left on disk.
@@ -369,53 +388,94 @@ class EncryptionService {
     }
   }
 
-  /// Run at startup before any box is opened. Finishes a rotation whose new
-  /// key was already committed, or undoes one that was not, using the files
-  /// in [hiveDirectory]. Does nothing when no rotation was interrupted.
+  /// Run at startup before any box is opened. Follows the journal from the
+  /// key the keystore holds: committed steps lead to the key the boxes are
+  /// encrypted with, and a step still staging is undone from its backups.
+  /// Does nothing when no rotation is on record.
   Future<void> recoverInterruptedRotation(Directory hiveDirectory) async {
     if (!hiveDirectory.existsSync()) return;
-    final entries = hiveDirectory.listSync().whereType<File>().toList();
+    final files = hiveDirectory.listSync().whereType<File>().toList();
     // A partial copy was never a complete backup: the box it was copied from
     // had not been touched yet, so the copy is simply discarded.
-    for (final file in entries.where((f) => f.path.endsWith(_partialSuffix))) {
-      await file.delete();
+    await _deleteFiles(files.where((f) => f.path.endsWith(_partialSuffix)));
+    final backups = files.where((f) => f.path.endsWith(_backupSuffix)).toList();
+    if (await readSecret(_legacyPendingKeyAlias) != null) {
+      await deleteSecret(_legacyPendingKeyAlias);
     }
-    final backups =
-        entries.where((f) => f.path.endsWith(_backupSuffix)).toList();
-    final pending = await readSecret(_pendingKeyAlias);
 
-    if (pending == null) {
-      // Backups are deleted before the pending key, so without it any backup
-      // left over belongs to a rotation that already finished.
+    final journal = _RotationJournal(
+      File('${hiveDirectory.path}/$rotationJournalName'),
+    );
+    final steps = journal.read();
+    if (steps.isEmpty) {
+      // Backups are deleted before a journal is, so a backup without one
+      // belongs to a rotation that already finished.
       await _deleteFiles(backups);
+      journal.delete();
       return;
     }
 
-    final current = await readSecret(_keyAlias);
-    if (current == pending) {
-      // The new key was committed; only the cleanup was cut short.
-      await _deleteFiles(backups);
-      await deleteSecret(_pendingKeyAlias);
+    final stored = await readSecret(_keyAlias);
+    if (stored == null) return; // Nothing to follow; startup reports it.
+    List<int> key = base64Decode(stored);
+    var fingerprint = await _fingerprint(key);
+    // Steps before the keystore's key are history from rotations whose key
+    // write did reach the disk.
+    var position = steps.indexWhere((step) => step['from'] == fingerprint);
+    if (position < 0) position = steps.length;
+    while (position < steps.length && steps[position]['from'] == fingerprint) {
+      final step = steps[position];
+      if (step['state'] != _committed) {
+        // Cut short before the commit: every box was staged before any was
+        // rewritten, so the backups hold the data under [key].
+        for (final backup in backups) {
+          await _restoreBackup(backup);
+        }
+        steps.removeRange(position, steps.length);
+        break;
+      }
+      key = await _unseal(key, step['sealed'] as String);
+      fingerprint = await _fingerprint(key);
+      position++;
+    }
+
+    final lastKnown = steps.isEmpty ? null : steps.last['to'];
+    if (base64Encode(key) == stored) {
+      // The keystore already holds the key the boxes use. If that is where
+      // the journal ends, the rotation is settled and its record can go.
+      if (steps.isEmpty || lastKnown == fingerprint) {
+        await _deleteFiles(backups);
+        journal.delete();
+        _cachedKey = null;
+      }
+      // Otherwise the keystore holds a key the journal does not lead from;
+      // leave everything for the storage failure screen.
       return;
     }
 
-    // The new key never became current, so the boxes on disk may be half
-    // rewritten. The backups hold them as they were under the current key.
-    for (final backup in backups) {
-      await _restoreBackup(backup);
-    }
-    _cachedKey = null;
+    // The keystore lost the write of a committed key. Put it back; the
+    // journal stays until a launch reads it back from the keystore.
     await _deleteFiles(backups);
-    await deleteSecret(_pendingKeyAlias);
+    await journal.write(steps);
+    await writeSecret(_keyAlias, base64Encode(key));
+    _cachedKey = SecretKey(key);
   }
+
+  /// Forgets every rotation on record, once the boxes it describes were
+  /// deleted with all the data.
+  static void forgetRotations(Directory hiveDirectory) => _RotationJournal(
+    File('${hiveDirectory.path}/$rotationJournalName'),
+  ).delete();
 
   /// Puts a `.rotating` copy back in place of its box file. Written to a
   /// sibling and renamed, so the box file is never half restored.
   Future<void> _restoreBackup(File backup) async {
-    final original =
-        backup.path.substring(0, backup.path.length - _backupSuffix.length);
+    final original = backup.path.substring(
+      0,
+      backup.path.length - _backupSuffix.length,
+    );
     final restoring = File('$original.restoring');
-    await backup.copy(restoring.path);
+    await restoring.writeAsBytes(await backup.readAsBytes(), flush: true);
     await restoring.rename(original);
   }
 
@@ -427,6 +487,25 @@ class EncryptionService {
         // A leftover file is harmless; recovery or the next rotation removes it.
       }
     }
+  }
+
+  static Future<String> _fingerprint(List<int> key) async =>
+      base64Encode((await Sha256().hash(key)).bytes);
+
+  /// The next key, sealed with the one before it, so the journal never holds
+  /// a key in the clear.
+  static Future<String> _seal(List<int> key, List<int> secret) async {
+    final box = await _algorithm.encrypt(secret, secretKey: SecretKey(key));
+    return base64Encode(box.concatenation());
+  }
+
+  static Future<List<int>> _unseal(List<int> key, String sealed) async {
+    final box = SecretBox.fromConcatenation(
+      base64Decode(sealed),
+      nonceLength: _algorithm.nonceLength,
+      macLength: _algorithm.macAlgorithm.macLength,
+    );
+    return _algorithm.decrypt(box, secretKey: SecretKey(key));
   }
 
   /// إنشاء مفتاح جديد بعد اكتمال حذف جميع البيانات القديمة.
@@ -503,6 +582,37 @@ class InvalidEncryptionKeyException implements Exception {
 
   @override
   String toString() => 'Encryption key is invalid';
+}
+
+/// The ordered rotation steps, as a JSON file the app writes and flushes
+/// itself. Replaced through a sibling file, so it is never half written.
+class _RotationJournal {
+  _RotationJournal(this.file);
+
+  final File file;
+
+  List<Map<String, dynamic>> read() {
+    if (!file.existsSync()) return [];
+    final decoded = jsonDecode(file.readAsStringSync());
+    return [
+      for (final step in decoded['steps'] as List)
+        Map<String, dynamic>.from(step as Map),
+    ];
+  }
+
+  Future<void> write(List<Map<String, dynamic>> steps) async {
+    if (steps.isEmpty) {
+      delete();
+      return;
+    }
+    final next = File('${file.path}.next');
+    await next.writeAsString(jsonEncode({'v': 1, 'steps': steps}), flush: true);
+    await next.rename(file.path);
+  }
+
+  void delete() {
+    if (file.existsSync()) file.deleteSync();
+  }
 }
 
 class KeyRotationException implements Exception {

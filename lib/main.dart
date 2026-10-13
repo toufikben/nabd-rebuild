@@ -29,10 +29,9 @@ Future<void> main() async {
     // Hive.initFlutter keeps its boxes in the documents directory. A key
     // rotation cut short by the process dying is finished or undone here,
     // before any box is opened.
-    await EncryptionService().recoverInterruptedRotation(
-      await getApplicationDocumentsDirectory(),
-    );
-    await DatabaseMigrationService().migrate();
+    final hiveDirectory = await getApplicationDocumentsDirectory();
+    await EncryptionService().recoverInterruptedRotation(hiveDirectory);
+    await DatabaseMigrationService(hiveDirectory: hiveDirectory).migrate();
     final hiveCipher = HiveAesCipher(
       await EncryptionService().hiveKeyBytes(),
     );
@@ -150,6 +149,7 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
     }
     try {
       final docs = await getApplicationDocumentsDirectory();
+      EncryptionService.forgetRotations(docs);
       for (final directoryName in ['images', 'audio']) {
         final directory = Directory('${docs.path}/$directoryName');
         if (await directory.exists()) await directory.delete(recursive: true);
@@ -158,6 +158,14 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
       debugPrint('Could not delete media: $error');
     }
     await EncryptionService().deleteKey();
+    try {
+      // Reminders, the weekly review and letter announcements all refer to
+      // data that no longer exists.
+      await NotificationService.init();
+      await NotificationService.cancelEverything();
+    } catch (error) {
+      debugPrint('Could not cancel notifications: $error');
+    }
   }
 
   @override
