@@ -19,6 +19,12 @@ case "${1:-help}" in
     $ADB shell getprop ro.build.version.release
     $ADB shell getprop ro.build.version.sdk
     $ADB shell dumpsys package "$PKG" | grep -E 'versionName|versionCode|firstInstallTime|lastUpdateTime' || echo "not installed"
+    # Screenshots, run-as and the test hooks need a debuggable build.
+    if $ADB shell dumpsys package "$PKG" | grep -q 'DEBUGGABLE'; then
+      echo "build: debuggable"
+    else
+      echo "build: NOT debuggable (store/release build: screenshots stay black)"
+    fi
     ;;
   install)    # install <apk> — يثبّت فوق نسخة debug سابقة دون حذف البيانات
     $ADB install -r "${2:?apk path}" ;;
@@ -30,7 +36,11 @@ case "${1:-help}" in
   start)      $ADB shell am start -n "$ACT" ;;
   cold)       # تشغيل بارد مع قياس الزمن
     $ADB shell am force-stop "$PKG"; $ADB shell am start -W -n "$ACT" ;;
-  stop)       $ADB shell am force-stop "$PKG" ;;
+  stop)       # تحذير: force-stop يلغي منبّهات التطبيق كلها في أندرويد؛ لاختبار
+              # التذكيرات استعمل bg بدلًا منه
+    $ADB shell am force-stop "$PKG" ;;
+  bg)         # إلى الخلفية ثم قتل العملية كما يفعل النظام؛ المنبّهات تبقى
+    $ADB shell input keyevent KEYCODE_HOME; sleep 1; $ADB shell am kill "$PKG" ;;
   kill)       # قتل العملية كما يفعل النظام عند نقص الذاكرة (يحفظ الحالة)
     $ADB shell am kill "$PKG" ;;
   clear)      # تحذير: يمسح كل البيانات (يبدأ التطبيق كأنه جديد)
@@ -47,21 +57,25 @@ case "${1:-help}" in
   ui)         # يفرّغ شجرة الواجهة (نصوص وإحداثيات الأزرار) لتحديد مكان النقر
     $ADB shell uiautomator dump /sdcard/ui.xml >/dev/null
     $ADB exec-out cat /sdcard/ui.xml > "$OUT/ui.xml"
-    python3 - "$OUT/ui.xml" <<'PY'
-import re, sys
-xml = open(sys.argv[1], encoding='utf-8').read()
-for node in re.finditer(r'<node [^>]*>', xml):
-    n = node.group(0)
-    text = re.search(r' text="([^"]*)"', n).group(1)
-    desc = re.search(r'content-desc="([^"]*)"', n).group(1)
-    click = 'clickable="true"' in n
-    bounds = re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n)
-    if not (text or desc or click) or not bounds:
-        continue
-    x1, y1, x2, y2 = map(int, bounds.groups())
-    label = (text or desc).replace('\n', ' ')[:60]
-    print(f"({(x1+x2)//2:4d},{(y1+y2)//2:4d}) {'[btn] ' if click else ''}{label}")
-PY
+    # awk, not python: Git Bash on Windows has awk but often no python3.
+    tr '\n' ' ' < "$OUT/ui.xml" | sed 's/<node /\n<node /g' | awk '
+      function attr(name,   m) {
+        if (match($0, name "=\"[^\"]*\"")) {
+          m = substr($0, RSTART + length(name) + 2, RLENGTH - length(name) - 3)
+          return m
+        }
+        return ""
+      }
+      /^<node / {
+        text = attr("text"); desc = attr("content-desc")
+        click = index($0, "clickable=\"true\"") > 0
+        b = attr("bounds")
+        if ((text == "" && desc == "" && !click) || b == "") next
+        gsub(/[\[\]]/, " ", b); gsub(/,/, " ", b)
+        split(b, v, " ")
+        label = (text != "" ? text : desc)
+        printf "(%4d,%4d) %s%s\n", (v[1]+v[3])/2, (v[2]+v[4])/2, (click ? "[btn] " : ""), substr(label, 1, 60)
+      }'
     ;;
   tap)        $ADB shell input tap "${2:?x}" "${3:?y}" ;;
   swipe)      $ADB shell input swipe "$2" "$3" "$4" "$5" "${6:-300}" ;;
