@@ -39,6 +39,16 @@ void main() {
     expect(attempts.remainingSeconds(), 20);
   });
 
+  test('a lock with under a second left still shows a second to wait', () {
+    for (var i = 0; i < 5; i++) {
+      attempts.recordFailure();
+    }
+    now = now.add(const Duration(milliseconds: 29400));
+    // Locked and "0 seconds" at once is the state that froze the pad.
+    expect(attempts.isLocked(), isTrue);
+    expect(attempts.remainingSeconds(), 1);
+  });
+
   test('the lock expires by itself', () {
     for (var i = 0; i < 5; i++) {
       attempts.recordFailure();

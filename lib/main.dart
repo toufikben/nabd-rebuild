@@ -158,6 +158,14 @@ class _StorageFailureAppState extends State<StorageFailureApp> {
       debugPrint('Could not delete media: $error');
     }
     await EncryptionService().deleteKey();
+    try {
+      // Reminders, the weekly review and letter announcements all refer to
+      // data that no longer exists.
+      await NotificationService.init();
+      await NotificationService.cancelEverything();
+    } catch (error) {
+      debugPrint('Could not cancel notifications: $error');
+    }
   }
 
   @override

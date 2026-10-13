@@ -159,7 +159,7 @@ class _LockScreenState extends State<LockScreen> {
       if (!mounted) return;
       final left = _attempts.remainingSeconds();
       setState(() => _remaining = left);
-      if (left <= 0) {
+      if (!_attempts.isLocked()) {
         _tick?.cancel();
         _tick = null;
       }

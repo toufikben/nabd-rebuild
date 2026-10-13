@@ -27,6 +27,7 @@ import '../../services/notification_service.dart';
 import '../../services/passcode_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/backup_service.dart';
+import '../../services/r_personal_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/ui_sounds.dart';
 import '../../services/database_service.dart';
@@ -1039,6 +1040,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       );
       VaultImage.clearCache();
+      try {
+        await NotificationService.syncLetterUnlocks(
+          letters: [
+            for (final letter in RPersonalService().getLetters())
+              if (letter.isFuture) (id: letter.id, opensAt: letter.unlockDate),
+          ],
+          title: l10n.t('notify.letter.title'),
+          body: l10n.t('notify.letter.body'),
+        );
+      } catch (error) {
+        debugPrint('Letter announcements not synced: $error');
+      }
       // Data changed underneath every screen, so ask listeners to refetch.
       ref.read(dataRevisionProvider.notifier).bump();
     } catch (error) {
@@ -1191,6 +1204,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       await NotificationService.disableDailyReminder();
       await NotificationService.disableWeeklyReview();
+      // Letters to the future too: their announcements outlived the letters.
+      await NotificationService.cancelEverything();
     } catch (_) {}
     DatabaseService.invalidate();
     VaultImage.clearCache();
