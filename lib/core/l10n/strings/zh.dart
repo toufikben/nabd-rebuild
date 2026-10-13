@@ -214,6 +214,8 @@ const Map<String, String> stringsZh = <String, String>{
   'settings.data.deleteAllHint': '移除所有日记',
   'settings.about.share': '分享应用',
   'settings.about.shareHint': '告诉你的朋友',
+  'settings.about.rate': '为 Pulse 评分',
+  'settings.about.rateHint': '在 Google Play 上告诉我们你的感受',
   'settings.about.version': '版本',
   'settings.about.shareBody': '来看看 Pulse，一款注重隐私的日记应用！',
   'entry.untitled': '无标题',

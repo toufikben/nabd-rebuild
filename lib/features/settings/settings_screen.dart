@@ -28,6 +28,7 @@ import '../../services/passcode_service.dart';
 import '../../services/privacy_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/r_personal_service.dart';
+import '../../services/review_prompt.dart';
 import '../../services/settings_service.dart';
 import '../../services/ui_sounds.dart';
 import '../../services/database_service.dart';
@@ -312,6 +313,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onTap: () {
                 Share.share(l10n.t('settings.about.shareBody'));
               },
+            ),
+            _tile(
+              icon: Icons.star_outline_rounded,
+              title: l10n.t('settings.about.rate'),
+              subtitle: l10n.t('settings.about.rateHint'),
+              onTap: ReviewPrompt.openStorePage,
             ),
             _tile(
               icon: Icons.info_outline,

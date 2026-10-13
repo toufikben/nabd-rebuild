@@ -214,6 +214,8 @@ const Map<String, String> stringsAr = <String, String>{
   'settings.data.deleteAllHint': 'إزالة كل المدخلات',
   'settings.about.share': 'مشاركة التطبيق',
   'settings.about.shareHint': 'عرّف أصدقاءك',
+  'settings.about.rate': 'قيّم نبض',
+  'settings.about.rateHint': 'أخبرنا على Google Play برأيك',
   'settings.about.version': 'الإصدار',
   'settings.about.shareBody': 'جرّب «مذكرتي» — تطبيق يوميات خاص كلياً.',
   'entry.untitled': 'بلا عنوان',

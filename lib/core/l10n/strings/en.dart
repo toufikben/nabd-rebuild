@@ -214,6 +214,8 @@ const Map<String, String> stringsEn = <String, String>{
   'settings.data.deleteAllHint': 'Remove all entries',
   'settings.about.share': 'Share App',
   'settings.about.shareHint': 'Tell your friends',
+  'settings.about.rate': 'Rate Pulse',
+  'settings.about.rateHint': 'Tell us on Google Play how it is going',
   'settings.about.version': 'Version',
   'settings.about.shareBody': 'Check out Pulse - a private journaling app!',
   'entry.untitled': 'Untitled',

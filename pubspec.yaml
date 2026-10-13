@@ -61,6 +61,10 @@ dependencies:
   uuid: ^4.5.1
   package_info_plus: ^8.1.1
 
+  # Store rating: Google Play's own in-app review sheet. Play decides
+  # whether it actually shows, and caps how often.
+  in_app_review: ^2.0.12
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

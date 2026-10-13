@@ -214,6 +214,8 @@ const Map<String, String> stringsUk = <String, String>{
   'settings.data.deleteAllHint': 'Видалити всі записи',
   'settings.about.share': 'Поділитися застосунком',
   'settings.about.shareHint': 'Розкажи друзям',
+  'settings.about.rate': 'Оцінити Pulse',
+  'settings.about.rateHint': 'Розкажіть про враження в Google Play',
   'settings.about.version': 'Версія',
   'settings.about.shareBody': 'Глянь на Pulse — приватний щоденник!',
   'entry.untitled': 'Без назви',

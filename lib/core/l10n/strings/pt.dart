@@ -214,6 +214,8 @@ const Map<String, String> stringsPt = <String, String>{
   'settings.data.deleteAllHint': 'Remover todas as entradas',
   'settings.about.share': 'Compartilhar o app',
   'settings.about.shareHint': 'Conte para seus amigos',
+  'settings.about.rate': 'Avaliar o Pulse',
+  'settings.about.rateHint': 'Conte-nos o que achou no Google Play',
   'settings.about.version': 'Versão',
   'settings.about.shareBody': 'Conheça o Pulse, um app de diário privado!',
   'entry.untitled': 'Sem título',

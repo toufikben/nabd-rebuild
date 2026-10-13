@@ -214,6 +214,8 @@ const Map<String, String> stringsJa = <String, String>{
   'settings.data.deleteAllHint': 'すべての日記を削除します',
   'settings.about.share': 'アプリを共有',
   'settings.about.shareHint': '友だちに教える',
+  'settings.about.rate': 'Pulse を評価',
+  'settings.about.rateHint': 'Google Play で感想を聞かせてください',
   'settings.about.version': 'バージョン',
   'settings.about.shareBody': 'プライベートな日記アプリ「Pulse」をおすすめします！',
   'entry.untitled': '無題',

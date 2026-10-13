@@ -214,6 +214,8 @@ const Map<String, String> stringsId = <String, String>{
   'settings.data.deleteAllHint': 'Hapus semua catatan',
   'settings.about.share': 'Bagikan Aplikasi',
   'settings.about.shareHint': 'Ceritakan ke teman-temanmu',
+  'settings.about.rate': 'Beri nilai Pulse',
+  'settings.about.rateHint': 'Ceritakan pendapatmu di Google Play',
   'settings.about.version': 'Versi',
   'settings.about.shareBody': 'Coba Pulse, aplikasi jurnal yang privat!',
   'entry.untitled': 'Tanpa judul',

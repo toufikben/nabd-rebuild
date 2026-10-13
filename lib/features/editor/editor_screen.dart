@@ -24,6 +24,7 @@ import '../../services/garden_service.dart';
 import '../../services/home_widget_service.dart';
 import '../../services/media_vault.dart';
 import '../../services/motivation_service.dart';
+import '../../services/review_prompt.dart';
 import '../../services/ui_sounds.dart';
 import '../../services/voice_to_text_service.dart';
 import '../../widgets/audio_note_player.dart';
@@ -313,6 +314,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     } catch (error) {
       debugPrint('Achievement evaluation failed after journal save: $error');
     }
+    unawaited(ReviewPrompt().recordWin());
   }
 
   Future<void> _saveAndClose() async {

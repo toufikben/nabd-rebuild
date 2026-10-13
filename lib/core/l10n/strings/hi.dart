@@ -214,6 +214,8 @@ const Map<String, String> stringsHi = <String, String>{
   'settings.data.deleteAllHint': 'सारी एंट्री हटाएँ',
   'settings.about.share': 'ऐप शेयर करें',
   'settings.about.shareHint': 'अपने दोस्तों को बताएँ',
+  'settings.about.rate': 'Pulse को रेट करें',
+  'settings.about.rateHint': 'Google Play पर अपनी राय बताएँ',
   'settings.about.version': 'वर्शन',
   'settings.about.shareBody': 'Pulse देखिए, एक निजी डायरी ऐप!',
   'entry.untitled': 'बिना शीर्षक',

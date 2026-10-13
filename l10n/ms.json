@@ -212,6 +212,8 @@
   "settings.data.deleteAllHint": "Alih keluar semua catatan",
   "settings.about.share": "Kongsi Aplikasi",
   "settings.about.shareHint": "Beritahu rakan anda",
+  "settings.about.rate": "Nilai Pulse",
+  "settings.about.rateHint": "Kongsi pendapat anda di Google Play",
   "settings.about.version": "Versi",
   "settings.about.shareBody": "Cuba lihat Pulse - aplikasi jurnal peribadi!",
   "entry.untitled": "Tanpa tajuk",

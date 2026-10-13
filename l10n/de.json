@@ -212,6 +212,8 @@
   "settings.data.deleteAllHint": "Alle Einträge entfernen",
   "settings.about.share": "App teilen",
   "settings.about.shareHint": "Erzähl es deinen Freunden",
+  "settings.about.rate": "Pulse bewerten",
+  "settings.about.rateHint": "Sag uns auf Google Play, wie es dir gefällt",
   "settings.about.version": "Version",
   "settings.about.shareBody": "Probier Pulse aus, eine private Tagebuch-App!",
   "entry.untitled": "Ohne Titel",

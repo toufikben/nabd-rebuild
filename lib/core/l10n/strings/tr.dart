@@ -214,6 +214,8 @@ const Map<String, String> stringsTr = <String, String>{
   'settings.data.deleteAllHint': 'Tüm kayıtları kaldır',
   'settings.about.share': 'Uygulamayı Paylaş',
   'settings.about.shareHint': 'Arkadaşlarına anlat',
+  'settings.about.rate': 'Pulse\'u değerlendir',
+  'settings.about.rateHint': 'Google Play\'de düşüncelerini paylaş',
   'settings.about.version': 'Sürüm',
   'settings.about.shareBody': 'Pulse\'a bir göz at, özel bir günlük uygulaması!',
   'entry.untitled': 'Başlıksız',

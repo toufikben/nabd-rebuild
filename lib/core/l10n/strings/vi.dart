@@ -214,6 +214,8 @@ const Map<String, String> stringsVi = <String, String>{
   'settings.data.deleteAllHint': 'Xóa tất cả bài viết',
   'settings.about.share': 'Chia sẻ ứng dụng',
   'settings.about.shareHint': 'Giới thiệu cho bạn bè',
+  'settings.about.rate': 'Đánh giá Pulse',
+  'settings.about.rateHint': 'Cho chúng tôi biết cảm nhận của bạn trên Google Play',
   'settings.about.version': 'Phiên bản',
   'settings.about.shareBody': 'Thử Pulse nhé, một ứng dụng nhật ký riêng tư!',
   'entry.untitled': 'Chưa có tiêu đề',

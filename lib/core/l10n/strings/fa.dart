@@ -214,6 +214,8 @@ const Map<String, String> stringsFa = <String, String>{
   'settings.data.deleteAllHint': 'پاک کردن همهٔ یادداشت‌ها',
   'settings.about.share': 'اشتراک‌گذاری برنامه',
   'settings.about.shareHint': 'به دوستانت بگو',
+  'settings.about.rate': 'به Pulse امتیاز دهید',
+  'settings.about.rateHint': 'نظرتان را در Google Play بگویید',
   'settings.about.version': 'نسخه',
   'settings.about.shareBody': 'به Pulse سر بزن، یک برنامهٔ دفتر خاطرات خصوصی!',
   'entry.untitled': 'بدون عنوان',

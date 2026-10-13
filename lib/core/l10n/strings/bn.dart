@@ -214,6 +214,8 @@ const Map<String, String> stringsBn = <String, String>{
   'settings.data.deleteAllHint': 'সব এন্ট্রি সরিয়ে দিন',
   'settings.about.share': 'অ্যাপ শেয়ার করুন',
   'settings.about.shareHint': 'বন্ধুদের জানান',
+  'settings.about.rate': 'Pulse-কে রেটিং দিন',
+  'settings.about.rateHint': 'Google Play-তে আপনার মতামত জানান',
   'settings.about.version': 'ভার্সন',
   'settings.about.shareBody': 'Pulse দেখুন, একটি ব্যক্তিগত ডায়েরি অ্যাপ!',
   'entry.untitled': 'শিরোনামহীন',

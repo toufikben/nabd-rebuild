@@ -214,6 +214,8 @@ const Map<String, String> stringsUr = <String, String>{
   'settings.data.deleteAllHint': 'تمام تحریریں ہٹا دیں',
   'settings.about.share': 'ایپ شیئر کریں',
   'settings.about.shareHint': 'اپنے دوستوں کو بتائیں',
+  'settings.about.rate': 'Pulse کو ریٹ کریں',
+  'settings.about.rateHint': 'Google Play پر اپنی رائے بتائیں',
   'settings.about.version': 'ورژن',
   'settings.about.shareBody': 'Pulse دیکھیں، ایک نجی ڈائری ایپ!',
   'entry.untitled': 'بے عنوان',

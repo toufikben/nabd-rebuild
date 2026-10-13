@@ -212,6 +212,8 @@
   "settings.data.deleteAllHint": "모든 기록 삭제",
   "settings.about.share": "앱 공유",
   "settings.about.shareHint": "친구에게 알리기",
+  "settings.about.rate": "Pulse 평가하기",
+  "settings.about.rateHint": "Google Play에서 의견을 들려주세요",
   "settings.about.version": "버전",
   "settings.about.shareBody": "Pulse를 써 보세요. 나만의 비공개 일기 앱이에요!",
   "entry.untitled": "제목 없음",

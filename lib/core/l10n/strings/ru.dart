@@ -214,6 +214,8 @@ const Map<String, String> stringsRu = <String, String>{
   'settings.data.deleteAllHint': 'Удалить все записи',
   'settings.about.share': 'Поделиться приложением',
   'settings.about.shareHint': 'Расскажи друзьям',
+  'settings.about.rate': 'Оценить Pulse',
+  'settings.about.rateHint': 'Расскажите о впечатлениях в Google Play',
   'settings.about.version': 'Версия',
   'settings.about.shareBody': 'Посмотри на Pulse — приватный дневник!',
   'entry.untitled': 'Без названия',
