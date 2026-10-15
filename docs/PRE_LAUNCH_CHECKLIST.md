@@ -15,7 +15,7 @@
 
 - [ ] إنشاء حساب Google Play Console
 - [ ] (لاحقًا، بعد خادم التحقق) إنشاء `nabd_pro_monthly` و`nabd_pro_yearly`
-- [ ] إنشاء منتج `nabd_lifetime` (79.99$)
+- [ ] إنشاء منتج `nabd_lifetime` غير استهلاكي (59.99$) في One-time products
 - [ ] إنشاء حساب App Store Connect
 - [ ] تكرار المنتجات في App Store
 - [ ] اختبار الشراء بـ Sandbox
