@@ -71,6 +71,8 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   # Only the tests' fake passcode derivation uses it.
   crypto: ^3.0.5
+  # The readiness tests install a fake billing client at the platform seam.
+  in_app_purchase_platform_interface: ^1.4.0
   flutter_launcher_icons: ^0.14.2
   flutter_native_splash: ^2.4.3
 
