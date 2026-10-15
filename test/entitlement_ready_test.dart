@@ -37,6 +37,10 @@ class _HangingBilling extends InAppPurchasePlatform {
 }
 
 void main() {
+  // The launch path reaches `InAppPurchase.instance`, which reads the
+  // platform through the binding.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUp(() => InAppPurchasePlatform.instance = _UnavailableBilling());
 
   test('Pro is granted only after readiness', () async {
