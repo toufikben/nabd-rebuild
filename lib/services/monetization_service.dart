@@ -7,6 +7,33 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:path_provider/path_provider.dart';
+
+/// DIAGNOSTIC BUILD ONLY (branch diag/entitlement-launch — never merge).
+/// logcat on this OEM rotates the `flutter` tag away within a minute, so the
+/// launch path is mirrored to an app-specific external file that adb can read
+/// without root.
+class _Diag {
+  _Diag._();
+
+  static Directory? _dir;
+
+  static Future<void> log(String message) async {
+    final line = '[NABDDIAG] pid=${Platform.pid} '
+        '${DateTime.now().toIso8601String()} $message';
+    debugPrint(line);
+    try {
+      if (!Platform.isAndroid) return;
+      _dir ??= await getExternalStorageDirectory();
+      final dir = _dir;
+      if (dir == null) return;
+      await File('${dir.path}/nabd_diag.txt')
+          .writeAsString('$line\n', mode: FileMode.append, flush: true);
+    } catch (error) {
+      debugPrint('[NABDDIAG] sink failed: $error');
+    }
+  }
+}
 
 /// The app never derives subscription expiry locally. Subscription entitlement
 /// stays `subscriptionUnverified` until a trusted backend confirms it;
@@ -438,12 +465,22 @@ class SecureEntitlementStore implements EntitlementStore {
   );
 
   @override
-  Future<CachedEntitlement?> read() async =>
-      CachedEntitlement.tryParse(await _storage.read(key: _key));
+  Future<CachedEntitlement?> read() async {
+    final raw = await _storage.read(key: _key);
+    // DIAGNOSTIC ONLY: is the cache actually present at launch?
+    await _Diag.log('store.read raw=${raw ?? 'NULL'}');
+    return CachedEntitlement.tryParse(raw);
+  }
 
   @override
-  Future<void> write(CachedEntitlement entitlement) =>
-      _storage.write(key: _key, value: jsonEncode(entitlement.toJson()));
+  Future<void> write(CachedEntitlement entitlement) async {
+    final value = jsonEncode(entitlement.toJson());
+    await _storage.write(key: _key, value: value);
+    // DIAGNOSTIC ONLY: does the platform store hand the value back?
+    final back = await _storage.read(key: _key);
+    await _Diag.log('store.write value=$value '
+        'readBack=${back ?? 'NULL'}');
+  }
 }
 
 class EntitlementService {
@@ -503,9 +540,18 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   Timer? _restoreTimer;
 
   Future<void> _init() async {
+    // DIAGNOSTIC ONLY
+    await _Diag.log('init.start release=$kReleaseMode '
+        'prod=${MonetizationConfig.productionConfigured} '
+        'lifetimeId=${MonetizationConfig.lifetimeId} '
+        'subs=${MonetizationConfig.subscriptionsEnabled}');
     await _loadCachedEntitlement();
     if (!mounted) return;
+    // DIAGNOSTIC ONLY
+    await _Diag.log('after.cache isPro=${state.isPro} '
+        'isLifetime=${state.isLifetime} status=${state.entitlementStatus}');
     if (kReleaseMode && !MonetizationConfig.productionConfigured) {
+      await _Diag.log('init.abort killSwitch'); // DIAGNOSTIC ONLY
       state = state.copyWith(
         error: 'Purchases are not configured for this release.',
         entitlementStatus: state.isPro ? null : EntitlementStatus.error,
@@ -513,6 +559,8 @@ class MonetizationService extends StateNotifier<MonetizationState> {
       return;
     }
     final available = await _iap.isAvailable();
+    // DIAGNOSTIC ONLY
+    await _Diag.log('billing.available=$available mounted=$mounted');
     if (!mounted) return;
     if (!available) return;
     state = state.copyWith(storeAvailable: true);
@@ -520,9 +568,13 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     await _loadProducts();
     // Re-confirm what the store knows without showing a spinner, so a
     // purchase made on another device or a refund is picked up on launch.
+    await _Diag.log('silent.restore.calling'); // DIAGNOSTIC ONLY
     try {
       await _iap.restorePurchases();
+      await _Diag.log('silent.restore.returned'); // DIAGNOSTIC ONLY
     } catch (error) {
+      // DIAGNOSTIC ONLY
+      await _Diag.log('silent.restore.threw $error');
       debugPrint('Silent restore failed: $error');
     }
   }
@@ -532,6 +584,10 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   Future<void> _loadCachedEntitlement() async {
     try {
       final cached = await _store.read();
+      // DIAGNOSTIC ONLY
+      await _Diag.log('cache.parsed '
+          'cached=${cached == null ? 'null' : 'lifetime=${cached.lifetime}'} '
+          'active=${cached?.isActive(DateTime.now())} mounted=$mounted');
       if (cached == null || !mounted) return;
       if (!cached.isActive(DateTime.now())) return;
       state = state.copyWith(
@@ -543,17 +599,24 @@ class MonetizationService extends StateNotifier<MonetizationState> {
             : EntitlementStatus.subscriptionActive,
       );
     } catch (error) {
+      // DIAGNOSTIC ONLY
+      await _Diag.log('cache.read.threw $error');
       debugPrint('Entitlement cache unreadable: $error');
     }
   }
 
   Future<void> _saveEntitlement() async {
+    // DIAGNOSTIC ONLY
+    await _Diag.log('cache.write.requested isPro=${state.isPro} '
+        'isLifetime=${state.isLifetime} proExpiry=${state.proExpiry}');
     try {
       await _store.write(CachedEntitlement(
         lifetime: state.isLifetime,
         proExpiry: state.isLifetime ? null : state.proExpiry,
       ));
     } catch (error) {
+      // DIAGNOSTIC ONLY
+      await _Diag.log('cache.write.threw $error');
       debugPrint('Entitlement cache not written: $error');
     }
   }
@@ -641,7 +704,9 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     });
     try {
       await _iap.restorePurchases();
+      await _Diag.log('manual.restore.returned'); // DIAGNOSTIC ONLY
     } catch (error) {
+      await _Diag.log('manual.restore.threw $error'); // DIAGNOSTIC ONLY
       _restoreTimer?.cancel();
       if (!mounted) return;
       state = state.copyWith(
@@ -653,10 +718,18 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   }
 
   void _onPurchaseUpdate(List<PurchaseDetails> purchases) {
+    // DIAGNOSTIC ONLY
+    unawaited(_Diag.log('stream.callback count=${purchases.length} '
+        'mounted=$mounted isProBefore=${state.isPro}'));
     if (!mounted) return;
     if (purchases.isNotEmpty) _restoreTimer?.cancel();
     for (final purchase in purchases) {
       final status = _entitlements.statusFor(purchase);
+      // DIAGNOSTIC ONLY: ids and states, never the purchase token.
+      unawaited(_Diag.log('stream.purchase id=${purchase.productID} '
+          'orderId=${purchase.purchaseID} status=${purchase.status} '
+          'pendingComplete=${purchase.pendingCompletePurchase} '
+          'mapped=$status'));
       if (status == EntitlementStatus.lifetime) {
         state = state.copyWith(
           isPro: true,
@@ -680,7 +753,14 @@ class MonetizationService extends StateNotifier<MonetizationState> {
         );
       }
       if (purchase.pendingCompletePurchase) {
-        unawaited(_iap.completePurchase(purchase));
+        // DIAGNOSTIC ONLY: a failed acknowledgement is how Play later
+        // auto-refunds a purchase, so surface it instead of dropping it.
+        unawaited(_iap.completePurchase(purchase).then((_) {
+          unawaited(_Diag.log('ack.ok id=${purchase.productID}'));
+        }).catchError((error) {
+          unawaited(_Diag.log('ack.failed id=${purchase.productID} '
+              'error=$error'));
+        }));
       }
     }
   }
