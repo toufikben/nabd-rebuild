@@ -924,7 +924,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _exportDocument() async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    if (!ref.read(monetizationProvider).isPro) {
+    final service = ref.read(monetizationProvider.notifier);
+    // Cold start: the entitlement cache is still being read. Deciding before
+    // it lands would send a Pro customer to the paywall.
+    await service.ensureReady();
+    if (!mounted) return;
+    if (!service.isProActive) {
       await context.push('/paywall');
       return;
     }

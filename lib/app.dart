@@ -12,6 +12,7 @@ import 'core/theme/app_theme.dart';
 import 'services/biometric_service.dart';
 import 'services/database_service.dart';
 import 'services/home_widget_service.dart';
+import 'services/monetization_service.dart';
 import 'services/notification_service.dart';
 import 'services/settings_service.dart';
 
@@ -29,6 +30,10 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // The provider is otherwise built by the first screen that reads it, which
+    // makes that screen's cold answer the default `false`. Start the entitlement
+    // cache load with the app instead.
+    unawaited(ref.read(monetizationProvider.notifier).ensureReady());
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshWidget());
   }
 

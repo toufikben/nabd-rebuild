@@ -482,7 +482,9 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   /// A service frozen at [state] that never talks to the store, for tests.
   @visibleForTesting
   MonetizationService.preset(super.state)
-      : _store = const SecureEntitlementStore();
+      : _store = const SecureEntitlementStore() {
+    _markCacheReady();
+  }
 
   static final InAppPurchase _iap = InAppPurchase.instance;
   static const String proMonthlyId = MonetizationConfig.monthlyId;
@@ -501,9 +503,26 @@ class MonetizationService extends StateNotifier<MonetizationState> {
   final EntitlementService _entitlements = const EntitlementService();
   StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
   Timer? _restoreTimer;
+  final Completer<void> _cacheReady = Completer<void>();
+
+  /// Resolves as soon as the cached entitlement has been read and applied.
+  /// A Pro gate must await this before deciding: this service is built by the
+  /// first read of the provider, so reading `isPro` synchronously on a cold
+  /// start answers with the default `false` while the cache is still in flight.
+  Future<void> ensureReady() => _cacheReady.future;
+
+  void _markCacheReady() {
+    if (!_cacheReady.isCompleted) _cacheReady.complete();
+  }
 
   Future<void> _init() async {
-    await _loadCachedEntitlement();
+    try {
+      await _loadCachedEntitlement();
+    } finally {
+      // Every path above has either applied the cache or failed to read it;
+      // either way the gate may now decide, so no waiter is left hanging.
+      _markCacheReady();
+    }
     if (!mounted) return;
     if (kReleaseMode && !MonetizationConfig.productionConfigured) {
       state = state.copyWith(
