@@ -654,7 +654,11 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   void _onPurchaseUpdate(List<PurchaseDetails> purchases) {
     if (!mounted) return;
-    if (purchases.isNotEmpty) _restoreTimer?.cancel();
+    if (purchases.isEmpty) {
+      _revokeProIfStoreOwnsNothing();
+      return;
+    }
+    _restoreTimer?.cancel();
     for (final purchase in purchases) {
       final status = _entitlements.statusFor(purchase);
       if (status == EntitlementStatus.lifetime) {
@@ -683,6 +687,22 @@ class MonetizationService extends StateNotifier<MonetizationState> {
         unawaited(_iap.completePurchase(purchase));
       }
     }
+  }
+
+  /// An empty restore callback is the store answering «this account owns none
+  /// of our products» — the plugin throws instead of emitting when a query
+  /// fails, so a slow or offline billing service can never take Pro away. A
+  /// manual Restore keeps its own nothing-restored flow and its spinner.
+  void _revokeProIfStoreOwnsNothing() {
+    if (!state.isPro || state.purchasing || state.restoring) return;
+    state = state.copyWith(
+      isPro: false,
+      isLifetime: false,
+      clearProExpiry: true,
+      entitlementStatus: EntitlementStatus.expired,
+      error: null,
+    );
+    unawaited(_store.write(const CachedEntitlement()));
   }
 
   /// Sends the purchase to the trusted backend and applies the verdict.
