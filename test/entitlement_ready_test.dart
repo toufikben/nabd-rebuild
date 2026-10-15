@@ -1,7 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, debugDefaultTargetPlatformOverride;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
 import 'package:nabd/services/monetization_service.dart';
 
@@ -42,14 +43,16 @@ void main() {
   // platform through the binding.
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() {
-    // Resolve the wrapper *before* the fake goes in: the test binding reports
-    // Android, so that first touch registers the real billing client, and the
-    // fake installed afterwards is the one that stays.
-    final reused = identical(InAppPurchase.instance, InAppPurchase.instance);
-    expect(reused, isTrue);
-    InAppPurchasePlatform.instance = _UnavailableBilling();
+  setUpAll(() {
+    // `InAppPurchase.instance` registers a real platform client the first time
+    // it is used, and the test binding claims Android. A neutral target keeps
+    // the fakes below as the only billing code the service can reach.
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
   });
+
+  tearDownAll(() => debugDefaultTargetPlatformOverride = null);
+
+  setUp(() => InAppPurchasePlatform.instance = _UnavailableBilling());
 
   test('Pro is granted only after readiness', () async {
     final store = _GatedStore(const CachedEntitlement(lifetime: true));
