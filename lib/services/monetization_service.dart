@@ -19,8 +19,8 @@ class _Diag {
   static Directory? _dir;
 
   static Future<void> log(String message) async {
-    final line = '[NABDDIAG] pid=${Platform.pid} '
-        '${DateTime.now().toIso8601String()} $message';
+    final line =
+        '[NABDDIAG] ${DateTime.now().toIso8601String()} $message';
     debugPrint(line);
     try {
       if (!Platform.isAndroid) return;
