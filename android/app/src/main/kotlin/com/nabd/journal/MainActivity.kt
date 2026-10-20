@@ -39,6 +39,14 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "nabd/links")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "initial") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                result.success(intent?.dataString)
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "nabd/widget")
             .setMethodCallHandler { call, result ->
                 if (call.method != "update") {

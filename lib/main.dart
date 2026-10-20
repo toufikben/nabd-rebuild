@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'app.dart';
 import 'core/l10n/app_strings.dart';
 import 'core/l10n/languages.dart';
+import 'core/router.dart';
 import 'core/storage.dart';
 import 'services/database_service.dart';
 import 'services/encryption_service.dart';
@@ -20,6 +21,13 @@ import 'services/settings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    final String? initialLink = await const MethodChannel('nabd/links')
+        .invokeMethod<String>('initial');
+    if (initialLink != null && initialLink.isNotEmpty) {
+      pendingInitialLink = initialLink;
+    }
+  } catch (_) {}
   // Month and weekday names are loaded lazily by intl; without this the
   // calendar and entry dates fail or silently fall back to English.
   await initializeDateFormatting();

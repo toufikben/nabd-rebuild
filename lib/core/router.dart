@@ -90,7 +90,20 @@ String? externalLocation(Uri uri) {
   return null;
 }
 
+/// Deep link read from the launch intent before Flutter started handing
+/// routes to the navigation channel. Set from `main()` while the app boots.
+String? pendingInitialLink;
+
 String _initialLocation() {
+  final String? pending = pendingInitialLink;
+  if (pending != null && pending.isNotEmpty) {
+    final Uri? pendingUri = Uri.tryParse(pending);
+    if (pendingUri != null) {
+      if (!pendingUri.hasScheme) return pending;
+      final String? external = externalLocation(pendingUri);
+      if (external != null) return external;
+    }
+  }
   final String platformRoute =
       WidgetsBinding.instance.platformDispatcher.defaultRouteName;
   if (platformRoute == '/') return '/';
