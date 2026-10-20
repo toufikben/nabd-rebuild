@@ -408,11 +408,11 @@
   "lock.pin.forgot": "پاس کوڈ بھول گئے؟",
   "silent.title": "خاموش ساتھی",
   "silent.tagline": "بس یہیں رہیں۔",
-  "silent.body": "کوئی لفظ نہیں۔ کوئی کام نہیں۔ صرف بارش۔",
+  "silent.body": "کوئی لفظ نہیں۔ کوئی کام نہیں۔ صرف آواز۔",
   "silent.tapToBegin": "شروع کرنے کے لیے دبائیں",
-  "silent.loading": "بارش لوڈ ہو رہی ہے...",
-  "silent.loadFailed": "بارش کی آڈیو لوڈ نہیں ہو سکی۔",
-  "silent.playing": "بارش چل رہی ہے",
+  "silent.loading": "آواز لوڈ ہو رہی ہے...",
+  "silent.loadFailed": "یہ آواز لوڈ نہیں ہو سکی۔",
+  "silent.playing": "آواز چل رہی ہے",
   "silent.sessionActive": "ایک سیشن اس وقت چل رہا ہے۔",
   "silent.gardenActive": "باغ کا ماحول اس وقت فعال ہے۔",
   "nav.journal": "ڈائری",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "لکھیں: اداس",
   "gratitudeJournal.needOne": "پہلے کم از کم ایک بات لکھیں۔",
   "breathing.rest": "آرام",
-  "breathing.done": "مکمل"
+  "breathing.done": "مکمل",
+  "silent.sound": "آواز",
+  "silent.sound.rain": "بارش",
+  "silent.sound.ocean": "سمندر کی لہریں",
+  "silent.sound.birds": "باغ کے پرندے",
+  "settings.pro.active": "Pro فعال ہے",
+  "settings.pro.activeHint": "تمام خصوصیات کھلی ہیں"
 }

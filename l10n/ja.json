@@ -408,11 +408,11 @@
   "lock.pin.forgot": "パスコードをお忘れですか？",
   "silent.title": "静かな相棒",
   "silent.tagline": "ただ、ここにいましょう。",
-  "silent.body": "言葉も、やることもありません。雨の音だけ。",
+  "silent.body": "言葉も、やることもありません。音だけ。",
   "silent.tapToBegin": "タップして開始",
-  "silent.loading": "雨の音を読み込み中…",
-  "silent.loadFailed": "雨の音声を読み込めません。",
-  "silent.playing": "雨の音を再生中",
+  "silent.loading": "音を読み込み中…",
+  "silent.loadFailed": "この音を読み込めませんでした。",
+  "silent.playing": "音を再生中",
   "silent.sessionActive": "セッションを再生中です。",
   "silent.gardenActive": "庭の環境音が再生中です。",
   "nav.journal": "日記",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "書く：悲しい",
   "gratitudeJournal.needOne": "まず少なくとも1つ書いてください。",
   "breathing.rest": "休む",
-  "breathing.done": "完了"
+  "breathing.done": "完了",
+  "silent.sound": "サウンド",
+  "silent.sound.rain": "雨",
+  "silent.sound.ocean": "海の波",
+  "silent.sound.birds": "庭の鳥",
+  "settings.pro.active": "Pro が有効です",
+  "settings.pro.activeHint": "すべての機能が利用できます"
 }

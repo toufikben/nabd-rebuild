@@ -408,11 +408,11 @@
   "lock.pin.forgot": "Quên mật mã?",
   "silent.title": "Người bạn lặng lẽ",
   "silent.tagline": "Cứ ở đây thôi.",
-  "silent.body": "Không lời nói. Không việc phải làm. Chỉ có tiếng mưa.",
+  "silent.body": "Không lời nói. Không việc phải làm. Chỉ có âm thanh.",
   "silent.tapToBegin": "Chạm để bắt đầu",
-  "silent.loading": "Đang tải tiếng mưa...",
-  "silent.loadFailed": "Không thể tải âm thanh mưa.",
-  "silent.playing": "Đang phát tiếng mưa",
+  "silent.loading": "Đang tải âm thanh...",
+  "silent.loadFailed": "Không thể tải âm thanh này.",
+  "silent.playing": "Âm thanh đang phát",
   "silent.sessionActive": "Một buổi thực hành đang phát.",
   "silent.gardenActive": "Âm thanh vườn đang hoạt động.",
   "nav.journal": "Nhật ký",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "Viết: buồn",
   "gratitudeJournal.needOne": "Hãy viết ít nhất một điều trước.",
   "breathing.rest": "Nghỉ",
-  "breathing.done": "Xong"
+  "breathing.done": "Xong",
+  "silent.sound": "Âm thanh",
+  "silent.sound.rain": "Tiếng mưa",
+  "silent.sound.ocean": "Sóng biển",
+  "silent.sound.birds": "Chim trong vườn",
+  "settings.pro.active": "Pro đang hoạt động",
+  "settings.pro.activeHint": "Mọi tính năng đã được mở khóa"
 }

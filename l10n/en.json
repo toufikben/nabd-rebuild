@@ -408,11 +408,11 @@
   "lock.pin.forgot": "Forgot the passcode?",
   "silent.title": "Silent Companion",
   "silent.tagline": "Just be here.",
-  "silent.body": "No words. No tasks. Only rain.",
+  "silent.body": "No words. No tasks. Just sound.",
   "silent.tapToBegin": "Tap to begin",
-  "silent.loading": "Loading rain...",
-  "silent.loadFailed": "Unable to load rain audio.",
-  "silent.playing": "Rain is playing",
+  "silent.loading": "Loading sound...",
+  "silent.loadFailed": "Unable to load this sound.",
+  "silent.playing": "Sound is playing",
   "silent.sessionActive": "A session is currently playing.",
   "silent.gardenActive": "Garden ambience is currently active.",
   "nav.journal": "Journal",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "Write: sad",
   "gratitudeJournal.needOne": "Write at least one thing first.",
   "breathing.rest": "Rest",
-  "breathing.done": "Done"
+  "breathing.done": "Done",
+  "silent.sound": "Sound",
+  "silent.sound.rain": "Rain",
+  "silent.sound.ocean": "Ocean waves",
+  "silent.sound.birds": "Garden birds",
+  "settings.pro.active": "Pro is active",
+  "settings.pro.activeHint": "All features are unlocked"
 }

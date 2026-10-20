@@ -16,6 +16,7 @@ import '../../models/mood.dart';
 import '../../services/database_service.dart';
 import '../../services/garden_service.dart';
 import '../../services/habit_service.dart';
+import '../../services/monetization_service.dart';
 import '../../services/motivation_service.dart';
 import '../../widgets/entry_card.dart';
 import '../../widgets/nabd_ui.dart';
@@ -55,6 +56,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     final scheme = theme.colorScheme;
     ref.watch(dataRevisionProvider);
     final garden = ref.watch(gardenProvider);
+    final isPro = ref.watch(monetizationProvider.select((state) => state.isPro));
     final locale = l10n.locale.languageCode;
 
     final entries = _db.getAllEntries();
@@ -103,6 +105,12 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                         ],
                       ),
                     ),
+                    if (!isPro)
+                      IconButton(
+                        tooltip: l10n.t('paywall.title'),
+                        onPressed: () => _open('/paywall'),
+                        icon: const Icon(Icons.workspace_premium_outlined),
+                      ),
                     IconButton(
                       tooltip: l10n.t('menu.search'),
                       onPressed: () => _open('/search'),

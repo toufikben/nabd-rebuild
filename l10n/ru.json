@@ -408,11 +408,11 @@
   "lock.pin.forgot": "Забыл код-пароль?",
   "silent.title": "Тихий спутник",
   "silent.tagline": "Просто побудь здесь.",
-  "silent.body": "Без слов. Без дел. Только дождь.",
+  "silent.body": "Без слов. Без дел. Только звук.",
   "silent.tapToBegin": "Нажми, чтобы начать",
-  "silent.loading": "Загружаем дождь...",
-  "silent.loadFailed": "Не удалось загрузить звук дождя.",
-  "silent.playing": "Идёт дождь",
+  "silent.loading": "Загружаем звук...",
+  "silent.loadFailed": "Не удалось загрузить этот звук.",
+  "silent.playing": "Звук играет",
   "silent.sessionActive": "Сейчас идёт сессия.",
   "silent.gardenActive": "Сейчас включена атмосфера сада.",
   "nav.journal": "Дневник",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "Запись: грусть",
   "gratitudeJournal.needOne": "Сначала напишите хотя бы что-то одно.",
   "breathing.rest": "Пауза",
-  "breathing.done": "Готово"
+  "breathing.done": "Готово",
+  "silent.sound": "Звук",
+  "silent.sound.rain": "Дождь",
+  "silent.sound.ocean": "Волны океана",
+  "silent.sound.birds": "Садовые птицы",
+  "settings.pro.active": "Pro активен",
+  "settings.pro.activeHint": "Все функции открыты"
 }

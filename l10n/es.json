@@ -408,11 +408,11 @@
   "lock.pin.forgot": "¿Olvidaste el código de acceso?",
   "silent.title": "Compañero silencioso",
   "silent.tagline": "Solo estar aquí.",
-  "silent.body": "Sin palabras. Sin tareas. Solo lluvia.",
+  "silent.body": "Sin palabras. Sin tareas. Solo sonido.",
   "silent.tapToBegin": "Toca para empezar",
-  "silent.loading": "Cargando lluvia...",
-  "silent.loadFailed": "No se pudo cargar el audio de la lluvia.",
-  "silent.playing": "La lluvia está sonando",
+  "silent.loading": "Cargando sonido...",
+  "silent.loadFailed": "No se pudo cargar este sonido.",
+  "silent.playing": "El sonido está sonando",
   "silent.sessionActive": "Hay una sesión en reproducción.",
   "silent.gardenActive": "El ambiente del jardín está activo.",
   "nav.journal": "Diario",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "Escribir: triste",
   "gratitudeJournal.needOne": "Escribe al menos una cosa primero.",
   "breathing.rest": "Descansa",
-  "breathing.done": "Listo"
+  "breathing.done": "Listo",
+  "silent.sound": "Sonido",
+  "silent.sound.rain": "Lluvia",
+  "silent.sound.ocean": "Olas del mar",
+  "silent.sound.birds": "Pájaros del jardín",
+  "settings.pro.active": "Pro está activo",
+  "settings.pro.activeHint": "Todas las funciones están desbloqueadas"
 }

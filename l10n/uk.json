@@ -408,11 +408,11 @@
   "lock.pin.forgot": "Не пам’ятаєш код-пароль?",
   "silent.title": "Тихий супутник",
   "silent.tagline": "Просто побудь тут.",
-  "silent.body": "Без слів. Без справ. Лише дощ.",
+  "silent.body": "Без слів. Без справ. Лише звук.",
   "silent.tapToBegin": "Натисни, щоб почати",
-  "silent.loading": "Завантажуємо дощ...",
-  "silent.loadFailed": "Не вдалося завантажити звук дощу.",
-  "silent.playing": "Іде дощ",
+  "silent.loading": "Завантажуємо звук...",
+  "silent.loadFailed": "Не вдалося завантажити цей звук.",
+  "silent.playing": "Звук грає",
   "silent.sessionActive": "Зараз триває сесія.",
   "silent.gardenActive": "Зараз увімкнено атмосферу саду.",
   "nav.journal": "Щоденник",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "Запис: смуток",
   "gratitudeJournal.needOne": "Спершу напишіть хоча б щось одне.",
   "breathing.rest": "Пауза",
-  "breathing.done": "Готово"
+  "breathing.done": "Готово",
+  "silent.sound": "Звук",
+  "silent.sound.rain": "Дощ",
+  "silent.sound.ocean": "Океанські хвилі",
+  "silent.sound.birds": "Садові птахи",
+  "settings.pro.active": "Pro активний",
+  "settings.pro.activeHint": "Усі функції відкрито"
 }

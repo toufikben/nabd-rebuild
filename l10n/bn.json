@@ -408,11 +408,11 @@
   "lock.pin.forgot": "পাসকোড ভুলে গেছেন?",
   "silent.title": "নীরব সঙ্গী",
   "silent.tagline": "শুধু এখানে থাকুন।",
-  "silent.body": "কোনো কথা নেই। কোনো কাজ নেই। শুধু বৃষ্টি।",
+  "silent.body": "কথা নেই। কাজ নেই। শুধু শব্দ।",
   "silent.tapToBegin": "শুরু করতে ট্যাপ করুন",
-  "silent.loading": "বৃষ্টি লোড হচ্ছে...",
-  "silent.loadFailed": "বৃষ্টির অডিও লোড করা যায়নি।",
-  "silent.playing": "বৃষ্টি চলছে",
+  "silent.loading": "শব্দ লোড হচ্ছে...",
+  "silent.loadFailed": "এই শব্দটি লোড করা যায়নি।",
+  "silent.playing": "শব্দ চলছে",
   "silent.sessionActive": "এখন একটি সেশন চলছে।",
   "silent.gardenActive": "বাগানের পরিবেশ এখন চালু আছে।",
   "nav.journal": "ডায়েরি",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "লিখুন: মন খারাপ",
   "gratitudeJournal.needOne": "আগে অন্তত একটি কথা লিখুন।",
   "breathing.rest": "বিশ্রাম",
-  "breathing.done": "শেষ"
+  "breathing.done": "শেষ",
+  "silent.sound": "শব্দ",
+  "silent.sound.rain": "বৃষ্টি",
+  "silent.sound.ocean": "সমুদ্রের ঢেউ",
+  "silent.sound.birds": "বাগানের পাখি",
+  "settings.pro.active": "Pro সক্রিয়",
+  "settings.pro.activeHint": "সব বৈশিষ্ট্য আনলক করা হয়েছে"
 }

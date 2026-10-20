@@ -609,11 +609,11 @@
   "lock.pin.forgot": "نسيت الرمز؟",
   "silent.title": "الرفيق الصامت",
   "silent.tagline": "كن هنا فقط.",
-  "silent.body": "لا كلمات. لا مهام. مطر فقط.",
+  "silent.body": "لا كلمات. لا مهام. صوت فقط.",
   "silent.tapToBegin": "اضغط للبدء",
-  "silent.loading": "جارٍ تحميل المطر...",
-  "silent.loadFailed": "تعذّر تحميل صوت المطر.",
-  "silent.playing": "المطر يعمل",
+  "silent.loading": "جارٍ تحميل الصوت...",
+  "silent.loadFailed": "تعذّر تحميل هذا الصوت.",
+  "silent.playing": "الصوت يعمل",
   "silent.sessionActive": "هناك جلسة تعمل حالياً.",
   "silent.gardenActive": "صوت الحديقة يعمل حالياً.",
   "garden.ambienceLoading": "جارٍ تحميل صوت الحديقة...",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "اكتب: حزين",
   "gratitudeJournal.needOne": "اكتب شيئًا واحدًا على الأقل أولًا.",
   "breathing.rest": "استرح",
-  "breathing.done": "تم"
+  "breathing.done": "تم",
+  "silent.sound": "الصوت",
+  "silent.sound.rain": "المطر",
+  "silent.sound.ocean": "أمواج المحيط",
+  "silent.sound.birds": "طيور الحديقة",
+  "settings.pro.active": "Pro مفعّل",
+  "settings.pro.activeHint": "كل المزايا مفتوحة"
 }

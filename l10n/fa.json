@@ -408,11 +408,11 @@
   "lock.pin.forgot": "رمز عبور را فراموش کرده‌ای؟",
   "silent.title": "همدم خاموش",
   "silent.tagline": "فقط همین‌جا باش.",
-  "silent.body": "بی‌حرف. بی‌کار. فقط باران.",
+  "silent.body": "بی‌حرف. بی‌کار. فقط صدا.",
   "silent.tapToBegin": "برای شروع بزن",
-  "silent.loading": "در حال بارگذاری باران...",
-  "silent.loadFailed": "بارگذاری صدای باران ممکن نشد.",
-  "silent.playing": "باران در حال پخش است",
+  "silent.loading": "در حال بارگذاری صدا...",
+  "silent.loadFailed": "این صدا بارگذاری نشد.",
+  "silent.playing": "صدا در حال پخش است",
   "silent.sessionActive": "یک جلسه در حال پخش است.",
   "silent.gardenActive": "فضای صوتی باغ فعال است.",
   "nav.journal": "دفتر",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "نوشتن: غمگین",
   "gratitudeJournal.needOne": "اول دست‌کم یک چیز بنویسید.",
   "breathing.rest": "استراحت",
-  "breathing.done": "تمام"
+  "breathing.done": "تمام",
+  "silent.sound": "صدا",
+  "silent.sound.rain": "باران",
+  "silent.sound.ocean": "موج دریا",
+  "silent.sound.birds": "پرندگان باغ",
+  "settings.pro.active": "Pro فعال است",
+  "settings.pro.activeHint": "همه امکانات باز شده‌اند"
 }

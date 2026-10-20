@@ -104,14 +104,12 @@ String? externalLocationForLink(String link) {
 
 String _initialLocation() {
   final String? pending = pendingInitialLink;
-  debugPrint('NABD_INITIAL pending=$pending');
   if (pending != null) {
     final String? external = externalLocationForLink(pending);
     if (external != null) return external;
   }
   final String platformRoute =
       WidgetsBinding.instance.platformDispatcher.defaultRouteName;
-  debugPrint('NABD_INITIAL platform=$platformRoute');
   if (platformRoute == '/') return '/';
   final Uri? uri = Uri.tryParse(platformRoute);
   if (uri == null) return '/';

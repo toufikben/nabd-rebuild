@@ -408,11 +408,11 @@
   "lock.pin.forgot": "Lupa kod laluan?",
   "silent.title": "Teman Senyap",
   "silent.tagline": "Berada di sini sahaja.",
-  "silent.body": "Tanpa kata-kata. Tanpa tugasan. Hanya hujan.",
+  "silent.body": "Tanpa kata-kata. Tanpa tugasan. Hanya bunyi.",
   "silent.tapToBegin": "Ketik untuk bermula",
-  "silent.loading": "Memuatkan hujan...",
-  "silent.loadFailed": "Tidak dapat memuatkan audio hujan.",
-  "silent.playing": "Hujan sedang dimainkan",
+  "silent.loading": "Memuatkan bunyi...",
+  "silent.loadFailed": "Bunyi ini tidak dapat dimuatkan.",
+  "silent.playing": "Bunyi sedang dimainkan",
   "silent.sessionActive": "Satu sesi sedang dimainkan.",
   "silent.gardenActive": "Suasana taman sedang aktif.",
   "nav.journal": "Jurnal",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "Tulis: sedih",
   "gratitudeJournal.needOne": "Tulis sekurang-kurangnya satu perkara dahulu.",
   "breathing.rest": "Rehat",
-  "breathing.done": "Selesai"
+  "breathing.done": "Selesai",
+  "silent.sound": "Bunyi",
+  "silent.sound.rain": "Hujan",
+  "silent.sound.ocean": "Ombak laut",
+  "silent.sound.birds": "Burung taman",
+  "settings.pro.active": "Pro aktif",
+  "settings.pro.activeHint": "Semua ciri dibuka"
 }

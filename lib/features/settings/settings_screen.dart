@@ -114,12 +114,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final genderTheme = ref.watch(genderThemeProvider);
+    final isPro = ref.watch(monetizationProvider.select((state) => state.isPro));
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.t('settings.title'))),
       body: ListView(
         children: [
+          // ─── Pro ───
+          _group(l10n.t('paywall.brand'), [
+            _tile(
+              icon: Icons.workspace_premium_outlined,
+              title:
+                  isPro ? l10n.t('settings.pro.active') : l10n.t('paywall.title'),
+              subtitle: isPro
+                  ? l10n.t('settings.pro.activeHint')
+                  : l10n.t('paywall.tagline'),
+              onTap: () => context.push('/paywall'),
+            ),
+          ]),
+
           // ─── Appearance ───
           _group(l10n.t('settings.section.appearance'), [
             // Theme

@@ -408,11 +408,11 @@
   "lock.pin.forgot": "비밀번호를 잊으셨나요?",
   "silent.title": "조용한 친구",
   "silent.tagline": "그저 여기 있어요.",
-  "silent.body": "말도, 할 일도 없이 빗소리만.",
+  "silent.body": "말도, 할 일도 없이 소리만.",
   "silent.tapToBegin": "탭해서 시작",
-  "silent.loading": "빗소리를 불러오는 중...",
-  "silent.loadFailed": "빗소리를 불러올 수 없어요.",
-  "silent.playing": "빗소리가 재생 중이에요",
+  "silent.loading": "소리를 불러오는 중...",
+  "silent.loadFailed": "이 소리를 불러오지 못했어요.",
+  "silent.playing": "소리가 재생 중이에요",
   "silent.sessionActive": "세션이 재생 중이에요.",
   "silent.gardenActive": "정원 환경음이 켜져 있어요.",
   "nav.journal": "일기",
@@ -1017,5 +1017,11 @@
   "android.widget_mood_sad": "쓰기: 슬픔",
   "gratitudeJournal.needOne": "먼저 한 가지 이상 적어 주세요.",
   "breathing.rest": "쉬기",
-  "breathing.done": "완료"
+  "breathing.done": "완료",
+  "silent.sound": "소리",
+  "silent.sound.rain": "빗소리",
+  "silent.sound.ocean": "바다 파도",
+  "silent.sound.birds": "정원의 새",
+  "settings.pro.active": "Pro가 활성화되어 있어요",
+  "settings.pro.activeHint": "모든 기능이 열려 있어요"
 }
