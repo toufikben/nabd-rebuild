@@ -491,6 +491,7 @@
   "garden.sounds.night": "静かな夜",
   "garden.sounds.oud": "やわらかなウード",
   "heatmap.title": "アクティビティ・ヒートマップ",
+  "heatmap.tooltip": "アクティビティ {date} · {count}",
   "heatmap.activeDays": "書いた日数",
   "wordCloud.empty": "日記をもっと書くと、ワードクラウドが表示されます",
   "emotionRadar.empty": "気分のデータがまだ足りません",

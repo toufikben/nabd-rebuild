@@ -90,8 +90,18 @@ String? externalLocation(Uri uri) {
   return null;
 }
 
+String _initialLocation() {
+  final String platformRoute =
+      WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+  if (platformRoute == '/') return '/';
+  final Uri? uri = Uri.tryParse(platformRoute);
+  if (uri == null) return '/';
+  if (!uri.hasScheme) return platformRoute;
+  return externalLocation(uri) ?? '/';
+}
+
 final router = GoRouter(
-  initialLocation: '/',
+  initialLocation: _initialLocation(),
   redirect: (_, state) {
     final location = state.uri.path;
     final external = externalLocation(state.uri);

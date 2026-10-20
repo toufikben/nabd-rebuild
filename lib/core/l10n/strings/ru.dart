@@ -493,6 +493,7 @@ const Map<String, String> stringsRu = <String, String>{
   'garden.sounds.night': 'Тихая ночь',
   'garden.sounds.oud': 'Нежный уд',
   'heatmap.title': 'Тепловая карта активности',
+  'heatmap.tooltip': 'Активность {date} · {count}',
   'heatmap.activeDays': 'Активные дни',
   'wordCloud.empty': 'Напиши больше записей, чтобы увидеть своё облако',
   'emotionRadar.empty': 'Пока мало данных о настроении',

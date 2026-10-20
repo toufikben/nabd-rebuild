@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
@@ -166,15 +167,76 @@ class _HeatmapScreenState extends ConsumerState<HeatmapScreen> {
       }
     }
 
+    final l10n = AppLocalizations.of(context);
+    final String shortDate =
+        MaterialLocalizations.of(context).formatShortDate(date);
+
     return Tooltip(
-      message:
-          '${date.day}/${date.month}: ${entries.length} ${entries.length == 1 ? 'entry' : 'entries'}',
-      child: Container(
-        width: 12,
-        height: 12,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(2),
+      message: l10n
+          .t('heatmap.tooltip')
+          .replaceAll('{date}', shortDate)
+          .replaceAll('{count}', '${entries.length}'),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: entries.isEmpty
+            ? null
+            : () => _showDayEntries(context, date, entries),
+        child: Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDayEntries(
+    BuildContext context,
+    DateTime date,
+    List<JournalEntry> entries,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    final String label =
+        MaterialLocalizations.of(context).formatFullDate(date);
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          children: [
+            Text(
+              label,
+              style: Theme.of(sheetContext).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
+            for (final entry in entries)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.edit_note_rounded),
+                title: Text(
+                  entry.title.isEmpty
+                      ? l10n.t('entry.untitled')
+                      : entry.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  entry.content,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  context.push('/editor?id=${entry.id}');
+                },
+              ),
+          ],
         ),
       ),
     );

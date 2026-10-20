@@ -491,6 +491,7 @@
   "garden.sounds.night": "静谧的夜晚",
   "garden.sounds.oud": "轻柔的乌德琴",
   "heatmap.title": "活跃度热力图",
+  "heatmap.tooltip": "活动 {date} · {count}",
   "heatmap.activeDays": "活跃天数",
   "wordCloud.empty": "多写几篇日记，就能看到你的词云",
   "emotionRadar.empty": "心情数据还不够",

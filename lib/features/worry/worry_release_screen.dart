@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/journal_entry.dart';
+import '../../services/database_service.dart';
 
 /// WorryReleaseScreen — اكتب همّك، أطلقه.
 ///
@@ -25,13 +27,24 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
   bool _saveBeforeRelease = false;
 
   Future<void> _release() async {
-    if (_controller.text.trim().isEmpty) return;
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    final saveCopy = _saveBeforeRelease;
+    final title = AppLocalizations.of(context).t('worryRelease.title');
 
     setState(() => _stage = 1);
 
-    // Optional: save as entry before releasing
-    if (_saveBeforeRelease) {
-      // Save as a "released worry" entry
+    if (saveCopy) {
+      final now = DateTime.now();
+      await DatabaseService().addEntry(
+        JournalEntry(
+          title: title,
+          content: text,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
     }
 
     await Future.delayed(const Duration(seconds: 4));
@@ -115,6 +128,7 @@ class _WorryReleaseScreenState extends State<WorryReleaseScreen> {
                 controller: _controller,
                 maxLines: null,
                 expands: true,
+                onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context).t('worryRelease.hint'),
                   border: InputBorder.none,

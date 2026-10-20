@@ -493,6 +493,7 @@ const Map<String, String> stringsMs = <String, String>{
   'garden.sounds.night': 'Malam yang tenang',
   'garden.sounds.oud': 'Oud lembut',
   'heatmap.title': 'Peta Haba Aktiviti',
+  'heatmap.tooltip': 'Aktiviti {date} · {count}',
   'heatmap.activeDays': 'Hari aktif',
   'wordCloud.empty': 'Tulis lebih banyak catatan untuk melihat awan anda',
   'emotionRadar.empty': 'Belum cukup data mood',

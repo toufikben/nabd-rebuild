@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart' as just_audio;
+
+import '../core/storage.dart';
 
 enum AmbientSource {
   silent,
@@ -66,8 +69,10 @@ class AudioService {
 
   factory AudioService() => instance;
 
+  static const _ambientVolumeKey = 'ambient_volume';
+
   static const _defaultAmbientAssets = <AmbientSource, String>{
-    AmbientSource.silent: 'assets/sounds/silent_river_water.m4a',
+    AmbientSource.silent: 'assets/sounds/rain_soft.m4a',
     AmbientSource.garden: 'assets/sounds/garden_birds.m4a',
     AmbientSource.session: 'assets/sounds/flute_dawn.m4a',
     AmbientSource.soundscape: 'assets/sounds/rain_soft.m4a',
@@ -83,7 +88,18 @@ class AudioService {
   final Map<String, just_audio.AudioPlayer> _soundGardenPlayers = {};
   final Map<String, int> _soundGardenGenerations = {};
 
-  double _ambientVolume = 0.5;
+  double _ambientVolume = _loadAmbientVolume();
+
+  static double _loadAmbientVolume() {
+    try {
+      final Object? raw =
+          Hive.box(HiveBoxes.settings).get(_ambientVolumeKey);
+      if (raw is num) return raw.clamp(0.0, 1.0).toDouble();
+    } catch (_) {
+      // The settings box is not open yet; fall back to the default.
+    }
+    return 0.5;
+  }
   AmbientSource? _requestedSource;
   int _ambientGeneration = 0;
   int _cueGeneration = 0;
@@ -398,6 +414,12 @@ class AudioService {
     if (_disposed) return;
 
     _ambientVolume = volume.clamp(0.0, 1.0).toDouble();
+    try {
+      await Hive.box(HiveBoxes.settings)
+          .put(_ambientVolumeKey, _ambientVolume);
+    } catch (_) {
+      // A failed preference write must not stop playback.
+    }
     try {
       await _ambientPlayer.setVolume(_ambientVolume);
       for (final player in _soundGardenPlayers.values) {

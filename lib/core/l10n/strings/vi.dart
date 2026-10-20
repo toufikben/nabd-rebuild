@@ -493,6 +493,7 @@ const Map<String, String> stringsVi = <String, String>{
   'garden.sounds.night': 'Đêm tĩnh lặng',
   'garden.sounds.oud': 'Đàn oud nhẹ nhàng',
   'heatmap.title': 'Bản đồ nhiệt hoạt động',
+  'heatmap.tooltip': 'Hoạt động {date} · {count}',
   'heatmap.activeDays': 'Số ngày hoạt động',
   'wordCloud.empty': 'Hãy viết thêm bài để xem đám mây từ của bạn',
   'emotionRadar.empty': 'Chưa có đủ dữ liệu tâm trạng',

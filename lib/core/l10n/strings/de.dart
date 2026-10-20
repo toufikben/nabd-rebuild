@@ -493,6 +493,7 @@ const Map<String, String> stringsDe = <String, String>{
   'garden.sounds.night': 'Stille Nacht',
   'garden.sounds.oud': 'Sanfte Oud',
   'heatmap.title': 'Aktivitäts-Heatmap',
+  'heatmap.tooltip': 'Aktivität {date} · {count}',
   'heatmap.activeDays': 'Aktive Tage',
   'wordCloud.empty': 'Schreib mehr Einträge, um deine Wolke zu sehen',
   'emotionRadar.empty': 'Noch nicht genug Stimmungsdaten',

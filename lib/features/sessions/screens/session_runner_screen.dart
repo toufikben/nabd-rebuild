@@ -28,6 +28,7 @@ import '../session_access.dart';
 import '../widgets/breathing_circle.dart';
 import '../widgets/runner_controls.dart';
 import '../../../services/audio_service.dart';
+import '../../../services/database_service.dart';
 import '../../../services/review_prompt.dart';
 import '../../../services/ui_sounds.dart';
 import '../../../core/storage.dart';
@@ -162,26 +163,19 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
 
     await _incrementCompletedTotal();
     unawaited(ReviewPrompt().recordWin());
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 800),
-    );
-
-    if (!mounted) return;
-
-    _navigateToSessions();
   }
 
   Future<void> _incrementCompletedTotal() async {
     try {
       final box = contentBox();
-      final Object? raw = box.get('sessions_completed_total');
+      final Object? raw = box.get(ContentKeys.sessionsCompleted);
       final int current = raw is int ? raw : 0;
 
       await box.put(
-        'sessions_completed_total',
+        ContentKeys.sessionsCompleted,
         current + 1,
       );
+      DatabaseService.changes.value++;
     } catch (_) {
       // لا نعطل تجربة الجلسة إذا تعذر تحديث العداد.
     }
@@ -373,6 +367,11 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
               fontWeight: FontWeight.w700,
               color: theme.colorScheme.onSurface,
             ),
+          ),
+          const SizedBox(height: 32),
+          FilledButton(
+            onPressed: _navigateToSessions,
+            child: Text(AppLocalizations.of(context).t('dialog.done')),
           ),
         ],
       ),

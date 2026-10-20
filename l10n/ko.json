@@ -491,6 +491,7 @@
   "garden.sounds.night": "고요한 밤",
   "garden.sounds.oud": "부드러운 우드",
   "heatmap.title": "활동 히트맵",
+  "heatmap.tooltip": "활동 {date} · {count}",
   "heatmap.activeDays": "활동한 날",
   "wordCloud.empty": "기록을 더 쓰면 단어 구름을 볼 수 있어요",
   "emotionRadar.empty": "아직 기분 데이터가 충분하지 않아요",

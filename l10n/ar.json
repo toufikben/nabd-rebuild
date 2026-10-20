@@ -381,6 +381,7 @@
   "weekly.nextOn": "يصل نبضك القادم يوم الأحد.",
   "weekly.tooEarly": "لا يُنشأ نبض جديد قبل يوم الأحد.",
   "heatmap.title": "خريطة النشاط",
+  "heatmap.tooltip": "نشاط {date} · {count}",
   "heatmap.activeDays": "أيام نشطة",
   "wordCloud.empty": "اكتب المزيد لتظهر سح كلماتك",
   "emotionRadar.empty": "لا توجد بيانات مزاج كافية بعد",

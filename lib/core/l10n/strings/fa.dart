@@ -493,6 +493,7 @@ const Map<String, String> stringsFa = <String, String>{
   'garden.sounds.night': 'شب آرام',
   'garden.sounds.oud': 'عود آرام',
   'heatmap.title': 'نقشهٔ حرارتی فعالیت',
+  'heatmap.tooltip': 'فعالیت {date} · {count}',
   'heatmap.activeDays': 'روزهای فعال',
   'wordCloud.empty': 'برای دیدن ابرت یادداشت‌های بیشتری بنویس',
   'emotionRadar.empty': 'هنوز داده‌ی کافی از حال‌ها نیست',

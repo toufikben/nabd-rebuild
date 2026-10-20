@@ -493,6 +493,7 @@ const Map<String, String> stringsAr = <String, String>{
   'garden.sounds.night': 'ليل هادئ',
   'garden.sounds.oud': 'عود هادئ',
   'heatmap.title': 'خريطة النشاط',
+  'heatmap.tooltip': 'نشاط {date} · {count}',
   'heatmap.activeDays': 'أيام نشطة',
   'wordCloud.empty': 'اكتب المزيد لتظهر سح كلماتك',
   'emotionRadar.empty': 'لا توجد بيانات مزاج كافية بعد',

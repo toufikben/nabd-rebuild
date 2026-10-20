@@ -493,6 +493,7 @@ const Map<String, String> stringsTr = <String, String>{
   'garden.sounds.night': 'Sakin gece',
   'garden.sounds.oud': 'Yumuşak ud',
   'heatmap.title': 'Etkinlik Isı Haritası',
+  'heatmap.tooltip': 'Etkinlik {date} · {count}',
   'heatmap.activeDays': 'Aktif günler',
   'wordCloud.empty': 'Bulutunu görmek için daha fazla kayıt yaz',
   'emotionRadar.empty': 'Henüz yeterli duygu durumu verisi yok',

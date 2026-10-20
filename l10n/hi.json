@@ -491,6 +491,7 @@
   "garden.sounds.night": "शांत रात",
   "garden.sounds.oud": "धीमा ऊद",
   "heatmap.title": "गतिविधि हीटमैप",
+  "heatmap.tooltip": "गतिविधि {date} · {count}",
   "heatmap.activeDays": "सक्रिय दिन",
   "wordCloud.empty": "अपना बादल देखने के लिए और एंट्री लिखें",
   "emotionRadar.empty": "मूड का डेटा अभी पर्याप्त नहीं है",

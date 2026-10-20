@@ -491,6 +491,7 @@
   "garden.sounds.night": "নিস্তব্ধ রাত",
   "garden.sounds.oud": "মৃদু ঊদ",
   "heatmap.title": "কার্যকলাপের হিটম্যাপ",
+  "heatmap.tooltip": "কার্যকলাপ {date} · {count}",
   "heatmap.activeDays": "সক্রিয় দিন",
   "wordCloud.empty": "আপনার মেঘ দেখতে আরও এন্ট্রি লিখুন",
   "emotionRadar.empty": "মেজাজের তথ্য এখনও যথেষ্ট নয়",

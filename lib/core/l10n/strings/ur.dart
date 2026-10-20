@@ -493,6 +493,7 @@ const Map<String, String> stringsUr = <String, String>{
   'garden.sounds.night': 'خاموش رات',
   'garden.sounds.oud': 'نرم عود',
   'heatmap.title': 'سرگرمی کا ہیٹ میپ',
+  'heatmap.tooltip': 'سرگرمی {date} · {count}',
   'heatmap.activeDays': 'فعال دن',
   'wordCloud.empty': 'اپنا بادل دیکھنے کے لیے مزید تحریریں لکھیں',
   'emotionRadar.empty': 'ابھی موڈ کا کافی ڈیٹا نہیں',
