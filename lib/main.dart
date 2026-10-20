@@ -27,7 +27,10 @@ Future<void> main() async {
     if (initialLink != null && initialLink.isNotEmpty) {
       pendingInitialLink = initialLink;
     }
-  } catch (_) {}
+    debugPrint('NABD_LINKS initial=$initialLink pending=$pendingInitialLink');
+  } catch (e) {
+    debugPrint('NABD_LINKS error=$e');
+  }
   // Month and weekday names are loaded lazily by intl; without this the
   // calendar and entry dates fail or silently fall back to English.
   await initializeDateFormatting();

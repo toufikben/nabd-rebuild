@@ -3,6 +3,7 @@ package com.nabd.journal
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -45,6 +46,7 @@ class MainActivity : FlutterFragmentActivity() {
                     result.notImplemented()
                     return@setMethodCallHandler
                 }
+                Log.d("NabdLinks", "initial data=${intent?.dataString}")
                 result.success(intent?.dataString)
             }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "nabd/widget")

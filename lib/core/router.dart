@@ -96,6 +96,7 @@ String? pendingInitialLink;
 
 String _initialLocation() {
   final String? pending = pendingInitialLink;
+  debugPrint('NABD_INITIAL pending=$pending');
   if (pending != null && pending.isNotEmpty) {
     final Uri? pendingUri = Uri.tryParse(pending);
     if (pendingUri != null) {
@@ -106,6 +107,7 @@ String _initialLocation() {
   }
   final String platformRoute =
       WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+  debugPrint('NABD_INITIAL platform=$platformRoute');
   if (platformRoute == '/') return '/';
   final Uri? uri = Uri.tryParse(platformRoute);
   if (uri == null) return '/';
