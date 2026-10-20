@@ -73,10 +73,9 @@ Future<void> main() async {
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     final String? link = pendingInitialLink;
-    if (link != null && link.isNotEmpty) {
+    if (link != null) {
       pendingInitialLink = null;
-      final Uri? uri = Uri.tryParse(link);
-      final String? location = uri == null ? null : externalLocation(uri);
+      final String? location = externalLocationForLink(link);
       if (location != null && router.state.uri.toString() != location) {
         router.go(location);
       }
