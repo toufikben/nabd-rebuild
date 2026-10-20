@@ -105,12 +105,17 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                         ],
                       ),
                     ),
-                    if (!isPro)
-                      IconButton(
-                        tooltip: l10n.t('paywall.title'),
-                        onPressed: () => _open('/paywall'),
-                        icon: const Icon(Icons.workspace_premium_outlined),
+                    IconButton(
+                      tooltip: isPro
+                          ? l10n.t('paywall.brand')
+                          : l10n.t('paywall.title'),
+                      onPressed: () => _open('/paywall'),
+                      icon: Icon(
+                        isPro
+                            ? Icons.workspace_premium
+                            : Icons.workspace_premium_outlined,
                       ),
+                    ),
                     IconButton(
                       tooltip: l10n.t('menu.search'),
                       onPressed: () => _open('/search'),
