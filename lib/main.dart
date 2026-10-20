@@ -72,6 +72,15 @@ Future<void> main() async {
   runApp(const ProviderScope(child: NabdApp()));
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
+    final String? link = pendingInitialLink;
+    if (link != null && link.isNotEmpty) {
+      pendingInitialLink = null;
+      final Uri? uri = Uri.tryParse(link);
+      final String? location = uri == null ? null : externalLocation(uri);
+      if (location != null && router.state.uri.toString() != location) {
+        router.go(location);
+      }
+    }
     unawaited(_initializeDeferredServices());
   });
 }
