@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n/app_localizations.dart';
+import '../../core/storage.dart';
 import '../../core/theme/app_colors.dart';
+import '../../services/database_service.dart';
 import '../../services/review_prompt.dart';
 
 /// BreathingScreen — تمرين تنفس قبل الكتابة.
@@ -58,8 +60,24 @@ class _BreathingScreenState extends State<BreathingScreen>
 
     if (mounted) {
       // A whole session done is a good moment to ask for a rating.
+      await _recordCompletion();
+      if (!mounted) return;
       unawaited(ReviewPrompt().recordWin());
       setState(() => _finished = true);
+    }
+  }
+
+  /// Counts a finished breathing session exactly like a guided session, so
+  /// Insights does not stay blind to the standalone `/breathing` route.
+  Future<void> _recordCompletion() async {
+    try {
+      final box = contentBox();
+      final Object? raw = box.get(ContentKeys.sessionsCompleted);
+      final int current = raw is int ? raw : 0;
+      await box.put(ContentKeys.sessionsCompleted, current + 1);
+      DatabaseService.changes.value++;
+    } catch (_) {
+      // The finished screen still matters even if the counter cannot write.
     }
   }
 
@@ -116,87 +134,102 @@ class _BreathingScreenState extends State<BreathingScreen>
     }
     return Scaffold(
       backgroundColor: const Color(0xFF0A0D14),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              l10n.t('breathing.title'),
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-                letterSpacing: 0.5,
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  l10n.t('breathing.title'),
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 60),
+
+                // Breathing circle
+                AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    final scale = 0.5 + _controller.value * 0.5;
+                    return Transform.scale(
+                      scale: scale,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary.withValues(alpha: 0.8),
+                              AppColors.primaryGlow.withValues(alpha: 0.6),
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.4),
+                              blurRadius: 40,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            _getPhaseLabel(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 60),
+
+                // Cycle counter
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_totalCycles, (i) {
+                    final active = i < _cycleCount;
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: active
+                            ? AppColors.primary
+                            : Colors.white.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '$_cycleCount / $_totalCycles',
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          PositionedDirectional(
+            top: 8,
+            start: 8,
+            child: SafeArea(
+              child: IconButton(
+                tooltip: l10n.t('dialog.close'),
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close_rounded, color: Colors.white70),
               ),
             ),
-            const SizedBox(height: 60),
-
-            // Breathing circle
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                final scale = 0.5 + _controller.value * 0.5;
-                return Transform.scale(
-                  scale: scale,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primary.withValues(alpha: 0.8),
-                          AppColors.primaryGlow.withValues(alpha: 0.6),
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                          blurRadius: 40,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        _getPhaseLabel(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 60),
-
-            // Cycle counter
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_totalCycles, (i) {
-                final active = i < _cycleCount;
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: active
-                        ? AppColors.primary
-                        : Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '$_cycleCount / $_totalCycles',
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
