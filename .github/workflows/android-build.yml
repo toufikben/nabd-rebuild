@@ -1,4 +1,4 @@
-name: Android Build
+﻿name: Android Build
 
 on:
   push:
@@ -63,7 +63,10 @@ jobs:
       # image no longer ships that platform. The project disables Gradle SDK
       # downloads so local builds stay offline, so install it explicitly here.
       - name: Install Android platform 31
-        run: sdkmanager "platforms;android-31"
+        run: |
+          SDKM="$(find "$ANDROID_HOME" -path '*/bin/sdkmanager' -type f | head -n 1)"
+          test -n "$SDKM"
+          yes | "$SDKM" --install "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       # One APK per ABI: the arm64 one is what real phones install, and it is
@@ -141,7 +144,10 @@ jobs:
           channel: stable
           cache: true
       - name: Install Android platform 31
-        run: sdkmanager "platforms;android-31"
+        run: |
+          SDKM="$(find "$ANDROID_HOME" -path '*/bin/sdkmanager' -type f | head -n 1)"
+          test -n "$SDKM"
+          yes | "$SDKM" --install "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       - name: Validate signing secrets
