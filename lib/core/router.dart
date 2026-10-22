@@ -25,6 +25,7 @@ import '../features/stats/advanced/word_cloud_screen.dart';
 import '../features/stats/advanced/emotion_radar_screen.dart';
 import '../features/stats/advanced/year_review_screen.dart';
 import '../features/garden/garden_screen.dart';
+import '../features/garden/garden_showcase_screen.dart';
 import '../features/garden/seed_selection_screen.dart';
 import '../features/garden/sound_garden_screen.dart';
 import '../features/worry/worry_box_screen.dart';
@@ -72,6 +73,8 @@ String? externalLocation(Uri uri) {
     'garden' => '/garden',
     'calendar' => '/calendar',
     'stats' => '/stats',
+    'breathing' => '/breathing',
+    'legacy-journal' => '/legacy-journal',
     _ => null,
   };
   if (route == '/editor') {
@@ -84,6 +87,8 @@ String? externalLocation(Uri uri) {
     return switch (uri.path) {
       '/journal' => '/editor',
       '/garden' => '/garden',
+      '/breathing' => '/breathing',
+      '/legacy-journal' => '/legacy-journal',
       _ => null,
     };
   }
@@ -246,6 +251,10 @@ final router = GoRouter(
     GoRoute(
       path: '/seed-selection',
       builder: (_, __) => const SeedSelectionScreen(),
+    ),
+    GoRoute(
+      path: '/garden-showcase',
+      builder: (_, __) => const GardenShowcaseScreen(),
     ),
     GoRoute(
       path: '/sound-garden',

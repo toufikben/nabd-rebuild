@@ -16,6 +16,7 @@ import '../../core/l10n/app_localizations.dart';
 import '../../core/storage.dart';
 import '../../core/text_direction.dart';
 import '../../core/writing_prompts.dart';
+import '../../features/garden/bloom_celebration.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../models/tag.dart';
@@ -293,9 +294,15 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           result.isComplete ? UiSound.bloom : UiSound.water,
           delay: const Duration(milliseconds: 450),
         ));
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.t(result.messageKey))),
-        );
+        if (result.isComplete && result.seed != null) {
+          if (mounted) {
+            await showBloomCelebration(context, result.seed!);
+          }
+        } else {
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.t(result.messageKey))),
+          );
+        }
       }
     } catch (error) {
       debugPrint('Garden update failed after journal save: $error');

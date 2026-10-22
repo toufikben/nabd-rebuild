@@ -67,8 +67,7 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
 
   String _loadSoundFile() {
     try {
-      final Object? stored =
-          Hive.box(HiveBoxes.settings).get(_soundKey);
+      final Object? stored = Hive.box(HiveBoxes.settings).get(_soundKey);
       if (stored is String && AppSettings.hasSoundFile(stored)) {
         return stored;
       }
@@ -191,17 +190,13 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
               child: ValueListenableBuilder<AmbientPlaybackState>(
                 valueListenable: _audioService.ambientState,
                 builder: (context, state, _) {
-                  final isPlaying =
-                      state.source == AmbientSource.silent &&
+                  final isPlaying = state.source == AmbientSource.silent &&
                       state.status == AmbientPlaybackStatus.playing;
-                  final isLoading =
-                      state.source == AmbientSource.silent &&
+                  final isLoading = state.source == AmbientSource.silent &&
                       state.status == AmbientPlaybackStatus.loading;
-                  final hasError =
-                      state.source == AmbientSource.silent &&
+                  final hasError = state.source == AmbientSource.silent &&
                       state.status == AmbientPlaybackStatus.error;
-                  final sessionIsActive =
-                      state.source == AmbientSource.session;
+                  final sessionIsActive = state.source == AmbientSource.session;
 
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -263,34 +258,41 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
                       SizedBox(
                         width: 96,
                         height: 96,
-                        child: FilledButton(
-                          onPressed: sessionIsActive
-                              ? null
-                              : () => _handleMainAction(state),
-                          style: FilledButton.styleFrom(
-                            shape: const CircleBorder(),
-                            padding: EdgeInsets.zero,
-                            backgroundColor: colors.primary,
-                            foregroundColor: colors.onPrimary,
-                          ),
-                          child: isLoading
-                              ? SizedBox(
-                                  width: 30,
-                                  height: 30,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
+                        child: Semantics(
+                          button: true,
+                          enabled: !sessionIsActive,
+                          label: isPlaying
+                              ? l10n.t('silent.pause')
+                              : l10n.t('silent.play'),
+                          child: FilledButton(
+                            onPressed: sessionIsActive
+                                ? null
+                                : () => _handleMainAction(state),
+                            style: FilledButton.styleFrom(
+                              shape: const CircleBorder(),
+                              padding: EdgeInsets.zero,
+                              backgroundColor: colors.primary,
+                              foregroundColor: colors.onPrimary,
+                            ),
+                            child: isLoading
+                                ? SizedBox(
+                                    width: 30,
+                                    height: 30,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3,
+                                      color: colors.onPrimary,
+                                    ),
+                                  )
+                                : Icon(
+                                    hasError
+                                        ? Icons.refresh
+                                        : isPlaying
+                                            ? Icons.pause
+                                            : Icons.play_arrow,
+                                    size: 40,
                                     color: colors.onPrimary,
                                   ),
-                                )
-                              : Icon(
-                                  hasError
-                                      ? Icons.refresh
-                                      : isPlaying
-                                          ? Icons.pause
-                                          : Icons.play_arrow,
-                                  size: 40,
-                                  color: colors.onPrimary,
-                                ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -298,7 +300,8 @@ class _SilentCompanionScreenState extends State<SilentCompanionScreen> {
                         _statusText(state, l10n),
                         textAlign: TextAlign.center,
                         style: textTheme.bodyMedium?.copyWith(
-                          color: hasError ? colors.error : colors.onSurfaceVariant,
+                          color:
+                              hasError ? colors.error : colors.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 20),

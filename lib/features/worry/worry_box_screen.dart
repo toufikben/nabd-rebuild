@@ -52,6 +52,26 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
   }
 
   Future<void> _removeWorry(WorryItem item) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.t('worryBox.deleteTitle')),
+        content: Text(l10n.t('worryBox.deleteBody')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: Text(l10n.t('dialog.delete.action')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
     final remaining = _worries
         .where((entry) => entry.id != item.id)
         .map((entry) => entry.toMap())

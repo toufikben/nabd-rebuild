@@ -47,8 +47,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(AppLocalizations.of(context).t('gratitudeGarden.grew')),
+          content: Text(AppLocalizations.of(context).t('gratitudeGarden.grew')),
           backgroundColor: AppColors.success,
         ),
       );
@@ -134,7 +133,8 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            AppLocalizations.of(context).t('gratitudeGarden.add'),
+                            AppLocalizations.of(context)
+                                .t('gratitudeGarden.add'),
                             style: const TextStyle(color: Colors.black38),
                           ),
                         ],
@@ -201,7 +201,8 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
                     child: TextField(
                       controller: _controller,
                       decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context).t('gratitudeGarden.hint'),
+                        hintText: AppLocalizations.of(context)
+                            .t('gratitudeGarden.hint'),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
@@ -269,7 +270,11 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
             Text(item.text, style: const TextStyle(fontSize: 16)),
             SizedBox(height: 12),
             Text(
-              'Planted: ${item.createdAt.day}/${item.createdAt.month}/${item.createdAt.year}',
+              AppLocalizations.of(context).t('gratitude.plantedOn').replaceAll(
+                    '{date}',
+                    MaterialLocalizations.of(context)
+                        .formatMediumDate(item.createdAt),
+                  ),
               style: TextStyle(
                 fontSize: 11,
                 color: AppColors.textTertiary,

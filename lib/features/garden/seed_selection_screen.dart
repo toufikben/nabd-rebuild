@@ -382,10 +382,13 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isPlanting = false);
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${AppLocalizations.of(context).t('common.error')}: $e',
+              e is StateError
+                  ? l10n.t('garden.error.plant')
+                  : '${l10n.t('common.error')}: $e',
             ),
           ),
         );

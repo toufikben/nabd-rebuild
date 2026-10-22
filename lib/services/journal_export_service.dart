@@ -82,7 +82,7 @@ class JournalExportService {
           ];
     final rtl = language.rtl;
     final dateFormat = DateFormat.yMMMMEEEEd(languageCode);
-    final document = pw.Document(title: title, creator: 'Pulse');
+    final document = pw.Document(title: title, creator: 'Nabd');
 
     pw.TextDirection directionOf(String text) =>
         isArabicText(text) ? pw.TextDirection.rtl : pw.TextDirection.ltr;
@@ -118,7 +118,8 @@ class JournalExportService {
         for (final entry in _ordered(entries)) ...[
           pw.Text(
             dateFormat.format(entry.createdAt),
-            style: const pw.TextStyle(fontSize: 10, color: PdfColors.deepPurple),
+            style:
+                const pw.TextStyle(fontSize: 10, color: PdfColors.deepPurple),
           ),
           if (entry.title.trim().isNotEmpty)
             pw.Padding(
@@ -139,11 +140,13 @@ class JournalExportService {
                     Mood.getById(entry.mood)!.label(languageCode),
                   ...entry.tags.map((tag) => '#$tag'),
                 ].join('  ·  '),
-                style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
+                style:
+                    const pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
               ),
             ),
           pw.SizedBox(height: 6),
-          for (final paragraph in entry.content.trim().split(RegExp(r'\n\s*\n')))
+          for (final paragraph
+              in entry.content.trim().split(RegExp(r'\n\s*\n')))
             if (paragraph.trim().isNotEmpty)
               pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: 6),

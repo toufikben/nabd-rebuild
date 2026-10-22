@@ -186,24 +186,45 @@ class PlantedSeed {
     this.completionCertificate,
   });
 
-  /// مرحلة النمو (0-5).
+  /// Growth stage (0-5). The meaningful thresholds are 25/50/75/100 so a
+  /// seed needs weeks of care, not a handful of entries.
   int get growthStage {
     if (growthPoints >= 100) return 5;
-    if (growthPoints >= 60) return 4;
-    if (growthPoints >= 25) return 3;
-    if (growthPoints >= 10) return 2;
-    if (growthPoints >= 3) return 1;
+    if (growthPoints >= 75) return 4;
+    if (growthPoints >= 50) return 3;
+    if (growthPoints >= 25) return 2;
+    if (growthPoints >= 10) return 1;
     return 0;
   }
 
-  /// نسبة النمو من 0-100.
+  /// Growth as a fraction from 0 to 1.
   double get progress => growthPoints / 100;
 
-  /// هل تحتاج الماء اليوم؟
-  bool needsWater(DateTime now) {
-    final today = now.year * 10000 + now.month * 100 + now.day;
-    return lastWateredDay < today;
+  /// Whole days since the last watering, or 0 when never watered.
+  int daysWithoutWater(DateTime now) {
+    if (lastWateredDay <= 0) return 0;
+    final year = lastWateredDay ~/ 10000;
+    final month = (lastWateredDay ~/ 100) % 100;
+    final day = lastWateredDay % 100;
+    final last = DateTime(year, month, day);
+    final today = DateTime(now.year, now.month, now.day);
+    return today.difference(last).inDays.clamp(0, 3650).toInt();
   }
+
+  /// A completed seed never needs water again. After two dry days the garden
+  /// looks thirsty, but no points are lost.
+  bool needsWater(DateTime now) => !isComplete && lastWateredDay < _dayKey(now);
+
+  bool isThirsty(DateTime now) => !isComplete && daysWithoutWater(now) >= 2;
+
+  DateTime? get completedAt {
+    final parts = completionCertificate?.split('|');
+    if (parts == null || parts.length < 3) return null;
+    return DateTime.tryParse(parts[2]);
+  }
+
+  static int _dayKey(DateTime date) =>
+      date.year * 10000 + date.month * 100 + date.day;
 
   Seed? get seed => Seed.getById(seedTypeId);
 
@@ -245,6 +266,7 @@ class PlantedSeed {
         daysCared: daysCared ?? this.daysCared,
         lastWateredDay: lastWateredDay ?? this.lastWateredDay,
         isComplete: isComplete ?? this.isComplete,
-        completionCertificate: completionCertificate ?? this.completionCertificate,
+        completionCertificate:
+            completionCertificate ?? this.completionCertificate,
       );
 }

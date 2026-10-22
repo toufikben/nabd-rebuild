@@ -9,6 +9,7 @@ import '../../core/data_revision.dart';
 import '../../models/seed.dart';
 import '../../services/audio_service.dart';
 import '../../services/garden_service.dart';
+import 'bloom_celebration.dart';
 
 /// GardenScreen — عرض الحديقة والبذور.
 class GardenScreen extends ConsumerWidget {
@@ -19,11 +20,22 @@ class GardenScreen extends ConsumerWidget {
     ref.watch(dataRevisionProvider);
     final state = ref.watch(gardenProvider);
     final garden = ref.read(gardenProvider.notifier);
+    final l10n = AppLocalizations.of(context);
+    final archived = garden.archivedSeeds;
 
     if (state.seeds.isEmpty) {
       return Scaffold(
-        appBar:
-            AppBar(title: Text(AppLocalizations.of(context).t('garden.title'))),
+        appBar: AppBar(
+          title: Text(l10n.t('garden.title')),
+          actions: [
+            if (archived.isNotEmpty)
+              IconButton(
+                tooltip: l10n.t('garden.showcase.button'),
+                onPressed: () => context.push('/garden-showcase'),
+                icon: const Icon(Icons.local_florist_outlined),
+              ),
+          ],
+        ),
         body: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -35,7 +47,7 @@ class GardenScreen extends ConsumerWidget {
                 const Text('🌱', style: TextStyle(fontSize: 80)),
                 const SizedBox(height: 20),
                 Text(
-                  AppLocalizations.of(context).t('garden.empty'),
+                  l10n.t('garden.empty'),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -43,22 +55,29 @@ class GardenScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  AppLocalizations.of(context).t('garden.emptyHint'),
+                  l10n.t('garden.emptyHint'),
                   style: TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: () => context.push('/seed-selection'),
                   icon: const Icon(Icons.add),
-                  label: Text(AppLocalizations.of(context).t('garden.plant')),
+                  label: Text(l10n.t('garden.plant')),
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: () => context.push('/sound-garden'),
                   icon: const Icon(Icons.library_music_outlined),
-                  label: Text(
-                      AppLocalizations.of(context).t('garden.soundGarden')),
+                  label: Text(l10n.t('garden.soundGarden')),
                 ),
+                if (archived.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () => context.push('/garden-showcase'),
+                    icon: const Icon(Icons.local_florist_outlined),
+                    label: Text(l10n.t('garden.showcase.button')),
+                  ),
+                ],
               ],
             ),
           ),
@@ -73,10 +92,16 @@ class GardenScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).t('garden.title')),
         actions: [
+          if (archived.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.local_florist_outlined),
+              onPressed: () => context.push('/garden-showcase'),
+              tooltip: l10n.t('garden.showcase.button'),
+            ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             onPressed: () => context.push('/seed-selection'),
-            tooltip: AppLocalizations.of(context).t('garden.plantNew'),
+            tooltip: l10n.t('garden.plantNew'),
           ),
         ],
       ),
@@ -129,6 +154,12 @@ class GardenScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
+          if (stats.totalSeeds > 0 &&
+              stats.completedSeeds == stats.totalSeeds) ...[
+            _buildAllCompleteCard(context, garden, stats),
+            const SizedBox(height: 20),
+          ],
+
           // ─── Primary tree ───
           if (primary != null) _buildPrimaryTree(context, primary),
           const SizedBox(height: 24),
@@ -148,6 +179,107 @@ class GardenScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildAllCompleteCard(
+    BuildContext context,
+    GardenService garden,
+    GardenStats stats,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          const Text('🏆', style: TextStyle(fontSize: 40)),
+          const SizedBox(height: 8),
+          Text(
+            l10n.t('garden.watering.congrats'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.t('garden.watering.bloom'),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => context.push('/garden-showcase'),
+                icon: const Icon(Icons.local_florist_outlined),
+                label: Text(l10n.t('garden.showcase.button')),
+              ),
+              FilledButton.icon(
+                onPressed: () =>
+                    _confirmNewSeason(context, garden, stats.totalSeeds),
+                icon: const Icon(Icons.autorenew),
+                label: Text(l10n.t('garden.newSeason')),
+              ),
+            ],
+          ),
+          if (stats.totalSeeds < GardenService.maxSeeds) ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () => context.push('/seed-selection'),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.t('garden.plantNew')),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmNewSeason(
+    BuildContext context,
+    GardenService garden,
+    int count,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.t('garden.newSeason.title')),
+        content: Text(
+          l10n.t('garden.newSeason.body').replaceAll('{count}', '$count'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.t('garden.newSeason')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await garden.startNewSeason();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('garden.newSeason.done'))),
+      );
+    } catch (error) {
+      debugPrint('Could not start a new garden season: $error');
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('garden.error.plant'))),
+      );
+    }
   }
 
   Widget _buildGardenAudioControl(BuildContext context) {
@@ -250,6 +382,7 @@ class GardenScreen extends ConsumerWidget {
 
     final stage = seed.growthStage;
     final emoji = s.emojiForStage(stage);
+    final thirsty = seed.isThirsty(DateTime.now());
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -279,9 +412,15 @@ class GardenScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Tree emoji
-          Text(
-            emoji,
-            style: TextStyle(fontSize: stage >= 3 ? 120 : 80),
+          Opacity(
+            opacity: thirsty ? 0.65 : 1.0,
+            child: Transform.rotate(
+              angle: thirsty ? -0.08 : 0.0,
+              child: Text(
+                emoji,
+                style: TextStyle(fontSize: stage >= 3 ? 120 : 80),
+              ),
+            ),
           ).animate().scale(duration: 800.ms, curve: Curves.easeOutBack),
 
           const SizedBox(height: 12),
@@ -301,6 +440,17 @@ class GardenScreen extends ConsumerWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
+          if (thirsty) ...[
+            const SizedBox(height: 8),
+            Text(
+              AppLocalizations.of(context).t('garden.needsWater'),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.blue,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
 
           // Progress bar
@@ -383,6 +533,13 @@ class GardenScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            TextButton.icon(
+              onPressed: () => showBloomCelebration(context, seed),
+              icon: const Icon(Icons.workspace_premium, size: 18),
+              label: Text(
+                AppLocalizations.of(context).t('garden.completed'),
+              ),
+            ),
           ],
         ],
       ),
@@ -397,7 +554,9 @@ class GardenScreen extends ConsumerWidget {
     final s = seed.seed;
     if (s == null) return const SizedBox.shrink();
 
-    final needsWater = seed.needsWater(DateTime.now());
+    final now = DateTime.now();
+    final needsWater = seed.needsWater(now);
+    final thirsty = seed.isThirsty(now);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -416,9 +575,15 @@ class GardenScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
-            child: Text(
-              s.emojiForStage(seed.growthStage),
-              style: const TextStyle(fontSize: 24),
+            child: Opacity(
+              opacity: thirsty ? 0.6 : 1.0,
+              child: Transform.rotate(
+                angle: thirsty ? -0.1 : 0.0,
+                child: Text(
+                  s.emojiForStage(seed.growthStage),
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -430,7 +595,8 @@ class GardenScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        s.nameFor(AppLocalizations.of(context).locale.languageCode),
+                        s.nameFor(
+                            AppLocalizations.of(context).locale.languageCode),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -487,9 +653,61 @@ class GardenScreen extends ConsumerWidget {
               color: s.colors.last,
             ),
           ),
+          if (seed.isComplete)
+            IconButton(
+              tooltip: AppLocalizations.of(context).t('garden.completed'),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => showBloomCelebration(context, seed),
+              icon: const Icon(
+                Icons.workspace_premium,
+                size: 18,
+                color: AppColors.warning,
+              ),
+            ),
+          IconButton(
+            tooltip: AppLocalizations.of(context).t('dialog.delete.action'),
+            visualDensity: VisualDensity.compact,
+            onPressed: () => _confirmRemoveSeed(context, garden, seed),
+            icon: Icon(
+              Icons.delete_outline,
+              size: 18,
+              color: AppColors.textTertiary,
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmRemoveSeed(
+    BuildContext context,
+    GardenService garden,
+    PlantedSeed seed,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final plant = seed.seed;
+    if (plant == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          plant.nameFor(l10n.locale.languageCode),
+        ),
+        content: Text(l10n.t('editor.delete.body')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: Text(l10n.t('dialog.delete.action')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await garden.removeSeed(seed.id);
   }
 
   String _stageName(AppLocalizations l10n, int stage) {

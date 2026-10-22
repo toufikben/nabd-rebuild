@@ -21,6 +21,7 @@ class _BreathingScreenState extends State<BreathingScreen>
   late AppLocalizations l10n;
   late AnimationController _controller;
   int _cycleCount = 0;
+  bool _finished = false;
   static const _totalCycles = 4;
 
   @override
@@ -58,8 +59,7 @@ class _BreathingScreenState extends State<BreathingScreen>
     if (mounted) {
       // A whole session done is a good moment to ask for a rating.
       unawaited(ReviewPrompt().recordWin());
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (mounted) Navigator.pop(context, true);
+      setState(() => _finished = true);
     }
   }
 
@@ -72,6 +72,48 @@ class _BreathingScreenState extends State<BreathingScreen>
   @override
   Widget build(BuildContext context) {
     l10n = AppLocalizations.of(context);
+    if (_finished) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A0D14),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 72,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  l10n.t('breathing.done'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$_totalCycles / $_totalCycles',
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(l10n.t('dialog.done')),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFF0A0D14),
       body: Center(
@@ -160,9 +202,10 @@ class _BreathingScreenState extends State<BreathingScreen>
   }
 
   String _getPhaseLabel() {
-    if (_controller.status == AnimationStatus.forward) return l10n.t('breathing.in');
-    if (_controller.status == AnimationStatus.reverse) return l10n.t('breathing.out');
+    if (_controller.status == AnimationStatus.forward)
+      return l10n.t('breathing.in');
+    if (_controller.status == AnimationStatus.reverse)
+      return l10n.t('breathing.out');
     return l10n.t('breathing.hold');
   }
 }
-

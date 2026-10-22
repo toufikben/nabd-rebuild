@@ -7,6 +7,9 @@ void main() {
     expect(externalLocation(Uri.parse('nabd://garden')), '/garden');
     expect(externalLocation(Uri.parse('nabd://calendar')), '/calendar');
     expect(externalLocation(Uri.parse('nabd://stats')), '/stats');
+    expect(externalLocation(Uri.parse('nabd://breathing')), '/breathing');
+    expect(externalLocation(Uri.parse('nabd://legacy-journal')),
+        '/legacy-journal');
   });
 
   test('a widget mood button opens a new entry with that mood', () {
@@ -21,7 +24,12 @@ void main() {
 
   test('App Links map onto the app, in-app locations pass through', () {
     expect(externalLocation(Uri.parse('https://nabd.app/journal')), '/editor');
-    expect(externalLocation(Uri.parse('https://nabd.app/garden')), '/garden');
+    expect(externalLocation(Uri.parse('https://nabd.app/garden')),
+        '/garden');
+    expect(externalLocation(Uri.parse('https://nabd.app/breathing')),
+        '/breathing');
+    expect(externalLocation(Uri.parse('https://nabd.app/legacy-journal')),
+        '/legacy-journal');
     expect(externalLocation(Uri.parse('https://nabd.app/other')), isNull);
     expect(externalLocation(Uri.parse('/today')), isNull);
     expect(externalLocation(Uri.parse('/editor?mood=sad')), isNull);

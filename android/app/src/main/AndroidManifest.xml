@@ -42,14 +42,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="nabd.app" android:pathPrefix="/journal" />
-                <data android:scheme="https" android:host="nabd.app" android:pathPrefix="/garden" />
-            </intent-filter>
-
+            <!-- Web links stay in the browser until nabd.app serves a real
+                 .well-known/assetlinks.json for the Play signing key. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

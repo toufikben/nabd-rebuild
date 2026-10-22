@@ -55,6 +55,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final BiometricService _biometric = BiometricService();
 
   bool _notificationsEnabled = false;
+  bool _notificationsAllowed = true;
   bool _weeklyReview = false;
   bool _launchSound = true;
   bool _uiSounds = true;
@@ -72,6 +73,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     _notificationsEnabled = NotificationService.isEnabled;
+    _loadNotificationPermission();
     _weeklyReview = NotificationService.isWeeklyReviewEnabled;
     _launchSound =
         Hive.box('settings').get('splash_sound_enabled', defaultValue: true) ==
@@ -84,6 +86,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
     _loadLockState();
+  }
+
+  Future<void> _loadNotificationPermission() async {
+    final allowed = await NotificationService.hasPermission();
+    if (!mounted) return;
+    setState(() => _notificationsAllowed = allowed);
   }
 
   /// The passcode lives in the OS keystore and biometric support is a platform
@@ -114,7 +122,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final genderTheme = ref.watch(genderThemeProvider);
-    final isPro = ref.watch(monetizationProvider.select((state) => state.isPro));
+    final isPro =
+        ref.watch(monetizationProvider.select((state) => state.isPro));
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
@@ -125,8 +134,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _group(l10n.t('paywall.brand'), [
             _tile(
               icon: Icons.workspace_premium_outlined,
-              title:
-                  isPro ? l10n.t('settings.pro.active') : l10n.t('paywall.title'),
+              title: isPro
+                  ? l10n.t('settings.pro.active')
+                  : l10n.t('paywall.title'),
               subtitle: isPro
                   ? l10n.t('settings.pro.activeHint')
                   : l10n.t('paywall.tagline'),
@@ -187,7 +197,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onTap: () => _pickLaunchSound(l10n),
               ),
             SwitchListTile(
-              secondary: _iconBadge(Icons.music_note_outlined, AppColors.secondary),
+              secondary:
+                  _iconBadge(Icons.music_note_outlined, AppColors.secondary),
               title: Text(l10n.t('settings.sound.ui')),
               subtitle: Text(l10n.t('settings.sound.uiHint')),
               value: _uiSounds,
@@ -242,13 +253,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.primary,
               ),
               title: Text(l10n.t('settings.notify.daily')),
-              subtitle: Text(l10n.t('settings.notify.dailyHint')),
+              subtitle: Text(
+                _notificationsEnabled && !_notificationsAllowed
+                    ? l10n.t('settings.notify.permissionMissing')
+                    : l10n.t('settings.notify.dailyHint'),
+              ),
               value: _notificationsEnabled,
               onChanged: (v) => _setReminderEnabled(v, l10n),
             ),
             if (_notificationsEnabled) ...[
               SwitchListTile(
-                secondary: _iconBadge(Icons.auto_awesome_outlined, AppColors.primary),
+                secondary:
+                    _iconBadge(Icons.auto_awesome_outlined, AppColors.primary),
                 title: Text(l10n.t('settings.notify.smart')),
                 subtitle: Text(l10n.t('settings.notify.smartHint')),
                 value: _smartReminder,
@@ -276,7 +292,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // ─── Data ───
           _group(l10n.t('settings.section.data'), [
             SwitchListTile(
-              secondary: _iconBadge(Icons.mic_none_rounded, AppColors.secondary),
+              secondary:
+                  _iconBadge(Icons.mic_none_rounded, AppColors.secondary),
               title: Text(l10n.t('settings.dictation.online')),
               subtitle: Text(l10n.t('settings.dictation.onlineHint')),
               value: _onlineDictation,
@@ -290,6 +307,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: l10n.t('settings.data.export'),
               subtitle: l10n.t('settings.data.exportHint'),
               onTap: _exportData,
+            ),
+            _tile(
+              icon: Icons.auto_stories_outlined,
+              title: l10n.t('legacy.title'),
+              subtitle: l10n.t('legacy.subtitle'),
+              onTap: () => context.push('/legacy-journal'),
             ),
             _tile(
               icon: Icons.picture_as_pdf_outlined,
@@ -426,7 +449,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _fontName(AppFont font, AppLocalizations l10n) =>
       l10n.t('settings.font.${font.name}');
 
-
   String _launchSoundId() {
     final saved = Hive.box('settings').get('splash_sound') as String?;
     return SplashService.choices.contains(saved)
@@ -508,6 +530,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final needsPasscode = l10n.t('settings.lock.needsPasscode');
     if (!value) {
+      if (_hasPasscode) {
+        final verified = await PasscodeVerifySheet.confirm(context);
+        if (!verified || !mounted) return;
+      }
       await _biometric.setLockEnabled(false);
       if (!mounted) return;
       setState(() => _lockEnabled = false);
@@ -811,11 +837,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final granted = await NotificationService.requestPermission();
     if (!mounted) return;
     if (!granted) {
+      setState(() => _notificationsAllowed = false);
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.t('settings.notify.denied'))),
       );
       return;
     }
+    setState(() => _notificationsAllowed = true);
     await _scheduleReminder(l10n);
   }
 
@@ -1214,6 +1242,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (ok != true || !mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
+    final savedLanguage = Hive.box('settings').get('language');
     try {
       await _privacy.deleteEverything();
     } catch (error) {
@@ -1222,6 +1251,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         SnackBar(content: Text(l10n.t('dialog.delete.failed'))),
       );
       return;
+    }
+    // Wiping the journal must not take the writer's language with it: the
+    // language is an accessibility choice, not journal content.
+    if (savedLanguage is String) {
+      await Hive.box('settings').put('language', savedLanguage);
     }
     // Everything that lives outside the boxes goes too: the passcode and its
     // attempt record, the scheduled reminder and the in-memory caches.
@@ -1281,7 +1315,8 @@ class _PaletteSwatch extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: dark ? palette.darkBackground : palette.lightBackground,
+                  color:
+                      dark ? palette.darkBackground : palette.lightBackground,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: selected ? scheme.primary : scheme.outlineVariant,

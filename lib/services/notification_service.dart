@@ -71,7 +71,8 @@ class NotificationService {
 
   /// Smart timing: the reminder follows the hour this person usually writes
   /// at and skips days that already have an entry. On unless turned off.
-  static bool get isSmart => _settings.get(smartKey, defaultValue: true) == true;
+  static bool get isSmart =>
+      _settings.get(smartKey, defaultValue: true) == true;
 
   static Future<void> setSmart(
     bool value, {
@@ -83,7 +84,8 @@ class NotificationService {
 
   /// The time smart timing would use now, or null while there is too little
   /// history to tell.
-  static ({int hour, int minute})? suggestedTime(Iterable<DateTime> writtenAt) =>
+  static ({int hour, int minute})? suggestedTime(
+          Iterable<DateTime> writtenAt) =>
       SmartReminder.suggestTime(writtenAt, now: DateTime.now());
 
   /// Asks the OS for permission to post notifications. Android 13+ and iOS
@@ -108,6 +110,28 @@ class NotificationService {
     } catch (error) {
       debugPrint('Notification permission request failed: $error');
       return false;
+    }
+    return true;
+  }
+
+  /// Whether the OS currently allows this app to post notifications. Android
+  /// 13+ and iOS can revoke a previously granted permission in system
+  /// settings, so the switch alone is not proof that a reminder can arrive.
+  static Future<bool> hasPermission() async {
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (android != null) {
+        return await android.areNotificationsEnabled() ?? true;
+      }
+      final ios = _plugin.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
+      if (ios != null) {
+        final options = await ios.checkPermissions();
+        return options?.isEnabled ?? true;
+      }
+    } catch (error) {
+      debugPrint('Notification permission state unavailable: $error');
     }
     return true;
   }
