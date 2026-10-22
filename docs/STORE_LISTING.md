@@ -20,7 +20,7 @@
 
 **Name (22):**
 ```
-Pulse: Private Journal
+Nabd: Private Journal
 ```
 
 **Short description (74):**
@@ -32,7 +32,7 @@ Private diary & mood journal. Encrypted, works offline, no account needed.
 ```
 Your journal, kept entirely on your phone.
 
-Most journaling apps want an account, an email and your words on someone else's server. Pulse wants none of that. No sign-in. No server. No tracking. What you write stays on your device, encrypted.
+Most journaling apps want an account, an email and your words on someone else's server. Nabd wants none of that. No sign-in. No server. No tracking. What you write stays on your device, encrypted.
 
 A GARDEN THAT GROWS AS YOU WRITE
 Choose a seed and every entry helps it grow. Keep writing and a quiet garden takes shape: something that exists only because you showed up for yourself.
@@ -53,7 +53,7 @@ SEE YOUR MONTH
 A monthly summary of your entries, words, days written, mood compared with the month before, and your brightest moment. Weekly pulse, mood patterns by day and time, and a year in review.
 
 A SMART, QUIET REMINDER
-Pulse learns when you usually write and reminds you just before. On days you already wrote, it stays quiet.
+Nabd learns when you usually write and reminds you just before. On days you already wrote, it stays quiet.
 
 CALM WHEN YOU NEED IT
 Guided sessions for anger, sadness, anxiety and sleep, breathing exercises, letters to your future self, and original ambient sounds.
@@ -68,7 +68,7 @@ PRIVATE BY DESIGN
 IN YOUR LANGUAGE
 20 languages, including English, Arabic, French, Spanish, Portuguese, German, Turkish, Indonesian, Russian, Hindi, Chinese, Japanese and Korean, with right-to-left support. Choose your palette and reading font.
 
-Writing is free and unlimited. Pulse Pro unlocks extra insights and sessions.
+Writing is free and unlimited. Nabd Pro unlocks extra insights and sessions.
 ```
 
 ---
@@ -125,5 +125,5 @@ Writing is free and unlimited. Pulse Pro unlocks extra insights and sessions.
 بلغتك
 20 لغة، منها العربية والإنجليزية والفرنسية والإسبانية والبرتغالية والألمانية والتركية والإندونيسية والفارسية والأردية والروسية والهندية والصينية واليابانية والكورية، مع دعم الكتابة من اليمين لليسار. اختر ألوانك وخط القراءة.
 
-الكتابة مجانية وبلا حدود. Pulse Pro يفتح رؤى وجلسات إضافية.
+الكتابة مجانية وبلا حدود. Nabd Pro يفتح رؤى وجلسات إضافية.
 ```
