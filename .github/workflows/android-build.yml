@@ -59,6 +59,11 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      # flutter_native_splash still declares compileSdk 31, and the runner
+      # image no longer ships that platform. The project disables Gradle SDK
+      # downloads so local builds stay offline, so install it explicitly here.
+      - name: Install Android platform 31
+        run: sdkmanager "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       # One APK per ABI: the arm64 one is what real phones install, and it is
@@ -135,6 +140,8 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      - name: Install Android platform 31
+        run: sdkmanager "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       - name: Validate signing secrets
