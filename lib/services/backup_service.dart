@@ -328,8 +328,7 @@ class BackupService {
             for (final entry in payload.garden.entries)
               if (!gardenBox.containsKey(entry.key)) entry.key: entry.value,
           };
-    final seedsRestored =
-        gardenAdditions.values.where((value) => value is Map).length;
+    final seedsRestored = gardenAdditions.values.whereType<Map>().length;
 
     // Decide which backup entries land, then move only their media.
     final incoming = <String, Map<String, dynamic>>{};
