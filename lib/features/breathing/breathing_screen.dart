@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/storage.dart';
@@ -81,6 +82,15 @@ class _BreathingScreenState extends State<BreathingScreen>
     }
   }
 
+  void _leave([bool? result]) {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop(result);
+    } else {
+      context.go('/today');
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -123,7 +133,7 @@ class _BreathingScreenState extends State<BreathingScreen>
                 ),
                 const SizedBox(height: 32),
                 FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
+                  onPressed: () => _leave(true),
                   child: Text(l10n.t('dialog.done')),
                 ),
               ],
@@ -224,7 +234,7 @@ class _BreathingScreenState extends State<BreathingScreen>
             child: SafeArea(
               child: IconButton(
                 tooltip: l10n.t('dialog.close'),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => _leave(),
                 icon: const Icon(Icons.close_rounded, color: Colors.white70),
               ),
             ),

@@ -18,6 +18,9 @@ class GardenScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(dataRevisionProvider);
+    ref.listen<int>(dataRevisionProvider, (_, __) {
+      ref.read(gardenProvider.notifier).refresh();
+    });
     final state = ref.watch(gardenProvider);
     final garden = ref.read(gardenProvider.notifier);
     final l10n = AppLocalizations.of(context);

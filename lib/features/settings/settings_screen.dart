@@ -1107,6 +1107,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         debugPrint('Letter announcements not synced: $error');
       }
       // Data changed underneath every screen, so ask listeners to refetch.
+      ref.invalidate(gardenProvider);
       ref.read(dataRevisionProvider.notifier).bump();
     } catch (error) {
       debugPrint('Restore failed: $error');
