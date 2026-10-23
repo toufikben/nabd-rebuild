@@ -321,6 +321,15 @@ class BackupService {
     };
     final journal = boxes[HiveBoxes.journal]!;
     final previousMedia = _mediaPathsOf(journal.values);
+    final gardenBox = boxes[HiveBoxes.garden]!;
+    final gardenAdditions = mode == RestoreMode.replace
+        ? payload.garden
+        : <Object?, Object?>{
+            for (final entry in payload.garden.entries)
+              if (!gardenBox.containsKey(entry.key)) entry.key: entry.value,
+          };
+    final seedsRestored =
+        gardenAdditions.values.where((value) => value is Map).length;
 
     // Decide which backup entries land, then move only their media.
     final incoming = <String, Map<String, dynamic>>{};
@@ -412,6 +421,7 @@ class BackupService {
       entriesImported: incoming.length,
       imagesRestored: imagesRestored,
       audioRestored: audioRestored,
+      seedsRestored: seedsRestored,
     );
   }
 
@@ -840,6 +850,7 @@ class ImportResult {
   final int entriesImported;
   final int imagesRestored;
   final int audioRestored;
+  final int seedsRestored;
   final BackupError? failure;
 
   const ImportResult({
@@ -847,6 +858,7 @@ class ImportResult {
     this.entriesImported = 0,
     this.imagesRestored = 0,
     this.audioRestored = 0,
+    this.seedsRestored = 0,
     this.failure,
   });
 
@@ -854,7 +866,8 @@ class ImportResult {
       : ok = false,
         entriesImported = 0,
         imagesRestored = 0,
-        audioRestored = 0;
+        audioRestored = 0,
+        seedsRestored = 0;
 
   /// The string-table key describing the failure, if any.
   String? get error => failure?.messageKey;

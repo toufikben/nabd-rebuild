@@ -1084,7 +1084,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final counts =
           '${result.entriesImported} ${l10n.t('dialog.restore.unit')} '
           '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
-          '${result.audioRestored} ${l10n.t('dialog.restore.audio')})';
+          '${result.audioRestored} ${l10n.t('dialog.restore.audio')}, '
+          '${l10n.t('garden.stat.seeds')}: ${result.seedsRestored})';
       messenger.showSnackBar(
         SnackBar(
           content: Text(

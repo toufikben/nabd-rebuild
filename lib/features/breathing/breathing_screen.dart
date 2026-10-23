@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/storage.dart';
 import '../../core/theme/app_colors.dart';
+import '../../services/audio_service.dart';
 import '../../services/database_service.dart';
 import '../../services/review_prompt.dart';
 
@@ -41,6 +42,7 @@ class _BreathingScreenState extends State<BreathingScreen>
   Future<void> _startCycle() async {
     while (_cycleCount < _totalCycles && mounted) {
       // Inhale (4s)
+      _playCue('assets/sounds/inhale.m4a');
       await _controller.forward(from: 0);
       if (!mounted) return;
 
@@ -49,6 +51,7 @@ class _BreathingScreenState extends State<BreathingScreen>
       if (!mounted) return;
 
       // Exhale (4s)
+      _playCue('assets/sounds/exhale.m4a');
       await _controller.reverse();
       if (!mounted) return;
 
@@ -82,6 +85,17 @@ class _BreathingScreenState extends State<BreathingScreen>
     }
   }
 
+  void _playCue(String asset) {
+    final requestId = AudioService.instance.beginCueRequest();
+    unawaited(
+      AudioService.instance.playCue(
+        asset,
+        volume: 0.8,
+        requestId: requestId,
+      ),
+    );
+  }
+
   void _leave([bool? result]) {
     final navigator = Navigator.of(context);
     if (navigator.canPop()) {
@@ -93,6 +107,7 @@ class _BreathingScreenState extends State<BreathingScreen>
 
   @override
   void dispose() {
+    unawaited(AudioService.instance.stopCue());
     _controller.dispose();
     super.dispose();
   }
