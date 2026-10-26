@@ -499,7 +499,14 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                     ),
                 ]),
               ),
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            // The list sits directly above the tab bar: at large font sizes the
+            // last card needs more room than the fixed 32 so it clears the bar
+            // when the reader scrolls to the end.
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 32 + MediaQuery.viewPaddingOf(context).bottom,
+              ),
+            ),
           ],
         ),
       ),

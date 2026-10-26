@@ -362,16 +362,25 @@ class GardenScreen extends ConsumerWidget {
         children: [
           Icon(icon, color: color, size: 20),
           SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: color,
+          // "100%" must stay on one line: at 1.5x the card is narrow enough
+          // for the percent sign to wrap onto a line of its own.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              maxLines: 1,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
             ),
           ),
           Text(
             label,
+            maxLines: 2,
+            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
           ),
         ],
