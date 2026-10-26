@@ -75,6 +75,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _biometricsAvailable = false;
   String _version = '';
 
+  /// Kept so the screen can take its own message away when it closes.
+  ScaffoldMessengerState? _messenger;
+
   @override
   void initState() {
     super.initState();
@@ -129,7 +132,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _messenger = ScaffoldMessenger.of(context);
+  }
+
+  @override
   void dispose() {
+    // Leaving Settings ends the message it showed: a restore notice must not
+    // sit in front of the editor the writer opens next. Undo stays available
+    // from Settings until the next Replace.
+    final messenger = _messenger;
+    if (messenger != null && messenger.mounted) {
+      messenger.removeCurrentSnackBar();
+    }
     super.dispose();
   }
 
