@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/constants.dart';
 import '../../core/journal_templates.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/snack_bar_queue.dart';
 import '../../core/storage.dart';
 import '../../core/text_direction.dart';
 import '../../core/writing_prompts.dart';
@@ -302,23 +303,21 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         } else if (result.messageKey == 'garden.water.noTargets') {
           // Writing is already saved. Point at the next step without blocking
           // the writer with another dialog.
-          messenger
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(l10n.t(result.messageKey)),
-                action: SnackBarAction(
-                  label: l10n.t('garden.title'),
-                  onPressed: () => router.push('/garden'),
-                ),
+          showSnackBarNow(
+            messenger,
+            SnackBar(
+              content: Text(l10n.t(result.messageKey)),
+              action: SnackBarAction(
+                label: l10n.t('garden.title'),
+                onPressed: () => router.push('/garden'),
               ),
-            );
+            ),
+          );
         } else {
-          messenger
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(content: Text(l10n.t(result.messageKey))),
-            );
+          showSnackBarNow(
+            messenger,
+            SnackBar(content: Text(l10n.t(result.messageKey))),
+          );
         }
       }
     } catch (error) {

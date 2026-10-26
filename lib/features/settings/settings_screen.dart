@@ -18,6 +18,7 @@ import '../../core/data_revision.dart';
 import '../../core/backup_nudge.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/l10n/languages.dart';
+import '../../core/snack_bar_queue.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
@@ -1204,28 +1205,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}$separator'
           '${result.audioRestored} ${l10n.t('dialog.restore.audio')}$separator'
           '${_seedCount(result.seedsRestored, l10n)})';
-      // Replacing an already visible message keeps the twelve-second Undo from
-      // queueing behind it and following the writer into the next screen.
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              '${l10n.t(mode == RestoreMode.merge ? 'dialog.restore.merged' : 'dialog.restore.replaced')} $counts',
-            ),
-            duration: Duration(seconds: safetyCopy == null ? 5 : 12),
-            action: safetyCopy == null
-                ? null
-                : SnackBarAction(
-                    label: l10n.t('dialog.restore.undo'),
-                    onPressed: () => _undoRestore(
-                      safetyCopy!,
-                      safetyPassword!,
-                      l10n,
-                    ),
-                  ),
+      // The Undo is offered for twelve seconds, but never longer: a bar with
+      // an action is otherwise left on screen while a screen reader is
+      // reported, hiding the next screen behind it.
+      showSnackBarNow(
+        messenger,
+        SnackBar(
+          content: Text(
+            '${l10n.t(mode == RestoreMode.merge ? 'dialog.restore.merged' : 'dialog.restore.replaced')} $counts',
           ),
-        );
+          duration: Duration(seconds: safetyCopy == null ? 5 : 12),
+          action: safetyCopy == null
+              ? null
+              : SnackBarAction(
+                  label: l10n.t('dialog.restore.undo'),
+                  onPressed: () => _undoRestore(
+                    safetyCopy!,
+                    safetyPassword!,
+                    l10n,
+                  ),
+                ),
+        ),
+      );
       await _refreshAutoSnapshot();
       if (!mounted) return;
       VaultImage.clearCache();
@@ -1322,11 +1323,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       if (!await snapshot.exists()) {
-        messenger
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(l10n.t('dialog.restore.undoFailed'))),
-          );
+        showSnackBarNow(
+          messenger,
+          SnackBar(content: Text(l10n.t('dialog.restore.undoFailed'))),
+        );
         return;
       }
       if (!mounted) return;
@@ -1341,11 +1341,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
       if (!mounted) return;
       if (!result.ok) {
-        messenger
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(
+        showSnackBarNow(
+          messenger,
+          SnackBar(
             content: Text(l10n.t(result.error ?? 'backup.error.failed')),
-          ));
+          ),
+        );
         return;
       }
       try {
@@ -1357,22 +1358,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (!mounted) return;
       await _refreshAutoSnapshot();
       if (!mounted) return;
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.t('dialog.restore.undone'))),
-        );
+      showSnackBarNow(
+        messenger,
+        SnackBar(content: Text(l10n.t('dialog.restore.undone'))),
+      );
       VaultImage.clearCache();
       ref.invalidate(gardenProvider);
       ref.read(dataRevisionProvider.notifier).bump();
     } catch (error) {
       debugPrint('Undo restore failed: $error');
       if (!mounted) return;
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.t('dialog.restore.undoFailed'))),
-        );
+      showSnackBarNow(
+        messenger,
+        SnackBar(content: Text(l10n.t('dialog.restore.undoFailed'))),
+      );
     }
   }
 
