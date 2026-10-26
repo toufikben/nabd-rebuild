@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -21,6 +22,7 @@ import '../../core/theme/app_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
 import '../../features/lock/passcode_setup_sheet.dart';
+import '../../services/audio_service.dart';
 import '../../services/biometric_service.dart';
 import '../../services/encryption_service.dart';
 import '../../services/notification_service.dart';
@@ -50,6 +52,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  static const _autoSnapshotSecret = 'nabd_auto_restore_password_v1';
   final PrivacyService _privacy = PrivacyService();
   final BackupService _backup = BackupService();
   final BiometricService _biometric = BiometricService();
@@ -59,6 +62,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _weeklyReview = false;
   bool _launchSound = true;
   bool _uiSounds = true;
+  double _cueVolume = 0.8;
+  bool _hasAutoSnapshot = false;
   bool _lockEnabled = false;
   int _lockTimeoutMinutes = 5;
   int _reminderHour = NotificationService.defaultHour;
@@ -79,6 +84,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Hive.box('settings').get('splash_sound_enabled', defaultValue: true) ==
             true;
     _uiSounds = UiSounds.enabled;
+    _cueVolume = AudioService.instance.cueVolume;
     _reminderHour = NotificationService.hour;
     _reminderMinute = NotificationService.minute;
     _smartReminder = NotificationService.isSmart;
@@ -86,6 +92,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _lockEnabled = _biometric.isLockEnabled();
     _lockTimeoutMinutes = _biometric.getLockTimeout();
     _loadLockState();
+    _refreshAutoSnapshot();
+  }
+
+  /// A safety copy outlives the SnackBar action, so Settings offers a second
+  /// way back until the next Replace overwrites it.
+  Future<void> _refreshAutoSnapshot() async {
+    final snapshot = await _backup.autoSnapshot();
+    if (!mounted) return;
+    setState(() => _hasAutoSnapshot = snapshot != null);
   }
 
   Future<void> _loadNotificationPermission() async {
@@ -208,6 +223,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 if (value) unawaited(UiSounds.play(UiSound.bloom));
               },
             ),
+            _tile(
+              icon: Icons.hearing_outlined,
+              title: l10n.t('settings.sound.cueVolume'),
+              subtitle: '${(_cueVolume * 100).round()}%',
+              onTap: _pickCueVolume,
+            ),
           ]),
 
           // ─── Lock ───
@@ -326,6 +347,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               subtitle: l10n.t('settings.data.restoreHint'),
               onTap: _restoreData,
             ),
+            if (_hasAutoSnapshot)
+              _tile(
+                icon: Icons.history_rounded,
+                title: l10n.t('settings.data.undoRestore'),
+                subtitle: l10n.t('settings.data.undoRestoreHint'),
+                onTap: () => _confirmUndoRestore(l10n),
+              ),
             _tile(
               icon: Icons.key_outlined,
               title: l10n.t('settings.data.rotateKey'),
@@ -497,6 +525,64 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await preview.stopSplashSound();
       await preview.dispose();
     }
+  }
+
+  Future<void> _pickCueVolume() async {
+    final l10n = AppLocalizations.of(context);
+    var value = _cueVolume;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.t('settings.sound.cueVolume'),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.volume_down_outlined),
+                    Expanded(
+                      child: Slider(
+                        value: value,
+                        divisions: 10,
+                        label: '${(value * 100).round()}%',
+                        onChanged: (next) {
+                          setSheetState(() => value = next);
+                        },
+                        onChangeEnd: (next) async {
+                          await AudioService.instance.setCueVolume(next);
+                          if (mounted) setState(() => _cueVolume = next);
+                          unawaited(AudioService.instance.playCue(
+                            'assets/sounds/inhale.m4a',
+                            volume: next,
+                          ));
+                        },
+                      ),
+                    ),
+                    const Icon(Icons.volume_up_outlined),
+                  ],
+                ),
+                Text(
+                  '${(value * 100).round()}%',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   String _languageName(String code) {
@@ -1041,6 +1127,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  /// The safety copy is encrypted with an app-owned password in the OS
+  /// keystore, so Undo never asks the writer for another secret.
+  Future<String> _autoSnapshotPassword() async {
+    final encryption = EncryptionService();
+    final existing = await encryption.readSecret(_autoSnapshotSecret);
+    if (existing != null && existing.isNotEmpty) return existing;
+    final random = Random.secure();
+    final generated = base64UrlEncode(
+      List<int>.generate(32, (_) => random.nextInt(256)),
+    );
+    await encryption.writeSecret(_autoSnapshotSecret, generated);
+    return generated;
+  }
+
   /// Restores an encrypted `.nabd` backup, letting the user merge with the
   /// current data or replace it wholesale.
   Future<void> _restoreData() async {
@@ -1064,6 +1164,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final mode = await _askRestoreMode(l10n);
       if (mode == null || !mounted) return;
 
+      File? safetyCopy;
+      String? safetyPassword;
+      if (mode == RestoreMode.replace) {
+        safetyPassword = await _autoSnapshotPassword();
+        safetyCopy = await _withProgress(
+          l10n.t('dialog.restore.safety'),
+          (onProgress) => _backup.createAutoSnapshot(
+            password: safetyPassword!,
+            onProgress: onProgress,
+          ),
+        );
+        if (!mounted) return;
+      }
+
       final result = await _withProgress(
         l10n.t('dialog.restore.restoring'),
         (onProgress) => _backup.restoreBackup(
@@ -1081,8 +1195,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return;
       }
 
+      final entryUnit = result.entriesImported == 1
+          ? l10n.t('calendar.entry.one')
+          : l10n.t('calendar.entry.many');
       final counts =
-          '${result.entriesImported} ${l10n.t('dialog.restore.unit')} '
+          '${result.entriesImported} $entryUnit '
           '(${result.imagesRestored} ${l10n.t('dialog.restore.media')}, '
           '${result.audioRestored} ${l10n.t('dialog.restore.audio')}, '
           '${l10n.t('garden.stat.seeds')}: ${result.seedsRestored})';
@@ -1091,9 +1208,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           content: Text(
             '${l10n.t(mode == RestoreMode.merge ? 'dialog.restore.merged' : 'dialog.restore.replaced')} $counts',
           ),
-          duration: const Duration(seconds: 5),
+          duration: Duration(seconds: safetyCopy == null ? 5 : 12),
+          action: safetyCopy == null
+              ? null
+              : SnackBarAction(
+                  label: l10n.t('dialog.restore.undo'),
+                  onPressed: () => _undoRestore(
+                    safetyCopy!,
+                    safetyPassword!,
+                    l10n,
+                  ),
+                ),
         ),
       );
+      await _refreshAutoSnapshot();
+      if (!mounted) return;
       VaultImage.clearCache();
       try {
         await NotificationService.syncLetterUnlocks(
@@ -1114,6 +1243,93 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       debugPrint('Restore failed: $error');
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.t('backup.error.failed'))),
+      );
+    }
+  }
+
+  /// Offers the same Undo from Settings once the SnackBar is gone.
+  Future<void> _confirmUndoRestore(AppLocalizations l10n) async {
+    final snapshot = await _backup.autoSnapshot();
+    if (!mounted) return;
+    if (snapshot == null) {
+      await _refreshAutoSnapshot();
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.t('settings.data.undoRestore')),
+        content: Text(l10n.t('settings.data.undoRestoreHint')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.t('dialog.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.t('dialog.restore.undo')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final password = await _autoSnapshotPassword();
+    await _undoRestore(snapshot, password, l10n);
+  }
+
+  /// Puts back the copy taken just before Replace. The password lives in the
+  /// OS keystore, so Undo works even after the app is restarted.
+  Future<void> _undoRestore(
+    File snapshot,
+    String password,
+    AppLocalizations l10n,
+  ) async {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      if (!await snapshot.exists()) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.t('dialog.restore.undoFailed'))),
+        );
+        return;
+      }
+      if (!mounted) return;
+      final result = await _withProgress(
+        l10n.t('dialog.restore.restoring'),
+        (onProgress) => _backup.restoreBackup(
+          snapshot.path,
+          password: password,
+          mode: RestoreMode.replace,
+          onProgress: onProgress,
+        ),
+      );
+      if (!mounted) return;
+      if (!result.ok) {
+        messenger.showSnackBar(SnackBar(
+          content: Text(l10n.t(result.error ?? 'backup.error.failed')),
+        ));
+        return;
+      }
+      try {
+        await _backup.clearAutoSnapshot();
+      } catch (error) {
+        // A leftover copy is harmless; do not turn a good restore into a fail.
+        debugPrint('Could not delete the safety copy: $error');
+      }
+      if (!mounted) return;
+      await _refreshAutoSnapshot();
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('dialog.restore.undone'))),
+      );
+      VaultImage.clearCache();
+      ref.invalidate(gardenProvider);
+      ref.read(dataRevisionProvider.notifier).bump();
+    } catch (error) {
+      debugPrint('Undo restore failed: $error');
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.t('dialog.restore.undoFailed'))),
       );
     }
   }

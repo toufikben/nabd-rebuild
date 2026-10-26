@@ -289,7 +289,7 @@
   "garden.water.care": "Você escreveu em um dia difícil, e isso exige coragem. Sua semente recebeu um cuidado extra 💗",
   "garden.water.rested": "Seu jardim já recebeu água suficiente hoje. Volte amanhã 🌙",
   "garden.water.noSeed": "Plante uma semente primeiro",
-  "garden.water.noTargets": "Nenhuma semente para regar",
+  "garden.water.noTargets": "Todas as sementes do seu jardim estão em plena floração. Plante uma nova semente ou comece uma nova estação para continuar crescendo.",
   "common.all": "Todas",
   "common.back": "Voltar",
   "tags.entriesUnit": "entradas",
@@ -1044,5 +1044,13 @@
   "silent.pause": "Pausar som",
   "worryBox.deleteTitle": "Liberar esta preocupação?",
   "worryBox.deleteBody": "Ela será removida da caixa. Não dá para desfazer.",
-  "settings.notify.permissionMissing": "As notificações estão bloqueadas nas configurações do sistema. Permita-as para receber lembretes."
+  "settings.notify.permissionMissing": "As notificações estão bloqueadas nas configurações do sistema. Permita-as para receber lembretes.",
+  "weekly.latest": "Último pulso",
+  "settings.sound.cueVolume": "Volume dos sinais de respiração",
+  "dialog.restore.safety": "Guardando uma cópia de segurança…",
+  "dialog.restore.undo": "Desfazer",
+  "dialog.restore.undone": "Restauração desfeita. Seus dados anteriores voltaram.",
+  "dialog.restore.undoFailed": "Não foi possível desfazer a restauração.",
+  "settings.data.undoRestore": "Desfazer a última substituição",
+  "settings.data.undoRestoreHint": "Restaurar a cópia guardada antes da última substituição"
 }

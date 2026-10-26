@@ -289,7 +289,7 @@
   "garden.water.care": "你在艰难的日子里写下了日记，这需要勇气。你的种子得到了额外的呵护 💗",
   "garden.water.rested": "今天花园已经浇够水了。明天再来吧 🌙",
   "garden.water.noSeed": "请先种下一颗种子",
-  "garden.water.noTargets": "没有可浇水的种子",
+  "garden.water.noTargets": "花园里的每颗种子都已盛开。种植新种子或开始新季节，继续生长。",
   "common.all": "全部",
   "common.back": "返回",
   "tags.entriesUnit": "篇日记",
@@ -1044,5 +1044,13 @@
   "silent.pause": "暂停声音",
   "worryBox.deleteTitle": "放下这个担忧？",
   "worryBox.deleteBody": "它将从盒子里移除，且无法撤销。",
-  "settings.notify.permissionMissing": "通知在系统设置中被阻止。请允许通知，以便收到提醒。"
+  "settings.notify.permissionMissing": "通知在系统设置中被阻止。请允许通知，以便收到提醒。",
+  "weekly.latest": "上一次脉搏",
+  "settings.sound.cueVolume": "呼吸提示音量",
+  "dialog.restore.safety": "正在保存安全副本…",
+  "dialog.restore.undo": "撤销",
+  "dialog.restore.undone": "已撤销恢复。之前的数据已恢复。",
+  "dialog.restore.undoFailed": "无法撤销恢复。",
+  "settings.data.undoRestore": "撤销上次替换",
+  "settings.data.undoRestoreHint": "恢复上次替换前保存的副本"
 }

@@ -289,7 +289,7 @@
   "garden.water.care": "つらい日に書くのは勇気のいることです。種に特別なお世話をしました 💗",
   "garden.water.rested": "今日は庭に十分な水がそそがれました。また明日来てください 🌙",
   "garden.water.noSeed": "まず種を植えましょう",
-  "garden.water.noTargets": "水をあげる種がありません",
+  "garden.water.noTargets": "庭のすべての種が満開です。成長を続けるには、新しい種を植えるか新しい季節を始めてください。",
   "common.all": "すべて",
   "common.back": "戻る",
   "tags.entriesUnit": "件の日記",
@@ -1044,5 +1044,13 @@
   "silent.pause": "サウンドを一時停止",
   "worryBox.deleteTitle": "この心配を手放しますか？",
   "worryBox.deleteBody": "ボックスから削除されます。元に戻せません。",
-  "settings.notify.permissionMissing": "通知がシステム設定でブロックされています。リマインダーを受け取るには許可してください。"
+  "settings.notify.permissionMissing": "通知がシステム設定でブロックされています。リマインダーを受け取るには許可してください。",
+  "weekly.latest": "前回のパルス",
+  "settings.sound.cueVolume": "呼吸ガイドの音量",
+  "dialog.restore.safety": "安全コピーを保存しています…",
+  "dialog.restore.undo": "元に戻す",
+  "dialog.restore.undone": "復元を取り消しました。以前のデータが戻りました。",
+  "dialog.restore.undoFailed": "復元を取り消せませんでした。",
+  "settings.data.undoRestore": "最後の置き換えを元に戻す",
+  "settings.data.undoRestoreHint": "最後の置き換え直前に保存したコピーを復元します"
 }

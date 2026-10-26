@@ -289,7 +289,7 @@
   "garden.water.care": "Escribiste en un día difícil, y eso requiere valentía. Tu semilla recibió cuidados extra 💗",
   "garden.water.rested": "Tu jardín ya tuvo suficiente agua hoy. Vuelve mañana 🌙",
   "garden.water.noSeed": "Primero planta una semilla",
-  "garden.water.noTargets": "No hay semillas que regar",
+  "garden.water.noTargets": "Todas las semillas de tu jardín están en plena floración. Planta una nueva semilla o empieza una nueva temporada para seguir creciendo.",
   "common.all": "Todas",
   "common.back": "Atrás",
   "tags.entriesUnit": "entradas",
@@ -1044,5 +1044,13 @@
   "silent.pause": "Pausar sonido",
   "worryBox.deleteTitle": "¿Soltar esta preocupación?",
   "worryBox.deleteBody": "Se quitará de la caja. No se puede deshacer.",
-  "settings.notify.permissionMissing": "Las notificaciones están bloqueadas en los ajustes del sistema. Permítelas para recibir recordatorios."
+  "settings.notify.permissionMissing": "Las notificaciones están bloqueadas en los ajustes del sistema. Permítelas para recibir recordatorios.",
+  "weekly.latest": "Último pulso",
+  "settings.sound.cueVolume": "Volumen de las señales de respiración",
+  "dialog.restore.safety": "Guardando una copia de seguridad…",
+  "dialog.restore.undo": "Deshacer",
+  "dialog.restore.undone": "Restauración deshecha. Tus datos anteriores han vuelto.",
+  "dialog.restore.undoFailed": "No se pudo deshacer la restauración.",
+  "settings.data.undoRestore": "Deshacer el último reemplazo",
+  "settings.data.undoRestoreHint": "Restaura la copia guardada justo antes de tu último reemplazo"
 }

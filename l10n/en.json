@@ -289,7 +289,7 @@
   "garden.water.care": "You wrote on a hard day, and that takes courage. Your seed got extra care 💗",
   "garden.water.rested": "Your garden has had enough water today. Come back tomorrow 🌙",
   "garden.water.noSeed": "Plant a seed first",
-  "garden.water.noTargets": "No seeds to water",
+  "garden.water.noTargets": "Every seed in your garden is in full bloom. Plant a new seed or start a new season to keep growing.",
   "common.all": "All",
   "common.back": "Back",
   "tags.entriesUnit": "entries",
@@ -1044,5 +1044,13 @@
   "silent.pause": "Pause sound",
   "worryBox.deleteTitle": "Release this worry?",
   "worryBox.deleteBody": "It will be removed from the box. This cannot be undone.",
-  "settings.notify.permissionMissing": "Notifications are blocked in system settings. Allow them so reminders can arrive."
+  "settings.notify.permissionMissing": "Notifications are blocked in system settings. Allow them so reminders can arrive.",
+  "weekly.latest": "Last Pulse",
+  "settings.sound.cueVolume": "Breathing cue volume",
+  "dialog.restore.safety": "Saving a safety copy…",
+  "dialog.restore.undo": "Undo",
+  "dialog.restore.undone": "Restore undone. Your previous data is back.",
+  "dialog.restore.undoFailed": "Could not undo the restore.",
+  "settings.data.undoRestore": "Undo last replace",
+  "settings.data.undoRestoreHint": "Restore the copy saved just before your last Replace"
 }

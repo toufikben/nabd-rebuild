@@ -289,7 +289,7 @@
   "garden.water.care": "힘든 날에 글을 쓰는 건 용기 있는 일이에요. 씨앗이 특별한 보살핌을 받았어요 💗",
   "garden.water.rested": "오늘 정원에 물이 충분해요. 내일 다시 오세요 🌙",
   "garden.water.noSeed": "먼저 씨앗을 심어 보세요",
-  "garden.water.noTargets": "물 줄 씨앗이 없어요",
+  "garden.water.noTargets": "정원의 모든 씨앗이 활짝 피었습니다. 계속 성장하려면 새 씨앗을 심거나 새 계절을 시작하세요.",
   "common.all": "전체",
   "common.back": "뒤로",
   "tags.entriesUnit": "개의 기록",
@@ -1044,5 +1044,13 @@
   "silent.pause": "소리 일시정지",
   "worryBox.deleteTitle": "이 걱정을 놓아줄까요?",
   "worryBox.deleteBody": "상자에서 제거되며 되돌릴 수 없습니다.",
-  "settings.notify.permissionMissing": "시스템 설정에서 알림이 차단되어 있습니다. 알림을 받으려면 허용하세요."
+  "settings.notify.permissionMissing": "시스템 설정에서 알림이 차단되어 있습니다. 알림을 받으려면 허용하세요.",
+  "weekly.latest": "지난 펄스",
+  "settings.sound.cueVolume": "호흡 안내 음량",
+  "dialog.restore.safety": "안전 사본을 저장하는 중…",
+  "dialog.restore.undo": "실행 취소",
+  "dialog.restore.undone": "복원을 취소했습니다. 이전 데이터가 돌아왔습니다.",
+  "dialog.restore.undoFailed": "복원을 취소하지 못했습니다.",
+  "settings.data.undoRestore": "마지막 교체 실행 취소",
+  "settings.data.undoRestoreHint": "마지막 교체 직전에 저장한 사본을 복원합니다"
 }

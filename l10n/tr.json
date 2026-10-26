@@ -289,7 +289,7 @@
   "garden.water.care": "Zor bir günde yazdın ve bu cesaret ister. Tohumun fazladan özen gördü 💗",
   "garden.water.rested": "Bahçen bugün yeterince su aldı. Yarın tekrar gel 🌙",
   "garden.water.noSeed": "Önce bir tohum ek",
-  "garden.water.noTargets": "Sulanacak tohum yok",
+  "garden.water.noTargets": "Bahçendeki her tohum tam çiçek açmış durumda. Büyümeye devam etmek için yeni bir tohum ek ya da yeni bir sezon başlat.",
   "common.all": "Tümü",
   "common.back": "Geri",
   "tags.entriesUnit": "kayıt",
@@ -1044,5 +1044,13 @@
   "silent.pause": "Sesi duraklat",
   "worryBox.deleteTitle": "Bu endişe bırakılsın mı?",
   "worryBox.deleteBody": "Kutudan kaldırılacak. Bu geri alınamaz.",
-  "settings.notify.permissionMissing": "Bildirimler sistem ayarlarında engelli. Hatırlatmaların gelmesi için izin ver."
+  "settings.notify.permissionMissing": "Bildirimler sistem ayarlarında engelli. Hatırlatmaların gelmesi için izin ver.",
+  "weekly.latest": "Son nabız",
+  "settings.sound.cueVolume": "Nefes ipucu ses düzeyi",
+  "dialog.restore.safety": "Güvenlik kopyası kaydediliyor…",
+  "dialog.restore.undo": "Geri al",
+  "dialog.restore.undone": "Geri yükleme geri alındı. Önceki verilerin geri geldi.",
+  "dialog.restore.undoFailed": "Geri yükleme geri alınamadı.",
+  "settings.data.undoRestore": "Son değiştirmeyi geri al",
+  "settings.data.undoRestoreHint": "Son değiştirmeden hemen önce kaydedilen kopyayı geri yükle"
 }

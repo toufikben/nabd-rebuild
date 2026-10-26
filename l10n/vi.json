@@ -289,7 +289,7 @@
   "garden.water.care": "Bạn đã viết vào một ngày khó khăn, và điều đó cần dũng khí. Hạt giống của bạn được chăm sóc thêm 💗",
   "garden.water.rested": "Khu vườn hôm nay đã đủ nước. Hẹn bạn ngày mai nhé 🌙",
   "garden.water.noSeed": "Hãy gieo một hạt giống trước",
-  "garden.water.noTargets": "Không có hạt giống nào để tưới",
+  "garden.water.noTargets": "Mọi hạt giống trong khu vườn của bạn đã nở rộ. Hãy gieo hạt mới hoặc bắt đầu mùa mới để tiếp tục lớn lên.",
   "common.all": "Tất cả",
   "common.back": "Quay lại",
   "tags.entriesUnit": "bài viết",
@@ -1044,5 +1044,13 @@
   "silent.pause": "Tạm dừng âm thanh",
   "worryBox.deleteTitle": "Buông bỏ nỗi lo này?",
   "worryBox.deleteBody": "Nó sẽ bị xóa khỏi hộp. Không thể hoàn tác.",
-  "settings.notify.permissionMissing": "Thông báo đang bị chặn trong cài đặt hệ thống. Hãy cho phép để nhận lời nhắc."
+  "settings.notify.permissionMissing": "Thông báo đang bị chặn trong cài đặt hệ thống. Hãy cho phép để nhận lời nhắc.",
+  "weekly.latest": "Nhịp gần nhất",
+  "settings.sound.cueVolume": "Âm lượng tín hiệu thở",
+  "dialog.restore.safety": "Đang lưu bản sao an toàn…",
+  "dialog.restore.undo": "Hoàn tác",
+  "dialog.restore.undone": "Đã hoàn tác khôi phục. Dữ liệu trước đây của bạn đã trở lại.",
+  "dialog.restore.undoFailed": "Không thể hoàn tác khôi phục.",
+  "settings.data.undoRestore": "Hoàn tác lần thay thế gần nhất",
+  "settings.data.undoRestoreHint": "Khôi phục bản sao được lưu ngay trước lần thay thế gần nhất"
 }

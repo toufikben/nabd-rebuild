@@ -70,6 +70,7 @@ class AudioService {
   factory AudioService() => instance;
 
   static const _ambientVolumeKey = 'ambient_volume';
+  static const _cueVolumeKey = 'breathing_cue_volume';
 
   static const _defaultAmbientAssets = <AmbientSource, String>{
     AmbientSource.silent: 'assets/sounds/rain_soft.m4a',
@@ -89,6 +90,25 @@ class AudioService {
   final Map<String, int> _soundGardenGenerations = {};
 
   double _ambientVolume = _loadAmbientVolume();
+  double _cueVolume = _loadCueVolume();
+
+  static double _loadCueVolume() {
+    try {
+      final Object? raw = Hive.box(HiveBoxes.settings).get(_cueVolumeKey);
+      if (raw is num) return raw.clamp(0.0, 1.0).toDouble();
+    } catch (_) {
+      // The settings box is not open yet; fall back to the default.
+    }
+    return 0.8;
+  }
+
+  double get cueVolume => _cueVolume;
+
+  Future<void> setCueVolume(double value) async {
+    final clamped = value.clamp(0.0, 1.0).toDouble();
+    _cueVolume = clamped;
+    await Hive.box(HiveBoxes.settings).put(_cueVolumeKey, clamped);
+  }
 
   static double _loadAmbientVolume() {
     try {

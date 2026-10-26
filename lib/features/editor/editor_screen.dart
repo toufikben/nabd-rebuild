@@ -287,6 +287,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     _rewarded = true;
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
     try {
       final result = await ref.read(gardenProvider.notifier).water(saved);
       if (result.ok) {
@@ -298,6 +299,18 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           if (mounted) {
             await showBloomCelebration(context, result.seed!);
           }
+        } else if (result.messageKey == 'garden.water.noTargets') {
+          // Writing is already saved. Point at the next step without blocking
+          // the writer with another dialog.
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(l10n.t(result.messageKey)),
+              action: SnackBarAction(
+                label: l10n.t('garden.title'),
+                onPressed: () => router.push('/garden'),
+              ),
+            ),
+          );
         } else {
           messenger.showSnackBar(
             SnackBar(content: Text(l10n.t(result.messageKey))),

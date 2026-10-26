@@ -90,7 +90,7 @@ class _BreathingScreenState extends State<BreathingScreen>
     unawaited(
       AudioService.instance.playCue(
         asset,
-        volume: 0.8,
+        volume: AudioService.instance.cueVolume,
         requestId: requestId,
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
@@ -23,88 +24,131 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
   }
 
   Future<void> _load() async {
-    final pulse = await _service.loadWeeklyPulse(_now);
+    final pulse = _now.weekday == DateTime.sunday
+        ? await _service.loadWeeklyPulse(_now)
+        : await _service.loadLatestWeeklyPulse();
     if (mounted) setState(() => _pulse = pulse);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    if (_now.weekday != DateTime.sunday) {
+    final isSunday = _now.weekday == DateTime.sunday;
+    final pulse = _pulse;
+    if (!isSunday && (pulse == null || pulse.insufficientData)) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.t('weekly.title'))),
         body: const _NextSundayState(),
       );
     }
-    final pulse = _pulse;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.t('weekly.title'))),
-      body:
-          pulse == null
-              ? const Center(child: CircularProgressIndicator())
-              : pulse.insufficientData
-              ? const _InsufficientState()
-              : ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  Text(
-                    l10n.t('weekly.yourWeek'),
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(l10n.t('weekly.snapshot')),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _Metric(
-                          label: l10n.t('weekly.entries'),
-                          value: '${pulse.entryCount}',
-                          icon: Icons.menu_book_outlined,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _Metric(
-                          label: l10n.t('weekly.words'),
-                          value: '${pulse.wordCount}',
-                          icon: Icons.edit_note_outlined,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _Metric(
-                          label: l10n.t('weekly.positive'),
-                          value: '${pulse.positiveCount}',
-                          icon: Icons.wb_sunny_outlined,
-                          color: AppColors.success,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _Metric(
-                          label: l10n.t('weekly.negative'),
-                          value: '${pulse.negativeCount}',
-                          icon: Icons.cloud_outlined,
-                          color: AppColors.warning,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  _Metric(
-                    label: l10n.t('weekly.avgMood'),
-                    value: pulse.averageMood.toStringAsFixed(1),
-                    icon: Icons.insights_outlined,
-                  ),
-                ],
+      body: pulse == null
+          ? const Center(child: CircularProgressIndicator())
+          : pulse.insufficientData
+          ? const _InsufficientState()
+          : _PulseBody(
+              pulse: pulse,
+              title: isSunday ? 'weekly.yourWeek' : 'weekly.latest',
+              showNextSunday: !isSunday,
+            ),
+    );
+  }
+}
+
+class _PulseBody extends StatelessWidget {
+  const _PulseBody({
+    required this.pulse,
+    required this.title,
+    required this.showNextSunday,
+  });
+
+  final WeeklyPulse pulse;
+  final String title;
+  final bool showNextSunday;
+
+  String? _weekRange(BuildContext context) {
+    final end = DateTime.tryParse(pulse.weekKey);
+    if (end == null) return null;
+    final start = end.subtract(const Duration(days: 6));
+    final locale = AppLocalizations.of(context).locale.toString();
+    final format = DateFormat.MMMd(locale);
+    return '${format.format(start)} – ${format.format(end)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final range = _weekRange(context);
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        Text(
+          l10n.t(title),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        if (range != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            range,
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ],
+        const SizedBox(height: 6),
+        Text(
+          showNextSunday ? l10n.t('weekly.nextOn') : l10n.t('weekly.snapshot'),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Expanded(
+              child: _Metric(
+                label: l10n.t('weekly.entries'),
+                value: '${pulse.entryCount}',
+                icon: Icons.menu_book_outlined,
               ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _Metric(
+                label: l10n.t('weekly.words'),
+                value: '${pulse.wordCount}',
+                icon: Icons.edit_note_outlined,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _Metric(
+                label: l10n.t('weekly.positive'),
+                value: '${pulse.positiveCount}',
+                icon: Icons.wb_sunny_outlined,
+                color: AppColors.success,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _Metric(
+                label: l10n.t('weekly.negative'),
+                value: '${pulse.negativeCount}',
+                icon: Icons.cloud_outlined,
+                color: AppColors.warning,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _Metric(
+          label: l10n.t('weekly.avgMood'),
+          value: pulse.averageMood.toStringAsFixed(1),
+          icon: Icons.insights_outlined,
+        ),
+      ],
     );
   }
 }

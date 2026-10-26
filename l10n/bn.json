@@ -289,7 +289,7 @@
   "garden.water.care": "কঠিন একটি দিনে আপনি লিখেছেন, আর তাতে সাহস লাগে। আপনার বীজ বাড়তি যত্ন পেল 💗",
   "garden.water.rested": "আজ আপনার বাগান যথেষ্ট পানি পেয়েছে। কাল আবার আসুন 🌙",
   "garden.water.noSeed": "আগে একটি বীজ রোপণ করুন",
-  "garden.water.noTargets": "পানি দেওয়ার মতো কোনো বীজ নেই",
+  "garden.water.noTargets": "আপনার বাগানের প্রতিটি বীজ পূর্ণ প্রস্ফুটিত। বাড়তে থাকতে নতুন বীজ লাগান বা নতুন ঋতু শুরু করুন।",
   "common.all": "সব",
   "common.back": "ফিরে যান",
   "tags.entriesUnit": "এন্ট্রি",
@@ -1044,5 +1044,13 @@
   "silent.pause": "শব্দ বিরত করুন",
   "worryBox.deleteTitle": "এই দুশ্চিন্তা ছেড়ে দেবেন?",
   "worryBox.deleteBody": "এটি বাক্স থেকে সরানো হবে। এটি ফেরানো যাবে না।",
-  "settings.notify.permissionMissing": "সিস্টেম সেটিংসে বিজ্ঞপ্তি ব্লক করা আছে। অনুস্মারক পেতে অনুমতি দিন।"
+  "settings.notify.permissionMissing": "সিস্টেম সেটিংসে বিজ্ঞপ্তি ব্লক করা আছে। অনুস্মারক পেতে অনুমতি দিন।",
+  "weekly.latest": "সর্বশেষ পালস",
+  "settings.sound.cueVolume": "শ্বাসের সংকেতের ভলিউম",
+  "dialog.restore.safety": "নিরাপত্তা কপি সংরক্ষণ করা হচ্ছে…",
+  "dialog.restore.undo": "পূর্বাবস্থায় ফেরান",
+  "dialog.restore.undone": "পুনরুদ্ধার পূর্বাবস্থায় ফেরানো হয়েছে। আপনার আগের ডেটা ফিরে এসেছে।",
+  "dialog.restore.undoFailed": "পুনরুদ্ধার পূর্বাবস্থায় ফেরানো যায়নি।",
+  "settings.data.undoRestore": "সর্বশেষ প্রতিস্থাপন পূর্বাবস্থায় ফেরান",
+  "settings.data.undoRestoreHint": "সর্বশেষ প্রতিস্থাপনের ঠিক আগে সংরক্ষিত কপি পুনরুদ্ধার করুন"
 }

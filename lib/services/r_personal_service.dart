@@ -202,6 +202,22 @@ class RPersonalService {
     return echoes.reversed.toList();
   }
 
+  /// The most recent saved Pulse, even when today is not Sunday. Used to keep
+  /// the Insights card useful during the six waiting days instead of showing
+  /// an empty state.
+  Future<WeeklyPulse?> loadLatestWeeklyPulse() async {
+    String? latest;
+    for (final rawKey in _settings.keys) {
+      final key = rawKey.toString();
+      if (!key.startsWith(weeklyPulsePrefix)) continue;
+      final week = key.substring(weeklyPulsePrefix.length);
+      if (latest == null || week.compareTo(latest) > 0) latest = week;
+    }
+    if (latest == null) return null;
+    final stored = _settings.get('$weeklyPulsePrefix$latest');
+    return stored is Map ? WeeklyPulse.fromMap(stored) : null;
+  }
+
   Future<WeeklyPulse?> loadWeeklyPulse([DateTime? now]) async {
     final current = now ?? DateTime.now();
     if (current.weekday != DateTime.sunday) return null;

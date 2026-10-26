@@ -138,6 +138,35 @@ class BackupService {
     }
   }
 
+  /// A safety copy kept in app documents before a destructive Replace.
+  /// It uses an app-owned password so the writer never has to retype it.
+  static const autoSnapshotFileName = 'nabd_auto_before_restore.nabd';
+
+  Future<File> createAutoSnapshot({
+    required String password,
+    void Function(double progress)? onProgress,
+  }) async {
+    final backup = await createBackup(
+      password: password,
+      onProgress: onProgress,
+    );
+    final documents = await _documentsDirectory();
+    final target = File(p.join(documents.path, autoSnapshotFileName));
+    if (await target.exists()) await target.delete();
+    return backup.copy(target.path);
+  }
+
+  Future<File?> autoSnapshot() async {
+    final documents = await _documentsDirectory();
+    final file = File(p.join(documents.path, autoSnapshotFileName));
+    return await file.exists() ? file : null;
+  }
+
+  Future<void> clearAutoSnapshot() async {
+    final file = await autoSnapshot();
+    if (file != null) await file.delete();
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   // Restore
   // ═══════════════════════════════════════════════════════════════════

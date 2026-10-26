@@ -289,7 +289,7 @@
   "garden.water.care": "Hai scritto in un giorno difficile, e ci vuole coraggio. Il tuo seme ha ricevuto cure extra 💗",
   "garden.water.rested": "Il tuo giardino ha avuto abbastanza acqua per oggi. Torna domani 🌙",
   "garden.water.noSeed": "Pianta prima un seme",
-  "garden.water.noTargets": "Nessun seme da innaffiare",
+  "garden.water.noTargets": "Ogni seme del tuo giardino è in piena fioritura. Pianta un nuovo seme o inizia una nuova stagione per continuare a crescere.",
   "common.all": "Tutte",
   "common.back": "Indietro",
   "tags.entriesUnit": "voci",
@@ -1044,5 +1044,13 @@
   "silent.pause": "Metti in pausa il suono",
   "worryBox.deleteTitle": "Lasciare andare questa preoccupazione?",
   "worryBox.deleteBody": "Sarà rimossa dalla scatola. Non si può annullare.",
-  "settings.notify.permissionMissing": "Le notifiche sono bloccate nelle impostazioni di sistema. Consentile per ricevere i promemoria."
+  "settings.notify.permissionMissing": "Le notifiche sono bloccate nelle impostazioni di sistema. Consentile per ricevere i promemoria.",
+  "weekly.latest": "Ultimo impulso",
+  "settings.sound.cueVolume": "Volume dei segnali di respirazione",
+  "dialog.restore.safety": "Salvataggio di una copia di sicurezza…",
+  "dialog.restore.undo": "Annulla",
+  "dialog.restore.undone": "Ripristino annullato. I tuoi dati precedenti sono tornati.",
+  "dialog.restore.undoFailed": "Impossibile annullare il ripristino.",
+  "settings.data.undoRestore": "Annulla l’ultima sostituzione",
+  "settings.data.undoRestoreHint": "Ripristina la copia salvata subito prima dell’ultima sostituzione"
 }
