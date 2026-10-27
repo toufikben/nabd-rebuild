@@ -7,6 +7,7 @@ import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/seed.dart';
 import '../../services/garden_service.dart';
+import '../../services/motivation_service.dart';
 import '../../widgets/nabd_ui.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -144,6 +145,10 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
   // Step 1: Selection
   // ═══════════════════════════════════════════════════════════
   Widget _buildSelection() {
+    final unlocked = _unlockedAchievements();
+    final planted = ref.watch(gardenProvider).seeds.length;
+    final full = planted >= GardenService.maxSeeds;
+
     return Container(
       key: const ValueKey('selection'),
       color: const Color(0xFF0A0D14),
@@ -164,6 +169,22 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
               AppLocalizations.of(context).t('garden.seedSelection.hint'),
               style: TextStyle(color: Colors.white60, fontSize: 13),
             ),
+            if (full) ...[
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  AppLocalizations.of(context)
+                      .t('garden.seedSelection.full')
+                      .replaceAll('{count}', '$planted'),
+                  style: const TextStyle(
+                    color: AppColors.warning,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             // Rows as tall as their tallest card: a fixed cell height clipped
             // the "Hope" card by 2 px on a real phone, and more at large text.
@@ -178,55 +199,101 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
                       Builder(builder: (context) {
                         final seed = Seed.all[i];
                         final selected = _selectedSeed?.id == seed.id;
-                        return GestureDetector(
-                          onTap: () => setState(() => _selectedSeed = seed),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: seed.colors
-                                    .map((c) =>
-                                        selected ? c : c.withValues(alpha: 0.3))
-                                    .toList(),
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
+                        final locked = !seed.isUnlocked(unlocked);
+                        return Semantics(
+                          button: true,
+                          enabled: !locked && !full,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (locked) {
+                                _showLockedHint(seed);
+                              } else if (full) {
+                                _showFullHint(planted);
+                              } else {
+                                setState(() => _selectedSeed = seed);
+                              }
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: seed.colors
+                                      .map((c) => selected
+                                          ? c
+                                          : c.withValues(
+                                              alpha: locked ? 0.12 : 0.3))
+                                      .toList(),
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                border: selected
+                                    ? Border.all(
+                                        color: Colors.white, width: 2)
+                                    : null,
                               ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: selected
-                                  ? Border.all(color: Colors.white, width: 2)
-                                  : null,
-                            ),
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  seed.emoji,
-                                  style: const TextStyle(fontSize: 44),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  seed.nameFor(
-                                      AppLocalizations.of(context).locale.languageCode),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    seed.emoji,
+                                    style: const TextStyle(fontSize: 44),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  seed.descriptionFor(
-                                      AppLocalizations.of(context).locale.languageCode),
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 10,
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    seed.nameFor(AppLocalizations.of(context)
+                                        .locale
+                                        .languageCode),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    seed.descriptionFor(
+                                        AppLocalizations.of(context)
+                                            .locale
+                                            .languageCode),
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 10,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (locked) ...[
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.lock_outline,
+                                          color: Colors.white70,
+                                          size: 12,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            AppLocalizations.of(context)
+                                                .t('seed.locked'),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -367,6 +434,42 @@ class _SeedSelectionScreenState extends ConsumerState<SeedSelectionScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Achievements already earned. An unreadable achievements box must never
+  /// hide the garden, so a failure falls back to "everything unlocked".
+  Set<String> _unlockedAchievements() {
+    try {
+      return AchievementService().unlockedIds;
+    } catch (_) {
+      return Seed.all
+          .map((seed) => seed.unlockAchievement)
+          .whereType<String>()
+          .toSet();
+    }
+  }
+
+  void _showLockedHint(Seed seed) {
+    final l10n = AppLocalizations.of(context);
+    final code = l10n.locale.languageCode;
+    final achievement = seed.unlockAchievement == null
+        ? null
+        : Achievement.getById(seed.unlockAchievement!);
+    final title = achievement?.titleFor(code) ?? '';
+    _snack(l10n.t('seed.unlockHint').replaceAll('{achievement}', title));
+  }
+
+  void _showFullHint(int planted) {
+    final l10n = AppLocalizations.of(context);
+    _snack(
+      l10n.t('garden.seedSelection.full').replaceAll('{count}', '$planted'),
+    );
+  }
+
+  void _snack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
     );
   }
 

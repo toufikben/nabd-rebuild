@@ -13,6 +13,10 @@ class Seed {
   final List<Color> colors;
   final List<String> relatedMoods;
 
+  /// Achievement that has to be earned before this seed can be planted, or
+  /// null when it is available from the first day.
+  final String? unlockAchievement;
+
   const Seed({
     required this.id,
     required this.emoji,
@@ -22,7 +26,12 @@ class Seed {
     required this.flowerEmoji,
     required this.colors,
     required this.relatedMoods,
+    this.unlockAchievement,
   });
+
+  /// Whether [unlockedAchievements] already contains this seed's requirement.
+  bool isUnlocked(Set<String> unlockedAchievements) =>
+      unlockAchievement == null || unlockedAchievements.contains(unlockAchievement);
 
   /// Name and description in [languageCode], from the string tables
   /// (`seed.<id>.name|description`), falling back to English.
@@ -135,6 +144,74 @@ class Seed {
       flowerEmoji: '🍀',
       colors: [Color(0xFF00B88A), Color(0xFF00897B)],
       relatedMoods: ['proud', 'hopeful', 'excited'],
+    ),
+    // The six below are earned, not given: each one opens with an achievement,
+    // so a long-running journal keeps offering something new to grow.
+    Seed(
+      id: 'self_love',
+      emoji: '💗',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌷',
+      colors: [Color(0xFFF06292), Color(0xFFC2185B)],
+      relatedMoods: ['loved', 'grateful', 'calm'],
+      unlockAchievement: 'seven_entries',
+    ),
+    Seed(
+      id: 'kindness',
+      emoji: '🤝',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌼',
+      colors: [Color(0xFFFFCA28), Color(0xFFFFA000)],
+      relatedMoods: ['grateful', 'loved', 'happy'],
+      unlockAchievement: 'gratitude_7',
+    ),
+    Seed(
+      id: 'focus',
+      emoji: '🎯',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌵',
+      colors: [Color(0xFF5C6BC0), Color(0xFF3949AB)],
+      relatedMoods: ['calm', 'proud', 'peaceful'],
+      unlockAchievement: 'words_1000',
+    ),
+    Seed(
+      id: 'rest',
+      emoji: '🌙',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌲',
+      flowerEmoji: '🪷',
+      colors: [Color(0xFF7986CB), Color(0xFF3F51B5)],
+      relatedMoods: ['tired', 'calm', 'peaceful'],
+      unlockAchievement: 'streak_3',
+    ),
+    Seed(
+      id: 'connection',
+      emoji: '🫂',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌸',
+      colors: [Color(0xFF26C6DA), Color(0xFF00838F)],
+      relatedMoods: ['loved', 'excited', 'hopeful'],
+      unlockAchievement: 'moods_variety',
+    ),
+    Seed(
+      id: 'resilience',
+      emoji: '🌾',
+      sproutEmoji: '🌱',
+      saplingEmoji: '🌿',
+      treeEmoji: '🌳',
+      flowerEmoji: '🌻',
+      colors: [Color(0xFF8D6E63), Color(0xFF5D4037)],
+      relatedMoods: ['proud', 'hopeful', 'tired'],
+      unlockAchievement: 'streak_30',
     ),
   ];
 

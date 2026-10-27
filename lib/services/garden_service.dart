@@ -24,7 +24,7 @@ class GardenService extends StateNotifier<GardenState> {
   static const _box = 'garden';
   static const _archivePrefix = 'archive_';
   static const _seasonKey = 'garden_season';
-  static const maxSeeds = 10;
+  static const maxSeeds = 12;
 
   final _ai = LocalAIService();
 

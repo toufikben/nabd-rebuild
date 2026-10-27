@@ -11,3 +11,7 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+# The QA debug key is committed on purpose: CI and every laptop must sign test
+# builds with the same key, or each install wipes the app's data. It signs
+# debug builds only and is not a Play signing key.
+!qa-debug.keystore
