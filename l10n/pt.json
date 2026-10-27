@@ -609,6 +609,8 @@
   "paywall.f3": "Exporte seu diário em PDF e Markdown",
   "paywall.f4": "Apoie o desenvolvimento independente do Nabd",
   "paywall.restoreNothing": "Nenhuma compra anterior foi encontrada para esta conta.",
+  "paywall.activeLifetime": "Acesso vitalício. Obrigado por apoiar o Nabd.",
+  "paywall.activeUntil": "Ativo até {date}",
   "notify.title": "Hora de escrever",
   "notify.body": "Registre seus pensamentos sobre hoje",
   "settings.notify.denied": "As notificações não são permitidas. Ative-as nas configurações do celular.",

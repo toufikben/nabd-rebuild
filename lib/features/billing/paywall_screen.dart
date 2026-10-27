@@ -33,23 +33,30 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   Widget build(BuildContext context) {
     final monetization = ref.watch(monetizationProvider);
     final service = ref.read(monetizationProvider.notifier);
+    final l10n = AppLocalizations.of(context);
+
+    // A Pro user opening this screen is not a customer to sell to: show the
+    // entitlement instead of the plans, and drop the restore action that would
+    // only ever answer "nothing to restore".
+    final isPro = monetization.isPro;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).t('paywall.title')),
+        title: Text(l10n.t('paywall.title')),
         actions: [
-          TextButton(
-            onPressed: monetization.restoring
-                ? null
-                : () => service.restorePurchases(),
-            child: monetization.restoring
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(AppLocalizations.of(context).t('paywall.restore')),
-          ),
+          if (!isPro)
+            TextButton(
+              onPressed: monetization.restoring
+                  ? null
+                  : () => service.restorePurchases(),
+              child: monetization.restoring
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.t('paywall.restore')),
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -95,6 +102,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
             const SizedBox(height: 24),
 
+            if (isPro) ...[
+              _ProActiveCard(
+                lifetime: monetization.isLifetime,
+                expiry: monetization.proExpiry,
+              ),
+              const SizedBox(height: 28),
+            ],
+
             // Features
             // Only what Pro really unlocks in this build. Everything else in
             // the app is free, so it is not listed as a paid feature.
@@ -105,72 +120,20 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
             const SizedBox(height: 32),
 
-            // Plans
-            if (!monetization.storeAvailable)
-              const _StoreUnavailableCard()
-            else if (!monetization.productsLoaded)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Column(
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(
-                      AppLocalizations.of(context).t('paywall.loading'),
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  ],
-                ),
-              )
-            else if (monetization.products.isEmpty)
-              _LoadFailedCard(
-                message:
-                    monetization.error ??
-                    AppLocalizations.of(context).t('paywall.loadFailed'),
-                onRetry: () => service.retryLoadProducts(),
-              )
-            else ...[
-              if (MonetizationConfig.subscriptionsEnabled) ...[
-                _PlanCard(
-                  title: AppLocalizations.of(context).t('paywall.monthly'),
-                  price: service.priceFor(MonetizationService.proMonthlyId),
-                  subtitle: AppLocalizations.of(
-                    context,
-                  ).t('paywall.monthlySub'),
-                  onTap: () => _buy(MonetizationService.proMonthlyId),
-                ),
-                const SizedBox(height: 12),
-                _PlanCard(
-                  title: AppLocalizations.of(context).t('paywall.yearly'),
-                  price: service.priceFor(MonetizationService.proYearlyId),
-                  subtitle: _yearlySubtitle(context, service),
-                  badge: AppLocalizations.of(context).t('paywall.bestValue'),
-                  highlighted: true,
-                  onTap: () => _buy(MonetizationService.proYearlyId),
-                ),
-                const SizedBox(height: 12),
-              ],
-              _PlanCard(
-                title: AppLocalizations.of(context).t('paywall.lifetime'),
-                price: service.priceFor(MonetizationService.lifetimeId),
-                subtitle: AppLocalizations.of(context).t('paywall.lifetimeSub'),
-                badge: AppLocalizations.of(context).t('paywall.best'),
-                highlighted: !MonetizationConfig.subscriptionsEnabled,
-                onTap: () => _buy(MonetizationService.lifetimeId),
-              ),
-            ],
+            // Plans — nothing to sell once the store confirmed Pro.
+            if (!isPro) _plans(monetization, service),
 
-            if (monetization.nothingRestored) ...[
+            if (!isPro && monetization.nothingRestored) ...[
               const SizedBox(height: 16),
               Text(
-                AppLocalizations.of(context).t('paywall.restoreNothing'),
+                l10n.t('paywall.restoreNothing'),
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                 textAlign: TextAlign.center,
               ),
             ],
 
-            if (monetization.error != null) ...[
-              SizedBox(height: 16),
+            if (!isPro && monetization.error != null) ...[
+              const SizedBox(height: 16),
               Text(
                 monetization.error!,
                 style: const TextStyle(color: AppColors.danger, fontSize: 12),
@@ -178,17 +141,76 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               ),
             ],
 
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-            if (MonetizationConfig.subscriptionsEnabled)
+            if (!isPro && MonetizationConfig.subscriptionsEnabled)
               Text(
-                AppLocalizations.of(context).t('paywall.renewNote'),
+                l10n.t('paywall.renewNote'),
                 style: TextStyle(color: AppColors.textTertiary, fontSize: 11),
                 textAlign: TextAlign.center,
               ),
           ],
         ),
       ),
+    );
+  }
+
+  /// The three plans, or the card that explains why there are none.
+  Widget _plans(MonetizationState monetization, MonetizationService service) {
+    final l10n = AppLocalizations.of(context);
+
+    if (!monetization.storeAvailable) return const _StoreUnavailableCard();
+    if (!monetization.productsLoaded) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: Column(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(
+              l10n.t('paywall.loading'),
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      );
+    }
+    if (monetization.products.isEmpty) {
+      return _LoadFailedCard(
+        message: monetization.error ?? l10n.t('paywall.loadFailed'),
+        onRetry: () => service.retryLoadProducts(),
+      );
+    }
+
+    return Column(
+      children: [
+        if (MonetizationConfig.subscriptionsEnabled) ...[
+          _PlanCard(
+            title: l10n.t('paywall.monthly'),
+            price: service.priceFor(MonetizationService.proMonthlyId),
+            subtitle: l10n.t('paywall.monthlySub'),
+            onTap: () => _buy(MonetizationService.proMonthlyId),
+          ),
+          const SizedBox(height: 12),
+          _PlanCard(
+            title: l10n.t('paywall.yearly'),
+            price: service.priceFor(MonetizationService.proYearlyId),
+            subtitle: _yearlySubtitle(context, service),
+            badge: l10n.t('paywall.bestValue'),
+            highlighted: true,
+            onTap: () => _buy(MonetizationService.proYearlyId),
+          ),
+          const SizedBox(height: 12),
+        ],
+        _PlanCard(
+          title: l10n.t('paywall.lifetime'),
+          price: service.priceFor(MonetizationService.lifetimeId),
+          subtitle: l10n.t('paywall.lifetimeSub'),
+          badge: l10n.t('paywall.best'),
+          highlighted: !MonetizationConfig.subscriptionsEnabled,
+          onTap: () => _buy(MonetizationService.lifetimeId),
+        ),
+      ],
     );
   }
 
@@ -331,6 +353,81 @@ class _PlanCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The receipt shown instead of the plans when Pro is already active: what
+/// was bought, and — for a subscription — when it runs out.
+class _ProActiveCard extends StatelessWidget {
+  final bool lifetime;
+  final DateTime? expiry;
+
+  const _ProActiveCard({required this.lifetime, required this.expiry});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final code = l10n.locale.languageCode;
+
+    final String detail;
+    if (lifetime) {
+      detail = l10n.t('paywall.activeLifetime');
+    } else if (expiry != null) {
+      detail = l10n
+          .t('paywall.activeUntil')
+          .replaceAll('{date}', DateFormat.yMMMMd(code).format(expiry!));
+    } else {
+      detail = l10n.t('settings.pro.activeHint');
+    }
+
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.success.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.success.withValues(alpha: 0.45),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.verified_rounded,
+              color: AppColors.success,
+              size: 28,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.t('settings.pro.active'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    detail,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

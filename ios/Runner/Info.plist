@@ -3,9 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleDevelopmentRegion</key>
-    <string>ar</string>
+    <string>en</string>
+    <!-- The brand name, not the old working title. The Arabic UI shows نبض
+         inside the app; the icon label stays the Latin brand like the store
+         listing, because a per-language label needs InfoPlist.strings in the
+         Xcode project. -->
     <key>CFBundleDisplayName</key>
-    <string>Pulse</string>
+    <string>Nabd</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -13,7 +17,30 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Pulse</string>
+    <string>Nabd</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>ar</string>
+        <string>bn</string>
+        <string>de</string>
+        <string>en</string>
+        <string>es</string>
+        <string>fa</string>
+        <string>fr</string>
+        <string>hi</string>
+        <string>id</string>
+        <string>it</string>
+        <string>ja</string>
+        <string>ko</string>
+        <string>ms</string>
+        <string>pt</string>
+        <string>ru</string>
+        <string>tr</string>
+        <string>uk</string>
+        <string>ur</string>
+        <string>vi</string>
+        <string>zh</string>
+    </array>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

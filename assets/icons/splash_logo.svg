@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The native splash mark. It carries no lettering on purpose: the Android and
+  iOS launch screens are drawn before the app knows the phone's language, so
+  the name is painted by the in-app splash from `app.name` in the string
+  tables (Nabd / نبض / ...). Keep this file wordless, then regenerate
+  splash.png from it.
+-->
 <svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="splashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -15,15 +22,14 @@
     </filter>
   </defs>
 
-  <!-- قلب النبض فقط (بدون خلفية) -->
   <g transform="translate(400, 400)">
-    <!-- دائرة خارجية -->
+    <!-- Two rings: the two heartbeats of the launch cue. -->
     <circle r="220" stroke="url(#splashGrad)" stroke-width="8"
             fill="none" opacity="0.4" filter="url(#splashGlow)"/>
     <circle r="160" stroke="url(#splashGrad)" stroke-width="4"
             fill="none" opacity="0.6"/>
 
-    <!-- خط النبض -->
+    <!-- The pulse line. -->
     <path d="M -250 0 L -100 0 L -60 -80 L -20 80 L 20 -60 L 60 60 L 100 0 L 250 0"
           stroke="url(#splashGrad)"
           stroke-width="18"
@@ -32,19 +38,10 @@
           stroke-linejoin="round"
           filter="url(#splashGlow)"/>
 
-    <!-- قلب في المنتصف -->
+    <!-- The heart at the centre of the pulse. -->
     <path d="M 0,-30 C -15,-55 -55,-55 -70,-20 C -80,10 -55,40 0,75
              C 55,40 80,10 70,-20 C 55,-55 15,-55 0,-30 Z"
           fill="url(#splashGrad)"
           filter="url(#splashGlow)"/>
   </g>
-
-  <!-- النص -->
-  <text x="400" y="720"
-        font-family="system-ui, sans-serif"
-        font-size="72"
-        font-weight="700"
-        text-anchor="middle"
-        fill="white"
-        letter-spacing="8">نبض</text>
 </svg>

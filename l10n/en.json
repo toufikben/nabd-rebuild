@@ -609,6 +609,8 @@
   "paywall.f3": "Export your journal as PDF and Markdown",
   "paywall.f4": "Support independent development of Nabd",
   "paywall.restoreNothing": "No previous purchases were found for this account.",
+  "paywall.activeLifetime": "Lifetime access. Thank you for supporting Nabd.",
+  "paywall.activeUntil": "Active until {date}",
   "notify.title": "Time to write",
   "notify.body": "Capture your thoughts about today",
   "settings.notify.denied": "Notifications are not allowed. Turn them on in the phone settings.",

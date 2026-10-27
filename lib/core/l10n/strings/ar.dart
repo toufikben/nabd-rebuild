@@ -611,6 +611,8 @@ const Map<String, String> stringsAr = <String, String>{
   'paywall.f3': 'تصدير مذكرتك PDF وMarkdown',
   'paywall.f4': 'دعم تطوير نبض المستقل',
   'paywall.restoreNothing': 'لم يُعثر على مشتريات سابقة لهذا الحساب.',
+  'paywall.activeLifetime': 'وصول دائم. شكرًا لدعمك نبض.',
+  'paywall.activeUntil': 'نشط حتى {date}',
   'notify.title': 'حان وقت الكتابة',
   'notify.body': 'دوّن أفكارك عن يومك',
   'settings.notify.denied': 'لم يُسمح بالإشعارات. فعّلها من إعدادات الهاتف.',

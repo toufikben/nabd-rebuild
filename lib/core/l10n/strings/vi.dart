@@ -611,6 +611,8 @@ const Map<String, String> stringsVi = <String, String>{
   'paywall.f3': 'Xuất nhật ký ra PDF và Markdown',
   'paywall.f4': 'Ủng hộ việc phát triển độc lập của Nabd',
   'paywall.restoreNothing': 'Không tìm thấy giao dịch mua trước đó nào cho tài khoản này.',
+  'paywall.activeLifetime': 'Truy cập trọn đời. Cảm ơn bạn đã ủng hộ Nabd.',
+  'paywall.activeUntil': 'Có hiệu lực đến {date}',
   'notify.title': 'Đến giờ viết rồi',
   'notify.body': 'Ghi lại suy nghĩ của bạn về ngày hôm nay',
   'settings.notify.denied': 'Thông báo chưa được cho phép. Hãy bật trong cài đặt điện thoại.',

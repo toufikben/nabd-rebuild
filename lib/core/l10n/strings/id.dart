@@ -611,6 +611,8 @@ const Map<String, String> stringsId = <String, String>{
   'paywall.f3': 'Ekspor jurnalmu sebagai PDF dan Markdown',
   'paywall.f4': 'Dukung pengembangan independen Nabd',
   'paywall.restoreNothing': 'Tidak ada pembelian sebelumnya untuk akun ini.',
+  'paywall.activeLifetime': 'Akses seumur hidup. Terima kasih telah mendukung Nabd.',
+  'paywall.activeUntil': 'Aktif hingga {date}',
   'notify.title': 'Saatnya menulis',
   'notify.body': 'Tangkap pikiranmu tentang hari ini',
   'settings.notify.denied': 'Notifikasi tidak diizinkan. Aktifkan di pengaturan ponsel.',

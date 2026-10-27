@@ -611,6 +611,8 @@ const Map<String, String> stringsMs = <String, String>{
   'paywall.f3': 'Eksport jurnal anda sebagai PDF dan Markdown',
   'paywall.f4': 'Sokong pembangunan bebas Nabd',
   'paywall.restoreNothing': 'Tiada pembelian terdahulu ditemui untuk akaun ini.',
+  'paywall.activeLifetime': 'Akses seumur hidup. Terima kasih kerana menyokong Nabd.',
+  'paywall.activeUntil': 'Aktif sehingga {date}',
   'notify.title': 'Masa untuk menulis',
   'notify.body': 'Rakamkan fikiran anda tentang hari ini',
   'settings.notify.denied': 'Pemberitahuan tidak dibenarkan. Hidupkannya dalam tetapan telefon.',

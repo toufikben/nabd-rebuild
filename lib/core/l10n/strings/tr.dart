@@ -611,6 +611,8 @@ const Map<String, String> stringsTr = <String, String>{
   'paywall.f3': 'Günlüğünü PDF ve Markdown olarak dışa aktar',
   'paywall.f4': 'Nabd\'ın bağımsız geliştirilmesine destek ol',
   'paywall.restoreNothing': 'Bu hesap için önceki bir satın alma bulunamadı.',
+  'paywall.activeLifetime': 'Ömür boyu erişim. Nabd\'ı desteklediğin için teşekkürler.',
+  'paywall.activeUntil': '{date} tarihine kadar etkin',
   'notify.title': 'Yazma zamanı',
   'notify.body': 'Bugünle ilgili düşüncelerini yakala',
   'settings.notify.denied': 'Bildirimlere izin verilmiyor. Telefon ayarlarından aç.',
