@@ -161,4 +161,24 @@ void main() {
 
     expect(find.text(_t('paywall.manage')), findsNothing);
   });
+
+  testWidgets('a failed restore says so instead of staying silent', (
+    tester,
+  ) async {
+    // The store threw before it could answer, so there is nothing to restore
+    // and no purchase event. The button used to look dead in this case.
+    await tester.pumpWidget(
+      _paywall(
+        const MonetizationState(
+          storeAvailable: true,
+          productsLoaded: true,
+          restoreFailed: true,
+          error: 'Billing service unavailable',
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(_t('paywall.unavailableHint')), findsOneWidget);
+  });
 }

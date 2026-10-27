@@ -139,9 +139,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               ),
             ],
 
+            // A restore the store refused used to leave the screen unchanged:
+            // the raw store sentence is hidden below when there are no plans,
+            // so the button looked dead. Say what happened in the user's own
+            // words instead of printing the platform message.
+            if (!isPro && monetization.restoreFailed) ...[
+              const SizedBox(height: 16),
+              Text(
+                l10n.t('paywall.unavailableHint'),
+                style: const TextStyle(color: AppColors.danger, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+
             // The load-failure card already carries the store's message, so
             // repeating it underneath only doubles the text on screen.
             if (!isPro &&
+                !monetization.restoreFailed &&
                 monetization.error != null &&
                 monetization.products.isNotEmpty) ...[
               const SizedBox(height: 16),

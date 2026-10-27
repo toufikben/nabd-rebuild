@@ -642,6 +642,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     state = state.copyWith(
       restoring: true,
       nothingRestored: false,
+      restoreFailed: false,
       error: null,
       entitlementStatus: EntitlementStatus.pending,
     );
@@ -651,6 +652,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
       state = state.copyWith(
         restoring: false,
         nothingRestored: true,
+        restoreFailed: false,
         entitlementStatus: state.isPro
             ? (state.isLifetime
                 ? EntitlementStatus.lifetime
@@ -665,6 +667,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
       if (!mounted) return;
       state = state.copyWith(
         restoring: false,
+        restoreFailed: true,
         error: '$error',
         entitlementStatus: EntitlementStatus.error,
       );
@@ -673,7 +676,10 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   void _onPurchaseUpdate(List<PurchaseDetails> purchases) {
     if (!mounted) return;
-    if (purchases.isNotEmpty) _restoreTimer?.cancel();
+    if (purchases.isNotEmpty) {
+      _restoreTimer?.cancel();
+      state = state.copyWith(restoreFailed: false);
+    }
     for (final purchase in purchases) {
       final status = _entitlements.statusFor(purchase);
       if (status == EntitlementStatus.lifetime) {
@@ -812,6 +818,7 @@ class MonetizationState {
     this.purchasing = false,
     this.restoring = false,
     this.nothingRestored = false,
+    this.restoreFailed = false,
     this.products = const [],
     this.error,
     this.entitlementStatus = EntitlementStatus.unknown,
@@ -827,6 +834,10 @@ class MonetizationState {
 
   /// True after a restore that the store answered with nothing to restore.
   final bool nothingRestored;
+
+  /// True when the store refused the restore outright (billing unreachable),
+  /// so the paywall can say so instead of staying silent.
+  final bool restoreFailed;
   final List<ProductDetails> products;
   final String? error;
   final EntitlementStatus entitlementStatus;
@@ -841,6 +852,7 @@ class MonetizationState {
     bool? purchasing,
     bool? restoring,
     bool? nothingRestored,
+    bool? restoreFailed,
     List<ProductDetails>? products,
     String? error,
     EntitlementStatus? entitlementStatus,
@@ -854,6 +866,7 @@ class MonetizationState {
         purchasing: purchasing ?? this.purchasing,
         restoring: restoring ?? this.restoring,
         nothingRestored: nothingRestored ?? this.nothingRestored,
+        restoreFailed: restoreFailed ?? this.restoreFailed,
         products: products ?? this.products,
         error: error,
         entitlementStatus: entitlementStatus ?? this.entitlementStatus,
