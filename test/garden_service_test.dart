@@ -1,10 +1,38 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nabd/models/seed.dart';
+import 'package:nabd/services/garden_service.dart';
+import 'package:nabd/services/motivation_service.dart';
 
 void main() {
   group('Seed', () {
-    test('has 10 seeds', () {
-      expect(Seed.all.length, 10);
+    test('has 16 seeds', () {
+      expect(Seed.all.length, 16);
+    });
+
+    test('every unlock requirement names a real achievement', () {
+      for (final seed in Seed.all.where((s) => s.unlockAchievement != null)) {
+        expect(
+          Achievement.all.any((a) => a.id == seed.unlockAchievement),
+          isTrue,
+          reason: '${seed.id} needs unknown ${seed.unlockAchievement}',
+        );
+      }
+    });
+
+    test('a gated seed stays locked until its achievement is earned', () {
+      final gated = Seed.all.firstWhere((s) => s.unlockAchievement != null);
+      expect(gated.isUnlocked({}), isFalse);
+      expect(gated.isUnlocked({gated.unlockAchievement!}), isTrue);
+    });
+
+    test('the first seeds need no achievement', () {
+      expect(Seed.all.where((s) => s.unlockAchievement == null), isNotEmpty);
+      expect(Seed.getById('love')!.isUnlocked({}), isTrue);
+    });
+
+    test('every seed is listed once and the garden cap leaves a choice', () {
+      expect(Seed.all.map((s) => s.id).toSet(), hasLength(Seed.all.length));
+      expect(GardenService.maxSeeds, lessThan(Seed.all.length));
     });
 
     test('all seeds have required fields', () {

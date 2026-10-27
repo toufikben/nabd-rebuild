@@ -73,6 +73,15 @@ class Achievement {
   String get titleEn => titleFor('en');
   String get titleAr => titleFor('ar');
 
+  /// The achievement with [id], or null when the id is unknown — a seed that
+  /// names an achievement this build no longer has still loads.
+  static Achievement? getById(String id) {
+    for (final a in all) {
+      if (a.id == id) return a;
+    }
+    return null;
+  }
+
   const Achievement({
     required this.id,
     required this.emoji,

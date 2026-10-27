@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/monetization_service.dart';
+import '../../services/store_links.dart';
 
 /// PaywallScreen — شاشة الترقية.
 class PaywallScreen extends ConsumerStatefulWidget {
@@ -107,6 +108,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 lifetime: monetization.isLifetime,
                 expiry: monetization.proExpiry,
               ),
+              // Only the store can cancel or change a subscription, and a
+              // lifetime purchase has nothing to manage.
+              if (!monetization.isLifetime) ...[
+                const SizedBox(height: 12),
+                const _ManageSubscriptionButton(),
+              ],
               const SizedBox(height: 28),
             ],
 
@@ -273,12 +280,13 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ink, not Container: a ripple painted on the Material behind an opaque
+    // Container is invisible, so the tap would have no feedback at all.
     return Semantics(
       button: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(20),
+      child: Material(
+        color: Colors.transparent,
+        child: Ink(
           decoration: BoxDecoration(
             gradient: highlighted
                 ? const LinearGradient(
@@ -291,67 +299,74 @@ class _PlanCard extends StatelessWidget {
                 ? null
                 : Border.all(color: AppColors.border, width: 1.5),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (badge != null) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: highlighted
-                              ? Colors.white.withValues(alpha: 0.2)
-                              : AppColors.warning.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          badge!,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (badge != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: highlighted
+                                  ? Colors.white.withValues(alpha: 0.2)
+                                  : AppColors.warning.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              badge!,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: highlighted
+                                    ? Colors.white
+                                    : AppColors.warning,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        Text(
+                          title,
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: highlighted
-                                ? Colors.white
-                                : AppColors.warning,
+                            color: highlighted ? Colors.white : null,
                           ),
                         ),
-                      ),
-                      SizedBox(height: 8),
-                    ],
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: highlighted ? Colors.white : null,
-                      ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: highlighted
+                                ? Colors.white70
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: highlighted
-                            ? Colors.white70
-                            : AppColors.textSecondary,
-                      ),
+                  ),
+                  Text(
+                    price,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: highlighted ? Colors.white : AppColors.primary,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Text(
-                price,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: highlighted ? Colors.white : AppColors.primary,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -428,6 +443,59 @@ class _ProActiveCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Opens the store's own subscription page — the only place a plan can be
+/// cancelled, switched or refunded. The app can sell a subscription, but it can
+/// never end one on its own.
+class _ManageSubscriptionButton extends StatefulWidget {
+  const _ManageSubscriptionButton();
+
+  @override
+  State<_ManageSubscriptionButton> createState() =>
+      _ManageSubscriptionButtonState();
+}
+
+class _ManageSubscriptionButtonState extends State<_ManageSubscriptionButton> {
+  bool _opening = false;
+
+  Future<void> _open() async {
+    setState(() => _opening = true);
+    final opened = await const StoreLinks().openManageSubscriptions();
+    if (!mounted) return;
+    setState(() => _opening = false);
+    if (!opened) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).t('paywall.manageFailed')),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _opening ? null : _open,
+        icon: _opening
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.credit_card_outlined, size: 18),
+        label: Text(AppLocalizations.of(context).t('paywall.manage')),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
       ),
     );

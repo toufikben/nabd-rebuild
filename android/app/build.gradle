@@ -35,6 +35,16 @@ android {
     }
 
     signingConfigs {
+        // A QA key committed with the project, so a debug build from CI and a
+        // debug build from a laptop carry the same signature: `adb install -r`
+        // then keeps the journal instead of demanding an uninstall first.
+        // Debug/QA only — it can never sign a Play upload.
+        debug {
+            storeFile file('qa-debug.keystore')
+            storePassword 'nabdqa'
+            keyAlias 'nabdqa'
+            keyPassword 'nabdqa'
+        }
         release {
             if (keystorePropertiesFile.exists()) {
                 keyAlias keystoreProperties['keyAlias']

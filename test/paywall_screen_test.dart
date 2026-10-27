@@ -92,4 +92,40 @@ void main() {
     // No store in the test, so the screen explains that instead of pricing.
     expect(find.text(_t('paywall.unavailable')), findsOneWidget);
   });
+
+  testWidgets('a subscriber can reach the store to cancel', (tester) async {
+    await tester.pumpWidget(
+      _paywall(
+        MonetizationState(
+          isPro: true,
+          storeAvailable: true,
+          productsLoaded: true,
+          proExpiry: DateTime(2027, 1, 31),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    // Only the store can end a subscription, so the screen hands the user to
+    // it instead of pretending the app can cancel.
+    expect(find.text(_t('paywall.manage')), findsOneWidget);
+  });
+
+  testWidgets('a lifetime owner has no subscription to manage', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _paywall(
+        const MonetizationState(
+          isPro: true,
+          isLifetime: true,
+          storeAvailable: true,
+          productsLoaded: true,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(_t('paywall.manage')), findsNothing);
+  });
 }
