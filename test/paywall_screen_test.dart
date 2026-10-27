@@ -81,6 +81,39 @@ void main() {
     expect(find.text(_t('paywall.lifetime')), findsNothing);
   });
 
+  testWidgets('a store error is not printed twice', (tester) async {
+    // Play reports the load failure with the same sentence the card already
+    // uses as its title, which used to render the line twice.
+    await tester.pumpWidget(
+      _paywall(
+        MonetizationState(
+          storeAvailable: true,
+          productsLoaded: true,
+          error: _t('paywall.loadFailed'),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(_t('paywall.loadFailed')), findsOneWidget);
+  });
+
+  testWidgets('a store error with detail keeps both lines', (tester) async {
+    await tester.pumpWidget(
+      _paywall(
+        const MonetizationState(
+          storeAvailable: true,
+          productsLoaded: true,
+          error: 'Service unavailable (503)',
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(_t('paywall.loadFailed')), findsOneWidget);
+    expect(find.text('Service unavailable (503)'), findsOneWidget);
+  });
+
   testWidgets('without Pro the plans and the restore action stay', (
     tester,
   ) async {

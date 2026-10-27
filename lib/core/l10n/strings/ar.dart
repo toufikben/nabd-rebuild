@@ -609,7 +609,7 @@ const Map<String, String> stringsAr = <String, String>{
   'paywall.brand': 'نبض Pro',
   'paywall.f1': 'كل الجلسات الموجّهة',
   'paywall.f2': 'رؤى متقدمة: مراجعة السنة ورادار المشاعر وسحابة الكلمات',
-  'paywall.f3': 'تصدير مذكرتك PDF وMarkdown',
+  'paywall.f3': 'تصدير مذكرتك بصيغة PDF أو Markdown',
   'paywall.f4': 'دعم تطوير نبض المستقل',
   'paywall.restoreNothing': 'لم يُعثر على مشتريات سابقة لهذا الحساب.',
   'paywall.activeLifetime': 'وصول دائم. شكرًا لدعمك نبض.',

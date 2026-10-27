@@ -139,7 +139,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               ),
             ],
 
-            if (!isPro && monetization.error != null) ...[
+            // The load-failure card already carries the store's message, so
+            // repeating it underneath only doubles the text on screen.
+            if (!isPro &&
+                monetization.error != null &&
+                monetization.products.isNotEmpty) ...[
               const SizedBox(height: 16),
               Text(
                 monetization.error!,
@@ -510,6 +514,11 @@ class _LoadFailedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The store often reports the same sentence the card already shows as its
+    // title; printing it twice says nothing and looks broken.
+    final title = AppLocalizations.of(context).t('paywall.loadFailed');
+    final detail = message == title ? null : message;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -522,16 +531,18 @@ class _LoadFailedCard extends StatelessWidget {
           Icon(Icons.wifi_off_rounded, size: 40, color: AppColors.textTertiary),
           const SizedBox(height: 12),
           Text(
-            AppLocalizations.of(context).t('paywall.loadFailed'),
+            title,
             style: const TextStyle(fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
+          if (detail != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              detail,
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: onRetry,
