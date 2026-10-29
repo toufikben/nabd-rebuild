@@ -28,13 +28,18 @@ class AppColors {
   static const warning = Color(0xFFB7791F);
   static const danger = Color(0xFFC4413A);
 
+  /// The colour of the native launch window (`background.png`). The first
+  /// Flutter frame uses the same ink so the splash does not flash a different
+  /// background between the system splash and the app's own one.
+  static const splashBackground = Color(0xFF0A0D14);
+
   /// Alternative palettes the user can pick in Settings.
   static const femininePrimary = Color(0xFFB4537E);
   static const feminineSecondary = Color(0xFF7D62B8);
   static const masculinePrimary = Color(0xFF2F6690);
   static const masculineSecondary = Color(0xFF3A8D84);
 
-  /// The dusk gradient behind the lock screen, the splash and Pro.
+  /// The dusk gradient behind the lock screen and Pro.
   static const brandGradient = LinearGradient(
     colors: [Color(0xFF3F35A3), Color(0xFF5B4FCF), Color(0xFF8C6FE0)],
     begin: Alignment.topLeft,

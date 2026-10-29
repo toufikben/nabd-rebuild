@@ -11,7 +11,7 @@ import '../../services/biometric_service.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
-/// The launch screen: the name on the dusk gradient, with two rings that
+/// The launch screen: the name on the native launch ink, with two rings that
 /// expand in time with the two heartbeats of the launch cue. A tap skips it.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -110,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> {
         behavior: HitTestBehavior.opaque,
         onTap: _skip,
         child: Container(
-          decoration: const BoxDecoration(gradient: AppColors.brandGradient),
+          color: AppColors.splashBackground,
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
