@@ -648,26 +648,27 @@ class MonetizationService extends StateNotifier<MonetizationState> {
     );
     _restoreTimer?.cancel();
     _restoreTimer = Timer(restoreTimeout, () {
-      if (!mounted || !state.restoring) return;
+      _restoreTimer = null;
+      // A purchase event may have stopped the spinner already without granting
+      // Pro, so the old "still restoring?" guard could leave the user with no
+      // answer at all. Pro is the only outcome that needs no message.
+      if (!mounted || state.isPro || state.restoreFailed) return;
       state = state.copyWith(
         restoring: false,
         nothingRestored: true,
-        restoreFailed: false,
-        entitlementStatus: state.isPro
-            ? (state.isLifetime
-                ? EntitlementStatus.lifetime
-                : EntitlementStatus.subscriptionActive)
-            : EntitlementStatus.unknown,
+        entitlementStatus: EntitlementStatus.unknown,
       );
     });
     try {
       await _iap.restorePurchases();
     } catch (error) {
       _restoreTimer?.cancel();
+      _restoreTimer = null;
       if (!mounted) return;
       state = state.copyWith(
         restoring: false,
         restoreFailed: true,
+        nothingRestored: false,
         error: '$error',
         entitlementStatus: EntitlementStatus.error,
       );
@@ -676,10 +677,9 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   void _onPurchaseUpdate(List<PurchaseDetails> purchases) {
     if (!mounted) return;
-    if (purchases.isNotEmpty) {
-      _restoreTimer?.cancel();
-      state = state.copyWith(restoreFailed: false);
-    }
+    // The timer is not cancelled here: the store can hand back a purchase that
+    // grants nothing (expired, pending), and the user still needs an answer.
+    if (purchases.isNotEmpty) state = state.copyWith(restoreFailed: false);
     for (final purchase in purchases) {
       final status = _entitlements.statusFor(purchase);
       if (status == EntitlementStatus.lifetime) {
@@ -712,6 +712,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
 
   /// Sends the purchase to the trusted backend and applies the verdict.
   Future<void> _verifySubscriptionPurchase(PurchaseDetails purchase) async {
+    final wasRestoring = state.restoring;
     state = state.copyWith(
       purchasing: false,
       restoring: false,
@@ -725,6 +726,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
       state = state.copyWith(
         purchasing: false,
         restoring: false,
+        restoreFailed: wasRestoring,
         entitlementStatus: EntitlementStatus.subscriptionUnverified,
         error: 'The store did not return a server verification token.',
       );
@@ -744,6 +746,7 @@ class MonetizationService extends StateNotifier<MonetizationState> {
         result.status == EntitlementStatus.expired;
     if (!isVerdict) {
       state = state.copyWith(
+        restoreFailed: wasRestoring && !state.isPro,
         entitlementStatus: state.isPro ? null : result.status,
         error: state.isPro ? null : result.errorMessage,
       );
