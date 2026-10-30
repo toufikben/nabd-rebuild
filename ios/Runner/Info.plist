@@ -9,7 +9,7 @@
          listing, because a per-language label needs InfoPlist.strings in the
          Xcode project. -->
     <key>CFBundleDisplayName</key>
-    <string>Nabd</string>
+    <string>Pulse</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -17,7 +17,7 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Nabd</string>
+    <string>Pulse</string>
     <key>CFBundleLocalizations</key>
     <array>
         <string>ar</string>

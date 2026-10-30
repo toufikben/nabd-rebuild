@@ -114,7 +114,7 @@ class _NabdAppState extends ConsumerState<NabdApp> with WidgetsBindingObserver {
     final darkTheme = AppTheme.getTheme('dark', genderTheme, fontFamily: family);
 
     return MaterialApp.router(
-      title: 'نبض',
+      title: AppLocalizations(locale).t('app.name'),
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
       darkTheme: darkTheme,

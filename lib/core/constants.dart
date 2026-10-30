@@ -1,5 +1,5 @@
 class AppConstants {
-  static const appName = 'Nabd';
+  static const appName = 'Pulse';
   static const appVersion = '1.0.0';
   static const maxEntryLength = 50000;
   static const maxImagesPerEntry = 10;
