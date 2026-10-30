@@ -71,6 +71,38 @@ void main() {
     });
   });
 
+  group('brand name', () {
+    test('Arabic keeps its own name', () {
+      expect(S.ar['app.name'], 'نبض');
+      expect(S.ar['android.app_name'], 'نبض');
+      expect(S.ar['android.widget_title'], 'نبض');
+    });
+
+    test('every other language says Pulse', () {
+      for (final entry in S.byLanguage.entries) {
+        if (entry.key == 'ar') continue;
+        expect(entry.value['app.name'], 'Pulse', reason: entry.key);
+        expect(entry.value['android.app_name'], 'Pulse', reason: entry.key);
+        expect(entry.value['android.widget_title'], 'Pulse',
+            reason: entry.key);
+      }
+    });
+
+    test('the old working title is gone from every non-Arabic string', () {
+      // ".nabd" stays: it is the backup file extension, not the brand.
+      final leaks = <String>[];
+      for (final entry in S.byLanguage.entries) {
+        if (entry.key == 'ar') continue;
+        for (final string in entry.value.entries) {
+          if (string.value.contains('Nabd')) {
+            leaks.add('${entry.key}:${string.key}');
+          }
+        }
+      }
+      expect(leaks, isEmpty, reason: 'run python3 scripts/gen_l10n.py');
+    });
+  });
+
   group('lookup behaviour', () {
     test('Arabic locale returns the Arabic value', () {
       final l10n = AppLocalizations(const Locale('ar'));
