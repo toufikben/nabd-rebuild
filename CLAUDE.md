@@ -1,4 +1,4 @@
-# Nabd — rules for Claude sessions
+# Pulse — rules for Claude sessions
 
 ## The owner's computer never builds
 

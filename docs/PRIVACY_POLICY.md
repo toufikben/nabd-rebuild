@@ -45,22 +45,22 @@
 
 ---
 
-# Privacy Policy — Nabd
+# Privacy Policy — Pulse
 
 **Last updated:** 2026-10-06
 
-Nabd is a private journal, built so that what you write never leaves your phone.
+Pulse is a private journal, built so that what you write never leaves your phone.
 
-## What does Nabd collect?
+## What does Pulse collect?
 
-Nothing you write or record. Nabd has no accounts, and contains no analytics, advertising or tracking SDKs. The one exception is checking a subscription, if you subscribe (see "Third-party services").
+Nothing you write or record. Pulse has no accounts, and contains no analytics, advertising or tracking SDKs. The one exception is checking a subscription, if you subscribe (see "Third-party services").
 
 ## Where is your data kept?
 
 - Entries, letters, moods, the garden and settings are stored only on your phone, encrypted with AES-256.
 - Photos and voice notes you add are encrypted with AES-256-GCM before they are saved.
 - The encryption key lives in the system's secure key store (Android Keystore).
-- Android's automatic cloud backup is turned off for Nabd's data on purpose. The only backup is a `.nabd` file that you export yourself, protected by a password you choose, and store wherever you decide.
+- Android's automatic cloud backup is turned off for Pulse's data on purpose. The only backup is a `.nabd` file that you export yourself, protected by a password you choose, and store wherever you decide.
 
 ## Permissions and why
 
@@ -70,17 +70,17 @@ Nothing you write or record. Nabd has no accounts, and contains no analytics, ad
 | Notifications | Daily reminder, weekly review and future-letter unlocks, all scheduled on the phone |
 | Biometrics | App lock, if you turn it on |
 | Run at startup | Re-schedule your reminders after the phone restarts |
-| Photos | You pick photos with the system picker; Nabd only sees what you pick |
+| Photos | You pick photos with the system picker; Pulse only sees what you pick |
 
 ## Third-party services
 
-- **Dictation** runs on the phone by default, using offline speech recognition, so audio never leaves your phone. If the language's offline pack is not installed, Nabd asks before using your phone's online speech service (such as Google), which may send audio to its provider's servers. You can withdraw that consent in Settings. Nabd keeps no audio. The feature is optional.
-- **Purchases** of Pro go through Google Play, under Google's policy. Nabd never sees payment details.
-- **Subscription checks:** if you take a monthly or yearly plan, Nabd sends the purchase token Google issues, together with a random id created on your phone, to RevenueCat, which confirms with Google that the subscription is active and until when. Your name, email and anything from your journal are never sent. A lifetime purchase does not use this service.
+- **Dictation** runs on the phone by default, using offline speech recognition, so audio never leaves your phone. If the language's offline pack is not installed, Pulse asks before using your phone's online speech service (such as Google), which may send audio to its provider's servers. You can withdraw that consent in Settings. Pulse keeps no audio. The feature is optional.
+- **Purchases** of Pro go through Google Play, under Google's policy. Pulse never sees payment details.
+- **Subscription checks:** if you take a monthly or yearly plan, Pulse sends the purchase token Google issues, together with a random id created on your phone, to RevenueCat, which confirms with Google that the subscription is active and until when. Your name, email and anything from your journal are never sent. A lifetime purchase does not use this service.
 
 ## Children
 
-Nabd is not directed at children under 13 and collects no data from anyone.
+Pulse is not directed at children under 13 and collects no data from anyone.
 
 ## Deletion
 
