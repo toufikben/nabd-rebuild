@@ -103,6 +103,31 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
             const SizedBox(height: 24),
 
+            // A restore must answer next to the button that was tapped: the
+            // message used to sit under the plans, off-screen on a small
+            // phone, so a working reply looked like a dead button.
+            if (!isPro && monetization.nothingRestored) ...[
+              Text(
+                l10n.t('paywall.restoreNothing'),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // A restore the store refused used to leave the screen unchanged:
+            // the raw store sentence is hidden below when there are no plans,
+            // so the button looked dead. Say what happened in the user's own
+            // words instead of printing the platform message.
+            if (!isPro && monetization.restoreFailed) ...[
+              Text(
+                l10n.t('paywall.unavailableHint'),
+                style: const TextStyle(color: AppColors.danger, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+            ],
+
             if (isPro) ...[
               _ProActiveCard(
                 lifetime: monetization.isLifetime,
@@ -129,28 +154,6 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
             // Plans — nothing to sell once the store confirmed Pro.
             if (!isPro) _plans(monetization, service),
-
-            if (!isPro && monetization.nothingRestored) ...[
-              const SizedBox(height: 16),
-              Text(
-                l10n.t('paywall.restoreNothing'),
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-            ],
-
-            // A restore the store refused used to leave the screen unchanged:
-            // the raw store sentence is hidden below when there are no plans,
-            // so the button looked dead. Say what happened in the user's own
-            // words instead of printing the platform message.
-            if (!isPro && monetization.restoreFailed) ...[
-              const SizedBox(height: 16),
-              Text(
-                l10n.t('paywall.unavailableHint'),
-                style: const TextStyle(color: AppColors.danger, fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-            ],
 
             // The load-failure card already carries the store's message, so
             // repeating it underneath only doubles the text on screen.
