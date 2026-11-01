@@ -107,7 +107,7 @@ jobs:
           set -euo pipefail
           cp build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk nabd-debug-arm64.apk
           gh release create "$TAG" --target "$GITHUB_SHA" --prerelease \
-            --title "Nabd test build #${{ github.run_number }} (${GITHUB_REF_NAME})" \
+            --title "Pulse test build #${{ github.run_number }} (${GITHUB_REF_NAME})" \
             --notes "Built from ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}. Not for the store." \
             || true  # the release job may have created it first
           gh release upload "$TAG" nabd-debug-arm64.apk --clobber
@@ -240,7 +240,7 @@ jobs:
           # against the quota, a release asset does neither.
           cp build/app/outputs/bundle/release/app-release.aab nabd-release.aab
           gh release create "$TAG" --target "$GITHUB_SHA" --prerelease \
-            --title "Nabd test build #${{ github.run_number }} (${GITHUB_REF_NAME})" \
+            --title "Pulse test build #${{ github.run_number }} (${GITHUB_REF_NAME})" \
             --notes "Built from ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}. Not for the store." \
             || true  # the debug job may have created it first
           gh release upload "$TAG" nabd-release.apk nabd-release.aab --clobber
