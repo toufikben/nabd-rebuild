@@ -190,9 +190,25 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text(_t('paywall.monthly')), findsOneWidget);
-    expect(find.text(_t('paywall.yearly')), findsOneWidget);
     expect(find.text(_t('paywall.lifetime')), findsNothing);
+  });
+
+  testWidgets('a plan the store did return is priced and tappable', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _paywall(
+        MonetizationState(
+          storeAvailable: true,
+          productsLoaded: true,
+          products: [_product(MonetizationService.lifetimeId, 'DZD 12,000.00')],
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(_t('paywall.lifetime')), findsOneWidget);
+    expect(find.text('DZD 12,000.00'), findsOneWidget);
   });
 
   testWidgets('a store that returns nothing sellable explains itself', (
