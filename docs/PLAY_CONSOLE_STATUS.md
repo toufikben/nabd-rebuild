@@ -51,15 +51,16 @@
 - Internal testing: الإصدار **9 (0.1.8)** من 30 أكتوبر، «Not reviewed».
 - Production: غير مفعّل.
 - اختبار مغلق: 1/5 (الدول فقط، لم يُخترْ المستخدمون). اختبار مفتوح: 1/4.
-- AAB جاهز من CI: versionCode **263**، versionName 1.0.2، موقّع بمفتاح الرفع `bf8e19b3…` — **لم يُرفع بعد**.
+- CI run **41603334340** ناجح (Analyze/Test/Debug/Release)، المستودع عاد **خاصًا** فور انتهائه.
+- AAB جاهز للرفع: `device-test-output/release-41603334340/app-release.aab` — versionCode **265**، versionName 1.0.2، SHA-256 `26EDDB4FA258F3D952A041D3B7655CD6BC4D8DBFC10E127677CF36AB085D9784`.
 
 ## ❌ متبقٍ
 
 1. تصحيح عنوان المتجر العربي إلى «نبض: مذكراتك الخاصة».
 2. إنشاء one-time product `nabd.lifetime` وتفعيله — مؤجّل بقرار المالك (السعر)، والواجهة لم تعد تعرضه.
-3. رفع AAB الأخير إلى Internal testing وإرساله للمراجعة.
+3. رفع AAB versionCode **265** إلى Internal testing وإرساله للمراجعة.
 4. ضبط مستخدمي Internal testing إن لم يكونوا مضافين.
-5. اختبار شراء/استعادة حقيقي بعد 3.
+5. اختبار شراء/استعادة حقيقي بعد 3 — مسار التحقق: RevenueCat REST بمفتاح `goog_` العام (كما في `docs/REVENUECAT_SETUP.md`)، ويجب كفاية ذلك لمنح Pro؛ إن ظهر 401/403 فالمطلوب مفتاح `sk_` للخادم أو `SUBSCRIPTION_VERIFICATION_BACKEND_URL` (لا يجوز شحن `sk_` داخل التطبيق).
 6. تحديث الوصف/الصور (مؤجّل بطلب المالك).
 7. iOS (مؤجّل: لا مشروع Xcode في المستودع).
 8. فحوصات الجهاز النهائية: الودجة، تسجيل صوتي حي، استرجاع «استبدال»، a11y، أداء release.
