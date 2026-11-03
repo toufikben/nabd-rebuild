@@ -210,34 +210,53 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       );
     }
 
-    return Column(
-      children: [
-        if (MonetizationConfig.subscriptionsEnabled) ...[
-          _PlanCard(
-            title: l10n.t('paywall.monthly'),
-            price: service.priceFor(MonetizationService.proMonthlyId),
-            subtitle: l10n.t('paywall.monthlySub'),
-            onTap: () => _buy(MonetizationService.proMonthlyId),
-          ),
-          const SizedBox(height: 12),
-          _PlanCard(
-            title: l10n.t('paywall.yearly'),
-            price: service.priceFor(MonetizationService.proYearlyId),
-            subtitle: _yearlySubtitle(context, service),
-            badge: l10n.t('paywall.bestValue'),
-            highlighted: true,
-            onTap: () => _buy(MonetizationService.proYearlyId),
-          ),
-          const SizedBox(height: 12),
-        ],
+    // Only offer what the store actually returned. A product that is missing
+    // from Play (not created yet, or withdrawn in one country) would otherwise
+    // render a card with no price whose tap can only fail.
+    bool sells(String id) => monetization.products.any((p) => p.id == id);
+    final subscriptions = MonetizationConfig.subscriptionsEnabled;
+
+    final plans = <Widget>[
+      if (subscriptions && sells(MonetizationService.proMonthlyId))
+        _PlanCard(
+          title: l10n.t('paywall.monthly'),
+          price: service.priceFor(MonetizationService.proMonthlyId),
+          subtitle: l10n.t('paywall.monthlySub'),
+          onTap: () => _buy(MonetizationService.proMonthlyId),
+        ),
+      if (subscriptions && sells(MonetizationService.proYearlyId))
+        _PlanCard(
+          title: l10n.t('paywall.yearly'),
+          price: service.priceFor(MonetizationService.proYearlyId),
+          subtitle: _yearlySubtitle(context, service),
+          badge: l10n.t('paywall.bestValue'),
+          highlighted: true,
+          onTap: () => _buy(MonetizationService.proYearlyId),
+        ),
+      if (sells(MonetizationService.lifetimeId))
         _PlanCard(
           title: l10n.t('paywall.lifetime'),
           price: service.priceFor(MonetizationService.lifetimeId),
           subtitle: l10n.t('paywall.lifetimeSub'),
           badge: l10n.t('paywall.best'),
-          highlighted: !MonetizationConfig.subscriptionsEnabled,
+          highlighted: !subscriptions,
           onTap: () => _buy(MonetizationService.lifetimeId),
         ),
+    ];
+
+    if (plans.isEmpty) {
+      return _LoadFailedCard(
+        message: monetization.error ?? l10n.t('paywall.loadFailed'),
+        onRetry: () => service.retryLoadProducts(),
+      );
+    }
+
+    return Column(
+      children: [
+        for (var i = 0; i < plans.length; i++) ...[
+          if (i > 0) const SizedBox(height: 12),
+          plans[i],
+        ],
       ],
     );
   }

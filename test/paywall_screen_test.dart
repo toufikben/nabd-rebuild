@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:nabd/core/l10n/app_localizations.dart';
 import 'package:nabd/core/l10n/app_strings.dart';
 import 'package:nabd/features/billing/paywall_screen.dart';
@@ -10,6 +11,15 @@ import 'package:nabd/services/monetization_service.dart';
 const _locale = Locale('en');
 
 String _t(String key) => S.en[key]!;
+
+ProductDetails _product(String id, String price) => ProductDetails(
+      id: id,
+      title: id,
+      description: '',
+      price: price,
+      rawPrice: 675,
+      currencyCode: 'DZD',
+    );
 
 /// The paywall on top of a frozen entitlement, so the states a store would
 /// take minutes to reach are one line each.
@@ -160,6 +170,42 @@ void main() {
     await tester.pump();
 
     expect(find.text(_t('paywall.manage')), findsNothing);
+  });
+
+  testWidgets('a plan the store did not return is not offered', (tester) async {
+    // Play answers with the products that exist. The lifetime purchase is not
+    // in the store yet, so the card that used to render with an empty price
+    // and a dead tap is gone until the product is created.
+    await tester.pumpWidget(
+      _paywall(
+        MonetizationState(
+          storeAvailable: true,
+          productsLoaded: true,
+          products: [
+            _product(MonetizationService.proMonthlyId, 'DZD 675.00'),
+            _product(MonetizationService.proYearlyId, 'DZD 4,700.00'),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(_t('paywall.monthly')), findsOneWidget);
+    expect(find.text(_t('paywall.yearly')), findsOneWidget);
+    expect(find.text(_t('paywall.lifetime')), findsNothing);
+  });
+
+  testWidgets('a store that returns nothing sellable explains itself', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _paywall(
+        const MonetizationState(storeAvailable: true, productsLoaded: true),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(_t('paywall.loadFailed')), findsOneWidget);
   });
 
   testWidgets('a failed restore says so instead of staying silent', (

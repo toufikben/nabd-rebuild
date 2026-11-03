@@ -13,12 +13,12 @@
 
 ## 3. IAP (In-App Purchase)
 
-- [ ] إنشاء حساب Google Play Console
-- [ ] (لاحقًا، بعد خادم التحقق) إنشاء `nabd_pro_monthly` و`nabd_pro_yearly`
-- [ ] إنشاء منتج `nabd_lifetime` (79.99$)
-- [ ] إنشاء حساب App Store Connect
-- [ ] تكرار المنتجات في App Store
-- [ ] اختبار الشراء بـ Sandbox
+- [x] إنشاء حساب Google Play Console
+- [x] إنشاء `nabd_pro_monthly` و`nabd_pro_yearly` (Active، 175 دولة، 4.99$ / 34.99$)
+- [ ] إنشاء one-time product `nabd.lifetime` — **مؤجّل**: سعر 79.99$ مرتفع بقرار المالك، والأسعار الحالية تُترك كما هي. الواجهة تُخفي بطاقة «مدى الحياة» تلقائيًا ما دام المنتج غير موجود في المتجر.
+- [ ] إنشاء حساب App Store Connect — مؤجّل (لا مشروع Xcode في المستودع)
+- [ ] تكرار المنتجات في App Store — مؤجّل
+- [ ] اختبار الشراء الحقيقي (license tester) — يحتاج رفع AAB موقّع على Internal testing أولًا
 - [ ] اختبار الاستعادة
 - [ ] اختبار فشل الدفع
 
