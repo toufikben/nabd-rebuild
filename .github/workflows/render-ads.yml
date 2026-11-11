@@ -32,8 +32,13 @@ jobs:
           cache: "npm"
           cache-dependency-path: marketing/videos/package-lock.json
 
-      - name: Install ffmpeg + fonts
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-color-emoji
+      - name: Optional system packages
+        timeout-minutes: 10
+        continue-on-error: true
+        run: |
+          sudo apt-get update -o Acquire::Retries=5 || true
+          sudo apt-get install -y -o Acquire::Retries=5 ffmpeg || true
+          command -v ffmpeg && ffmpeg -version | head -1 || echo "no system ffmpeg — Remotion uses its own"
 
       - name: Install deps
         run: npm install --legacy-peer-deps --no-audit --no-fund
@@ -62,7 +67,7 @@ jobs:
             echo "::endgroup::"
           done
           ls -lh out/
-          for f in out/*.mp4; do ffprobe -v error -select_streams v:0 -show_entries stream=width,height,duration -of csv=p=0 "$f"; done
+          if command -v ffprobe >/dev/null; then for f in out/*.mp4; do ffprobe -v error -select_streams v:0 -show_entries stream=width,height,duration -of csv=p=0 "$f"; done; fi
 
       - name: Publish release
         env:
