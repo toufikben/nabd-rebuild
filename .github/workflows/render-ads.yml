@@ -2,11 +2,6 @@ name: Render NABD ads
 
 on:
   workflow_dispatch:
-    inputs:
-      only:
-        description: "Composition id to render (empty = all five)"
-        required: false
-        default: ""
   push:
     branches: [main]
     paths:
@@ -18,8 +13,25 @@ permissions:
 
 jobs:
   render:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
+    # The free runner gives 2 cores; Remotion refuses a concurrency above that.
+    # One job per film, so five films still finish in the time of one.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: Ad1Tonight
+            name: ad1-tonight
+          - id: Ad2Unsent
+            name: ad2-unsent
+          - id: Ad3OneDrop
+            name: ad3-onedrop
+          - id: Ad4TooLoud
+            name: ad4-tooloud
+          - id: Ad5Year
+            name: ad5-year
     defaults:
       run:
         working-directory: marketing/videos
@@ -43,38 +55,45 @@ jobs:
       - name: Install deps
         run: npm install --legacy-peer-deps --no-audit --no-fund
 
-      - name: Bundle once
-        run: npx remotion bundle --out-dir=build/bundle
-
-      - name: Render
-        shell: bash
+      - name: Render ${{ matrix.id }}
         run: |
-          set -e
           mkdir -p out
-          ONLY="${{ inputs.only }}"
-          declare -A IDS=(
-            [Ad1Tonight]=ad1-tonight
-            [Ad2Unsent]=ad2-unsent
-            [Ad3OneDrop]=ad3-onedrop
-            [Ad4TooLoud]=ad4-tooloud
-            [Ad5Year]=ad5-year
-          )
-          for ID in Ad1Tonight Ad2Unsent Ad3OneDrop Ad4TooLoud Ad5Year; do
-            if [ -n "$ONLY" ] && [ "$ONLY" != "$ID" ]; then continue; fi
-            echo "::group::render $ID"
-            npx remotion render build/bundle "${IDS[$ID]}" "out/${IDS[$ID]}.mp4" \
-              --codec=h264 --crf=16 --pixel-format=yuv420p --concurrency=3
-            echo "::endgroup::"
-          done
+          npx remotion render src/index.ts "${{ matrix.id }}" "out/${{ matrix.name }}.mp4" \
+            --codec=h264 --crf=16 --pixel-format=yuv420p --concurrency=2 --log=error
           ls -lh out/
-          if command -v ffprobe >/dev/null; then for f in out/*.mp4; do ffprobe -v error -select_streams v:0 -show_entries stream=width,height,duration -of csv=p=0 "$f"; done; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ad-${{ matrix.name }}
+          path: marketing/videos/out/${{ matrix.name }}.mp4
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    needs: render
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ad-*
+          merge-multiple: true
+          path: dist
+
+      - name: List
+        run: ls -lh dist/
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          RUN: ${{ github.run_number }}
         run: |
-          TAG="nabd-ads-${{ github.run_number }}"
-          gh release create "$TAG" out/*.mp4 \
-            --target "${{ github.sha }}" \
-            --title "NABD ads — wordless feature films (run ${{ github.run_number }})" \
+          set -e
+          TAG="nabd-ads-$RUN"
+          gh release create "$TAG" dist/*.mp4 \
+            --repo "$REPO" \
+            --target "$SHA" \
+            --title "NABD ads — wordless feature films (run $RUN)" \
             --notes "Five vertical 1080x1920 story ads. No on-screen copy: the story and the interface carry the meaning."
