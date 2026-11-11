@@ -1,0 +1,20 @@
+{
+  "name": "nabd-ads",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "render": "npx remotion render Ad1Tonight out/ad1.mp4 --codec h264",
+    "render:all": "npx remotion render Ad1Tonight out/ad1.mp4 --codec h264 && npx remotion render Ad2Unsent out/ad2.mp4 --codec h264 && npx remotion render Ad3OneDrop out/ad3.mp4 --codec h264 && npx remotion render Ad4TooLoud out/ad4.mp4 --codec h264 && npx remotion render Ad5Year out/ad5.mp4 --codec h264",
+    "preview": "npx remotion render Ad1Tonight out/ad1-preview.mp4 --codec h264 --scale=0.5 --concurrency=50%"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.193",
+    "remotion": "^4.0.193",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "typescript": "^5.5.0"
+  }
+}

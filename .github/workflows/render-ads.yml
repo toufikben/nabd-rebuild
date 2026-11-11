@@ -1,0 +1,75 @@
+name: Render NABD ads
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Composition id to render (empty = all five)"
+        required: false
+        default: ""
+  push:
+    branches: [main]
+    paths:
+      - 'marketing/videos/**'
+      - '.github/workflows/render-ads.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: marketing/videos
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: marketing/videos/package-lock.json
+
+      - name: Install ffmpeg + fonts
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-color-emoji
+
+      - name: Install deps
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+
+      - name: Bundle once
+        run: npx remotion bundle --out-dir=build/bundle
+
+      - name: Render
+        shell: bash
+        run: |
+          set -e
+          mkdir -p out
+          ONLY="${{ inputs.only }}"
+          declare -A IDS=(
+            [Ad1Tonight]=ad1-tonight
+            [Ad2Unsent]=ad2-unsent
+            [Ad3OneDrop]=ad3-onedrop
+            [Ad4TooLoud]=ad4-tooloud
+            [Ad5Year]=ad5-year
+          )
+          for ID in Ad1Tonight Ad2Unsent Ad3OneDrop Ad4TooLoud Ad5Year; do
+            if [ -n "$ONLY" ] && [ "$ONLY" != "$ID" ]; then continue; fi
+            echo "::group::render $ID"
+            npx remotion render build/bundle "${IDS[$ID]}" "out/${IDS[$ID]}.mp4" \
+              --codec=h264 --crf=16 --pixel-format=yuv420p --concurrency=3
+            echo "::endgroup::"
+          done
+          ls -lh out/
+          for f in out/*.mp4; do ffprobe -v error -select_streams v:0 -show_entries stream=width,height,duration -of csv=p=0 "$f"; done
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="nabd-ads-${{ github.run_number }}"
+          gh release create "$TAG" out/*.mp4 \
+            --target "${{ github.sha }}" \
+            --title "NABD ads — wordless feature films (run ${{ github.run_number }})" \
+            --notes "Five vertical 1080x1920 story ads. No on-screen copy: the story and the interface carry the meaning."
