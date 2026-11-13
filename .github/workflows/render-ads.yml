@@ -12,8 +12,31 @@ permissions:
   contents: write
 
 jobs:
+  # Artifact storage on the free plan has a hard quota and it is already spent,
+  # which made every render job fail after a successful encode. Release assets
+  # are not subject to that quota, and they give a plain download link that
+  # works from a phone browser. So the release is created once up front and
+  # every matrix job attaches its own film to it.
+  prepare:
+    name: create release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="nabd-ads-${{ github.run_number }}"
+          gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "NABD ads — run ${{ github.run_number }}" \
+            --notes "Vertical 1080x1920 story ads. Silent films: the story and the interface carry the meaning." \
+            || echo "release $TAG already exists"
+
   render:
     name: ${{ matrix.name }}
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 45
     # The free runner gives 2 cores; Remotion refuses a concurrency above that.
@@ -64,38 +87,12 @@ jobs:
             --codec=h264 --crf=16 --pixel-format=yuv420p --concurrency=2 --log=error
           ls -lh out/
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ad-${{ matrix.name }}
-          path: marketing/videos/out/${{ matrix.name }}.mp4
-          if-no-files-found: error
-          retention-days: 14
-
-  publish:
-    needs: render
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: ad-*
-          merge-multiple: true
-          path: dist
-
-      - name: List
-        run: ls -lh dist/
-
-      - name: Publish release
+      - name: Attach film to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-          RUN: ${{ github.run_number }}
         run: |
-          set -e
-          TAG="nabd-ads-$RUN"
-          gh release create "$TAG" dist/*.mp4 \
-            --repo "$REPO" \
-            --target "$SHA" \
-            --title "NABD ads — wordless feature films (run $RUN)" \
-            --notes "Five vertical 1080x1920 story ads. No on-screen copy: the story and the interface carry the meaning."
+          ls -lh "out/${{ matrix.name }}.mp4"
+          gh release upload "nabd-ads-${{ github.run_number }}" \
+            "out/${{ matrix.name }}.mp4" \
+            --repo "${{ github.repository }}" \
+            --clobber
