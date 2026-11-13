@@ -32,6 +32,8 @@ jobs:
             name: ad4-tooloud
           - id: Ad5Year
             name: ad5-year
+          - id: FtWarded
+            name: ft-warded
     defaults:
       run:
         working-directory: marketing/videos

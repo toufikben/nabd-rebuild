@@ -6,6 +6,7 @@ import {Ad2Unsent} from './ads/Ad2Unsent';
 import {Ad3OneDrop} from './ads/Ad3OneDrop';
 import {Ad4TooLoud} from './ads/Ad4TooLoud';
 import {Ad5Year} from './ads/Ad5Year';
+import {AdFtWarded} from './ads/AdFtWarded';
 
 const Wrapper: React.FC<{children: React.ReactNode}> = ({children}) => (
   <AbsoluteFill>
@@ -52,6 +53,14 @@ export const RemotionRoot: React.FC = () => (
       id="Ad5Year"
       component={() => <Wrapper><Ad5Year /></Wrapper>}
       durationInFrames={560}
+      fps={30}
+      width={1080}
+      height={1920}
+    />
+    <Composition
+      id="FtWarded"
+      component={() => <Wrapper><AdFtWarded /></Wrapper>}
+      durationInFrames={630}
       fps={30}
       width={1080}
       height={1920}
