@@ -5,7 +5,7 @@ import {Camera, Dust, Vignette, PulseRing, Bloom, FadeBlack, LightShaft} from '.
 import {Phone, PhoneLight} from '../kit/Phone';
 import {fontFamily} from '../kit/Fonts';
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  brand  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─────────────────────────────  brand  ───────────────────────────── */
 const F = {
   ink: '#04070E',
   navy: '#071022',
@@ -80,7 +80,7 @@ const Caption: React.FC<{text: string; sub?: string; from: number; to: number; y
   );
 };
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  night city  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─────────────────────────────  night city  ───────────────────────────── */
 const City: React.FC<{snow?: number; lamp?: number}> = ({snow = 1, lamp = 1}) => {
   const f = useCurrentFrame();
   return (
@@ -165,7 +165,7 @@ const City: React.FC<{snow?: number; lamp?: number}> = ({snow = 1, lamp = 1}) =>
   );
 };
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  people  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─────────────────────────────  people  ───────────────────────────── */
 const Thief: React.FC<{x: number; y: number; scale?: number; reach?: number; walk?: number; flip?: boolean; opacity?: number}> = ({
   x,
   y,
@@ -195,7 +195,7 @@ const Thief: React.FC<{x: number; y: number; scale?: number; reach?: number; wal
         <path d="M 40 -300 Q 52 -258 44 -212" stroke="rgba(180,205,255,0.30)" strokeWidth={3} fill="none" />
         <path d="M 58 -168 Q 66 -90 56 -20" stroke="rgba(180,205,255,0.18)" strokeWidth={2.6} fill="none" />
         <path d="M 20 -322 Q 44 -312 46 -288" stroke="rgba(180,205,255,0.35)" strokeWidth={3} fill="none" />
-        {/* right arm: idle â†’ reaching */}
+        {/* right arm: idle → reaching */}
         <g transform={`rotate(${-14 + reach * 96} 62 -150)`}>
           <path d="M 62 -150 L 118 -60 L 172 16" stroke={body} strokeWidth={30} strokeLinecap="round" fill="none" />
           {/* glove */}
@@ -227,7 +227,7 @@ const Owner: React.FC<{x: number; y: number; scale?: number; warm?: number}> = (
   );
 };
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  table  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─────────────────────────────  table  ───────────────────────────── */
 const CafeTable: React.FC<{tilt?: number}> = ({tilt = 0}) => (
   <svg style={{position: 'absolute', inset: 0}} width={1080} height={1920}>
     <g transform={`translate(0 ${tilt})`}>
@@ -254,7 +254,7 @@ const CafeTable: React.FC<{tilt?: number}> = ({tilt = 0}) => (
   </svg>
 );
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  screens  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─────────────────────────────  screens  ───────────────────────────── */
 const ShieldGlyph: React.FC<{size: number; color?: string; glow?: number}> = ({size, color = F.gold, glow = 1}) => (
   <svg width={size} height={size * 1.14} viewBox="0 0 100 114" style={{filter: glow > 0 ? `drop-shadow(0 0 ${18 * glow}px ${color}90)` : undefined}}>
     <path d="M 50 4 L 94 22 L 94 58 Q 94 92 50 110 Q 6 92 6 58 L 6 22 Z" fill="none" stroke={color} strokeWidth={5} />
@@ -275,10 +275,10 @@ const GuardLock: React.FC<{attempts: number; shake: number; tapDigit?: number}> 
         <ShieldGlyph size={86} color={attempts > 0 ? F.red : F.gold} glow={1} />
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, top: 210, textAlign: 'center', fontFamily, fontWeight: 900, fontSize: 30, color: F.cream}}>
-        Ø±Ù…Ø² Ø§Ù„Ø¯Ø®ÙˆÙ„
+        رمز الدخول
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, top: 252, textAlign: 'center', fontFamily, fontSize: 18, color: 'rgba(160,180,212,0.85)'}}>
-        Ù…Ø­Ø§ÙˆÙ„Ø© {attempts} Ù…Ù† 3
+        محاولة {attempts} من 3
       </div>
       {/* dots */}
       <div
@@ -309,7 +309,7 @@ const GuardLock: React.FC<{attempts: number; shake: number; tapDigit?: number}> 
       </div>
       {/* keypad */}
       <div style={{position: 'absolute', left: 58, right: 58, top: 372, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 16}}>
-        {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'âŒ«'].map((d, i) => {
+        {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map((d, i) => {
           const active = tapDigit !== undefined && String(i) === String(tapDigit);
           return (
             <div
@@ -336,7 +336,7 @@ const GuardLock: React.FC<{attempts: number; shake: number; tapDigit?: number}> 
         })}
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, bottom: 40, textAlign: 'center', fontFamily, fontSize: 16, color: `rgba(255,90,72,${0.35 + shake * 0.65})`}}>
-        Ø¯Ø®ÙˆÙ„ ØºÙŠØ± Ù…ØµØ±Ù‘Ø­ Ø¨Ù‡
+        دخول غير مصرّح به
       </div>
     </div>
   );
@@ -389,13 +389,13 @@ const IntruderShot: React.FC<{scan?: number}> = ({scan = 1}) => {
         />
       ))}
       <div style={{position: 'absolute', left: 0, right: 0, top: 250, textAlign: 'center', fontFamily, fontSize: 13, color: F.gold, letterSpacing: 3, fontWeight: 700}}>
-        CAM Â· FRONT
+        CAM · FRONT
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, bottom: 210, textAlign: 'center', fontFamily, fontWeight: 900, fontSize: 26, color: F.cream, direction: 'rtl'}}>
-        ØªÙ… Ø§Ù„ØªÙ‚Ø§Ø· Ø§Ù„ØµÙˆØ±Ø©
+        تم التقاط الصورة
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, bottom: 170, textAlign: 'center', fontFamily, fontSize: 15, color: 'rgba(190,210,240,0.7)'}}>
-        03:17:46 Â· Ø¨Ø¯ÙˆÙ† ØµÙˆØª Â· Ø¨Ø¯ÙˆÙ† Ø¥Ø´Ø¹Ø§Ø±
+        03:17:46 · بدون صوت · بدون إشعار
       </div>
     </div>
   );
@@ -407,7 +407,7 @@ const Evidence: React.FC<{reveal: number; send: number}> = ({reveal, send}) => {
     <div style={{position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${F.navy} 0%, #04070E 70%)`, direction: 'rtl'}}>
       <div style={{position: 'absolute', left: 0, right: 0, top: 0, height: 240, background: 'radial-gradient(ellipse at 50% 0%, rgba(46,123,255,0.26), transparent 70%)'}} />
       <div style={{position: 'absolute', left: 0, right: 0, top: 40, textAlign: 'center', fontFamily, fontWeight: 900, fontSize: 24, color: F.gold}}>
-        ØªÙ‚Ø±ÙŠØ± Ø§Ù„Ø­Ù…Ø§ÙŠØ©
+        تقرير الحماية
       </div>
       {/* photo */}
       <div
@@ -461,15 +461,15 @@ const Evidence: React.FC<{reveal: number; send: number}> = ({reveal, send}) => {
         })}
         <div style={{position: 'absolute', left: 133, top: 92, width: 16, height: 16, borderRadius: '50%', background: F.gold, boxShadow: `0 0 18px ${F.gold}`}} />
         <div style={{position: 'absolute', left: 0, right: 0, bottom: 8, textAlign: 'center', fontFamily, fontSize: 11, color: 'rgba(190,215,255,0.85)'}}>
-          24.7136Â° N Â· 46.6753Â° E
+          24.7136° N · 46.6753° E
         </div>
       </div>
       {/* rows */}
       <div style={{position: 'absolute', left: 34, right: 34, top: 306, display: 'flex', flexDirection: 'column', gap: 12}}>
         {[
-          ['Ø§Ù„Ù…ÙˆÙ‚Ø¹', 'Ø­ÙŠ Ø§Ù„Ù…Ù„Ø² â€” Ø§Ù„Ø±ÙŠØ§Ø¶'],
-          ['Ø§Ù„ÙˆÙ‚Øª', '03:17:46 ÙØ¬Ø±Ø§Ù‹'],
-          ['Ø§Ù„Ø­Ø¯Ø«', 'Ø«Ù„Ø§Ø« Ù…Ø­Ø§ÙˆÙ„Ø§Øª ÙØªØ­ ÙØ§Ø´Ù„Ø©'],
+          ['الموقع', 'حي الملز — الرياض'],
+          ['الوقت', '03:17:46 فجراً'],
+          ['الحدث', 'ثلاث محاولات فتح فاشلة'],
         ].map(([k, v], i) => {
           const o = interpolate(reveal, [i * 0.2, 1], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
           return (
@@ -515,16 +515,16 @@ const Evidence: React.FC<{reveal: number; send: number}> = ({reveal, send}) => {
           <path d="M2 5 L22 5 L22 19 L2 19 Z" fill="none" stroke="#fff" strokeWidth={2} />
           <path d="M2 6 L12 13 L22 6" fill="none" stroke="#fff" strokeWidth={2} />
         </svg>
-        <span style={{fontFamily, fontSize: 19, fontWeight: 800, color: '#fff'}}>Ø£ÙØ±Ø³Ù„ Ø¥Ù„Ù‰ Ø¨Ø±ÙŠØ¯Ùƒ</span>
+        <span style={{fontFamily, fontSize: 19, fontWeight: 800, color: '#fff'}}>أُرسل إلى بريدك</span>
       </div>
 
       {/* guard log */}
       <div style={{position: 'absolute', left: 34, right: 34, top: 524, opacity: Math.min(1, Math.max(0, (reveal - 0.35) / 0.5))}}>
-        <div style={{fontFamily, fontSize: 13, color: 'rgba(150,178,215,0.8)', marginBottom: 8}}>Ø³Ø¬Ù„ Ø§Ù„Ø­Ù…Ø§ÙŠØ©</div>
+        <div style={{fontFamily, fontSize: 13, color: 'rgba(150,178,215,0.8)', marginBottom: 8}}>سجل الحماية</div>
         {[
-          ['03:17:21', 'Ø¬Ù‡Ø§Ø² Ù…Ù‚ÙÙ„ â€” Ø­Ù…Ø§ÙŠØ© Ù…ÙØ¹Ù‘Ù„Ø©', F.blueSoft],
-          ['03:17:38', 'Ù…Ø­Ø§ÙˆÙ„Ø© ÙØªØ­ Ø®Ø§Ø·Ø¦Ø©', F.gold],
-          ['03:17:46', 'ØµÙˆØ±Ø© + Ù…ÙˆÙ‚Ø¹ + ØªÙ†Ø¨ÙŠÙ‡', F.red],
+          ['03:17:21', 'جهاز مقفل — حماية مفعّلة', F.blueSoft],
+          ['03:17:38', 'محاولة فتح خاطئة', F.gold],
+          ['03:17:46', 'صورة + موقع + تنبيه', F.red],
         ].map(([t, label, c], i) => (
           <div key={i} style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10}}>
             <div style={{width: 8, height: 8, borderRadius: 4, background: c as string, boxShadow: `0 0 10px ${c}`}} />
@@ -537,7 +537,7 @@ const Evidence: React.FC<{reveal: number; send: number}> = ({reveal, send}) => {
       {/* footer state */}
       <div style={{position: 'absolute', left: 0, right: 0, bottom: 70, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, opacity: Math.min(1, Math.max(0, (reveal - 0.6) / 0.4))}}>
         <ShieldGlyph size={44} color={F.blueSoft} glow={0.6} />
-        <div style={{fontFamily, fontSize: 12, color: 'rgba(160,190,230,0.85)'}}>Ø§Ù„Ø­Ù…Ø§ÙŠØ© Ù…ÙØ¹Ù‘Ù„Ø© Â· Ø¨Ø¯ÙˆÙ† Ø¥Ø´Ø¹Ø§Ø±</div>
+        <div style={{fontFamily, fontSize: 12, color: 'rgba(160,190,230,0.85)'}}>الحماية مفعّلة · بدون إشعار</div>
       </div>
     </div>
   );
@@ -549,7 +549,7 @@ const NotifScreen: React.FC<{drop: number}> = ({drop}) => (
       06:59
     </div>
     <div style={{position: 'absolute', left: 0, right: 0, top: 150, textAlign: 'center', fontFamily, fontSize: 16, color: 'rgba(170,195,230,0.7)'}}>
-      Ø§Ù„Ø¬Ù…Ø¹Ø© Ù¡Ù¤ Ù†ÙˆÙÙ…Ø¨Ø±
+      الجمعة ١٤ نوفمبر
     </div>
     <div
       style={{
@@ -569,12 +569,12 @@ const NotifScreen: React.FC<{drop: number}> = ({drop}) => (
         <div style={{width: 34, height: 34, borderRadius: 9, overflow: 'hidden', flexShrink: 0}}>
           <Img src={staticFile('ft/icon.png')} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
         </div>
-        <div style={{fontFamily, fontSize: 14, fontWeight: 700, color: '#fff', flex: 1}}>Ø­ØµÙ† Ø§Ù„Ù‡Ø§ØªÙ</div>
-        <div style={{fontFamily, fontSize: 12, color: 'rgba(255,255,255,0.6)'}}>Ø§Ù„Ø¢Ù†</div>
+        <div style={{fontFamily, fontSize: 14, fontWeight: 700, color: '#fff', flex: 1}}>حصن الهاتف</div>
+        <div style={{fontFamily, fontSize: 12, color: 'rgba(255,255,255,0.6)'}}>الآن</div>
       </div>
-      <div style={{marginTop: 10, fontFamily, fontSize: 17, fontWeight: 800, color: '#fff'}}>Ù…Ø­Ø§ÙˆÙ„Ø© ÙØªØ­ ÙØ§Ø´Ù„Ø©</div>
+      <div style={{marginTop: 10, fontFamily, fontSize: 17, fontWeight: 800, color: '#fff'}}>محاولة فتح فاشلة</div>
       <div style={{marginTop: 4, fontFamily, fontSize: 14, color: 'rgba(240,246,255,0.85)', lineHeight: 1.5}}>
-        ØªÙ… ØªØµÙˆÙŠØ± Ù…Ù† Ø­Ø§ÙˆÙ„ ÙØªØ­ Ù‡Ø§ØªÙÙƒØŒ ÙˆØ¥Ø±Ø³Ø§Ù„ Ø§Ù„Ù…ÙˆÙ‚Ø¹ ÙˆØ§Ù„ÙˆÙ‚Øª Ø¥Ù„Ù‰ Ø¨Ø±ÙŠØ¯Ùƒ.
+        تم تصوير من حاول فتح هاتفك، وإرسال الموقع والوقت إلى بريدك.
       </div>
       <div style={{marginTop: 12, display: 'flex', gap: 8}}>
         <div style={{width: 60, height: 60, borderRadius: 10, overflow: 'hidden', border: `1px solid ${F.gold}66`}}>
@@ -583,7 +583,7 @@ const NotifScreen: React.FC<{drop: number}> = ({drop}) => (
           </div>
         </div>
         <div style={{flex: 1, borderRadius: 10, background: 'rgba(46,123,255,0.16)', border: '1px solid rgba(127,178,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily, fontSize: 13, color: 'rgba(220,235,255,0.9)'}}>
-          Ø§Ù„Ù…ÙˆÙ‚Ø¹ Ù…Ø±ÙÙ‚ Â· 03:17
+          الموقع مرفق · 03:17
         </div>
       </div>
     </div>
@@ -610,7 +610,7 @@ const NotifScreen: React.FC<{drop: number}> = ({drop}) => (
   </div>
 );
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  endcard  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─────────────────────────────  endcard  ───────────────────────────── */
 const FtEndCard: React.FC<{start: number}> = ({start}) => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
@@ -637,13 +637,13 @@ const FtEndCard: React.FC<{start: number}> = ({start}) => {
         <Img src={staticFile('ft/icon.png')} style={{width: '100%', height: '100%'}} />
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, top: 700, textAlign: 'center', fontFamily, fontWeight: 900, fontSize: 84, color: F.cream, direction: 'rtl', opacity: Math.min(1, Math.max(0, (t - 6) / 14))}}>
-        Ø­ØµÙ† Ø§Ù„Ù‡Ø§ØªÙ
+        حصن الهاتف
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, top: 800, textAlign: 'center', fontFamily, fontSize: 30, fontWeight: 700, letterSpacing: 4, color: F.blueSoft, opacity: Math.min(1, Math.max(0, (t - 14) / 14))}}>
         PHONE FORTRESS
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, top: 880, textAlign: 'center', fontFamily, fontWeight: 800, fontSize: 36, color: F.goldSoft, direction: 'rtl', opacity: Math.min(1, Math.max(0, (t - 22) / 14))}}>
-        Ù…Ù† ÙŠÙØªØ­ Ù‡Ø§ØªÙÙƒâ€¦ ÙŠØªØ±Ùƒ ØµÙˆØ±ØªÙ‡
+        من يفتح هاتفك… يترك صورته
       </div>
 
       <div
@@ -666,58 +666,58 @@ const FtEndCard: React.FC<{start: number}> = ({start}) => {
       </div>
 
       <div style={{position: 'absolute', left: 0, right: 0, top: 1430, textAlign: 'center', fontFamily, fontSize: 34, fontWeight: 800, color: F.cream, direction: 'rtl', opacity: Math.min(1, Math.max(0, (t - 40) / 14))}}>
-        Ù…Ø¬Ø§Ù†ÙŠ Ø¹Ù„Ù‰ Google Play
+        مجاني على Google Play
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, top: 1492, textAlign: 'center', fontFamily, fontSize: 22, letterSpacing: 3, color: 'rgba(143,160,191,0.9)', opacity: Math.min(1, Math.max(0, (t - 46) / 14))}}>
-        FREE Â· 16 LANGUAGES Â· NO ACCOUNT
+        FREE · 16 LANGUAGES · NO ACCOUNT
       </div>
     </AbsoluteFill>
   );
 };
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  film  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─────────────────────────────  film  ───────────────────────────── */
 export const AdFtWarded: React.FC = () => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
 
-  /* shot A â€” the cafÃ©, 3:17 am (0-96) */
+  /* shot A — the café, 3:17 am (0-96) */
   const pushA = interpolate(f, [0, 96], [1.02, 1.14], {extrapolateRight: 'clamp'});
   const handHeld = Math.sin(f * 0.11) * 3 + Math.sin(f * 0.043) * 4;
   const thiefIn = easeOut(Math.min(1, Math.max(0, (f - 22) / 54)));
   const thiefWalk = f > 20 ? 1 : 0;
   const lampFlicker = 0.9 + Math.sin(f * 0.9) * 0.04 + (rand(Math.floor(f / 3)) > 0.86 ? -0.22 : 0);
 
-  /* shot B â€” the reach (96-168) */
+  /* shot B — the reach (96-168) */
   const reach = easeInOut(Math.min(1, Math.max(0, (f - 108) / 34)));
   const grab = Math.min(1, Math.max(0, (f - 146) / 12));
   const streak = Math.min(1, Math.max(0, (f - 148) / 12));
 
-  /* shot C â€” three wrong PINs (168-258) */
+  /* shot C — three wrong PINs (168-258) */
   const taps = [186, 204, 222];
   const wrong = taps.filter((t) => f >= t + 6).length;
   const shake = taps.reduce((a, t) => a + (f >= t + 4 && f < t + 18 ? 1 - (f - t - 4) / 14 : 0), 0);
   const activeDigit = taps.reduce<number | undefined>((a, t) => (f >= t && f < t + 7 ? taps.indexOf(t) : a), undefined);
   const lockPush = interpolate(f, [168, 258], [1.0, 1.06], {extrapolateRight: 'clamp'});
 
-  /* shot D â€” the flash (258-336) */
+  /* shot D — the flash (258-336) */
   const flash = interpolate(f, [268, 270, 278], [0, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   const recoil = Math.min(1, Math.max(0, (f - 268) / 26));
   const captureShake = f > 268 && f < 296 ? Math.sin(f * 2.2) * (1 - (f - 268) / 28) * 12 : 0;
 
-  /* shot E â€” the evidence (336-444) */
+  /* shot E — the evidence (336-444) */
   const evReveal = Math.min(1, Math.max(0, (f - 342) / 40));
   const send = Math.min(1, Math.max(0, (f - 402) / 26));
 
-  /* shot F â€” morning, the owner (444-520) */
+  /* shot F — morning, the owner (444-520) */
   const notifDrop = spring({frame: f - 458, fps, config: {damping: 14, stiffness: 140, mass: 0.8}});
   const warm = Math.min(1, Math.max(0, (f - 452) / 60));
 
-  /* shot G â€” endcard (520-630) */
+  /* shot G — endcard (520-630) */
   const cutDark = f < 12 ? 1 - f / 12 : 0;
 
   return (
     <AbsoluteFill style={{backgroundColor: F.ink}}>
-      {/* â•â•â•â•â• A Â· street â•â•â•â•â• */}
+      {/* ═════ A · street ═════ */}
       {f < 100 && (
         <AbsoluteFill>
           <Camera scale={pushA} x={handHeld} y={handHeld * 1.4}>
@@ -732,12 +732,12 @@ export const AdFtWarded: React.FC = () => {
           </Camera>
           <Dust count={26} opacity={0.22} tint="#CFE0FF" speed={0.4} />
           <Vignette strength={0.62} />
-          <Caption text="Ø§Ù„Ø«Ø§Ù„Ø«Ø© ÙØ¬Ø±Ø§Ù‹." sub="Ù‡Ø§ØªÙÙƒ Ø¹Ù„Ù‰ Ø§Ù„Ø·Ø§ÙˆÙ„Ø©" from={16} to={92} y={1218} size={78} />
+          <Caption text="الثالثة فجراً." sub="هاتفك على الطاولة" from={16} to={92} y={1218} size={78} />
           <FadeBlack opacity={cutDark} />
         </AbsoluteFill>
       )}
 
-      {/* â•â•â•â•â• B Â· the hand â•â•â•â•â• */}
+      {/* ═════ B · the hand ═════ */}
       {f >= 100 && f < 170 && (
         <AbsoluteFill style={{backgroundColor: '#03060C'}}>
           <Camera scale={1.0 + Math.min(1, (f - 100) / 70) * 0.12} x={-16} y={-10}>
@@ -797,11 +797,11 @@ export const AdFtWarded: React.FC = () => {
           )}
           <Vignette strength={0.55} />
           <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: 420, background: 'linear-gradient(180deg, rgba(3,6,12,0) 0%, rgba(3,6,12,0.9) 62%)'}} />
-          <Caption text="ÙŠØ¯ÙŒ Ù„ÙŠØ³Øª ÙŠØ¯Ùƒ." from={112} to={168} y={1560} size={76} />
+          <Caption text="يدٌ ليست يدك." from={112} to={168} y={1560} size={76} />
         </AbsoluteFill>
       )}
 
-      {/* â•â•â•â•â• C Â· POV, three wrong codes â•â•â•â•â• */}
+      {/* ═════ C · POV, three wrong codes ═════ */}
       {f >= 170 && f < 260 && (
         <AbsoluteFill style={{backgroundColor: '#03060C'}}>
           <Camera scale={lockPush} rotate={Math.sin(f * 0.07) * 0.4}>
@@ -815,11 +815,11 @@ export const AdFtWarded: React.FC = () => {
           <div style={{position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 50%, rgba(255,90,72,${0.16 * shake}), transparent 70%)`, opacity: shake}} />
           <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: 420, background: 'linear-gradient(180deg, rgba(3,6,12,0) 0%, rgba(3,6,12,0.92) 62%)'}} />
           <Vignette strength={0.5} />
-          <Caption text="Ù£ Ù…Ø­Ø§ÙˆÙ„Ø§Øª." sub="ÙˆÙƒÙ„ Ù…Ø­Ø§ÙˆÙ„Ø© ØªÙØ³Ø¬ÙŽÙ‘Ù„" from={176} to={256} y={1548} size={62} />
+          <Caption text="٣ محاولات." sub="وكل محاولة تُسجَّل" from={176} to={256} y={1548} size={62} />
         </AbsoluteFill>
       )}
 
-      {/* â•â•â•â•â• D Â· the front camera â•â•â•â•â• */}
+      {/* ═════ D · the front camera ═════ */}
       {f >= 260 && f < 340 && (
         <AbsoluteFill style={{backgroundColor: '#03060C'}}>
           <Camera scale={1.02 + recoil * 0.05} x={captureShake} y={captureShake * 0.7} rotate={captureShake * 0.25}>
@@ -831,13 +831,13 @@ export const AdFtWarded: React.FC = () => {
           <Bloom cx={540} cy={790} r={620} color="rgba(94,155,255,0.30)" opacity={0.7} />
           <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: 420, background: 'linear-gradient(180deg, rgba(3,6,12,0) 0%, rgba(3,6,12,0.92) 62%)'}} />
           <Vignette strength={0.55} />
-          <Caption text="Ø§Ù„ÙƒØ§Ù…ÙŠØ±Ø§ Ø§Ù„Ø£Ù…Ø§Ù…ÙŠØ©â€¦" sub="Ø¨ØµÙ…Øª ØªØ§Ù…" from={272} to={338} y={1548} size={62} />
+          <Caption text="الكاميرا الأمامية…" sub="بصمت تام" from={272} to={338} y={1548} size={62} />
           {/* shutter flash */}
           <div style={{position: 'absolute', inset: 0, background: '#fff', opacity: flash}} />
         </AbsoluteFill>
       )}
 
-      {/* â•â•â•â•â• E Â· the evidence â•â•â•â•â• */}
+      {/* ═════ E · the evidence ═════ */}
       {f >= 340 && f < 446 && (
         <AbsoluteFill style={{backgroundColor: '#03060C'}}>
           <Camera scale={1.0 + Math.min(1, (f - 340) / 106) * 0.05}>
@@ -864,11 +864,11 @@ export const AdFtWarded: React.FC = () => {
           )}
           <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: 420, background: 'linear-gradient(180deg, rgba(3,6,12,0) 0%, rgba(3,6,12,0.92) 62%)'}} />
           <Vignette strength={0.5} />
-          <Caption text="ØµÙˆØ±ØªÙ‡. Ù…ÙˆÙ‚Ø¹Ù‡. Ø§Ù„Ø³Ø§Ø¹Ø©." from={348} to={444} y={1548} size={60} />
+          <Caption text="صورته. موقعه. الساعة." from={348} to={444} y={1548} size={60} />
         </AbsoluteFill>
       )}
 
-      {/* â•â•â•â•â• F Â· morning, the owner â•â•â•â•â• */}
+      {/* ═════ F · morning, the owner ═════ */}
       {f >= 446 && f < 524 && (
         <AbsoluteFill>
           <Camera scale={1.04 + Math.min(1, (f - 446) / 78) * 0.06} x={Math.sin(f * 0.04) * 3}>
@@ -892,11 +892,11 @@ export const AdFtWarded: React.FC = () => {
             <PhoneLight x={560} y={1180} w={420} color="#BFD4FF" intensity={0.32} spread={3} />
           </Camera>
           <Vignette strength={0.5} />
-          <Caption text="ÙˆØ£Ù†Øª Ù†Ø§Ø¦Ù…â€¦" sub="Ù‡Ø§ØªÙÙƒ ÙƒØ§Ù† ÙŠØ­Ø±Ø³ Ù†ÙØ³Ù‡" from={456} to={522} y={1600} size={62} />
+          <Caption text="وأنت نائم…" sub="هاتفك كان يحرس نفسه" from={456} to={522} y={1600} size={62} />
         </AbsoluteFill>
       )}
 
-      {/* â•â•â•â•â• G Â· endcard â•â•â•â•â• */}
+      {/* ═════ G · endcard ═════ */}
       {f >= 520 && (
         <AbsoluteFill>
           <FtEndCard start={522} />
