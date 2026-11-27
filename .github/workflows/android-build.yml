@@ -1,4 +1,4 @@
-﻿name: Android Build
+name: Android Build
 
 on:
   push:
@@ -21,6 +21,11 @@ permissions:
 env:
   FLUTTER_VERSION: '3.47.6'
   JAVA_VERSION: '17'
+  # Play already holds versionCode 263. Every build takes the base plus the
+  # workflow run number, so the code only ever grows. If this workflow is ever
+  # deleted and recreated the run number restarts at 1; raise the repository
+  # variable NABD_VERSION_CODE_BASE past the last uploaded code before pushing.
+  VERSION_CODE_BASE: ${{ vars.NABD_VERSION_CODE_BASE || '263' }}
 
 jobs:
   verify:
@@ -29,6 +34,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # The runner image ships tens of gigabytes of toolchains this project
+      # never touches. Without this the Gradle build dies with
+      # "Free space left: 0 MB", which is what failed runs 266-269.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL \
+            /usr/local/share/boost /usr/share/swift \
+            /usr/local/lib/android/sdk/ndk /usr/local/lib/android/sdk/system-images \
+            /usr/local/lib/android/sdk/emulator 2>/dev/null || true
+          sudo apt-get clean
+          df -h /
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -48,7 +64,7 @@ jobs:
         run: flutter test
 
   debug-build:
-    name: Build debug APK and AAB
+    name: Build debug APK
     needs: verify
     runs-on: ubuntu-latest
     permissions:
@@ -56,6 +72,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL \
+            /usr/local/share/boost /usr/share/swift \
+            /usr/local/lib/android/sdk/ndk /usr/local/lib/android/sdk/system-images \
+            /usr/local/lib/android/sdk/emulator 2>/dev/null || true
+          sudo apt-get clean
+          df -h /
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -67,24 +91,17 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-      # flutter_native_splash still declares compileSdk 31, and the runner
-      # image no longer ships that platform. The project disables Gradle SDK
-      # downloads so local builds stay offline, so install it explicitly here.
-      - name: Install Android platform 31
-        run: |
-          SDKM="$(find "$ANDROID_HOME" -path '*/bin/sdkmanager' -type f | head -n 1)"
-          test -n "$SDKM"
-          yes | "$SDKM" --install "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       # One APK per ABI: the arm64 one is what real phones install, and it is
-      # less than half the size of a universal debug APK.
+      # less than half the size of a universal debug APK. A debug AAB is not
+      # built: Play refuses debug bundles, so producing one only cost disk.
       - name: Build debug APKs
         # The run number as build number, so the phone shows which test
         # build it has (arm64 splits add 2000: build 230 reads 2230).
-        run: flutter build apk --debug --split-per-abi --build-number=${{ github.run_number }}
-      - name: Build debug AAB
-        run: flutter build appbundle --debug --build-number=${{ github.run_number }}
+        run: >-
+          flutter build apk --debug --split-per-abi
+          --build-number=$((VERSION_CODE_BASE + ${{ github.run_number }}))
       # A pull request only needs to prove the app builds. Artifacts count
       # against the account's storage quota; when it is full the upload fails
       # although the build succeeded, so an upload failure never fails the job.
@@ -140,6 +157,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL \
+            /usr/local/share/boost /usr/share/swift \
+            /usr/local/lib/android/sdk/ndk /usr/local/lib/android/sdk/system-images \
+            /usr/local/lib/android/sdk/emulator 2>/dev/null || true
+          sudo apt-get clean
+          df -h /
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -151,11 +176,6 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-      - name: Install Android platform 31
-        run: |
-          SDKM="$(find "$ANDROID_HOME" -path '*/bin/sdkmanager' -type f | head -n 1)"
-          test -n "$SDKM"
-          yes | "$SDKM" --install "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       - name: Validate signing secrets
@@ -173,6 +193,19 @@ jobs:
           test -n "$NABD_PRO_MONTHLY_ID"
           test -n "$NABD_PRO_YEARLY_ID"
           test -n "$NABD_LIFETIME_ID"
+      # A versionCode that is not above the last one Play accepted is rejected
+      # at upload time, after a full build. Catch it before compiling.
+      - name: Validate version code
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$((VERSION_CODE_BASE + ${{ github.run_number }}))
+          echo "versionCode will be $code"
+          if [ "$code" -le 263 ]; then
+            echo "::error::versionCode $code is not above the 263 already on Play."
+            echo "Raise the repository variable NABD_VERSION_CODE_BASE."
+            exit 1
+          fi
       - name: Configure release signing
         shell: bash
         run: |
@@ -191,22 +224,31 @@ jobs:
             "$detected_alias" \
             "$(pwd)/android/nabd-release.jks" > android/key.properties
           chmod 600 android/nabd-release.jks android/key.properties
-      # Play refuses an upload whose versionCode is not higher than the last
-      # one, so every release build takes the workflow run number.
-      - name: Build signed release APK
+      # The APK is only kept for sideloading and for the manual release asset;
+      # the AAB is what Play takes. Both are built here because the signing
+      # configuration is already in place, but the APK is built second so a
+      # disk problem hits the optional artifact, not the uploadable one.
+      - name: Build signed release AAB
         run: >-
-          flutter build apk --release
-          --build-number=${{ github.run_number }}
+          flutter build appbundle --release
+          --build-number=$((VERSION_CODE_BASE + ${{ github.run_number }}))
           --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
           --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
           --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
           --dart-define=SUBSCRIPTION_VERIFICATION_BACKEND_URL=$SUBSCRIPTION_VERIFICATION_BACKEND_URL
           --dart-define=REVENUECAT_ANDROID_KEY=$REVENUECAT_ANDROID_KEY
           --dart-define=NABD_PRODUCTION_CONFIGURED=true
-      - name: Build signed release AAB
+      - name: Upload release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: nabd-release-aab
+          retention-days: 14
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+      - name: Build signed release APK
         run: >-
-          flutter build appbundle --release
-          --build-number=${{ github.run_number }}
+          flutter build apk --release
+          --build-number=$((VERSION_CODE_BASE + ${{ github.run_number }}))
           --dart-define=NABD_PRO_MONTHLY_ID=$NABD_PRO_MONTHLY_ID
           --dart-define=NABD_PRO_YEARLY_ID=$NABD_PRO_YEARLY_ID
           --dart-define=NABD_LIFETIME_ID=$NABD_LIFETIME_ID
@@ -220,14 +262,6 @@ jobs:
           name: nabd-release-apk
           retention-days: 14
           path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
-      - name: Upload release AAB
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: nabd-release-aab
-          retention-days: 14
-          path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
       - name: Attach release APK and AAB to the test release
         if: github.event_name == 'workflow_dispatch'

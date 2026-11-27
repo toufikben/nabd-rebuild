@@ -57,9 +57,35 @@ android {
 
     buildTypes {
         release {
+            // Without key.properties the release config has no signing config,
+            // and AGP would fall back to signing with the committed QA debug
+            // key. Such an artifact can never be uploaded to Play and would
+            // burn the package name on first install, so assembling a release
+            // without the keystore fails loudly (see the guard below) instead
+            // of silently producing a dead APK.
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                'proguard-rules.pro'
+        }
+    }
+
+    // Guards a store artifact from being built with the QA debug key. Debug
+    // builds stay untouched, so a laptop without the keystore still works.
+    gradle.taskGraph.whenReady { graph ->
+        def buildingRelease = graph.allTasks.any {
+            it.name == 'assembleRelease' ||
+            it.name == 'bundleRelease' ||
+            it.name.startsWith('packageRelease')
+        }
+        if (buildingRelease && !keystorePropertiesFile.exists()) {
+            throw new GradleException(
+                "Release build needs android/key.properties. Refusing to sign " +
+                "a store artifact with the committed QA debug key."
+            )
         }
     }
 }
