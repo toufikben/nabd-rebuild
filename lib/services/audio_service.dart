@@ -73,10 +73,12 @@ class AudioService {
   static const _cueVolumeKey = 'breathing_cue_volume';
 
   static const _defaultAmbientAssets = <AmbientSource, String>{
-    AmbientSource.silent: 'assets/sounds/rain_soft.m4a',
+    // `silent` has no default on purpose: the screen always passes the track
+    // the user picked, and a default here would play rain for someone who
+    // chose "silent". `soundscape` used to reuse rain as well.
     AmbientSource.garden: 'assets/sounds/garden_birds.m4a',
     AmbientSource.session: 'assets/sounds/flute_dawn.m4a',
-    AmbientSource.soundscape: 'assets/sounds/rain_soft.m4a',
+    AmbientSource.soundscape: 'assets/sounds/silent_river_water.m4a',
   };
 
   final just_audio.AudioPlayer _ambientPlayer = just_audio.AudioPlayer();
@@ -293,6 +295,14 @@ class AudioService {
     }
 
     try {
+      // `silent` carries no default: the screen always names the track the
+      // user picked. Reaching here without one is a bug, not a reason to
+      // play the wrong sound.
+      final asset = assetPath ?? _defaultAmbientAssets[source];
+      if (asset == null) {
+        _setAmbientError(source, 'No ambient track was selected for $source');
+        return false;
+      }
       _requestedSource = source;
       ambientState.value = AmbientPlaybackState(
         source: source,
@@ -301,9 +311,7 @@ class AudioService {
       await _ambientPlayer.stop();
       await _ambientPlayer.setLoopMode(just_audio.LoopMode.one);
       await _ambientPlayer.setVolume(_ambientVolume);
-      await _ambientPlayer.setAsset(
-        assetPath ?? _defaultAmbientAssets[source]!,
-      );
+      await _ambientPlayer.setAsset(asset);
       if (_disposed ||
           _requestedSource != source ||
           generation != _ambientGeneration) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/l10n/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../models/mood.dart';
 
@@ -66,7 +67,7 @@ class MoodPicker extends StatelessWidget {
 
           // Title
           Text(
-            langCode == 'ar' ? 'كيف تشعر؟' : 'How do you feel?',
+            S.of(langCode)['moodPicker.title'] ?? S.en['moodPicker.title']!,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -81,7 +82,8 @@ class MoodPicker extends StatelessWidget {
               onPressed: () => onSelected(null),
               icon: const Icon(Icons.clear, size: 18),
               label: Text(
-                langCode == 'ar' ? 'إزالة المشاعر' : 'Clear mood',
+                S.of(langCode)['moodPicker.clear'] ??
+                    S.en['moodPicker.clear']!,
               ),
             ),
 

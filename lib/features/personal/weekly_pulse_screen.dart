@@ -24,48 +24,34 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
   }
 
   Future<void> _load() async {
-    final pulse = _now.weekday == DateTime.sunday
-        ? await _service.loadWeeklyPulse(_now)
-        : await _service.loadLatestWeeklyPulse();
+    final pulse = await _service.loadWeeklyPulse(_now);
     if (mounted) setState(() => _pulse = pulse);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isSunday = _now.weekday == DateTime.sunday;
     final pulse = _pulse;
-    if (!isSunday && (pulse == null || pulse.insufficientData)) {
+    if (pulse == null) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.t('weekly.title'))),
-        body: const _NextSundayState(),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     return Scaffold(
       appBar: AppBar(title: Text(l10n.t('weekly.title'))),
-      body: pulse == null
-          ? const Center(child: CircularProgressIndicator())
-          : pulse.insufficientData
+      body: pulse.insufficientData
           ? const _InsufficientState()
-          : _PulseBody(
-              pulse: pulse,
-              title: isSunday ? 'weekly.yourWeek' : 'weekly.latest',
-              showNextSunday: !isSunday,
-            ),
+          : _PulseBody(pulse: pulse, title: 'weekly.yourWeek'),
     );
   }
 }
 
 class _PulseBody extends StatelessWidget {
-  const _PulseBody({
-    required this.pulse,
-    required this.title,
-    required this.showNextSunday,
-  });
+  const _PulseBody({required this.pulse, required this.title});
 
   final WeeklyPulse pulse;
   final String title;
-  final bool showNextSunday;
 
   String? _weekRange(BuildContext context) {
     final end = DateTime.tryParse(pulse.weekKey);
@@ -96,10 +82,6 @@ class _PulseBody extends StatelessWidget {
             style: TextStyle(color: AppColors.textSecondary),
           ),
         ],
-        const SizedBox(height: 6),
-        Text(
-          showNextSunday ? l10n.t('weekly.nextOn') : l10n.t('weekly.snapshot'),
-        ),
         const SizedBox(height: 20),
         Row(
           children: [
@@ -176,37 +158,6 @@ class _Metric extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _NextSundayState extends StatelessWidget {
-  const _NextSundayState();
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.calendar_today_outlined,
-            size: 52,
-            color: AppColors.primary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context).t('weekly.nextOn'),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context).t('weekly.tooEarly'),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
