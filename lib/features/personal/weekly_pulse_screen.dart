@@ -42,16 +42,15 @@ class _WeeklyPulseScreenState extends State<WeeklyPulseScreen> {
       appBar: AppBar(title: Text(l10n.t('weekly.title'))),
       body: pulse.insufficientData
           ? const _InsufficientState()
-          : _PulseBody(pulse: pulse, title: 'weekly.yourWeek'),
+          : _PulseBody(pulse: pulse),
     );
   }
 }
 
 class _PulseBody extends StatelessWidget {
-  const _PulseBody({required this.pulse, required this.title});
+  const _PulseBody({required this.pulse});
 
   final WeeklyPulse pulse;
-  final String title;
 
   String? _weekRange(BuildContext context) {
     final end = DateTime.tryParse(pulse.weekKey);
@@ -70,7 +69,7 @@ class _PulseBody extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       children: [
         Text(
-          l10n.t(title),
+          l10n.t('weekly.yourWeek'),
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w800,
           ),
