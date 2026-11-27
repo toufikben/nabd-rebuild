@@ -45,8 +45,4 @@ class AppSettings {
     }
     return null;
   }
-
-  static String fallbackSound(String requested) {
-    return resolveSoundFile(requested) != null ? requested : 'rain_soft';
-  }
 }

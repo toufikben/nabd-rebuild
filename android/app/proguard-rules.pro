@@ -43,3 +43,10 @@
 
 # Keep the annotation metadata the plugins read at runtime.
 -keep @interface *
+
+# Flutter's PlayStoreDeferredComponentManager references Play Core's split
+# install API, but this app ships no deferred components and does not depend on
+# Play Core. R8 treats the references as missing classes and fails the build.
+# They are never reached at runtime, so they only need to be allowed.
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
