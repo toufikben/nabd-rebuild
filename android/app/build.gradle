@@ -14,7 +14,11 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.nabd.journal"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    // No ndkVersion on purpose. The project ships no native code (no
+    // CMakeLists.txt, no .cpp, no plugin that needs the NDK), yet pinning it
+    // made Gradle download a 1.5 GB NDK on every runner and is what pushed
+    // the disk to "Free space left: 0 MB" in runs 266-269. If a dependency
+    // ever does need the NDK, set it back here deliberately.
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
