@@ -56,6 +56,15 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      # flutter_native_splash still declares compileSdk 31 and the runner image
+      # no longer ships that platform. The project sets
+      # android.builder.sdkDownload=false so Gradle never fetches it silently,
+      # which is why it has to be installed explicitly here.
+      - name: Install Android platform 31
+        run: |
+          SDKM="$(find "$ANDROID_HOME" -path '*/bin/sdkmanager' -type f | head -n 1)"
+          test -n "$SDKM"
+          yes | "$SDKM" --install "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       - name: Analyze
@@ -91,6 +100,15 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      # flutter_native_splash still declares compileSdk 31 and the runner image
+      # no longer ships that platform. The project sets
+      # android.builder.sdkDownload=false so Gradle never fetches it silently,
+      # which is why it has to be installed explicitly here.
+      - name: Install Android platform 31
+        run: |
+          SDKM="$(find "$ANDROID_HOME" -path '*/bin/sdkmanager' -type f | head -n 1)"
+          test -n "$SDKM"
+          yes | "$SDKM" --install "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       # One APK per ABI: the arm64 one is what real phones install, and it is
@@ -176,6 +194,15 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      # flutter_native_splash still declares compileSdk 31 and the runner image
+      # no longer ships that platform. The project sets
+      # android.builder.sdkDownload=false so Gradle never fetches it silently,
+      # which is why it has to be installed explicitly here.
+      - name: Install Android platform 31
+        run: |
+          SDKM="$(find "$ANDROID_HOME" -path '*/bin/sdkmanager' -type f | head -n 1)"
+          test -n "$SDKM"
+          yes | "$SDKM" --install "platforms;android-31"
       - name: Install dependencies
         run: flutter pub get
       - name: Validate signing secrets
