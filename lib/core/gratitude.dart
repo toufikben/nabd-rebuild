@@ -99,6 +99,13 @@ List<GratitudeEntry> gratitudeEntries(Box box) {
   ];
 }
 
+/// The number of prompts the gratitude journal shows for one day.
+///
+/// These slots belong to the journal screen. A line written anywhere else is
+/// appended after them, so saving the journal's three fields can never
+/// overwrite a flower planted in the garden.
+const int gratitudePromptSlots = 3;
+
 /// Appends [text] to [day]'s lines (today by default) and returns the entry.
 Future<GratitudeEntry> addGratitude(
   Box box,
@@ -113,6 +120,11 @@ Future<GratitudeEntry> addGratitude(
   final lines = <String>[
     if (raw is Iterable) ...raw.map((value) => value?.toString() ?? ''),
   ];
+  // Pad past the journal's own prompts before appending, so this line is not
+  // written into a field the journal screen rewrites from its controllers.
+  while (lines.length < gratitudePromptSlots) {
+    lines.add('');
+  }
   final slot = lines.length;
   lines.add(trimmed);
   await box.put(key, lines);
@@ -141,7 +153,6 @@ Future<void> saveGratitudeSlots(
       : const <String>[];
   await box.put(key, [...firstSlots, ...kept]);
 }
-
 /// Removes one line, matching on its slot first and falling back to the first
 /// line with the same words.
 ///
@@ -186,15 +197,9 @@ Future<int> foldGratitudeItems(Box content) async {
     if (text.isEmpty) continue;
     final planted =
         DateTime.tryParse(item['createdAt']?.toString() ?? '') ?? DateTime.now();
-    final date = DateTime(planted.year, planted.month, planted.day);
-    final key = gratitudeDayKey(date);
-    final existing = content.get(key);
-    final lines = <String>[
-      if (existing is Iterable) ...existing.map((value) => value?.toString() ?? ''),
-    ];
-    if (lines.any((line) => line.trim() == text)) continue;
-    lines.add(text);
-    await content.put(key, lines);
+    final day = DateTime(planted.year, planted.month, planted.day);
+    if (gratitudeLinesFor(content, day).contains(text)) continue;
+    await addGratitude(content, text, day: day);
     folded++;
   }
   await content.delete(ContentKeys.gratitudeItems);

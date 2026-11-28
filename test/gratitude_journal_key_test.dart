@@ -84,9 +84,13 @@ void main() {
 
     test('the journal keeps a flower planted today', () async {
       // The garden appends to the same day the journal writes its three
-      // prompts to. Saving the prompts must not delete the flower.
+      // prompts to. Saving the prompts must not delete the flower, and the
+      // flower must not land in a field the journal rewrites.
       await box.put('gratitude_2026_9_5', ['prompt one', 'prompt two']);
       await addGratitude(box, 'a flower', day: DateTime(2026, 9, 5));
+
+      expect(gratitudeSlotsFor(box, DateTime(2026, 9, 5)),
+          ['prompt one', 'prompt two', '', 'a flower']);
 
       await saveGratitudeSlots(box, DateTime(2026, 9, 5), ['edited', '', '']);
 
@@ -144,7 +148,7 @@ void main() {
       ]);
 
       expect(await foldGratitudeItems(box), 0);
-      expect(box.get('gratitude_2026_9_5'), ['a flower']);
+      expect(gratitudeLinesFor(box, DateTime(2026, 9, 5)), ['a flower']);
     });
 
     test('no screen keeps its own gratitude store', () {

@@ -20,7 +20,7 @@ class GratitudeJournalScreen extends StatefulWidget {
 class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
   final Box _box = contentBox();
   final List<TextEditingController> _controllers = List.generate(
-    3,
+    gratitudePromptSlots,
     (_) => TextEditingController(),
   );
 
@@ -140,7 +140,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          ...List.generate(3, (index) => _input(index)),
+          ...List.generate(gratitudePromptSlots, (index) => _input(index)),
           const SizedBox(height: 4),
           SizedBox(
             width: double.infinity,
