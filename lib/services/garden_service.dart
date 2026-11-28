@@ -13,9 +13,12 @@ import 'local_ai_service.dart';
 ///
 /// المنطق النفسي:
 ///   • الكتابة اليومية = نمو
-///   • مشاعر إيجابية = نمو مضاعف
-///   • مشاعر سلبية = عطش (بحاجة للماء)
-///   • كتابة 3 أشياء جميلة = سقي
+///   • يوم صعب = رعاية إضافية، لا جفاف
+///
+/// This comment used to promise two things the code never did: that a positive
+/// mood doubled growth, and that writing three things you are grateful for
+/// watered the garden. Neither was implemented, so a reader had no way to tell
+/// the design from the behaviour. Growth is the act of writing, once a day.
 class GardenService extends StateNotifier<GardenState> {
   GardenService() : super(const GardenState()) {
     _load();
