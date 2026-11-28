@@ -32,9 +32,9 @@ const Set<String> stopWords = {
   'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'est', 'que',
   'qui', 'pour', 'dans', 'sur', 'pas', 'au', 'aux', 'ce', 'cette', 'je',
   'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles', 'el', 'los', 'las',
-  'una', 'y', 'es', 'en', 'por', 'para', 'con', 'que', 'der', 'die', 'das',
-  'und', 'ist', 'ein', 'eine', 'nicht', 'ich', 'du', 'er', 'sie', 'wir',
-  'os', 'as', 'um', 'uma', 'e', 'é', 'o', 'di', 'che', 'non', 'per',
+  'una', 'y', 'es', 'en', 'por', 'para', 'con', 'der', 'die', 'das',
+  'und', 'ist', 'ein', 'eine', 'nicht', 'ich', 'er', 'sie', 'wir',
+  'os', 'um', 'uma', 'e', 'é', 'o', 'di', 'che', 'non', 'per',
 };
 
 /// Splits on whitespace and punctuation, keeping letters of every script
