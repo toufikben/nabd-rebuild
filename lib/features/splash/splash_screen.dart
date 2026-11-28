@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/app_settings.dart';
+import '../../core/storage.dart';
 import '../../services/splash_service.dart';
 import '../../services/biometric_service.dart';
 import '../../core/l10n/app_localizations.dart';
@@ -29,12 +30,11 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     final box = Hive.box('settings');
-    _soundEnabled =
-        box.get('splash_sound_enabled', defaultValue: true) as bool &&
+    _soundEnabled = readBool(box, 'splash_sound_enabled', fallback: true) &&
         AppSettings.splashSoundEnabled;
     // A choice from Settings, if it still names a bundled sound; anything
     // else (an id from an older version) falls back to the default cue.
-    final customSound = box.get('splash_sound') as String?;
+    final customSound = readString(box, 'splash_sound');
     _sound = customSound != null &&
             SplashService.choices.contains(customSound) &&
             AppSettings.resolveSoundFile(customSound) != null

@@ -158,11 +158,9 @@ class Achievement {
 class AchievementService {
   Box get _box => contentBox();
 
-  Set<String> get unlockedIds {
-    final raw =
-        _box.get('unlocked_achievements', defaultValue: <dynamic>[]) as List;
-    return raw.map((e) => e.toString()).toSet();
-  }
+  Set<String> get unlockedIds => Set.from(
+        readStringList(_box, ContentKeys.unlockedAchievements),
+      );
 
   /// فحص الإنجازات الجديدة.
   List<Achievement> checkNew({
@@ -205,7 +203,7 @@ class AchievementService {
 
   Future<void> unlock(Achievement a) async {
     final ids = unlockedIds..add(a.id);
-    await _box.put('unlocked_achievements', ids.toList());
+    await _box.put(ContentKeys.unlockedAchievements, ids.toList());
   }
 
   /// Distinct gratitude days saved in [box]. The garden stores its flowers

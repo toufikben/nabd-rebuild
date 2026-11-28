@@ -19,6 +19,7 @@ import '../../core/backup_nudge.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/l10n/languages.dart';
 import '../../core/snack_bar_queue.dart';
+import '../../core/storage.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/gender_themes.dart';
@@ -495,7 +496,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       l10n.t('settings.font.${font.name}');
 
   String _launchSoundId() {
-    final saved = Hive.box('settings').get('splash_sound') as String?;
+    final saved = readString(Hive.box('settings'), 'splash_sound');
     return SplashService.choices.contains(saved)
         ? saved!
         : SplashService.signatureSound;

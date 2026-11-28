@@ -18,9 +18,11 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
   final TextEditingController _controller = TextEditingController();
 
   List<WorryItem> get _worries {
-    final raw = _box.get(ContentKeys.worryBox, defaultValue: <dynamic>[]) as List;
-    return raw
-        .whereType<Map>()
+    final raw = _box.get(ContentKeys.worryBox);
+    // A restore from another build can leave a non-list here; the old `as List`
+    // threw and the screen stayed blank with no way to recover.
+    final items = raw is Iterable ? raw.whereType<Map>() : const <Map>[];
+    return items
         .map((item) => WorryItem.fromMap(Map<dynamic, dynamic>.from(item)))
         .where((item) => item.text.trim().isNotEmpty)
         .toList()

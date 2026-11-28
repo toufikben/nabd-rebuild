@@ -36,7 +36,7 @@ class ReviewPrompt {
   /// Counts a good moment and asks when the time is right. Never throws.
   Future<void> recordWin() async {
     try {
-      final wins = (_box.get(winsKey) as int? ?? 0) + 1;
+      final wins = readInt(_box, winsKey, fallback: 0) + 1;
       await _box.put(winsKey, wins);
       if (wins < winsBeforeAsking) return;
       final asked = DateTime.tryParse('${_box.get(askedAtKey)}');

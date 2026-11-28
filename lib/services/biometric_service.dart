@@ -1,6 +1,8 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 
+import '../core/storage.dart';
+
 /// Lock timeout values stored in settings: [lockImmediately] locks on every
 /// return from the background, [lockNever] only on a cold start.
 const lockImmediately = -1;
@@ -106,10 +108,12 @@ class BiometricService {
   }
 
   /// هل القفل مُفعّل؟
-  bool isLockEnabled() {
-    return Hive.box('settings').get('lock_enabled', defaultValue: false)
-        as bool;
-  }
+  ///
+  /// A lock setting that cannot be read must fail open: a stored value of the
+  /// wrong type used to throw here and, worse, the alternative — treating it as
+  /// enabled — would lock the writer out of their own journal with no way in.
+  bool isLockEnabled() => readBool(Hive.box('settings'), 'lock_enabled',
+      fallback: false);
 
   /// تفعيل/تعطيل القفل.
   Future<void> setLockEnabled(bool enabled) async {
@@ -118,10 +122,8 @@ class BiometricService {
   }
 
   /// قفل بعد فترة عدم استخدام (بالدقائق).
-  int getLockTimeout() {
-    return Hive.box('settings').get('lock_timeout_minutes', defaultValue: 5)
-        as int;
-  }
+  int getLockTimeout() => readInt(Hive.box('settings'), 'lock_timeout_minutes',
+      fallback: 5);
 
   Future<void> setLockTimeout(int minutes) async {
     await Hive.box('settings').put('lock_timeout_minutes', minutes);
@@ -129,7 +131,7 @@ class BiometricService {
 
   /// آخر نشاط.
   DateTime? getLastActivity() {
-    final s = Hive.box('settings').get('last_activity') as String?;
+    final s = readString(Hive.box('settings'), 'last_activity');
     return s == null ? null : DateTime.tryParse(s);
   }
 

@@ -67,6 +67,59 @@ class ContentKeys {
 
 Box contentBox() => Hive.box(HiveBoxes.content);
 
+/// Reads a setting without trusting its stored type.
+///
+/// A box is not a schema: a backup written by an older build, a half-finished
+/// write, or a value a bug put under the wrong key all arrive here. `as bool`
+/// on a stored `1` throws, and the splash screen reads its settings before the
+/// first frame, so one bad value there locks the writer out of the app on every
+/// launch. These readers return the fallback instead and never throw.
+bool readBool(Box box, String key, {required bool fallback}) {
+  final raw = box.get(key);
+  if (raw is bool) return raw;
+  if (raw is num) return raw != 0;
+  if (raw is String) {
+    final text = raw.trim().toLowerCase();
+    if (text == 'true') return true;
+    if (text == 'false') return false;
+  }
+  return fallback;
+}
+
+String? readString(Box box, String key) {
+  final raw = box.get(key);
+  if (raw == null) return null;
+  if (raw is String) return raw;
+  return raw.toString();
+}
+
+/// The stored number, or [fallback] when the value is missing or not a number.
+int readInt(Box box, String key, {required int fallback}) {
+  final raw = box.get(key);
+  if (raw is int) return raw;
+  if (raw is num) return raw.toInt();
+  if (raw is String) return int.tryParse(raw.trim()) ?? fallback;
+  return fallback;
+}
+
+/// The stored list as strings, dropping anything that is not list-shaped.
+List<String> readStringList(Box box, String key) {
+  final raw = box.get(key);
+  if (raw is! Iterable) return <String>[];
+  return [
+    for (final item in raw)
+      if (item != null) item.toString(),
+  ];
+}
+
+/// The stored list, whatever it holds, or an empty list when the value is not
+/// list-shaped. Callers that decode each item do their own type checks.
+List<Object?> readList(Box box, String key) {
+  final raw = box.get(key);
+  if (raw is! Iterable) return <Object?>[];
+  return raw.toList();
+}
+
 /// Moves user content out of the settings box, once. Copies first and only
 /// then deletes, so an interruption can at worst leave a duplicate that the
 /// next launch finishes moving.
