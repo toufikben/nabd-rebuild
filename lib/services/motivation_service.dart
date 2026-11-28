@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../core/gratitude.dart';
 import '../core/l10n/app_strings.dart';
 
 import '../core/streak.dart';
@@ -207,38 +208,22 @@ class AchievementService {
     await _box.put('unlocked_achievements', ids.toList());
   }
 
-  /// Distinct gratitude journal days saved in [box]. The garden stores its
-  /// flowers under the same `gratitude_` prefix, so only day-shaped keys with
-  /// at least one non-empty line count.
+  /// Distinct gratitude days saved in [box]. The garden stores its flowers
+  /// under the same `gratitude_` prefix, so only day-shaped keys with at
+  /// least one non-empty line count.
   static int gratitudeDayCount(Box box) {
-    var days = 0;
+    final days = <DateTime>{};
     for (final key in box.keys) {
       final name = key.toString();
-      if (!name.startsWith('gratitude_')) continue;
-      final date = _journalDateFromKey(name);
+      final date = gratitudeDateFromKey(name);
       if (date == null) continue;
       final raw = box.get(key);
       if (raw is! Iterable) continue;
-      final hasText = raw.any((item) => item?.toString().trim().isNotEmpty ?? false);
-      if (hasText) days++;
+      final hasText =
+          raw.any((item) => item?.toString().trim().isNotEmpty ?? false);
+      if (hasText) days.add(date);
     }
-    return days;
-  }
-
-  /// `gratitude_<y>_<m>_<d>` stands for a journal day; anything else in the
-  /// same prefix belongs to the garden or to an older writer. The parts are
-  /// checked against the date they build because `DateTime.parse` happily
-  /// rolls an impossible day like `2026-9-31` into the next month.
-  static DateTime? _journalDateFromKey(String key) {
-    final parts = key.split('_');
-    if (parts.length != 4) return null;
-    final year = int.tryParse(parts[1]);
-    final month = int.tryParse(parts[2]);
-    final day = int.tryParse(parts[3]);
-    if (year == null || month == null || day == null) return null;
-    final date = DateTime(year, month, day);
-    if (date.year != year || date.month != month || date.day != day) return null;
-    return date;
+    return days.length;
   }
 
   /// The progress numbers every achievement is judged on, from the journal as

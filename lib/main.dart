@@ -9,6 +9,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
+import 'core/gratitude.dart';
 import 'core/l10n/app_strings.dart';
 import 'core/l10n/languages.dart';
 import 'core/router.dart';
@@ -53,6 +54,9 @@ Future<void> main() async {
       content: Hive.box(HiveBoxes.content),
     );
     await ContentBoxMigration.foldTimeCapsules(Hive.box(HiveBoxes.content));
+    // The garden used to keep its own list of flowers; they become gratitude
+    // days so the journal, the garden and the achievement see the same lines.
+    await foldGratitudeItems(Hive.box(HiveBoxes.content));
   } catch (_) {
     storageError = const Object();
   }
