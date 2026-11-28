@@ -14,7 +14,11 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.nabd.journal"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    // No ndkVersion on purpose. The project ships no native code (no
+    // CMakeLists.txt, no .cpp, no plugin that needs the NDK), yet pinning it
+    // made Gradle download a 1.5 GB NDK on every runner and is what pushed
+    // the disk to "Free space left: 0 MB" in runs 266-269. If a dependency
+    // ever does need the NDK, set it back here deliberately.
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -57,9 +61,35 @@ android {
 
     buildTypes {
         release {
+            // Without key.properties the release config has no signing config,
+            // and AGP would fall back to signing with the committed QA debug
+            // key. Such an artifact can never be uploaded to Play and would
+            // burn the package name on first install, so assembling a release
+            // without the keystore fails loudly (see the guard below) instead
+            // of silently producing a dead APK.
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                'proguard-rules.pro'
+        }
+    }
+
+    // Guards a store artifact from being built with the QA debug key. Debug
+    // builds stay untouched, so a laptop without the keystore still works.
+    gradle.taskGraph.whenReady { graph ->
+        def buildingRelease = graph.allTasks.any {
+            it.name == 'assembleRelease' ||
+            it.name == 'bundleRelease' ||
+            it.name.startsWith('packageRelease')
+        }
+        if (buildingRelease && !keystorePropertiesFile.exists()) {
+            throw new GradleException(
+                "Release build needs android/key.properties. Refusing to sign " +
+                "a store artifact with the committed QA debug key."
+            )
         }
     }
 }

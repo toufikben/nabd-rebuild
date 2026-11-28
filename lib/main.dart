@@ -9,6 +9,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
+import 'core/gratitude.dart';
 import 'core/l10n/app_strings.dart';
 import 'core/l10n/languages.dart';
 import 'core/router.dart';
@@ -17,6 +18,7 @@ import 'services/database_service.dart';
 import 'services/encryption_service.dart';
 import 'services/notification_service.dart';
 import 'services/database_migration_service.dart';
+import 'services/r_personal_service.dart';
 import 'services/settings_service.dart';
 
 Future<void> main() async {
@@ -53,6 +55,9 @@ Future<void> main() async {
       content: Hive.box(HiveBoxes.content),
     );
     await ContentBoxMigration.foldTimeCapsules(Hive.box(HiveBoxes.content));
+    // The garden used to keep its own list of flowers; they become gratitude
+    // days so the journal, the garden and the achievement see the same lines.
+    await foldGratitudeItems(Hive.box(HiveBoxes.content));
   } catch (_) {
     storageError = const Object();
   }
@@ -94,6 +99,25 @@ Future<void> _initializeDeferredServices() async {
   await NotificationService.restoreScheduledReminder(
     writtenAt: DatabaseService().getAllEntries().map((e) => e.createdAt),
   );
+  // A letter can be deleted, restored or edited from a backup without going
+  // through its screen, which used to be the only place that fixed the OS
+  // schedule. Reconcile on every launch so a sealed letter still opens and a
+  // deleted one no longer announces itself.
+  try {
+    final stored = Hive.box(HiveBoxes.settings).get('language');
+    final language = stored is String ? stored : deviceLanguage();
+    final l10n = S.of(language);
+    await NotificationService.syncLetterUnlocks(
+      letters: [
+        for (final letter in RPersonalService().getLetters())
+          if (letter.isFuture) (id: letter.id, opensAt: letter.unlockDate),
+      ],
+      title: l10n['notify.letter.title'] ?? '',
+      body: l10n['notify.letter.body'] ?? '',
+    );
+  } catch (error) {
+    debugPrint('Letter announcements not synced: $error');
+  }
   await SettingsService.init();
   await EncryptionService().initialize();
 }

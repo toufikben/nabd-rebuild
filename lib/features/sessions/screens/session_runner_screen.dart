@@ -27,11 +27,11 @@ import '../models/session.dart';
 import '../session_access.dart';
 import '../widgets/breathing_circle.dart';
 import '../widgets/runner_controls.dart';
+import '../../../core/session_log.dart';
 import '../../../services/audio_service.dart';
 import '../../../services/database_service.dart';
 import '../../../services/review_prompt.dart';
 import '../../../services/ui_sounds.dart';
-import '../../../core/storage.dart';
 
 const Map<String, Color> _sessionAccentMap = <String, Color>{
   'red': Color(0xFFE74C3C),
@@ -161,24 +161,9 @@ class _SessionRunnerScreenState extends ConsumerState<SessionRunnerScreen> {
       _showSuccess = true;
     });
 
-    await _incrementCompletedTotal();
+    await SessionLog.record();
+    DatabaseService.changes.value++;
     unawaited(ReviewPrompt().recordWin());
-  }
-
-  Future<void> _incrementCompletedTotal() async {
-    try {
-      final box = contentBox();
-      final Object? raw = box.get(ContentKeys.sessionsCompleted);
-      final int current = raw is int ? raw : 0;
-
-      await box.put(
-        ContentKeys.sessionsCompleted,
-        current + 1,
-      );
-      DatabaseService.changes.value++;
-    } catch (_) {
-      // لا نعطل تجربة الجلسة إذا تعذر تحديث العداد.
-    }
   }
 
   void _navigateToSessions() {

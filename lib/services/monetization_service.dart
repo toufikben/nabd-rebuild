@@ -39,14 +39,21 @@ class VerificationResult {
       status == EntitlementStatus.subscriptionActive ||
       status == EntitlementStatus.lifetime;
 
+  /// The backend is untrusted input, even though ours: a field of the wrong
+  /// shape used to throw from a raw `as String`, taking the entitlement check
+  /// down with it. An unreadable answer must be treated as unverified, never as
+  /// a granted subscription.
   factory VerificationResult.fromJson(Map<String, dynamic> json) {
-    final raw = json['status'] as String?;
-    final expiry = json['expiryDate'] == null
+    final raw = json['status'];
+    final statusText = raw is String ? raw : null;
+    final expiryRaw = json['expiryDate'];
+    final expiry = expiryRaw == null
         ? null
-        : DateTime.tryParse(json['expiryDate'] as String);
-    final errorMessage = json['errorMessage'] as String?;
+        : DateTime.tryParse(expiryRaw is String ? expiryRaw : '$expiryRaw');
+    final errorRaw = json['errorMessage'];
+    final errorMessage = errorRaw is String ? errorRaw : null;
 
-    switch (raw) {
+    switch (statusText) {
       case 'lifetime':
         return VerificationResult(
           status: EntitlementStatus.lifetime,

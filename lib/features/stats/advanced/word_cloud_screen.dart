@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/word_frequency.dart';
 import '../../../services/database_service.dart';
 
 /// WordCloudScreen — سحابة كلمات من مذكراتك.
@@ -17,40 +18,17 @@ class _WordCloudScreenState extends ConsumerState<WordCloudScreen> {
   final DatabaseService _db = DatabaseService();
   int _period = 30; // days
 
-  // Stop words to exclude
-  static const Set<String> _stopWords = {
-    'the', 'and', 'for', 'with', 'this', 'that', 'from', 'have', 'has',
-    'are', 'was', 'were', 'been', 'be', 'is', 'it', 'its',
-    'you', 'your', 'they', 'them', 'their', 'his', 'her',
-    'she', 'he', 'we', 'our', 'us', 'me', 'my',
-    'في', 'من', 'على', 'عن', 'مع', 'إلى', 'أن', 'إن',
-    'كان', 'كانت', 'هو', 'هي', 'هم', 'نحن', 'أنا', 'أنت',
-    'هذا', 'هذه', 'ذلك', 'تلك', 'لم', 'لن', 'لا', 'ما',
-    'كل', 'بعض', 'قد', 'ثم', 'أو',
-  };
-
   Map<String, int> get _wordFrequencies {
     final entries = _db.getAllEntries();
     final cutoff = DateTime.now().subtract(Duration(days: _period));
     final recent = entries.where((e) => e.createdAt.isAfter(cutoff));
 
-    final freq = <String, int>{};
-
-    for (final entry in recent) {
-      final text = '${entry.title} ${entry.content}'.toLowerCase();
-      final words = text.split(RegExp(r'[\s\u0600-\u06FF]+|\s+'));
-
-      for (final w in words) {
-        final word = w.trim();
-        if (word.length < 3) continue;
-        if (_stopWords.contains(word)) continue;
-        if (RegExp(r'^\d+$').hasMatch(word)) continue;
-
-        freq[word] = (freq[word] ?? 0) + 1;
-      }
-    }
-
-    return freq;
+    return {
+      for (final item in wordFrequencies(
+        recent.map((e) => '${e.title} ${e.content}'),
+      ))
+        item.word: item.count,
+    };
   }
 
   @override

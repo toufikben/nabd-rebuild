@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
-import '../../core/storage.dart';
+import '../../core/session_log.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/audio_service.dart';
 import '../../services/database_service.dart';
@@ -74,15 +74,8 @@ class _BreathingScreenState extends State<BreathingScreen>
   /// Counts a finished breathing session exactly like a guided session, so
   /// Insights does not stay blind to the standalone `/breathing` route.
   Future<void> _recordCompletion() async {
-    try {
-      final box = contentBox();
-      final Object? raw = box.get(ContentKeys.sessionsCompleted);
-      final int current = raw is int ? raw : 0;
-      await box.put(ContentKeys.sessionsCompleted, current + 1);
-      DatabaseService.changes.value++;
-    } catch (_) {
-      // The finished screen still matters even if the counter cannot write.
-    }
+    await SessionLog.record();
+    DatabaseService.changes.value++;
   }
 
   void _playCue(String asset) {

@@ -7,6 +7,24 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../services/database_service.dart';
 
+/// The six axes of the radar, each built from moods the editor can record.
+///
+/// The old lists mixed in `joyful`, `loved`, `hopeful`, `frustrated` and
+/// `confused`. Those exist in `Mood.all` but the editor only offers
+/// `Mood.journalMoods`, so no entry could ever carry them: three of the six
+/// axes were permanently near-zero and the radar lied about the writer's
+/// feelings. Every id below is in `Mood.journalMoods`, and all ten of them are
+/// covered, so no recorded mood disappears from the chart. Exposed (not
+/// private) so the test can hold it to both rules.
+const Map<String, List<String>> emotionRadarDimensions = {
+  'Joy': ['happy', 'excited'],
+  'Love': ['grateful'],
+  'Peace': ['peaceful', 'neutral'],
+  'Sadness': ['sad', 'disappointed'],
+  'Anger': ['angry'],
+  'Anxiety': ['anxious', 'tired'],
+};
+
 /// EmotionRadarScreen — رادار المشاعر (6 أبعاد).
 class EmotionRadarScreen extends ConsumerStatefulWidget {
   const EmotionRadarScreen({super.key});
@@ -20,15 +38,9 @@ class _EmotionRadarScreenState extends ConsumerState<EmotionRadarScreen> {
   final DatabaseService _db = DatabaseService();
   int _period = 30;
 
-  /// 6 أبعاد — (label, [moodIds])
-  static const Map<String, List<String>> _dimensions = {
-    'Joy': ['joyful', 'happy', 'excited'],
-    'Love': ['loved', 'in_love', 'grateful'],
-    'Peace': ['peaceful', 'calm', 'hopeful'],
-    'Sadness': ['sad', 'lonely', 'depressed'],
-    'Anger': ['angry', 'frustrated'],
-    'Anxiety': ['anxious', 'confused', 'tired'],
-  };
+  /// The six axes. Defined once, above the widget, so the test can check them
+  /// against the moods the editor actually offers.
+  static const Map<String, List<String>> _dimensions = emotionRadarDimensions;
 
   Map<String, double> get _scores {
     final entries = _db.getAllEntries();

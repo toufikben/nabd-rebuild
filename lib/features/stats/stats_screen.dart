@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/mood_patterns.dart';
+import '../../core/session_log.dart';
 import '../../core/streak.dart';
+import '../../core/word_frequency.dart';
 import '../../services/monetization_service.dart';
 import '../../widgets/nabd_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +15,6 @@ import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
-import '../../core/storage.dart';
 
 class StatsScreen extends ConsumerStatefulWidget {
   const StatsScreen({super.key});
@@ -634,70 +635,16 @@ class _StatsSummary {
     );
   }
 
-  static int _completedSessions() {
-    final raw = contentBox().get(ContentKeys.sessionsCompleted);
-    return raw is int ? raw : 0;
-  }
+  static int _completedSessions() => SessionLog.completed();
 
   static Map<String, int> _countWords(List<JournalEntry> entries) {
-    const ignored = {
-      'من',
-      'في',
-      'على',
-      'إلى',
-      'عن',
-      'مع',
-      'هذا',
-      'هذه',
-      'ذلك',
-      'التي',
-      'الذي',
-      'أنا',
-      'أنت',
-      'هو',
-      'هي',
-      'نحن',
-      'هم',
-      'و',
-      'أو',
-      'ثم',
-      'لا',
-      'ما',
-      'لم',
-      'لن',
-      'كان',
-      'كانت',
-      'كل',
-      'قد',
-      'لقد',
-      'إن',
-      'أن',
-      'يا',
-      'the',
-      'and',
-      'or',
-      'to',
-      'of',
-      'in',
-      'on',
-      'is',
-      'a',
-      'i',
-      'it',
-      'my',
+    return {
+      for (final item in wordFrequencies(
+        entries.map((entry) => '${entry.title} ${entry.content}'),
+        limit: 12,
+      ))
+        item.word: item.count,
     };
-    final counts = <String, int>{};
-    final splitter = RegExp(r'[\s\n\r،؛,.!?؟:;()\[\]{}"“”]+');
-    for (final entry in entries) {
-      for (final raw in entry.content.toLowerCase().split(splitter)) {
-        final word = raw.trim();
-        if (word.length < 2 || ignored.contains(word)) continue;
-        counts[word] = (counts[word] ?? 0) + 1;
-      }
-    }
-    final sorted = counts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    return Map.fromEntries(sorted.take(12));
   }
 
   static int _wordCount(String content) =>

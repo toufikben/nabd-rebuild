@@ -55,10 +55,8 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
         ),
       ];
 
-  Set<String> get _joined => Set.from(
-        (_box.get('joined_challenges', defaultValue: <dynamic>[]) as List)
-            .map((e) => e.toString()),
-      );
+  Set<String> get _joined =>
+      Set.from(readStringList(_box, ContentKeys.joinedChallenges));
 
   Future<void> _toggleJoin(String id) async {
     final joined = _joined;
@@ -67,7 +65,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
     } else {
       joined.add(id);
     }
-    await _box.put('joined_challenges', joined.toList());
+    await _box.put(ContentKeys.joinedChallenges, joined.toList());
     setState(() {});
   }
 

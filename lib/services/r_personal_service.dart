@@ -99,6 +99,21 @@ class WeeklyPulse {
       );
 }
 
+/// The seven-day window a weekly Pulse summarises: the last week that has
+/// fully ended.
+///
+/// Weeks end on Sunday. Asking on a Monday returns the week that finished
+/// yesterday; asking on a Sunday returns the week before, because today is
+/// still being written. Pure, so the rule is tested directly rather than
+/// discovered in the UI.
+(DateTime, DateTime) weeklyPulseWindow(DateTime now) {
+  final today = DateTime(now.year, now.month, now.day);
+  // Weekday is 1 (Monday) to 7 (Sunday).
+  final daysSinceSunday = today.weekday % 7 == 0 ? 7 : today.weekday % 7;
+  final weekEnd = today.subtract(Duration(days: daysSinceSunday));
+  return (weekEnd.subtract(const Duration(days: 6)), weekEnd);
+}
+
 class RPersonalService {
   RPersonalService({DatabaseService? database})
       : _database = database ?? DatabaseService();
@@ -202,29 +217,16 @@ class RPersonalService {
     return echoes.reversed.toList();
   }
 
-  /// The most recent saved Pulse, even when today is not Sunday. Used to keep
-  /// the Insights card useful during the six waiting days instead of showing
-  /// an empty state.
-  Future<WeeklyPulse?> loadLatestWeeklyPulse() async {
-    String? latest;
-    for (final rawKey in _settings.keys) {
-      final key = rawKey.toString();
-      if (!key.startsWith(weeklyPulsePrefix)) continue;
-      final week = key.substring(weeklyPulsePrefix.length);
-      if (latest == null || week.compareTo(latest) > 0) latest = week;
-    }
-    if (latest == null) return null;
-    final stored = _settings.get('$weeklyPulsePrefix$latest');
-    return stored is Map ? WeeklyPulse.fromMap(stored) : null;
-  }
-
+  /// The Pulse for the last completed seven days, whatever day it is asked on.
+  ///
+  /// This used to return null on every day but Sunday, so six days out of
+  /// seven the Insights card had nothing to show and the screen fell back to a
+  /// "come back on Sunday" empty state. A week that ended yesterday is just as
+  /// finished on Monday as it is on the following Sunday.
   Future<WeeklyPulse?> loadWeeklyPulse([DateTime? now]) async {
     final current = now ?? DateTime.now();
-    if (current.weekday != DateTime.sunday) return null;
-    final sunday = DateTime(current.year, current.month, current.day);
-    final previousSunday = sunday.subtract(const Duration(days: 7));
-    final weekStart = previousSunday.subtract(const Duration(days: 6));
-    final key = _dateKey(previousSunday);
+    final (weekStart, weekEnd) = weeklyPulseWindow(current);
+    final key = _dateKey(weekEnd);
     final stored = _settings.get('$weeklyPulsePrefix$key');
     if (stored is Map) return WeeklyPulse.fromMap(stored);
 
@@ -236,7 +238,7 @@ class RPersonalService {
       );
       return _journalMoodIds.contains(entry.mood) &&
           !day.isBefore(weekStart) &&
-          !day.isAfter(previousSunday);
+          !day.isAfter(weekEnd);
     }).toList();
     final moods = entries
         .map((e) => Mood.journalMoods.firstWhere((mood) => mood.id == e.mood))

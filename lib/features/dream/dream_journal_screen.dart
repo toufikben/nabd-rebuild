@@ -29,7 +29,11 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
 
   List<DreamEntry> get _dreams {
     return _box.values
-        .map((e) => Map<dynamic, dynamic>.from(e as Map))
+        // A box is not a schema: a value written by an older build or by a
+        // restore can be anything, and `e as Map` threw on it, taking the whole
+        // dream list down with it.
+        .whereType<Map>()
+        .map((e) => Map<dynamic, dynamic>.from(e))
         .where((e) => e['isDream'] == true)
         .map((e) => DreamEntry.fromMap(e))
         .toList()

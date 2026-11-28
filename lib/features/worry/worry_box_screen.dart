@@ -18,9 +18,11 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
   final TextEditingController _controller = TextEditingController();
 
   List<WorryItem> get _worries {
-    final raw = _box.get('worry_box', defaultValue: <dynamic>[]) as List;
-    return raw
-        .whereType<Map>()
+    final raw = _box.get(ContentKeys.worryBox);
+    // A restore from another build can leave a non-list here; the old `as List`
+    // threw and the screen stayed blank with no way to recover.
+    final items = raw is Iterable ? raw.whereType<Map>() : const <Map>[];
+    return items
         .map((item) => WorryItem.fromMap(Map<dynamic, dynamic>.from(item)))
         .where((item) => item.text.trim().isNotEmpty)
         .toList()
@@ -36,10 +38,14 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
       id: const Uuid().v4(),
       text: text,
       createdAt: now,
-      reviewDate: now.add(const Duration(days: 1)),
+      // The next calendar day, so "review it tomorrow" is true at midnight
+      // rather than at the same hour tomorrow night.
+      reviewDate: DateTime(now.year, now.month, now.day + 1),
     );
-    await _box
-        .put('worry_box', [..._worries.map((e) => e.toMap()), item.toMap()]);
+    await _box.put(
+      ContentKeys.worryBox,
+      [..._worries.map((e) => e.toMap()), item.toMap()],
+    );
     if (!mounted) return;
     _controller.clear();
     setState(() {});
@@ -76,7 +82,7 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
         .where((entry) => entry.id != item.id)
         .map((entry) => entry.toMap())
         .toList();
-    await _box.put('worry_box', remaining);
+    await _box.put(ContentKeys.worryBox, remaining);
     if (mounted) setState(() {});
   }
 
@@ -207,6 +213,18 @@ class _WorryBoxScreenState extends State<WorryBoxScreen> {
   }
 }
 
+/// Whole calendar days until [reviewDate], counted by date and not by elapsed
+/// hours.
+///
+/// A worry saved at 23:00 for review "tomorrow" is 1 day away, not 0: the old
+/// `difference().inDays` truncated 23h59m to 0, so the card read "0 days left"
+/// and the worry looked reviewable on the day it was written.
+int worryDaysUntil(DateTime reviewDate, DateTime now) {
+  final today = DateTime(now.year, now.month, now.day);
+  final due = DateTime(reviewDate.year, reviewDate.month, reviewDate.day);
+  return due.difference(today).inDays;
+}
+
 class _WorryCard extends StatelessWidget {
   final WorryItem item;
   final VoidCallback onRemove;
@@ -216,8 +234,10 @@ class _WorryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final canReview = !now.isBefore(item.reviewDate);
-    final daysLeft = item.reviewDate.difference(now).inDays.clamp(0, 999);
+    // "Read it tomorrow" means the next calendar day, not 24 hours later: a
+    // worry written at 23:00 used to stay sealed until 23:00 the next night.
+    final daysLeft = worryDaysUntil(item.reviewDate, now).clamp(0, 999);
+    final canReview = daysLeft == 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),

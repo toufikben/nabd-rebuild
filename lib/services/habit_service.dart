@@ -49,11 +49,17 @@ class Habit {
 
   static Habit? fromMap(Object? raw) {
     if (raw is! Map || raw['id'] is! String) return null;
+    // Every field is read defensively: a habit restored from a backup written
+    // by another build can carry a number where a string belongs, and a cast
+    // that throws here loses the whole habit list, not just the bad field.
+    final preset = raw['preset'];
+    final name = raw['name'];
+    final emoji = raw['emoji'];
     return Habit(
       id: raw['id'] as String,
-      presetId: raw['preset'] as String?,
-      name: raw['name'] as String? ?? '',
-      emoji: raw['emoji'] as String? ?? '•',
+      presetId: preset is String ? preset : null,
+      name: name is String ? name : '',
+      emoji: emoji is String ? emoji : '•',
       createdAt: DateTime.tryParse('${raw['createdAt']}') ?? DateTime.now(),
       archived: raw['archived'] == true,
     );
@@ -103,14 +109,14 @@ class HabitService {
       '${day.day.toString().padLeft(2, '0')}';
 
   List<Habit> all() => [
-        for (final raw in _content.get(ContentKeys.habits) as List? ?? const [])
+        for (final raw in readList(_content, ContentKeys.habits))
           if (Habit.fromMap(raw) case final habit?) habit,
       ];
 
   List<Habit> active() => all().where((h) => !h.archived).toList();
 
   Set<String> _checks() => {
-        for (final raw in _content.get(ContentKeys.habitChecks) as List? ?? const [])
+        for (final raw in readList(_content, ContentKeys.habitChecks))
           if (raw is String) raw,
       };
 

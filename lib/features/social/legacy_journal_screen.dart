@@ -21,10 +21,8 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
   final DatabaseService _db = DatabaseService();
   final Box _settings = contentBox();
 
-  Set<String> get _legacyIds {
-    final raw = _settings.get('legacy_entries', defaultValue: <dynamic>[]) as List;
-    return raw.map((e) => e.toString()).toSet();
-  }
+  Set<String> get _legacyIds =>
+      Set.from(readStringList(_settings, ContentKeys.legacyEntries));
 
   Future<void> _toggleEntry(String id) async {
     final ids = _legacyIds;
@@ -33,7 +31,7 @@ class _LegacyJournalScreenState extends State<LegacyJournalScreen> {
     } else {
       ids.add(id);
     }
-    await _settings.put('legacy_entries', ids.toList());
+    await _settings.put(ContentKeys.legacyEntries, ids.toList());
     setState(() {});
   }
 

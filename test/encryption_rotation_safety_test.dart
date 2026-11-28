@@ -96,5 +96,22 @@ void main() {
       expect(result.isPro, isFalse);
       expect(result.errorMessage, 'boom');
     });
+
+    test('a wrongly typed answer never throws', () {
+      // The old parser used `as String` on these fields. A backend (or a proxy
+      // in front of it) sending a number or a list took the whole entitlement
+      // check down. An unparseable expiry now reads as no expiry, the same as
+      // if the field had been absent — policy is unchanged, only the crash is
+      // gone. An unreadable status still falls back to `unknown`.
+      expect(parse({'status': 42}).status, EntitlementStatus.unknown);
+      expect(parse({'status': ['active']}).status, EntitlementStatus.unknown);
+      final badExpiry =
+          parse({'status': 'active', 'expiryDate': ['not a date']});
+      expect(badExpiry.status, EntitlementStatus.subscriptionActive);
+      expect(badExpiry.expiryDate, isNull);
+      final withError = parse({'status': 'error', 'errorMessage': 500});
+      expect(withError.status, EntitlementStatus.error);
+      expect(withError.errorMessage, isNull);
+    });
   });
 }

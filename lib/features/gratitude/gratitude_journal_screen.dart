@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/gratitude.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/storage.dart';
 
+/// Three gratitude lines a day, and the days already written.
+///
+/// The lines are the same ones the garden shows as flowers: one store, two
+/// views. Writing here plants a flower there, and the achievement counts both.
 class GratitudeJournalScreen extends StatefulWidget {
   const GratitudeJournalScreen({super.key});
 
@@ -15,33 +20,21 @@ class GratitudeJournalScreen extends StatefulWidget {
 class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
   final Box _box = contentBox();
   final List<TextEditingController> _controllers = List.generate(
-    3,
+    gratitudePromptSlots,
     (_) => TextEditingController(),
   );
 
-  String get _todayKey {
-    final now = DateTime.now();
-    return 'gratitude_${now.year}_${now.month}_${now.day}';
-  }
+  /// Every line ever written, newest day first.
+  List<GratitudeEntry> get _entries => gratitudeEntries(_box);
 
-  List<_GratitudeItem> get _items {
-    final items = <_GratitudeItem>[];
-    for (final key
-        in _box.keys.where((key) => key.toString().startsWith('gratitude_'))) {
-      final dateKey = key.toString();
-      final raw = _box.get(key);
-      if (raw is! List) continue;
-      final date = journalDateFromKey(dateKey);
-      if (date == null) continue;
-      for (final value in raw) {
-        final text = value?.toString().trim() ?? '';
-        if (text.isNotEmpty) {
-          items.add(_GratitudeItem(dateKey: dateKey, date: date, text: text));
-        }
-      }
-    }
-    items.sort((a, b) => b.date.compareTo(a.date));
-    return items;
+  /// Everything the three prompts above do not already show: earlier days,
+  /// plus any line the garden planted today past the third prompt.
+  List<GratitudeEntry> get _earlierEntries {
+    final today = DateTime.now();
+    final midnight = DateTime(today.year, today.month, today.day);
+    return _entries
+        .where((e) => e.date != midnight || e.slot >= _controllers.length)
+        .toList();
   }
 
   @override
@@ -51,10 +44,9 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
   }
 
   void _loadToday() {
-    final saved = _box.get(_todayKey);
-    if (saved is! List) return;
+    final saved = gratitudeSlotsFor(_box, DateTime.now());
     for (var i = 0; i < saved.length && i < _controllers.length; i++) {
-      _controllers[i].text = saved[i]?.toString() ?? '';
+      _controllers[i].text = saved[i].trim();
     }
   }
 
@@ -69,7 +61,8 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
       ));
       return;
     }
-    await _box.put(_todayKey, values);
+    final now = DateTime.now();
+    await saveGratitudeSlots(_box, now, values);
     if (!mounted) return;
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
@@ -80,14 +73,20 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
     );
   }
 
-  Future<void> _delete(_GratitudeItem item) async {
-    final raw = _box.get(item.dateKey);
-    if (raw is! List) return;
-    final values = raw.map((value) => value?.toString() ?? '').toList();
-    final index = values.indexOf(item.text);
-    if (index >= 0) values.removeAt(index);
-    await _box.put(item.dateKey, values);
-    if (mounted) setState(() {});
+  Future<void> _delete(GratitudeEntry entry) async {
+    await removeGratitude(_box, entry);
+    if (!mounted) return;
+    // A line deleted from today's list must also leave its field, otherwise the
+    // next save writes it straight back.
+    _syncTodayFields();
+    setState(() {});
+  }
+
+  void _syncTodayFields() {
+    final saved = gratitudeSlotsFor(_box, DateTime.now());
+    for (var i = 0; i < _controllers.length; i++) {
+      _controllers[i].text = i < saved.length ? saved[i].trim() : '';
+    }
   }
 
   @override
@@ -100,7 +99,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final items = _items;
+    final items = _earlierEntries;
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
@@ -126,8 +125,8 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
             ),
             child: Column(
               children: [
-                Text('🙏', style: TextStyle(fontSize: 50)),
-                SizedBox(height: 12),
+                const Text('🙏', style: TextStyle(fontSize: 50)),
+                const SizedBox(height: 12),
                 Text(
                   l10n.t('gratitudeJournal.threeThings'),
                   style: const TextStyle(
@@ -141,7 +140,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          ...List.generate(3, (index) => _input(index)),
+          ...List.generate(gratitudePromptSlots, (index) => _input(index)),
           const SizedBox(height: 4),
           SizedBox(
             width: double.infinity,
@@ -167,7 +166,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
           const SizedBox(height: 10),
           if (items.isEmpty)
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 22),
+              padding: const EdgeInsets.symmetric(vertical: 22),
               child: Center(
                 child: Text(
                   l10n.t('gratitudeJournal.empty'),
@@ -230,41 +229,20 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
     );
   }
 
-  Widget _itemCard(_GratitudeItem item) {
+  Widget _itemCard(GratitudeEntry item) {
+    final l10n = AppLocalizations.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: const Text('🙏', style: TextStyle(fontSize: 22)),
+        leading: const Text('🌻', style: TextStyle(fontSize: 22)),
         title: Text(item.text),
-        subtitle: Text(_formatDate(item.date)),
+        subtitle: Text(MaterialLocalizations.of(context).formatMediumDate(item.date)),
         trailing: IconButton(
           onPressed: () => _delete(item),
-          tooltip:
-              AppLocalizations.of(context).t('gratitudeJournal.deleteTooltip'),
+          tooltip: l10n.t('gratitudeJournal.deleteTooltip'),
           icon: const Icon(Icons.delete_outline),
         ),
       ),
     );
   }
-
-  String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
-}
-
-class _GratitudeItem {
-  final String dateKey;
-  final DateTime date;
-  final String text;
-
-  const _GratitudeItem(
-      {required this.dateKey, required this.date, required this.text});
-}
-
-/// The date a `gratitude_<y>_<m>_<d>` key stands for, or null when the key is
-/// not a journal day. The garden saves its flowers under `gratitude_items`,
-/// which shares this prefix, so the shape of the key is what tells them apart.
-DateTime? journalDateFromKey(String key) {
-  final parts = key.split('_');
-  if (parts.length != 4) return null;
-  return DateTime.tryParse(
-      '${parts[1].padLeft(4, '0')}-${parts[2].padLeft(2, '0')}-${parts[3].padLeft(2, '0')}');
 }
