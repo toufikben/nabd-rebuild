@@ -284,7 +284,7 @@ class _GratitudeGardenScreenState extends State<GratitudeGardenScreen> {
                     '{date}',
                     MaterialLocalizations.of(ctx).formatMediumDate(entry.date),
                   ),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 color: AppColors.textTertiary,
               ),
