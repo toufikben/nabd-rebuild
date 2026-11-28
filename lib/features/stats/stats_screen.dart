@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/mood_patterns.dart';
+import '../../core/session_log.dart';
 import '../../core/streak.dart';
 import '../../services/monetization_service.dart';
 import '../../widgets/nabd_ui.dart';
@@ -13,7 +14,6 @@ import '../../core/data_revision.dart';
 import '../../models/journal_entry.dart';
 import '../../models/mood.dart';
 import '../../services/database_service.dart';
-import '../../core/storage.dart';
 
 class StatsScreen extends ConsumerStatefulWidget {
   const StatsScreen({super.key});
@@ -634,10 +634,7 @@ class _StatsSummary {
     );
   }
 
-  static int _completedSessions() {
-    final raw = contentBox().get(ContentKeys.sessionsCompleted);
-    return raw is int ? raw : 0;
-  }
+  static int _completedSessions() => SessionLog.completed();
 
   static Map<String, int> _countWords(List<JournalEntry> entries) {
     const ignored = {
